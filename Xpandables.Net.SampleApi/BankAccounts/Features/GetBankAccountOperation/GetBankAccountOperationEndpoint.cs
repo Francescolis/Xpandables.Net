@@ -16,9 +16,9 @@
 ********************************************************************************/
 namespace Xpandables.Net.SampleApi.BankAccounts.Features.GetBankAccountOperation;
 
-public sealed class GetBankAccountOperationEndpoint : IEndpointRoute
+public sealed class GetBankAccountOperationEndpoint : IMinimalEndpointRoute
 {
-    public void AddRoutes(EndpointRouteBuilder app)
+    public void AddRoutes(MinimalRouteBuilder app)
     {
         app.MapGet("/bank-accounts/{accountId}/operations",
             async (Guid accountId, IMediator mediator) =>

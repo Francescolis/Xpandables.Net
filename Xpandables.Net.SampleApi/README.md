@@ -316,7 +316,7 @@ using Xpandables.Net.DependencyInjection;
 using Xpandables.Net.Routing;
 using Xpandables.Net.Tasks;
 
-public sealed class CreateBankAccountEndpoint : IEndpointRoute
+public sealed class CreateBankAccountEndpoint : IMinimalEndpointRoute
 {
     public void AddServices(IServiceCollection services)
     {
@@ -405,7 +405,7 @@ builder.Services.AddXOutboxStoreDataContext(options =>
 
 // Register Xpandables.Net services
 builder.Services
-    .AddXEndpointRoutes()              // Scan for IEndpointRoute implementations
+    .AddXEndpointRoutes()              // Scan for IMinimalEndpointRoute implementations
     .AddXMinimalApi()                   // Add Minimal API support
     .AddXMediatorWithEventSourcing()   // Add CQRS with Event Sourcing
     .AddXRequestHandlers()              // Register all IRequestHandler implementations
@@ -468,7 +468,7 @@ using (var scope = app.Services.CreateScope())
     await outboxDb.Database.MigrateAsync().ConfigureAwait(false);
 }
 
-// Map all IEndpointRoute implementations
+// Map all IMinimalEndpointRoute implementations
 app.UseXEndpointRoutes();
 
 await app.RunAsync();

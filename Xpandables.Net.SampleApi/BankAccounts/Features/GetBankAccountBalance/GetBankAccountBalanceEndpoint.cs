@@ -1,8 +1,8 @@
 ﻿namespace Xpandables.Net.SampleApi.BankAccounts.Features.GetBankAccountBalance;
 
-public sealed class GetBankAccountBalanceEndpoint : IEndpointRoute
+public sealed class GetBankAccountBalanceEndpoint : IMinimalEndpointRoute
 {
-    public void AddRoutes(EndpointRouteBuilder app)
+    public void AddRoutes(MinimalRouteBuilder app)
     {
         app.MapGet("/bank-accounts/{accountId}/balance", async (Guid accountId, IMediator mediator) =>
             await mediator.SendAsync(new GetBankAccountBalanceQuery { AccountId = accountId }).ConfigureAwait(false))

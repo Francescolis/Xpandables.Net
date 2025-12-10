@@ -19,21 +19,11 @@ using Microsoft.AspNetCore.Builder;
 namespace Microsoft.AspNetCore.Routing;
 
 /// <summary>
-/// Represents configuration options for minimal support features, including validation and result filtering, endpoint
-/// selection, and endpoint customization during route registration.
+/// Represents configuration options for minimal support features, endpoint selection, 
+/// and endpoint customization during route registration.
 /// </summary>
-public sealed record ResultSupportOptions
+public sealed record MinimalSupportOptions
 {
-    /// <summary>
-    /// Gets or sets a value indicating whether the validation filter is enabled for incoming requests.
-    /// </summary>
-    public bool EnableValidationFilter { get; set; } = true;
-
-    /// <summary>
-    /// Gets or sets a value indicating whether result filtering is enabled for the operation.
-    /// </summary>
-    public bool EnableResultFilter { get; set; } = true;
-
     /// <summary>
     /// Gets or sets a predicate used to determine whether a given <see cref="RouteEndpoint"/> should have filters applied.
     /// </summary>

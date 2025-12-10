@@ -1,8 +1,8 @@
 ﻿namespace Xpandables.Net.SampleApi.BankAccounts.Features.CreateBankAccount;
 
-public sealed class CreateBankAccountEndpoint : IEndpointRoute
+public sealed class CreateBankAccountEndpoint : IMinimalEndpointRoute
 {
-    public void AddRoutes(EndpointRouteBuilder app)
+    public void AddRoutes(MinimalRouteBuilder app)
     {
         app.MapPost("/bank-accounts", async (CreateBankAccountCommand command, IMediator mediator) =>
             await mediator.SendAsync(command).ConfigureAwait(false))

@@ -14,11 +14,10 @@
  * limitations under the License.
  *
 ********************************************************************************/
-using System.Results;
-
 using Microsoft.AspNetCore.Builder;
 using Microsoft.AspNetCore.Http;
-using Microsoft.AspNetCore.Routing;
+using Microsoft.AspNetCore.Mvc;
+using Microsoft.Extensions.Options;
 
 #pragma warning disable IDE0130 // Namespace does not match folder structure
 namespace Microsoft.Extensions.DependencyInjection;
@@ -35,21 +34,31 @@ namespace Microsoft.Extensions.DependencyInjection;
 public static class IResultExtensions
 {
     /// <summary>
-    /// Adds support for <see cref="Result"/> handling to the application's service collection.
+    /// Adds Result MVC options configuration for Controller to the service collection.
     /// </summary>
-    /// <param name="services">The service collection to act on. Cannot be null.</param>
-    /// <param name="configure">An optional action to configure the <see cref="ResultSupportOptions"/></param>
-    /// <returns>The same <paramref name="services"/> instance, with minimal result support registered.</returns>
-    public static IServiceCollection AddXResultSupport(
-        this IServiceCollection services,
-        Action<ResultSupportOptions>? configure = default)
+    /// <remarks>Call this method during application startup to enable custom MVC options for
+    /// XController. This method registers the necessary configuration as a singleton service.</remarks>
+    /// <returns>The service collection with Controller MVC options configured. The same instance as the input is returned
+    /// for chaining.</returns>
+    public static IServiceCollection AddXControllerResultMvcOptions(this IServiceCollection services)
+    {
+        ArgumentNullException.ThrowIfNull(services);
+        services.AddSingleton<IConfigureOptions<MvcOptions>, ControllerResulMvcOptions>();
+
+        return services;
+    }
+
+    /// <summary>
+    /// Adds the Result middleware to the application's service collection for dependency injection.
+    /// </summary>
+    /// <remarks>Registers ResultMiddleware as a singleton service. This method should be called during
+    /// application startup to ensure the middleware is available for request processing.</remarks>
+    /// <param name="services">The service collection to which the Result middleware will be added. Cannot be null.</param>
+    /// <returns>The same IServiceCollection instance, enabling method chaining.</returns>
+    public static IServiceCollection AddXResultMiddleware(this IServiceCollection services)
     {
         ArgumentNullException.ThrowIfNull(services);
 
-        var options = new ResultSupportOptions();
-        configure?.Invoke(options);
-
-        services.AddSingleton(options);
         services.AddSingleton<ResultMiddleware>();
         return services;
     }
@@ -57,20 +66,24 @@ public static class IResultExtensions
     extension(IApplicationBuilder builder)
     {
         /// <summary>
-        /// Adds minimal API endpoint validation and result filters to the application's request pipeline.
+        /// Adds the Result middleware to the application's request pipeline. This enables standardized result handling
+        /// for HTTP responses.
         /// </summary>
-        /// <remarks>This extension method configures the middleware pipeline to apply validation and
-        /// result filters specifically to minimal API endpoints. It should be called during application startup before
-        /// mapping minimal API routes. The method does not affect non-minimal API endpoints.</remarks>
-        /// <returns>The <see cref="IApplicationBuilder"/> instance with minimal API support filters applied.</returns>
-        public IApplicationBuilder UseXResultSupport()
+        /// <remarks>This method should be called after all required services have been registered,
+        /// typically in the application's startup configuration. The Result middleware provides consistent formatting
+        /// and handling of API results across the application.</remarks>
+        /// <returns>The <see cref="IApplicationBuilder"/> instance with the Result middleware configured. This allows for
+        /// further chaining of middleware registrations.</returns>
+        /// <exception cref="InvalidOperationException">Thrown if the Result middleware has not been registered in the application's services. Ensure that
+        /// AddXResultSupport() is called during service registration before invoking this method.</exception>
+        public IApplicationBuilder UseXResultMiddleware()
         {
             ArgumentNullException.ThrowIfNull(builder);
 
             if (builder.ApplicationServices.GetService<ResultMiddleware>() is null)
                 throw new InvalidOperationException(
                     "ResultMiddleware is not registered. " +
-                    "Please ensure AddXResultSupport() is called during service registration.");
+                    "Please ensure AddXResultMiddleware() is called during service registration.");
 
             builder.UseMiddleware<ResultMiddleware>();
             return builder;

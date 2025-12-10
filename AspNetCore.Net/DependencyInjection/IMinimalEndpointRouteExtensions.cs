@@ -19,49 +19,57 @@ using System.Reflection;
 
 using Microsoft.AspNetCore.Builder;
 using Microsoft.AspNetCore.Http;
-using Microsoft.AspNetCore.Mvc;
 using Microsoft.AspNetCore.Routing;
 using Microsoft.Extensions.DependencyInjection;
-using Microsoft.Extensions.Options;
 
 #pragma warning disable IDE0130 // Namespace does not match folder structure
 namespace Microsoft.Extensions.DependencyInjection;
 #pragma warning restore IDE0130 // Namespace does not match folder structure
 
 /// <summary>
-/// Provides extension methods for registering and configuring endpoint routes in an ASP.NET Core application.
+/// Provides extension methods for registering and configuring minimal endpoint routes and related metadata in ASP.NET
+/// Core applications.
 /// </summary>
-/// <remarks>These extension methods enable the discovery and registration of endpoint route implementations from
-/// specified assemblies, as well as the configuration of the application's request pipeline to use those routes. Use
-/// these methods to simplify the integration of modular endpoint routing patterns in your application.</remarks>
-public static class IEndpointRouteExtensions
+/// <remarks>This static class contains helper methods for adding minimal support services, discovering and
+/// registering endpoint routes, and configuring endpoint metadata such as accepted request types and response status
+/// codes. Use these methods during application startup to streamline the setup of minimal APIs and ensure consistent
+/// endpoint metadata across your application.</remarks>
+public static class IMinimalEndpointRouteExtensions
 {
     /// <summary>
-    /// Adds Result MVC options configuration for Controller to the service collection.
+    /// Adds minimal support services and configuration options to the specified service collection.
     /// </summary>
-    /// <remarks>Call this method during application startup to enable custom MVC options for
-    /// XController. This method registers the necessary configuration as a singleton service.</remarks>
-    /// <returns>The service collection with Controller MVC options configured. The same instance as the input is returned
-    /// for chaining.</returns>
-    public static IServiceCollection AddXControllerResultMvcOptions(this IServiceCollection services)
+    /// <remarks>This method registers a singleton instance of the configured minimal support options. Call
+    /// this method during application startup to enable minimal support features.</remarks>
+    /// <param name="services">The service collection to which the minimal support services and options will be added. Cannot be null.</param>
+    /// <param name="configure">A delegate used to configure the minimal support options before they are registered.</param>
+    /// <returns>The same service collection instance with minimal support services and options registered.</returns>
+    public static IServiceCollection AddXMinimalSupport(
+        this IServiceCollection services,
+        Action<MinimalSupportOptions>? configure = default)
     {
         ArgumentNullException.ThrowIfNull(services);
-        services.AddSingleton<IConfigureOptions<MvcOptions>, ControllerResulMvcOptions>();
 
+        var options = new MinimalSupportOptions();
+        configure?.Invoke(options);
+
+        services.AddSingleton(options);
         return services;
     }
 
     /// <summary>
-    /// Adds endpoint routes from the specified assemblies to the service collection.
+    /// Registers all sealed classes implementing <see cref="IMinimalEndpointRoute"/> from the specified assemblies as
+    /// transient services in the dependency injection container.
     /// </summary>
-    /// <param name="services">The service collection to add the endpoint routes to.</param>
-    /// <param name="assemblies">The assemblies to scan for endpoint routes. 
-    /// If no assemblies are specified, the calling assembly is used.</param>
-    /// <returns>The updated service collection.</returns>
-    /// <remarks>If you want Result support, you need to configure the <see cref="ResultSupportOptions"/> using 
-    /// <see cref="IResultExtensions.AddXResultSupport(IServiceCollection, Action{ResultSupportOptions}?)"/>.</remarks>
+    /// <remarks>Each discovered sealed class implementing <see cref="IMinimalEndpointRoute"/> is registered
+    /// as a transient service. This enables automatic discovery and registration of minimal endpoint routes for use in
+    /// ASP.NET Core applications.</remarks>
+    /// <param name="services">The <see cref="IServiceCollection"/> to which the endpoint route services will be added. Cannot be null.</param>
+    /// <param name="assemblies">An array of assemblies to scan for sealed classes implementing <see cref="IMinimalEndpointRoute"/>. If not
+    /// specified or empty, the calling assembly is used.</param>
+    /// <returns>The <see cref="IServiceCollection"/> instance with the endpoint route services registered.</returns>
     [RequiresUnreferencedCode("This method may be trimmed.")]
-    public static IServiceCollection AddXEndpointRoutes(
+    public static IServiceCollection AddXMinimalEndpointRoutes(
         this IServiceCollection services,
         params Assembly[] assemblies)
     {
@@ -78,12 +86,12 @@ public static class IEndpointRouteExtensions
                 IsClass: true,
                 IsSealed: true
             }
-                && typeof(IEndpointRoute).IsAssignableFrom(type))];
+                && typeof(IMinimalEndpointRoute).IsAssignableFrom(type))];
 
         foreach (var endpointType in endpointTypes)
         {
             services.Add(new ServiceDescriptor(
-                typeof(IEndpointRoute),
+                typeof(IMinimalEndpointRoute),
                 endpointType,
                 ServiceLifetime.Transient));
         }
@@ -92,25 +100,24 @@ public static class IEndpointRouteExtensions
     }
 
     /// <summary>
-    /// Configures the application to use endpoint routes defined in the 
-    /// service collection.
+    /// Configures the application to use all registered minimal endpoint routes.
     /// </summary>
-    /// <param name="application">The <see cref="WebApplication"/> to configure.</param>
-    /// <returns>The configured <see cref="WebApplication"/>.</returns>
-    /// <remarks>If you want Result support, you need to configure the <see cref="ResultSupportOptions"/> using
-    /// <see cref="IResultExtensions.AddXResultSupport(IServiceCollection, Action{ResultSupportOptions}?)"/>, then call
-    /// <see cref="IResultExtensions.UseXResultSupport(IApplicationBuilder)"/> before this call.</remarks>
-    public static WebApplication UseXEndpointRoutes(this WebApplication application)
+    /// <remarks>This method discovers all services implementing <see cref="IMinimalEndpointRoute"/> and adds
+    /// their routes to the application using the provided <see cref="MinimalSupportOptions"/>. Call this method during
+    /// application startup to ensure all minimal endpoints are registered before the app runs.</remarks>
+    /// <param name="application">The <see cref="WebApplication"/> instance to configure. Cannot be null.</param>
+    /// <returns>The same <see cref="WebApplication"/> instance, enabling method chaining.</returns>
+    public static WebApplication UseXMinimalEndpointRoutes(this WebApplication application)
     {
         ArgumentNullException.ThrowIfNull(application);
 
-        ResultSupportOptions options = application.Services.GetRequiredService<ResultSupportOptions>();
-        IEnumerable<IEndpointRoute> endpointRoutes = application.Services
-            .GetServices<IEndpointRoute>();
+        MinimalSupportOptions options = application.Services.GetRequiredService<MinimalSupportOptions>();
+        IEnumerable<IMinimalEndpointRoute> endpointRoutes = application.Services
+            .GetServices<IMinimalEndpointRoute>();
 
         foreach (var route in endpointRoutes)
         {
-            route.AddRoutes(new EndpointRouteBuilder(application, options));
+            route.AddRoutes(new MinimalRouteBuilder(application, options));
         }
 
         return application;

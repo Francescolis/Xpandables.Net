@@ -14,7 +14,6 @@
  * limitations under the License.
  *
 ********************************************************************************/
-
 using Microsoft.AspNetCore.Builder;
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
@@ -22,7 +21,7 @@ using Microsoft.Extensions.DependencyInjection;
 namespace Microsoft.AspNetCore.Routing;
 
 /// <summary>
-/// Defines a contract for configuring application routes, registering services, and setting up middleware for
+/// Defines a contract for configuring minimal application routes, registering services, and setting up middleware for
 /// endpoint-based routing in a web application.
 /// </summary>
 /// <remarks>Implementations of this interface enable modular configuration of routing, dependency injection, and
@@ -30,14 +29,14 @@ namespace Microsoft.AspNetCore.Routing;
 /// registering services with the application's service collection, and configuring middleware in the application's
 /// request pipeline. This interface is typically used to organize application startup logic and promote separation of
 /// concerns in web projects.</remarks>
-public interface IEndpointRoute
+public interface IMinimalEndpointRoute
 {
     /// <summary>
     /// Configures and adds application-specific routes to the provided endpoint route builder.
     /// </summary>
-    /// <param name="app">The <see cref="EndpointRouteBuilder"/> used to define and build the application's routing endpoints. Cannot be
+    /// <param name="app">The <see cref="MinimalRouteBuilder"/> used to define and build the application's routing endpoints. Cannot be
     /// null.</param>
-    void AddRoutes(EndpointRouteBuilder app);
+    void AddRoutes(MinimalRouteBuilder app);
 
     /// <summary>
     /// Adds services to the specified service collection.

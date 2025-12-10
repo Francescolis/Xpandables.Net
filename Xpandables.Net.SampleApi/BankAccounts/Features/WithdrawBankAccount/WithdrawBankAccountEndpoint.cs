@@ -2,9 +2,9 @@
 
 namespace Xpandables.Net.SampleApi.BankAccounts.Features.WithdrawBankAccount;
 
-public sealed class WithdrawBankAccountEndpoint : IEndpointRoute
+public sealed class WithdrawBankAccountEndpoint : IMinimalEndpointRoute
 {
-    public void AddRoutes(EndpointRouteBuilder app)
+    public void AddRoutes(MinimalRouteBuilder app)
     {
         app.MapPost("/bank-accounts/{accountId}/withdraw",
             async (

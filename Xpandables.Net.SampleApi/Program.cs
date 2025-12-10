@@ -63,7 +63,7 @@ builder.Services.AddXDataContext<BankAccountDataContext>(options =>
 
 // Register Xpandables.Net services
 builder.Services
-    .AddXEndpointRoutes()
+    .AddXMinimalEndpointRoutes()
     .AddXResultEndpointValidator()
     .AddXJsonSerializerOptions()
     .AddXMediatorWithEventSourcingPipelines()
@@ -79,12 +79,12 @@ builder.Services
     .AddXCacheTypeResolver([typeof(BankAccount).Assembly])
     .AddXScheduler()
     .AddXHostedScheduler()
-    .AddXResultSupport(options =>
-    {
-        options.EnableResultFilter = false;
-        options.EnableValidationFilter = false;
-        options.ConfigureEndpoint = builder => builder.WithXAsyncPagedFilter().WithXResultSupport();
-    });
+    .AddXResultMiddleware()
+    .AddXMinimalSupport(options =>
+        options.ConfigureEndpoint = builder =>
+            builder
+                .WithXAsyncPagedFilter()
+                .WithXResultSupport());
 
 builder.Services.Configure<JsonOptions>(options =>
 {
@@ -136,7 +136,7 @@ using (var scope = app.Services.CreateScope())
     await readDb.Database.MigrateAsync().ConfigureAwait(false);
 }
 
-app.UseXResultSupport();
-app.UseXEndpointRoutes();
+app.UseXResultMiddleware();
+app.UseXMinimalEndpointRoutes();
 
 await app.RunAsync();

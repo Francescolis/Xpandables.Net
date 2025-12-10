@@ -2,9 +2,9 @@
 
 namespace Xpandables.Net.SampleApi.BankAccounts.Features.DepositBankAccount;
 
-public sealed class DepositBankAccountEndpoint : IEndpointRoute
+public sealed class DepositBankAccountEndpoint : IMinimalEndpointRoute
 {
-    public void AddRoutes(EndpointRouteBuilder app)
+    public void AddRoutes(MinimalRouteBuilder app)
     {
         app.MapPost("/bank-accounts/{accountId}/deposit",
             async (

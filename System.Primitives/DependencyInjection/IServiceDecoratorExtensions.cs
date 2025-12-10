@@ -137,7 +137,6 @@ public static class IServiceDecoratorExtensions
         /// </summary>
         /// <typeparam name="TService">The service type that will be wrapped by the 
         /// given <paramref name="decorator"/>.</typeparam>
-        /// <param name="services">The collection of services to act on.</param>
         /// <param name="decorator">The decorator function type that will be used to 
         /// wrap the original service type.</param>
         /// <returns>The <see cref="IServiceCollection"/> instance.</returns>
@@ -176,7 +175,6 @@ public static class IServiceDecoratorExtensions
         /// which wraps the original service type.
         /// </para>
         /// </summary>
-        /// <param name="services">The collection of services to act on.</param>
         /// <param name="serviceType">The service type that will be wrapped by the 
         /// given <paramref name="decorator"/>.</param>
         /// <param name="decorator">The decorator function type that will be used 
@@ -222,7 +220,6 @@ public static class IServiceDecoratorExtensions
         /// </summary>
         /// <typeparam name="TService">The service type that will be wrapped by the 
         /// given <paramref name="decorator"/>.</typeparam>
-        /// <param name="services">The collection of services to act on.</param>
         /// <param name="decorator">The decorator function type that will be used 
         /// to wrap the original service type.</param>
         /// <returns>The <see cref="IServiceCollection"/> instance.</returns>
@@ -261,7 +258,6 @@ public static class IServiceDecoratorExtensions
         /// decorator, which wraps the original service type.
         /// </para>
         /// </summary>
-        /// <param name="services">The collection of services to act on.</param>
         /// <param name="serviceType">The service type that will be wrapped by the 
         /// given <paramref name="decorator"/>.</param>
         /// <param name="decorator">The decorator function type that will be used to 
@@ -305,7 +301,6 @@ public static class IServiceDecoratorExtensions
         /// decorator, which wraps the original service type.
         /// </para>
         /// </summary>
-        /// <param name="services">The collection of services to act on.</param>
         /// <param name="serviceType">The service type that will be wrapped by the 
         /// given decorator.</param>
         /// <param name="decoratorType">The decorator type that will be used to 
@@ -363,7 +358,6 @@ public static class IServiceDecoratorExtensions
         /// decorator, which wraps the original service type.
         /// </para>
         /// </summary>
-        /// <param name="services">The collection of services to act on.</param>
         /// <param name="serviceType">The service type that will be wrapped by the 
         /// given decorator.</param>
         /// <param name="decoratorType">The decorator type that will be used to 
