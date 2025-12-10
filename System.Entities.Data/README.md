@@ -1,45 +1,55 @@
 # ??? System.Entities.Data
 
-[![NuGet](https://img.shields.io/badge/NuGet-preview-orange.svg)](https://www.nuget.org/)
+[![NuGet](https://img.shields.io/badge/NuGet-10.0.0-blue.svg)](https://www.nuget.org/packages/System.Entities.Data)
 [![.NET](https://img.shields.io/badge/.NET-10.0-purple.svg)](https://dotnet.microsoft.com/)
+[![License](https://img.shields.io/badge/License-Apache%202.0-green.svg)](LICENSE)
 
-> **Entity Framework Core Repository** - Production-ready implementation of the repository pattern using EF Core with DataContext, automatic entity tracking, and bulk operations support.
+> **Entity Framework Core Repository & Unit of Work** — Production-ready EF Core implementation with `DataContext`, automatic entity lifecycle tracking, `EntityUpdater` bulk operations, and transaction management.
 
 ---
 
 ## ?? Overview
 
-`System.Entities.Data` provides a complete Entity Framework Core implementation of the repository pattern with `DataContext` base class, automatic entity lifecycle tracking (CreatedOn, UpdatedOn, DeletedOn), and support for bulk operations through `EntityUpdater`.
+`System.Entities.Data` provides a complete Entity Framework Core implementation of the repository and unit of work patterns. The library includes `DataContext` with automatic entity lifecycle tracking (`CreatedOn`, `UpdatedOn`, `DeletedOn`), `Repository` for CRUD operations, `UnitOfWork` for transaction management, and `EntityUpdater` for efficient bulk updates using EF Core 10's `ExecuteUpdate` API.
+
+Built for .NET 10 with C# 14 extension members, this package simplifies data access while maintaining full control over database operations.
 
 ### ? Key Features
 
-- ?? **DataContext** - Extended DbContext with automatic entity tracking
-- ?? **Repository<TDataContext>** - Generic EF Core repository implementation
-- ? **Bulk Operations** - Efficient batch updates with EntityUpdater
-- ?? **Entity Lifecycle** - Automatic CreatedOn/UpdatedOn/DeletedOn timestamps
-- ?? **LINQ Support** - Full IQueryable support with async enumeration
-- ?? **Unit of Work** - Optional unit of work mode for batched operations
-- ? **Type Safe** - Strongly typed with DynamicallyAccessedMembers attributes
+- ??? **`DataContext`** — Extended `DbContext` with automatic entity lifecycle tracking
+- ?? **`Repository<TDataContext>`** — Generic EF Core repository with async LINQ support
+- ?? **`UnitOfWork<TDataContext>`** — Transaction management with repository coordination
+- ? **`EntityUpdater<T>`** — Fluent API for bulk updates using `ExecuteUpdate`/`ExecuteDelete`
+- ?? **Entity Lifecycle** — Automatic `CreatedOn`/`UpdatedOn`/`DeletedOn` timestamps via `IEntity`
+- ?? **Value Converters** — `JsonDocument` and `ReadOnlyMemory<byte>` EF Core converters
+- ?? **Type Safe** — Full `DynamicallyAccessedMembers` attribute support for trimming
+
+---
+
+## ?? Installation
+
+```bash
+dotnet add package System.Entities.Data
+dotnet add package Microsoft.EntityFrameworkCore.SqlServer
+```
+
+Or via NuGet Package Manager:
+
+```powershell
+Install-Package System.Entities.Data
+Install-Package Microsoft.EntityFrameworkCore.SqlServer
+```
 
 ---
 
 ## ?? Quick Start
 
-### Installation
-
-```bash
-dotnet add package System.Data.EntityFramework
-dotnet add package Microsoft.EntityFrameworkCore.SqlServer
-```
-
-### Basic Setup
+### Define Your DataContext
 
 ```csharp
-using System.Data.Repositories;
+using System.Entities.Data;
 using Microsoft.EntityFrameworkCore;
-using Microsoft.Extensions.DependencyInjection;
 
-// Define your DbContext (inherits from DataContext)
 public class AppDataContext : DataContext
 {
     public AppDataContext(DbContextOptions<AppDataContext> options) 
@@ -53,262 +63,415 @@ public class AppDataContext : DataContext
     {
         base.OnModelCreating(modelBuilder);
         
-        // Configure entities
         modelBuilder.Entity<User>(entity =>
         {
             entity.HasKey(e => e.Id);
             entity.Property(e => e.Name).IsRequired().HasMaxLength(200);
             entity.HasIndex(e => e.Email).IsUnique();
         });
+
+        modelBuilder.Entity<Order>(entity =>
+        {
+            entity.HasKey(e => e.Id);
+            entity.HasOne(e => e.User)
+                .WithMany(u => u.Orders)
+                .HasForeignKey(e => e.UserId);
+        });
     }
 }
+```
 
-// Define entity (implements IEntity for automatic tracking)
+### Define Entities with IEntity
+
+```csharp
+using System.Entities;
+
 public class User : IEntity
 {
     public Guid Id { get; set; }
     public string Name { get; set; } = string.Empty;
     public string Email { get; set; } = string.Empty;
-    public bool IsActive { get; set; }
+    public bool IsActive { get; set; } = true;
     
-    // Automatic tracking properties
+    // Automatic tracking properties from IEntity
     public DateTime CreatedOn { get; set; }
     public DateTime? UpdatedOn { get; set; }
     public DateTime? DeletedOn { get; set; }
     public EntityStatus Status { get; set; }
+    
+    // Navigation
+    public ICollection<Order> Orders { get; set; } = [];
 }
 
-// Register services
+public class Order : IEntity
+{
+    public Guid Id { get; set; }
+    public Guid UserId { get; set; }
+    public decimal Total { get; set; }
+    public OrderStatus OrderStatus { get; set; }
+    
+    // IEntity properties
+    public DateTime CreatedOn { get; set; }
+    public DateTime? UpdatedOn { get; set; }
+    public DateTime? DeletedOn { get; set; }
+    public EntityStatus Status { get; set; }
+    
+    // Navigation
+    public User User { get; set; } = null!;
+}
+```
+
+### Register Services
+
+```csharp
+using Microsoft.Extensions.DependencyInjection;
+
 var builder = WebApplication.CreateBuilder(args);
 
-builder.Services.AddDbContext<AppDataContext>(options =>
-    options.UseSqlServer(
-        builder.Configuration.GetConnectionString("DefaultConnection")));
+// Register DataContext
+builder.Services.AddXDataContext<AppDataContext>(options =>
+    options.UseSqlServer(builder.Configuration.GetConnectionString("DefaultConnection")));
 
-// Register repository
-builder.Services.AddScoped<IRepository<AppDataContext>, Repository<AppDataContext>>();
+// Register Repository and UnitOfWork
+builder.Services.AddXEntityFrameworkRepositories<AppDataContext>();
 
-// Usage
-public class UserService
-{
-    private readonly IRepository<AppDataContext> _repository;
-
-    public UserService(IRepository<AppDataContext> repository) 
-        => _repository = repository;
-
-    public async Task<List<User>> GetActiveUsersAsync(
-        CancellationToken cancellationToken)
-    {
-        return await _repository
-            .FetchAsync<User, User>(q => q.Where(u => u.IsActive))
-            .ToListAsync(cancellationToken);
-    }
-}
+var app = builder.Build();
+app.Run();
 ```
 
 ---
 
-## ?? Core Operations
+## ?? Repository Operations
 
 ### Query Operations
 
 ```csharp
-// Simple query with AsNoTracking for read-only operations
-var users = await _repository
-    .FetchAsync<User, User>(q => q
-        .Where(u => u.IsActive)
-        .AsNoTracking())
-    .ToListAsync();
+using System.Entities;
+using Microsoft.EntityFrameworkCore;
 
-// Projection to DTO
-var userDtos = await _repository
-    .FetchAsync<User, UserDto>(q => q
-        .Where(u => u.IsActive)
-        .Select(u => new UserDto { Id = u.Id, Name = u.Name }))
-    .ToListAsync();
-
-// With ordering and pagination
-var pagedUsers = await _repository
-    .FetchAsync<User, User>(q => q
-        .Where(u => u.Age >= 18)
-        .OrderBy(u => u.Name)
-        .Skip(page * pageSize)
-        .Take(pageSize))
-    .ToListAsync();
-
-// Join queries with Include
-var ordersWithUsers = await _repository
-    .FetchAsync<Order, OrderDto>(q => q
-        .Include(o => o.User)
-        .Include(o => o.Items)
-        .Where(o => o.Status == OrderStatus.Pending)
-        .Select(o => new OrderDto
-        {
-            OrderId = o.Id,
-            UserName = o.User.Name,
-            TotalItems = o.Items.Count
-        }))
-    .ToListAsync();
-
-// Async enumeration for large datasets
-await foreach (var user in _repository
-    .FetchAsync<User, User>(q => q.Where(u => u.IsActive)))
+public class UserService(IRepository<AppDataContext> repository)
 {
-    await ProcessUserAsync(user);
+    // Simple query with AsNoTracking (applied by default in FetchAsync)
+    public async Task<List<User>> GetActiveUsersAsync(CancellationToken ct)
+    {
+        return await repository
+            .FetchAsync<User, User>(q => q.Where(u => u.IsActive))
+            .ToListAsync(ct);
+    }
+
+    // Projection to DTO
+    public async Task<List<UserDto>> GetUserDtosAsync(CancellationToken ct)
+    {
+        return await repository
+            .FetchAsync<User, UserDto>(q => q
+                .Where(u => u.IsActive)
+                .Select(u => new UserDto(u.Id, u.Name, u.Email)))
+            .ToListAsync(ct);
+    }
+
+    // With ordering and pagination
+    public async Task<List<User>> GetPagedUsersAsync(int page, int pageSize, CancellationToken ct)
+    {
+        return await repository
+            .FetchAsync<User, User>(q => q
+                .Where(u => u.IsActive)
+                .OrderBy(u => u.Name)
+                .Skip(page * pageSize)
+                .Take(pageSize))
+            .ToListAsync(ct);
+    }
+
+    // Join queries with Include (remove AsNoTracking if tracking needed)
+    public async Task<List<OrderDto>> GetOrdersWithUsersAsync(CancellationToken ct)
+    {
+        return await repository
+            .FetchAsync<Order, OrderDto>(q => q
+                .Include(o => o.User)
+                .Where(o => o.OrderStatus == OrderStatus.Pending)
+                .Select(o => new OrderDto
+                {
+                    OrderId = o.Id,
+                    UserName = o.User.Name,
+                    Total = o.Total
+                }))
+            .ToListAsync(ct);
+    }
+
+    // Async enumeration for large datasets
+    public async Task ProcessAllUsersAsync(CancellationToken ct)
+    {
+        await foreach (var user in repository
+            .FetchAsync<User, User>(q => q.Where(u => u.IsActive))
+            .WithCancellation(ct))
+        {
+            await ProcessUserAsync(user, ct);
+        }
+    }
 }
 ```
 
 ### Insert Operations
 
 ```csharp
-// Single insert (CreatedOn is set automatically)
-var user = new User 
-{ 
-    Id = Guid.NewGuid(),
-    Name = "John Doe", 
-    Email = "john@example.com",
-    IsActive = true
-};
-await _repository.AddAsync(cancellationToken, user);
-
-// Bulk insert
-var users = new[]
+public class UserService(IRepository<AppDataContext> repository)
 {
-    new User { Id = Guid.NewGuid(), Name = "Alice", Email = "alice@example.com" },
-    new User { Id = Guid.NewGuid(), Name = "Bob", Email = "bob@example.com" },
-    new User { Id = Guid.NewGuid(), Name = "Charlie", Email = "charlie@example.com" }
-};
-await _repository.AddAsync(cancellationToken, users);
+    // Single insert - CreatedOn is set automatically
+    public async Task<User> CreateUserAsync(string name, string email, CancellationToken ct)
+    {
+        var user = new User 
+        { 
+            Id = Guid.NewGuid(),
+            Name = name, 
+            Email = email,
+            IsActive = true
+            // CreatedOn will be set automatically by DataContext
+        };
+        
+        // When IsUnitOfWorkEnabled = true (default), changes are tracked but not saved
+        // Set to false for immediate persistence
+        repository.IsUnitOfWorkEnabled = false;
+        await repository.AddAsync(ct, user);
+        
+        return user;
+    }
+
+    // Bulk insert
+    public async Task CreateUsersAsync(IEnumerable<CreateUserRequest> requests, CancellationToken ct)
+    {
+        var users = requests.Select(r => new User
+        {
+            Id = Guid.NewGuid(),
+            Name = r.Name,
+            Email = r.Email,
+            IsActive = true
+        }).ToArray();
+
+        repository.IsUnitOfWorkEnabled = false;
+        await repository.AddAsync(ct, users);
+    }
+}
 ```
 
 ### Update Operations
 
-#### Update by Entity (UpdatedOn is set automatically)
+#### Update by Entity
 
 ```csharp
-// Load and update
-var user = await _repository
-    .FetchAsync<User, User>(q => q.Where(u => u.Id == userId))
-    .FirstOrDefaultAsync();
-
-if (user != null)
+public async Task UpdateUserNameAsync(Guid userId, string newName, CancellationToken ct)
 {
-    user.Name = "Updated Name";
-    // UpdatedOn will be set automatically to DateTime.UtcNow
-    await _repository.UpdateAsync(cancellationToken, user);
+    // Load entity
+    var user = await repository
+        .FetchAsync<User, User>(q => q.Where(u => u.Id == userId))
+        .FirstOrDefaultAsync(ct);
+
+    if (user is null) return;
+
+    user.Name = newName;
+    // UpdatedOn will be set automatically by DataContext
+    
+    repository.IsUnitOfWorkEnabled = false;
+    await repository.UpdateAsync(ct, user);
 }
 ```
 
 #### Bulk Update with Expression
 
 ```csharp
-// Update all matching records
-await _repository.UpdateAsync<User>(
-    q => q.Where(u => u.Age < 18),
-    u => new User 
-    { 
-        Status = EntityStatus.INACTIVE,
-        // Note: Bulk updates bypass automatic tracking
-    });
+public async Task DeactivateOldUsersAsync(DateTime cutoffDate, CancellationToken ct)
+{
+    repository.IsUnitOfWorkEnabled = false;
+    
+    await repository.UpdateAsync<User>(
+        q => q.Where(u => u.CreatedOn < cutoffDate && u.IsActive),
+        u => new User 
+        { 
+            IsActive = false,
+            Status = EntityStatus.INACTIVE
+        },
+        ct);
+}
 ```
 
 #### Bulk Update with Action
 
 ```csharp
-await _repository.UpdateAsync<User>(
-    q => q.Where(u => u.IsActive),
-    user =>
-    {
-        user.LastLoginDate = DateTime.UtcNow;
-        user.LoginCount++;
-        // UpdatedOn will be set automatically
-    });
+public async Task UpdateLastLoginAsync(IEnumerable<Guid> userIds, CancellationToken ct)
+{
+    repository.IsUnitOfWorkEnabled = false;
+    
+    await repository.UpdateAsync<User>(
+        q => q.Where(u => userIds.Contains(u.Id)),
+        user =>
+        {
+            user.LastLoginDate = DateTime.UtcNow;
+            user.LoginCount++;
+            // UpdatedOn will be set automatically
+        },
+        ct);
+}
 ```
 
-#### Bulk Update with EntityUpdater (Fluent API)
+#### Bulk Update with EntityUpdater (EF Core 10 ExecuteUpdate)
 
 ```csharp
-var updater = EntityUpdater<User>
-    .Create()
-    .SetProperty(u => u.IsActive, true)
-    .SetProperty(u => u.LoginCount, u => u.LoginCount + 1);
+using System.Entities;
 
-// With Unit of Work disabled - executes immediately as SQL UPDATE
-_repository.IsUnitOfWorkEnabled = false;
-await _repository.UpdateAsync(
-    q => q.Where(u => u.Email.EndsWith("@example.com")),
-    updater);
+public async Task UpdateUserStatusesAsync(CancellationToken ct)
+{
+    var updater = EntityUpdater<User>
+        .Create()
+        .SetProperty(u => u.IsActive, true)
+        .SetProperty(u => u.LoginCount, u => u.LoginCount + 1)
+        .SetProperty(u => u.UpdatedOn, DateTime.UtcNow);
 
-// With Unit of Work enabled - tracks changes for batch commit
-_repository.IsUnitOfWorkEnabled = true;
-await _repository.UpdateAsync(
-    q => q.Where(u => u.Email.EndsWith("@example.com")),
-    updater);
-// Later: await context.SaveChangesAsync();
+    // When IsUnitOfWorkEnabled = false, uses ExecuteUpdateAsync (single SQL statement)
+    repository.IsUnitOfWorkEnabled = false;
+    
+    await repository.UpdateAsync(
+        q => q.Where(u => u.Email.EndsWith("@company.com")),
+        updater,
+        ct);
+    // Generates: UPDATE Users SET IsActive = 1, LoginCount = LoginCount + 1, UpdatedOn = @p0 
+    //            WHERE Email LIKE '%@company.com'
+}
 ```
 
 ### Delete Operations
 
 ```csharp
-// Soft delete - sets DeletedOn and Status to DELETED
-await _repository.DeleteAsync<User>(
-    q => q.Where(u => !u.IsActive && u.CreatedOn < oldDate));
+public async Task DeleteInactiveUsersAsync(DateTime cutoffDate, CancellationToken ct)
+{
+    // When IsUnitOfWorkEnabled = false, uses ExecuteDeleteAsync (single SQL statement)
+    repository.IsUnitOfWorkEnabled = false;
+    
+    await repository.DeleteAsync<User>(
+        q => q.Where(u => !u.IsActive && u.CreatedOn < cutoffDate),
+        ct);
+    // Generates: DELETE FROM Users WHERE IsActive = 0 AND CreatedOn < @p0
+}
 
-// With complex conditions
-await _repository.DeleteAsync<Order>(
-    q => q
-        .Where(o => o.Status == OrderStatus.Cancelled)
-        .Where(o => o.CreatedOn < DateTime.UtcNow.AddMonths(-6)));
+public async Task DeleteCancelledOrdersAsync(CancellationToken ct)
+{
+    repository.IsUnitOfWorkEnabled = false;
+    
+    await repository.DeleteAsync<Order>(
+        q => q
+            .Where(o => o.OrderStatus == OrderStatus.Cancelled)
+            .Where(o => o.CreatedOn < DateTime.UtcNow.AddMonths(-6)),
+        ct);
+}
 ```
 
 ---
 
 ## ?? Unit of Work Pattern
 
+### Basic Usage
+
 ```csharp
-// Enable unit of work mode - changes are tracked but not saved
-_repository.IsUnitOfWorkEnabled = true;
+using System.Entities;
+using System.Entities.Data;
 
-try
+public class OrderProcessingService(IUnitOfWork<AppDataContext> unitOfWork)
 {
-    // All operations are batched
-    await _repository.AddAsync(cancellationToken, user);
-    
-    await _repository.UpdateAsync<Order>(
-        q => q.Where(o => o.UserId == user.Id),
-        order => order.Status = OrderStatus.Active);
+    public async Task ProcessOrderAsync(CreateOrderRequest request, CancellationToken ct)
+    {
+        // Get repository from unit of work
+        var repository = unitOfWork.GetRepository<IRepository>();
+        
+        // All operations use the same DbContext
+        var user = await repository
+            .FetchAsync<User, User>(q => q.Where(u => u.Id == request.UserId))
+            .FirstOrDefaultAsync(ct);
 
-    await _repository.DeleteAsync<TempData>(
-        q => q.Where(t => t.IsExpired));
+        if (user is null)
+            throw new InvalidOperationException("User not found");
 
-    // Must manually save changes when unit of work is enabled
-    // Access the underlying DbContext to save
-    // Note: Repository doesn't expose SaveChanges directly
-    // Use IUnitOfWork pattern from System.Data.Repositories instead
+        var order = new Order
+        {
+            Id = Guid.NewGuid(),
+            UserId = user.Id,
+            Total = request.Total,
+            OrderStatus = OrderStatus.Pending
+        };
+
+        await repository.AddAsync(ct, order);
+        
+        // Explicitly save all changes
+        await unitOfWork.SaveChangesAsync(ct);
+    }
 }
-finally
+```
+
+### With Transactions
+
+```csharp
+public async Task TransferFundsAsync(Guid fromUserId, Guid toUserId, decimal amount, CancellationToken ct)
 {
-    _repository.IsUnitOfWorkEnabled = false;
+    await using var transaction = await unitOfWork.BeginTransactionAsync(ct);
+    
+    try
+    {
+        var repository = unitOfWork.GetRepository<IRepository>();
+        
+        // Debit from source
+        await repository.UpdateAsync<User>(
+            q => q.Where(u => u.Id == fromUserId),
+            user => user.Balance -= amount,
+            ct);
+
+        // Credit to destination
+        await repository.UpdateAsync<User>(
+            q => q.Where(u => u.Id == toUserId),
+            user => user.Balance += amount,
+            ct);
+
+        // Save and commit
+        await unitOfWork.SaveChangesAsync(ct);
+        await transaction.CommitTransactionAsync(ct);
+    }
+    catch
+    {
+        await transaction.RollbackTransactionAsync(ct);
+        throw;
+    }
+}
+```
+
+### Using External Transaction
+
+```csharp
+public async Task ProcessWithExternalTransactionAsync(
+    DbTransaction externalTransaction,
+    CancellationToken ct)
+{
+    // Use existing transaction from another DbContext or ADO.NET
+    await using var transaction = await unitOfWork.UseTransactionAsync(externalTransaction, ct);
+    
+    var repository = unitOfWork.GetRepository<IRepository>();
+    // ... perform operations
+    
+    await unitOfWork.SaveChangesAsync(ct);
+    // Don't commit - external transaction owner commits
 }
 ```
 
 ---
 
-## ?? DataContext Automatic Tracking
+## ?? Automatic Entity Lifecycle Tracking
 
-The `DataContext` base class automatically tracks entity lifecycle:
+The `DataContext` automatically tracks entity lifecycle events via `ChangeTracker` events:
 
 ```csharp
 public class DataContext : DbContext
 {
     protected DataContext(DbContextOptions options) : base(options)
     {
-        // Automatically tracks entity changes
-        ChangeTracker.Tracked += OnEntityTracked;
-        ChangeTracker.StateChanged += OnEntityStateChanged;
+        ChangeTracker.Tracked += static (sender, e) => OnEntityTracked(e);
+        ChangeTracker.StateChanged += static (sender, e) => OnEntityStateChanged(e);
     }
-    
-    // When entity is added
+
+    // When entity is added to context (not from query)
     private static void OnEntityTracked(EntityTrackedEventArgs e)
     {
         if (e is { FromQuery: false, Entry: { State: EntityState.Added, Entity: IEntity entity } })
@@ -316,16 +479,15 @@ public class DataContext : DbContext
             entity.CreatedOn = DateTime.UtcNow;
         }
     }
-    
-    // When entity is modified
+
+    // When entity state changes
     private static void OnEntityStateChanged(EntityStateChangedEventArgs e)
     {
         if (e is { NewState: EntityState.Modified, Entry.Entity: IEntity entity })
         {
             entity.UpdatedOn = DateTime.UtcNow;
         }
-        
-        // Soft delete
+
         if (e is { NewState: EntityState.Deleted, Entry.Entity: IEntity deletedEntity })
         {
             deletedEntity.DeletedOn = DateTime.UtcNow;
@@ -335,58 +497,156 @@ public class DataContext : DbContext
 }
 ```
 
+### Usage
+
+```csharp
+// CreatedOn set automatically when added
+var user = new User { Name = "John", Email = "john@example.com" };
+await repository.AddAsync(ct, user);
+// user.CreatedOn == DateTime.UtcNow
+
+// UpdatedOn set automatically when modified
+user.Name = "John Updated";
+await repository.UpdateAsync(ct, user);
+// user.UpdatedOn == DateTime.UtcNow
+
+// DeletedOn and Status set automatically when deleted (soft delete)
+// Note: This triggers on EntityState.Deleted, not ExecuteDeleteAsync
+```
+
+---
+
+## ?? Value Converters
+
+### JsonDocument Converter
+
+```csharp
+using System.Entities.Data.Converters;
+using System.Text.Json;
+
+public class AuditLog : IEntity
+{
+    public Guid Id { get; set; }
+    public JsonDocument Data { get; set; } = null!;
+    
+    // IEntity properties...
+}
+
+// In DataContext.OnModelCreating
+modelBuilder.Entity<AuditLog>(entity =>
+{
+    entity.Property(e => e.Data)
+        .HasJsonDocumentConversion()
+        .HasJsonDocumentComparer();
+});
+```
+
+### ReadOnlyMemory<byte> Converter
+
+```csharp
+using System.Entities.Data.Converters;
+
+public class BinaryData : IEntity
+{
+    public Guid Id { get; set; }
+    public ReadOnlyMemory<byte> Content { get; set; }
+    
+    // IEntity properties...
+}
+
+// In DataContext.OnModelCreating
+modelBuilder.Entity<BinaryData>(entity =>
+{
+    entity.Property(e => e.Content)
+        .HasReadOnlyMemoryToByteArrayConversion();
+});
+```
+
+---
+
+## ?? Extension Methods Summary
+
+### IServiceCollection Extensions
+
+| Method | Description |
+|--------|-------------|
+| `AddXDataContext<T>()` | Registers DataContext with DbContextOptions |
+| `AddXDataContextFactory<T>()` | Registers IDbContextFactory for factory pattern |
+| `AddXEntityFrameworkRepositories()` | Registers base IRepository and IUnitOfWork |
+| `AddXEntityFrameworkRepositories<T>()` | Registers typed IRepository<T> and IUnitOfWork<T> |
+
+### PropertyBuilder Extensions
+
+| Method | Description |
+|--------|-------------|
+| `HasJsonDocumentConversion()` | Configures JsonDocument value converter |
+| `HasJsonDocumentComparer()` | Configures JsonDocument value comparer |
+| `HasReadOnlyMemoryToByteArrayConversion()` | Configures ReadOnlyMemory<byte> converter |
+
 ---
 
 ## ? Best Practices
 
-1. **Inherit from DataContext** - Get automatic entity tracking
-2. **Implement IEntity** - Enable automatic CreatedOn/UpdatedOn/DeletedOn
-3. **Use AsNoTracking** - For read-only queries to improve performance
-4. **Disable Unit of Work** - For immediate SQL execution (bulk operations)
-5. **Enable Unit of Work** - For batched operations with explicit save
-6. **Use EntityUpdater** - For efficient bulk updates
-7. **Use projections** - Select only needed columns with DTOs
+### ? Do
+
+- **Inherit from `DataContext`** — Get automatic entity lifecycle tracking
+- **Implement `IEntity`** — Enable automatic `CreatedOn`/`UpdatedOn`/`DeletedOn`
+- **Use `FetchAsync` with projections** — Select only needed columns with DTOs
+- **Set `IsUnitOfWorkEnabled = false`** — For immediate SQL execution (bulk operations)
+- **Use `EntityUpdater`** — For efficient bulk updates via `ExecuteUpdate`
+- **Use `IUnitOfWork` for transactions** — Coordinate multiple operations
+
+### ? Don't
+
+- **Mix repository and direct DbContext access** — Choose one approach
+- **Forget `IsUnitOfWorkEnabled`** — Default is `true`, requiring explicit save
+- **Use `ExecuteUpdate`/`ExecuteDelete` with tracking** — These bypass change tracking
 
 ---
 
 ## ? Performance Tips
 
 ```csharp
-// AsNoTracking for read-only queries
-var users = await _repository
-    .FetchAsync<User, User>(q => q
-        .AsNoTracking()
-        .Where(u => u.IsActive))
-    .ToListAsync();
+// FetchAsync applies AsNoTracking by default for read-only queries
+var users = await repository
+    .FetchAsync<User, User>(q => q.Where(u => u.IsActive))
+    .ToListAsync(ct);
 
 // Projections reduce data transfer
-var userNames = await _repository
+var names = await repository
     .FetchAsync<User, string>(q => q
         .Where(u => u.IsActive)
         .Select(u => u.Name))
-    .ToListAsync();
+    .ToListAsync(ct);
 
-// Bulk operations with EntityUpdater
-_repository.IsUnitOfWorkEnabled = false; // Execute immediately
+// EntityUpdater with IsUnitOfWorkEnabled = false for single SQL statement
+repository.IsUnitOfWorkEnabled = false;
 var updater = EntityUpdater<User>
     .Create()
     .SetProperty(u => u.LastUpdated, DateTime.UtcNow);
 
-await _repository.UpdateAsync(
+await repository.UpdateAsync(
     q => q.Where(u => u.IsActive),
-    updater);  // Single SQL UPDATE statement
+    updater,
+    ct);
+// Single UPDATE statement, no entity loading
 ```
 
 ---
 
 ## ?? Related Packages
 
-- **System.Data.Repositories** - Repository abstractions (IRepository, IUnitOfWork)
-- **System.Events.EntityFramework** - Event Store and Outbox implementations
-- **Microsoft.EntityFrameworkCore** - EF Core framework
+| Package | Description |
+|---------|-------------|
+| **System.Entities** | Core entity abstractions (`IEntity`, `IRepository`, `IUnitOfWork`) |
+| **System.Events.Data** | Event Store and Outbox EF Core implementations |
+| **Microsoft.EntityFrameworkCore** | EF Core framework |
 
 ---
 
 ## ?? License
 
 Apache License 2.0 - Copyright © Kamersoft 2025
+
+Contributions welcome at [Xpandables.Net on GitHub](https://github.com/Francescolis/Xpandables.Net).
+
