@@ -1,235 +1,493 @@
-# ?? System.Primitives.Composition
+﻿# 🧩 System.Primitives.Composition
 
-[![NuGet](https://img.shields.io/badge/NuGet-preview-orange.svg)](https://www.nuget.org/)
+[![NuGet](https://img.shields.io/badge/NuGet-10.0.0-blue.svg)](https://www.nuget.org/packages/System.Primitives.Composition)
 [![.NET](https://img.shields.io/badge/.NET-10.0-purple.svg)](https://dotnet.microsoft.com/)
+[![License](https://img.shields.io/badge/License-Apache%202.0-green.svg)](LICENSE)
 
-> **DI Composition** - Service export and composition utilities for Microsoft.Extensions.DependencyInjection with automatic service discovery and registration using MEF (Managed Extensibility Framework).
-
----
-
-## ?? Overview
-
-`System.Primitives.Composition` provides utilities for automatic service discovery and registration in the Microsoft DI container. It includes the `IAddServiceExport` interface for marking services for auto-registration and extension methods for scanning assemblies using MEF.
-
-### ? Key Features
-
-- ?? **IAddServiceExport** - Interface for MEF-based service exports
-- ?? **Assembly Scanning** - Automatic discovery of services implementing IAddService
-- ?? **Directory Catalogs** - Scan directories for composable parts
-- ?? **Recursive Search** - RecursiveDirectoryCatalog for nested directory scanning
-- ?? **Export Options** - Configurable search patterns and paths
-- ?? **MEF Integration** - Built on System.ComponentModel.Composition
+> **MEF-Based Plugin Service Registration** — Discover and register services from external assemblies using the Managed Extensibility Framework (MEF) with automatic directory scanning and dependency injection integration.
 
 ---
 
-## ?? Quick Start
+## 📋 Overview
 
-### Installation
+`System.Primitives.Composition` enables modular service registration through MEF (Managed Extensibility Framework). The library provides `IAddServiceExport` for plugin-style service discovery, `RecursiveDirectoryCatalog` for scanning assembly directories, and extension methods for automatic service registration from external DLLs.
+
+Built for .NET 10 with C# 14 extension members, this package enables building extensible applications where plugins can self-register their services without requiring compile-time references.
+
+### ✨ Key Features
+
+- 🔌 **`IAddServiceExport`** — MEF export interface for plugin service registration
+- 📂 **`RecursiveDirectoryCatalog`** — Scan directories and subdirectories for assemblies
+- ⚙️ **`ExportOptions`** — Configure path, search pattern, and subdirectory scanning
+- 🔍 **Assembly Scanning** — Auto-discover `IAddService` implementations from assemblies
+- 💉 **DI Integration** — Seamless Microsoft.Extensions.DependencyInjection support
+- 📦 **Plugin Architecture** — External libraries register services without host modification
+
+---
+
+## 📦 Installation
 
 ```bash
 dotnet add package System.Primitives.Composition
 ```
 
-### Basic Setup
+Or via NuGet Package Manager:
+
+```powershell
+Install-Package System.Primitives.Composition
+```
+
+---
+
+## 🚀 Quick Start
+
+### Create a Plugin (External Library)
+
+```csharp
+// In your plugin project (e.g., MyPlugin.dll)
+using System.ComponentModel.Composition;
+using System.Composition;
+using System.Primitives.Composition;
+using Microsoft.Extensions.Configuration;
+using Microsoft.Extensions.DependencyInjection;
+
+[Export(typeof(IAddServiceExport))]
+public sealed class MyPluginServiceExport : IAddServiceExport
+{
+    public void AddServices(IServiceCollection services, IConfiguration configuration)
+    {
+        // Register plugin-specific services
+        services.AddScoped<IMyPluginService, MyPluginService>();
+        services.AddSingleton<IPluginRepository, PluginRepository>();
+        
+        // Use configuration
+        var pluginSettings = configuration.GetSection("MyPlugin");
+        services.Configure<MyPluginOptions>(pluginSettings);
+    }
+}
+
+public interface IMyPluginService
+{
+    Task<string> GetPluginDataAsync(CancellationToken ct);
+}
+
+public sealed class MyPluginService : IMyPluginService
+{
+    public Task<string> GetPluginDataAsync(CancellationToken ct)
+    {
+        return Task.FromResult("Data from plugin");
+    }
+}
+```
+
+### Register Plugins in Host Application
+
+```csharp
+// In your host application (e.g., ASP.NET Core)
+using Microsoft.Extensions.DependencyInjection;
+
+var builder = WebApplication.CreateBuilder(args);
+
+// Register all plugin services from current directory
+builder.Services.AddXServiceExports(builder.Configuration);
+
+var app = builder.Build();
+
+// Use plugin services
+app.MapGet("/plugin-data", async (IMyPluginService pluginService, CancellationToken ct) =>
+{
+    var data = await pluginService.GetPluginDataAsync(ct);
+    return Results.Ok(data);
+});
+
+app.Run();
+```
+
+---
+
+## 🔌 Plugin Development
+
+### Basic Plugin Export
 
 ```csharp
 using System.ComponentModel.Composition;
 using System.Primitives.Composition;
 using Microsoft.Extensions.DependencyInjection;
 
-// Define a service export
+// Decorate with Export attribute - required for MEF discovery
 [Export(typeof(IAddServiceExport))]
-public class MyServiceExport : IAddServiceExport
+public sealed class PaymentPluginExport : IAddServiceExport
 {
-    public void AddServices(IServiceCollection services, IConfiguration configuration)
+    public void AddServices(IServiceCollection services)
     {
-        // Register your services
-        services.AddScoped<IMyService, MyService>();
-        services.AddSingleton<ICache, MemoryCache>();
+        services.AddScoped<IPaymentProcessor, StripePaymentProcessor>();
+        services.AddScoped<IPaymentValidator, PaymentValidator>();
     }
 }
-
-// Register all exports in Program.cs
-var builder = WebApplication.CreateBuilder(args);
-
-// Scan and register all IAddServiceExport implementations
-builder.Services.AddXServiceExports(builder.Configuration);
 ```
 
----
-
-## ?? Core Concepts
-
-### IAddServiceExport Interface
-
-The `IAddServiceExport` interface marks classes for automatic service registration using MEF:
+### Plugin with Configuration
 
 ```csharp
 using System.ComponentModel.Composition;
 using System.Primitives.Composition;
+using Microsoft.Extensions.Configuration;
+using Microsoft.Extensions.DependencyInjection;
 
-/// <summary>
-/// Registers authentication services.
-/// </summary>
 [Export(typeof(IAddServiceExport))]
-public class AuthenticationServiceExport : IAddServiceExport
+public sealed class EmailPluginExport : IAddServiceExport
 {
     public void AddServices(IServiceCollection services, IConfiguration configuration)
     {
-        var authSettings = configuration
-            .GetSection("Authentication")
-            .Get<AuthSettings>();
-            
-        services.AddSingleton(authSettings!);
-        services.AddScoped<IAuthService, JwtAuthService>();
-        services.AddScoped<ITokenValidator, TokenValidator>();
+        // Bind configuration section
+        var emailSettings = configuration.GetSection("Email");
+        services.Configure<EmailOptions>(emailSettings);
+        
+        // Register services with configured options
+        services.AddSingleton<IEmailSender, SmtpEmailSender>();
+        services.AddScoped<IEmailTemplateEngine, RazorTemplateEngine>();
+        
+        // Conditional registration based on config
+        if (configuration.GetValue<bool>("Email:EnableQueue"))
+        {
+            services.AddHostedService<EmailQueueProcessor>();
+        }
+    }
+}
+
+public sealed record EmailOptions
+{
+    public string SmtpHost { get; init; } = "localhost";
+    public int SmtpPort { get; init; } = 587;
+    public string FromAddress { get; init; } = string.Empty;
+    public bool EnableQueue { get; init; }
+}
+```
+
+### Multiple Exports per Assembly
+
+```csharp
+// Multiple plugins can exist in the same assembly
+[Export(typeof(IAddServiceExport))]
+public sealed class AuthenticationPluginExport : IAddServiceExport
+{
+    public void AddServices(IServiceCollection services, IConfiguration configuration)
+    {
+        services.AddScoped<IAuthenticationService, JwtAuthenticationService>();
+        services.AddSingleton<ITokenGenerator, JwtTokenGenerator>();
+    }
+}
+
+[Export(typeof(IAddServiceExport))]
+public sealed class AuthorizationPluginExport : IAddServiceExport
+{
+    public void AddServices(IServiceCollection services, IConfiguration configuration)
+    {
+        services.AddScoped<IAuthorizationService, RoleBasedAuthorizationService>();
+        services.AddSingleton<IPolicyProvider, DatabasePolicyProvider>();
     }
 }
 ```
 
-### Assembly Scanning
+---
 
-Scan specific assemblies for `IAddService` implementations:
+## ⚙️ Export Options Configuration
+
+### Default Behavior
 
 ```csharp
-// Scan calling assembly
+// Scans current application directory for *.dll files
 builder.Services.AddXServiceExports(builder.Configuration);
-
-// Scan specific assemblies
-builder.Services.AddXServiceExports(
-    builder.Configuration,
-    typeof(MyServiceExport).Assembly,
-    typeof(OtherExport).Assembly);
 ```
 
-### Directory Catalogs
-
-Use `ExportOptions` to configure directory-based scanning:
+### Custom Path and Pattern
 
 ```csharp
-builder.Services.AddXServiceExports(
-    builder.Configuration,
-    options =>
-    {
-        options.Path = "./plugins";
-        options.SearchPattern = "*.Plugin.dll";
-        options.SearchSubDirectories = true;
-    });
+builder.Services.AddXServiceExports(builder.Configuration, options =>
+{
+    // Scan specific plugins directory
+    options.Path = Path.Combine(AppContext.BaseDirectory, "plugins");
+    
+    // Only load assemblies matching pattern
+    options.SearchPattern = "MyApp.Plugin.*.dll";
+    
+    // Enable recursive scanning of subdirectories
+    options.SearchSubDirectories = true;
+});
 ```
+
+### Platform-Specific Plugin Paths
+
+```csharp
+builder.Services.AddXServiceExports(builder.Configuration, options =>
+{
+    options.Path = OperatingSystem.IsWindows()
+        ? @"C:\Program Files\MyApp\Plugins"
+        : "/opt/myapp/plugins";
+    
+    options.SearchPattern = "*.Plugin.dll";
+    options.SearchSubDirectories = true;
+});
+```
+
+---
+
+## 📂 Directory Catalogs
 
 ### RecursiveDirectoryCatalog
 
-For scanning nested directories:
+The `RecursiveDirectoryCatalog` scans a directory and all its subdirectories for assemblies:
 
 ```csharp
 using System.Primitives.Composition;
+using System.ComponentModel.Composition.Hosting;
 
-// Recursively scan a directory for composable parts
-using var catalog = new RecursiveDirectoryCatalog(
-    path: "./modules",
-    searchPattern: "*.Module.dll");
+// Scan plugins folder and all subdirectories
+var pluginsPath = Path.Combine(AppContext.BaseDirectory, "plugins");
 
-// Access discovered parts
+using var catalog = new RecursiveDirectoryCatalog(pluginsPath, "*.dll");
+
+// catalog.Parts contains all composable parts found
 foreach (var part in catalog.Parts)
 {
     Console.WriteLine($"Found: {part}");
 }
 ```
 
----
+### Directory Structure Example
 
-## ?? Real-World Examples
-
-### Modular Application Setup
-
-```csharp
-// Infrastructure module
-[Export(typeof(IAddServiceExport))]
-public class InfrastructureExport : IAddServiceExport
-{
-    public void AddServices(IServiceCollection services, IConfiguration configuration)
-    {
-        // Database
-        services.AddDbContext<AppDbContext>(options =>
-            options.UseSqlServer(configuration.GetConnectionString("Default")));
-        
-        // Caching
-        services.AddDistributedMemoryCache();
-        
-        // Logging
-        services.AddLogging();
-    }
-}
-
-// Domain module
-[Export(typeof(IAddServiceExport))]
-public class DomainExport : IAddServiceExport
-{
-    public void AddServices(IServiceCollection services, IConfiguration configuration)
-    {
-        services.AddScoped<IOrderService, OrderService>();
-        services.AddScoped<ICustomerService, CustomerService>();
-        services.AddScoped<IInventoryService, InventoryService>();
-    }
-}
-
-// Application startup
-builder.Services.AddXServiceExports(builder.Configuration);
-// All exports are automatically discovered and registered
+```
+/app
+├── MyApp.exe
+├── appsettings.json
+└── plugins/
+    ├── payments/
+    │   └── MyApp.Plugin.Payments.dll
+    ├── notifications/
+    │   └── MyApp.Plugin.Notifications.dll
+    └── reporting/
+        └── MyApp.Plugin.Reporting.dll
 ```
 
-### Plugin Architecture
+With `SearchSubDirectories = true`, all three plugin DLLs are discovered.
+
+---
+
+## 🔍 Assembly Scanning (Without MEF)
+
+For scenarios where MEF attributes aren't used, scan assemblies directly:
 
 ```csharp
-// Plugin interface
-public interface IPlugin
-{
-    string Name { get; }
-    void Execute();
-}
+using Microsoft.Extensions.DependencyInjection;
+using System.Reflection;
 
-// Plugin export
-[Export(typeof(IAddServiceExport))]
-public class ReportingPluginExport : IAddServiceExport
-{
-    public void AddServices(IServiceCollection services, IConfiguration configuration)
-    {
-        services.AddScoped<IPlugin, PdfReportPlugin>();
-        services.AddScoped<IPlugin, ExcelReportPlugin>();
-    }
-}
-
-// Load plugins from directory
+// Scan specific assemblies for IAddService implementations
 builder.Services.AddXServiceExports(
     builder.Configuration,
-    options =>
+    typeof(PaymentPluginExport).Assembly,
+    typeof(EmailPluginExport).Assembly);
+
+// Scan calling assembly (useful in tests)
+builder.Services.AddXServiceExports(builder.Configuration);
+```
+
+### IAddService without MEF Export
+
+```csharp
+using System.Composition;
+using Microsoft.Extensions.DependencyInjection;
+using Microsoft.Extensions.Configuration;
+
+// No [Export] attribute needed when using assembly scanning
+public sealed class LoggingServiceRegistration : IAddService
+{
+    public void AddServices(IServiceCollection services, IConfiguration configuration)
     {
-        options.Path = Path.Combine(AppContext.BaseDirectory, "plugins");
-        options.SearchPattern = "*.Plugin.dll";
-        options.SearchSubDirectories = true;
-    });
+        services.AddLogging(builder =>
+        {
+            builder.AddConfiguration(configuration.GetSection("Logging"));
+        });
+    }
+}
 ```
 
 ---
 
-## ? Best Practices
+## 💡 Common Patterns
 
-1. **Use MEF Export attribute** - Always decorate exports with `[Export(typeof(IAddServiceExport))]`
-2. **Keep exports focused** - One export per module/feature area
-3. **Use configuration** - Leverage IConfiguration for environment-specific settings
-4. **Handle missing assemblies** - Wrap scanning in try-catch for plugin scenarios
-5. **Document exports** - Add XML comments describing what services are registered
+### Feature-Based Plugin Architecture
+
+```csharp
+// Base feature interface
+public interface IFeaturePlugin
+{
+    string FeatureName { get; }
+    bool IsEnabled(IConfiguration configuration);
+}
+
+// Plugin export with feature check
+[Export(typeof(IAddServiceExport))]
+public sealed class AdvancedReportingPluginExport : IAddServiceExport, IFeaturePlugin
+{
+    public string FeatureName => "AdvancedReporting";
+    
+    public bool IsEnabled(IConfiguration configuration)
+    {
+        return configuration.GetValue<bool>($"Features:{FeatureName}:Enabled");
+    }
+
+    public void AddServices(IServiceCollection services, IConfiguration configuration)
+    {
+        if (!IsEnabled(configuration))
+        {
+            return; // Skip registration if feature disabled
+        }
+
+        services.AddScoped<IReportGenerator, AdvancedReportGenerator>();
+        services.AddScoped<IReportExporter, PdfReportExporter>();
+        services.AddScoped<IReportScheduler, CronReportScheduler>();
+    }
+}
+```
+
+### Plugin with Health Checks
+
+```csharp
+[Export(typeof(IAddServiceExport))]
+public sealed class DatabasePluginExport : IAddServiceExport
+{
+    public void AddServices(IServiceCollection services, IConfiguration configuration)
+    {
+        var connectionString = configuration.GetConnectionString("PluginDatabase");
+        
+        services.AddDbContext<PluginDbContext>(options =>
+            options.UseSqlServer(connectionString));
+        
+        services.AddScoped<IPluginRepository, PluginRepository>();
+        
+        // Add health check for plugin
+        services.AddHealthChecks()
+            .AddSqlServer(connectionString, name: "plugin-database");
+    }
+}
+```
+
+### Plugin Dependency Chain
+
+```csharp
+// Core plugin (loaded first)
+[Export(typeof(IAddServiceExport))]
+public sealed class CorePluginExport : IAddServiceExport
+{
+    public void AddServices(IServiceCollection services, IConfiguration configuration)
+    {
+        services.AddSingleton<ICoreService, CoreService>();
+        services.AddSingleton<IPluginContext, PluginContext>();
+    }
+}
+
+// Feature plugin (depends on core)
+[Export(typeof(IAddServiceExport))]
+public sealed class FeaturePluginExport : IAddServiceExport
+{
+    public void AddServices(IServiceCollection services, IConfiguration configuration)
+    {
+        // This plugin uses services from CorePluginExport
+        services.AddScoped<IFeatureService>(sp =>
+        {
+            var coreService = sp.GetRequiredService<ICoreService>();
+            var context = sp.GetRequiredService<IPluginContext>();
+            return new FeatureService(coreService, context);
+        });
+    }
+}
+```
 
 ---
 
-## ?? Related Packages
+## 📊 API Reference
 
-- **System.Primitives** - Core primitives and utilities
-- **Microsoft.Extensions.DependencyInjection** - DI container
-- **System.ComponentModel.Composition** - MEF framework
+### IAddServiceExport Interface
+
+```csharp
+// Must be decorated with [Export(typeof(IAddServiceExport))]
+public interface IAddServiceExport : IAddService
+{
+}
+```
+
+### IAddService Interface
+
+```csharp
+public interface IAddService
+{
+    // Simple registration
+    void AddServices(IServiceCollection services);
+    
+    // Registration with configuration
+    void AddServices(IServiceCollection services, IConfiguration configuration);
+}
+```
+
+### ExportOptions Class
+
+| Property | Type | Default | Description |
+|----------|------|---------|-------------|
+| `Path` | `string` | Application directory | Directory to scan for assemblies |
+| `SearchPattern` | `string` | `"*.dll"` | File pattern for assembly discovery |
+| `SearchSubDirectories` | `bool` | `false` | Enable recursive directory scanning |
+
+### Extension Methods
+
+| Method | Description |
+|--------|-------------|
+| `AddXServiceExports(IConfiguration)` | Scan current directory with defaults |
+| `AddXServiceExports(IConfiguration, Action<ExportOptions>)` | Scan with custom options |
+| `AddXServiceExports(IConfiguration, params Assembly[])` | Scan specific assemblies |
 
 ---
 
-## ?? License
+## ✅ Best Practices
 
-Apache License 2.0 - Copyright � Kamersoft 2025
+### ✅ Do
+
+- **Decorate exports with `[Export(typeof(IAddServiceExport))]`** — Required for MEF discovery
+- **Use `AddServices(IServiceCollection, IConfiguration)` overload** — Access configuration in plugins
+- **Organize plugins in subdirectories** — Use `SearchSubDirectories = true`
+- **Check configuration before registering** — Conditional feature registration
+- **Keep plugins focused** — One plugin per feature area
+- **Add health checks in plugins** — Self-contained monitoring
+
+### ❌ Don't
+
+- **Forget the `[Export]` attribute** — MEF won't discover the type
+- **Use static state in plugins** — Leads to threading issues
+- **Assume load order** — Plugin load order is not guaranteed
+- **Reference host internals** — Plugins should be self-contained
+- **Throw from `AddServices`** — Wrap in try-catch and log
+
+---
+
+## ⚠️ Notes
+
+- **Requires assembly files** — `RequiresAssemblyFiles` attribute on MEF methods
+- **Not AOT compatible** — MEF uses reflection and dynamic code
+- **Load order undefined** — Plugins are discovered in directory order
+
+---
+
+## 📚 Related Packages
+
+| Package | Description |
+|---------|-------------|
+| **System.Primitives** | Core primitives with `IAddService` and `ExportOptions` |
+| **System.ComponentModel.Composition** | MEF core library |
+| **Microsoft.Extensions.DependencyInjection** | DI abstractions |
+
+---
+
+## 📄 License
+
+Apache License 2.0 - Copyright © Kamersoft 2025
+
+Contributions welcome at [Xpandables.Net on GitHub](https://github.com/Francescolis/Xpandables.Net).
