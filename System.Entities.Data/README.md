@@ -1,32 +1,32 @@
-# ??? System.Entities.Data
+﻿# 🗃️ System.Entities.Data
 
 [![NuGet](https://img.shields.io/badge/NuGet-10.0.0-blue.svg)](https://www.nuget.org/packages/System.Entities.Data)
 [![.NET](https://img.shields.io/badge/.NET-10.0-purple.svg)](https://dotnet.microsoft.com/)
 [![License](https://img.shields.io/badge/License-Apache%202.0-green.svg)](LICENSE)
 
-> **Entity Framework Core Repository & Unit of Work** � Production-ready EF Core implementation with `DataContext`, automatic entity lifecycle tracking, `EntityUpdater` bulk operations, and transaction management.
+> **Entity Framework Core Repository & Unit of Work** — Production-ready EF Core implementation with `DataContext`, automatic entity lifecycle tracking, `EntityUpdater` bulk operations, and transaction management.
 
 ---
 
-## ?? Overview
+## 📋 Overview
 
 `System.Entities.Data` provides a complete Entity Framework Core implementation of the repository and unit of work patterns. The library includes `DataContext` with automatic entity lifecycle tracking (`CreatedOn`, `UpdatedOn`, `DeletedOn`), `Repository` for CRUD operations, `UnitOfWork` for transaction management, and `EntityUpdater` for efficient bulk updates using EF Core 10's `ExecuteUpdate` API.
 
 Built for .NET 10 with C# 14 extension members, this package simplifies data access while maintaining full control over database operations.
 
-### ? Key Features
+### ✨ Key Features
 
-- ??? **`DataContext`** � Extended `DbContext` with automatic entity lifecycle tracking
-- ?? **`Repository<TDataContext>`** � Generic EF Core repository with async LINQ support
-- ?? **`UnitOfWork<TDataContext>`** � Transaction management with repository coordination
-- ? **`EntityUpdater<T>`** � Fluent API for bulk updates using `ExecuteUpdate`/`ExecuteDelete`
-- ?? **Entity Lifecycle** � Automatic `CreatedOn`/`UpdatedOn`/`DeletedOn` timestamps via `IEntity`
-- ?? **Value Converters** � `JsonDocument` and `ReadOnlyMemory<byte>` EF Core converters
-- ?? **Type Safe** � Full `DynamicallyAccessedMembers` attribute support for trimming
+- 🗄️ **`DataContext`** — Extended `DbContext` with automatic entity lifecycle tracking
+- 📦 **`Repository<TDataContext>`** — Generic EF Core repository with async LINQ support
+- 🔄 **`UnitOfWork<TDataContext>`** — Transaction management with repository coordination
+- ⚡ **`EntityUpdater<T>`** — Fluent API for bulk updates using `ExecuteUpdate`/`ExecuteDelete`
+- 📅 **Entity Lifecycle** — Automatic `CreatedOn`/`UpdatedOn`/`DeletedOn` timestamps via `IEntity`
+- 🔧 **Value Converters** — `JsonDocument` and `ReadOnlyMemory<byte>` EF Core converters
+- 🎯 **Type Safe** — Full `DynamicallyAccessedMembers` attribute support for trimming
 
 ---
 
-## ?? Installation
+## 📦 Installation
 
 ```bash
 dotnet add package System.Entities.Data
@@ -42,7 +42,7 @@ Install-Package Microsoft.EntityFrameworkCore.SqlServer
 
 ---
 
-## ?? Quick Start
+## 🚀 Quick Start
 
 ### Define Your DataContext
 
@@ -141,7 +141,7 @@ app.Run();
 
 ---
 
-## ?? Repository Operations
+## 📦 Repository Operations
 
 ### Query Operations
 
@@ -364,7 +364,7 @@ public async Task DeleteCancelledOrdersAsync(CancellationToken ct)
 
 ---
 
-## ?? Unit of Work Pattern
+## 🔄 Unit of Work Pattern
 
 ### Basic Usage
 
@@ -458,7 +458,7 @@ public async Task ProcessWithExternalTransactionAsync(
 
 ---
 
-## ?? Automatic Entity Lifecycle Tracking
+## 📅 Automatic Entity Lifecycle Tracking
 
 The `DataContext` automatically tracks entity lifecycle events via `ChangeTracker` events:
 
@@ -516,7 +516,7 @@ await repository.UpdateAsync(ct, user);
 
 ---
 
-## ?? Value Converters
+## 🔧 Value Converters
 
 ### JsonDocument Converter
 
@@ -564,7 +564,7 @@ modelBuilder.Entity<BinaryData>(entity =>
 
 ---
 
-## ?? Extension Methods Summary
+## 📊 Extension Methods Summary
 
 ### IServiceCollection Extensions
 
@@ -585,26 +585,26 @@ modelBuilder.Entity<BinaryData>(entity =>
 
 ---
 
-## ? Best Practices
+## ✅ Best Practices
 
-### ? Do
+### ✅ Do
 
-- **Inherit from `DataContext`** � Get automatic entity lifecycle tracking
-- **Implement `IEntity`** � Enable automatic `CreatedOn`/`UpdatedOn`/`DeletedOn`
-- **Use `FetchAsync` with projections** � Select only needed columns with DTOs
-- **Set `IsUnitOfWorkEnabled = false`** � For immediate SQL execution (bulk operations)
-- **Use `EntityUpdater`** � For efficient bulk updates via `ExecuteUpdate`
-- **Use `IUnitOfWork` for transactions** � Coordinate multiple operations
+- **Inherit from `DataContext`** — Get automatic entity lifecycle tracking
+- **Implement `IEntity`** — Enable automatic `CreatedOn`/`UpdatedOn`/`DeletedOn`
+- **Use `FetchAsync` with projections** — Select only needed columns with DTOs
+- **Set `IsUnitOfWorkEnabled = false`** — For immediate SQL execution (bulk operations)
+- **Use `EntityUpdater`** — For efficient bulk updates via `ExecuteUpdate`
+- **Use `IUnitOfWork` for transactions** — Coordinate multiple operations
 
-### ? Don't
+### ❌ Don't
 
-- **Mix repository and direct DbContext access** � Choose one approach
-- **Forget `IsUnitOfWorkEnabled`** � Default is `true`, requiring explicit save
-- **Use `ExecuteUpdate`/`ExecuteDelete` with tracking** � These bypass change tracking
+- **Mix repository and direct DbContext access** — Choose one approach
+- **Forget `IsUnitOfWorkEnabled`** — Default is `true`, requiring explicit save
+- **Use `ExecuteUpdate`/`ExecuteDelete` with tracking** — These bypass change tracking
 
 ---
 
-## ? Performance Tips
+## ⚡ Performance Tips
 
 ```csharp
 // FetchAsync applies AsNoTracking by default for read-only queries
@@ -634,7 +634,7 @@ await repository.UpdateAsync(
 
 ---
 
-## ?? Related Packages
+## 📚 Related Packages
 
 | Package | Description |
 |---------|-------------|
@@ -644,9 +644,9 @@ await repository.UpdateAsync(
 
 ---
 
-## ?? License
+## 📄 License
 
-Apache License 2.0 - Copyright � Kamersoft 2025
+Apache License 2.0 - Copyright © Kamersoft 2025
 
 Contributions welcome at [Xpandables.Net on GitHub](https://github.com/Francescolis/Xpandables.Net).
 
