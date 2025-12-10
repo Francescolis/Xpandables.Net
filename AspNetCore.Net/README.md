@@ -1,33 +1,41 @@
 ﻿# 🌐 AspNetCore.Net
 
-[![NuGet](https://img.shields.io/badge/NuGet-preview-orange.svg)](https://www.nuget.org/)
+[![NuGet](https://img.shields.io/badge/NuGet-10.0.0-blue.svg)](https://www.nuget.org/packages/AspNetCore.Net)
 [![.NET](https://img.shields.io/badge/.NET-10.0-purple.svg)](https://dotnet.microsoft.com/)
+[![License](https://img.shields.io/badge/License-Apache%202.0-green.svg)](LICENSE)
 
-> **ASP.NET Core Integration** - Result to HTTP response mapping, minimal API filters, modular endpoint routing, MVC integration, and lazy service resolution.
+> **ASP.NET Core Minimal API Infrastructure** — Modular endpoint routing, lazy service resolution, JSON configuration, and MEF-based service exports for building clean, organized minimal APIs.
 
 ---
 
 ## 📋 Overview
 
-`AspNetCore.Net` provides comprehensive ASP.NET Core integration for the Result pattern, including automatic result-to-HTTP-response conversion, validation filters, modular endpoint routing via `IEndpointRoute`, MVC controller filters, and utility extensions for dependency injection.
+`AspNetCore.Net` provides infrastructure components for building well-organized ASP.NET Core minimal APIs. The library offers modular endpoint routing via `IMinimalEndpointRoute`, lazy dependency injection support, JSON serializer configuration helpers, and MEF (Managed Extensibility Framework) integration for plugin-based service registration.
+
+Built for .NET 10 with C# 14 extension members, this package promotes separation of concerns and clean architecture in minimal API applications.
 
 ### ✨ Key Features
 
-- 🔄 **Result Extensions** - Convert Result to IActionResult, ProblemDetails, and ModelStateDictionary
-- 🛣️ **IEndpointRoute** - Interface for modular minimal API endpoint registration
-- 🔍 **Validation Filters** - Automatic request validation for minimal APIs and MVC
-- ⚡ **Result Filters** - Transform Result responses to proper HTTP results
-- ⏳ **Lazy Resolution** - Lazy<T> dependency injection support
-- 📝 **JSON Configuration** - Easy JsonSerializerOptions service registration
-- 🎯 **Route Metadata** - Fluent API for endpoint metadata (Produces200OK, Produces400BadRequest, etc.)
-- 🏗️ **MVC Support** - Controller result filters and formatters
+- 🛣️ **`IMinimalEndpointRoute`** — Interface for modular minimal API endpoint registration with service and middleware hooks
+- 🔧 **`MinimalRouteBuilder`** — Wrapper around `IEndpointRouteBuilder` with automatic filter application
+- ⏳ **Lazy Resolution** — `Lazy<T>` dependency injection support via `AddXLazyResolved()`
+- 📝 **JSON Configuration** — Register `JsonSerializerOptions` as a singleton with `AddXJsonSerializerOptions()`
+- 🎯 **Route Metadata** — Fluent API for endpoint metadata (`Produces200OK`, `Produces400BadRequest`, etc.)
+- 🔌 **MEF Integration** — `IUseServiceExport` for plugin-based middleware configuration
+- ⚙️ **Minimal Support Options** — Conditional endpoint filtering and configuration
 
 ---
 
-## 📥 Installation
+## 📦 Installation
 
 ```bash
 dotnet add package AspNetCore.Net
+```
+
+Or via NuGet Package Manager:
+
+```powershell
+Install-Package AspNetCore.Net
 ```
 
 ---
@@ -41,33 +49,31 @@ using Microsoft.Extensions.DependencyInjection;
 
 var builder = WebApplication.CreateBuilder(args);
 
-// Register Result support middleware
-builder.Services.AddXResultSupport();
+// Register minimal support with optional configuration
+builder.Services.AddXMinimalSupport(options =>
+{
+    // Optional: Configure endpoint predicate for conditional filter application
+    options.EndpointPredicate = endpoint => 
+        endpoint.RoutePattern.RawText?.StartsWith("/api") ?? false;
+    
+    // Optional: Configure all endpoints
+    options.ConfigureEndpoint = builder => 
+        builder.RequireAuthorization();
+});
 
-// Register JSON serializer options from ASP.NET Core configuration
+// Register endpoint routes from assemblies
+builder.Services.AddXMinimalEndpointRoutes(typeof(Program).Assembly);
+
+// Register JSON serializer options as singleton
 builder.Services.AddXJsonSerializerOptions();
 
 // Register lazy resolution support
 builder.Services.AddXLazyResolved();
 
-// Register endpoint routes from assemblies
-builder.Services.AddXEndpointRoutes(typeof(Program).Assembly);
-```
-
-### Configure Pipeline
-
-```csharp
 var app = builder.Build();
 
-// Use Result support middleware (handles exceptions, converts Results)
-app.UseXResultSupport(options =>
-{
-    options.EnableValidationFilter = true;
-    options.EnableResultFilter = true;
-});
-
 // Use registered endpoint routes
-app.UseXEndpointRoutes();
+app.UseXMinimalEndpointRoutes();
 
 app.Run();
 ```
@@ -78,56 +84,107 @@ app.Run();
 
 ### Define Endpoint Routes
 
+The `IMinimalEndpointRoute` interface provides a clean way to organize endpoints with optional service registration and middleware configuration:
+
 ```csharp
 using Microsoft.AspNetCore.Routing;
 using Microsoft.AspNetCore.Builder;
+using Microsoft.Extensions.DependencyInjection;
+using Microsoft.Extensions.Configuration;
 
-public sealed class UserEndpoints : IEndpointRoute
+public sealed class ProductEndpoints : IMinimalEndpointRoute
 {
-    public void AddRoutes(IEndpointRouteBuilder app)
+    // Register services specific to this endpoint module
+    public void AddServices(IServiceCollection services, IConfiguration configuration)
     {
-        var group = app.MapGroup("/api/users")
-            .WithTags("Users");
+        services.AddScoped<IProductRepository, ProductRepository>();
+        services.AddScoped<IProductService, ProductService>();
+    }
 
-        group.MapGet("/", GetAllUsers)
-            .Produces200OK<IEnumerable<User>>()
+    // Configure middleware specific to this module
+    public void UseServices(WebApplication application)
+    {
+        // Add any middleware needed for this module
+    }
+
+    // Define the endpoints
+    public void AddRoutes(MinimalRouteBuilder app)
+    {
+        var group = app.MapGroup("/api/products")
+            .WithTags("Products");
+
+        group.MapGet("/", GetAllProducts)
+            .Produces200OK<IEnumerable<Product>>()
             .Produces500InternalServerError();
 
-        group.MapGet("/{id:guid}", GetUserById)
-            .Produces200OK<User>()
+        group.MapGet("/{id:guid}", GetProductById)
+            .Produces200OK<Product>()
             .Produces404NotFound();
 
-        group.MapPost("/", CreateUser)
-            .Accepts<CreateUserRequest>()
-            .Produces201Created<User>()
-            .Produces400BadRequest()
-            .WithXMinimalApi(); // Adds validation + result filters
+        group.MapPost("/", CreateProduct)
+            .Accepts<CreateProductRequest>()
+            .Produces201Created<Product>()
+            .Produces400BadRequest();
+
+        group.MapPut("/{id:guid}", UpdateProduct)
+            .Accepts<UpdateProductRequest>()
+            .Produces200OK<Product>()
+            .Produces404NotFound()
+            .Produces409Conflict();
+
+        group.MapDelete("/{id:guid}", DeleteProduct)
+            .Produces200OK()
+            .Produces404NotFound()
+            .Produces401Unauthorized();
     }
 
-    private static async Task<IResult> GetAllUsers(
-        IUserService userService,
+    private static async Task<IResult> GetAllProducts(
+        IProductService productService,
         CancellationToken cancellationToken)
     {
-        var users = await userService.GetAllAsync(cancellationToken);
-        return Results.Ok(users);
+        var products = await productService.GetAllAsync(cancellationToken);
+        return Results.Ok(products);
     }
 
-    private static async Task<IResult> GetUserById(
+    private static async Task<IResult> GetProductById(
         Guid id,
-        IUserService userService,
+        IProductService productService,
         CancellationToken cancellationToken)
     {
-        var result = await userService.GetByIdAsync(id, cancellationToken);
-        return result.ToMinimalResult(); // Converts Result to IResult
+        var product = await productService.GetByIdAsync(id, cancellationToken);
+        return product is not null
+            ? Results.Ok(product)
+            : Results.NotFound();
     }
 
-    private static async Task<IResult> CreateUser(
-        CreateUserRequest request,
-        IUserService userService,
+    private static async Task<IResult> CreateProduct(
+        CreateProductRequest request,
+        IProductService productService,
         CancellationToken cancellationToken)
     {
-        var result = await userService.CreateAsync(request, cancellationToken);
-        return result.ToMinimalResult();
+        var product = await productService.CreateAsync(request, cancellationToken);
+        return Results.Created($"/api/products/{product.Id}", product);
+    }
+
+    private static async Task<IResult> UpdateProduct(
+        Guid id,
+        UpdateProductRequest request,
+        IProductService productService,
+        CancellationToken cancellationToken)
+    {
+        var product = await productService.UpdateAsync(id, request, cancellationToken);
+        return product is not null
+            ? Results.Ok(product)
+            : Results.NotFound();
+    }
+
+    private static async Task<IResult> DeleteProduct(
+        Guid id,
+        IProductService productService,
+        CancellationToken cancellationToken)
+    {
+        var deleted = await productService.DeleteAsync(id, cancellationToken);
+        return deleted ? Results.Ok() : Results.NotFound();
     }
 }
 ```
@@ -136,137 +193,20 @@ public sealed class UserEndpoints : IEndpointRoute
 
 ```csharp
 // In Program.cs
-builder.Services.AddXEndpointRoutes(typeof(Program).Assembly);
+var builder = WebApplication.CreateBuilder(args);
+
+// Register minimal support options
+builder.Services.AddXMinimalSupport();
+
+// Discover and register all IMinimalEndpointRoute implementations
+builder.Services.AddXMinimalEndpointRoutes(typeof(Program).Assembly);
 
 var app = builder.Build();
-app.UseXEndpointRoutes(); // Automatically calls AddRoutes on all IEndpointRoute implementations
-```
 
----
+// Apply all registered endpoint routes
+app.UseXMinimalEndpointRoutes();
 
-## 🔄 Result Extensions
-
-### Convert Result to IActionResult (MVC)
-
-```csharp
-using Microsoft.AspNetCore.Mvc;
-using System.Results;
-
-[ApiController]
-[Route("api/[controller]")]
-public class UsersController : ControllerBase
-{
-    [HttpGet("{id}")]
-    public async Task<IActionResult> GetUser(Guid id)
-    {
-        Result<User> result = await _userService.GetUserAsync(id);
-        
-        // Converts Result to ObjectResult with correct status code
-        return result.ToActionResult();
-    }
-}
-```
-
-### Convert to ProblemDetails
-
-```csharp
-using Microsoft.AspNetCore.Http;
-using System.Results;
-
-app.UseExceptionHandler(exceptionHandler =>
-{
-    exceptionHandler.Run(async context =>
-    {
-        var exceptionFeature = context.Features.Get<IExceptionHandlerFeature>();
-        
-        if (exceptionFeature?.Error is BadHttpRequestException badRequest)
-        {
-            Result result = badRequest.ToResult();
-            ProblemDetails problem = result.ToProblemDetails(context);
-            
-            context.Response.StatusCode = problem.Status ?? 400;
-            await context.Response.WriteAsJsonAsync(problem);
-        }
-    });
-});
-```
-
-### Convert ModelState to Result
-
-```csharp
-using Microsoft.AspNetCore.Mvc;
-using System.Results;
-
-[HttpPost]
-public async Task<IActionResult> CreateUser(CreateUserRequest request)
-{
-    if (!ModelState.IsValid)
-    {
-        // Convert ModelState errors to Result
-        Result validationResult = ModelState.ToResult();
-        return validationResult.ToActionResult();
-    }
-
-    var result = await _userService.CreateUserAsync(request);
-    return result.ToActionResult();
-}
-```
-
-### Convert Result to ModelStateDictionary
-
-```csharp
-Result result = await _service.ValidateAsync(request);
-
-if (!result.IsSuccess)
-{
-    // Convert Result errors back to ModelState for view rendering
-    ModelStateDictionary modelState = result.ToModelStateDictionary();
-    return View(request);
-}
-```
-
----
-
-## 🔍 Minimal API Filters
-
-### Apply Filters to Endpoints
-
-```csharp
-// Apply both validation and result filters
-app.MapPost("/api/orders", CreateOrder)
-    .WithXMinimalApi();
-
-// Apply only validation filter
-app.MapPost("/api/products", CreateProduct)
-    .WithXMinimalValidation();
-
-// Apply only result filter
-app.MapGet("/api/items", GetItems)
-    .WithXMinimalFilter();
-```
-
-### Configure Filters Globally
-
-```csharp
-app.UseXResultSupport(options =>
-{
-    options.EnableValidationFilter = true;
-    options.EnableResultFilter = true;
-    
-    // Custom endpoint predicate
-    options.EndpointPredicate = endpoint => 
-        endpoint.RoutePattern.RawText?.StartsWith("/api") ?? false;
-    
-    // Custom endpoint configuration
-    options.ConfigureEndpoint = (builder, endpoint) =>
-    {
-        if (endpoint.Metadata.OfType<HttpMethodMetadata>().Any(m => m.HttpMethods.Contains("POST")))
-        {
-            builder.WithXMinimalValidation();
-            builder.WithXMinimalFilter();
-        }
-    };
-});
+app.Run();
 ```
 
 ---
@@ -276,112 +216,265 @@ app.UseXResultSupport(options =>
 Fluent API for adding OpenAPI metadata to endpoints:
 
 ```csharp
-app.MapGet("/api/users", GetUsers)
-    .Produces200OK<IEnumerable<User>>()
-    .Produces500InternalServerError();
+public void AddRoutes(MinimalRouteBuilder app)
+{
+    // GET endpoint with success and error responses
+    app.MapGet("/api/users", GetUsers)
+        .Produces200OK<IEnumerable<User>>()
+        .Produces500InternalServerError();
 
-app.MapGet("/api/users/{id}", GetUserById)
-    .Produces200OK<User>()
-    .Produces404NotFound();
+    // GET with path parameter
+    app.MapGet("/api/users/{id}", GetUserById)
+        .Produces200OK<User>()
+        .Produces404NotFound();
 
-app.MapPost("/api/users", CreateUser)
-    .Accepts<CreateUserRequest>()
-    .Produces201Created<User>()
-    .Produces400BadRequest();
+    // POST with request body
+    app.MapPost("/api/users", CreateUser)
+        .Accepts<CreateUserRequest>()
+        .Produces201Created<User>()
+        .Produces400BadRequest();
 
-app.MapPut("/api/users/{id}", UpdateUser)
-    .Produces200OK<User>()
-    .Produces404NotFound()
-    .Produces409Conflict();
+    // PUT with conflict handling
+    app.MapPut("/api/users/{id}", UpdateUser)
+        .Accepts<UpdateUserRequest>()
+        .Produces200OK<User>()
+        .Produces404NotFound()
+        .Produces409Conflict();
 
-app.MapDelete("/api/users/{id}", DeleteUser)
-    .Produces200OK()
-    .Produces404NotFound()
-    .Produces401Unauthorized();
+    // DELETE with authorization
+    app.MapDelete("/api/users/{id}", DeleteUser)
+        .Produces200OK()
+        .Produces404NotFound()
+        .Produces401Unauthorized();
+
+    // Custom HTTP methods
+    app.MapMethods("/api/users/{id}/activate", ["PATCH"], ActivateUser)
+        .Produces200OK()
+        .Produces405MethodNotAllowed();
+}
 ```
+
+### Available Metadata Extensions
+
+| Extension | Status Code | Content Type |
+|-----------|-------------|--------------|
+| `Produces200OK()` | 200 | `application/json` |
+| `Produces200OK<T>()` | 200 | `application/json` |
+| `Produces201Created<T>()` | 201 | `application/json` |
+| `Produces400BadRequest()` | 400 | `application/problem+json` |
+| `Produces401Unauthorized()` | 401 | `application/problem+json` |
+| `Produces404NotFound()` | 404 | `application/problem+json` |
+| `Produces405MethodNotAllowed()` | 405 | `application/problem+json` |
+| `Produces409Conflict()` | 409 | `application/problem+json` |
+| `Produces500InternalServerError()` | 500 | `application/problem+json` |
+| `Accepts<T>()` | — | `application/json` |
+
+---
+
+## ⚙️ Minimal Support Options
+
+Configure how filters and conventions are applied to endpoints:
+
+```csharp
+builder.Services.AddXMinimalSupport(options =>
+{
+    // Apply configuration only to endpoints matching this predicate
+    options.EndpointPredicate = endpoint => 
+        endpoint.RoutePattern.RawText?.StartsWith("/api") ?? false;
+    
+    // Configure matching endpoints
+    options.ConfigureEndpoint = builder =>
+    {
+        builder.RequireAuthorization();
+        builder.WithOpenApi();
+    };
+});
+```
+
+### Options Properties
+
+| Property | Type | Description |
+|----------|------|-------------|
+| `EndpointPredicate` | `Func<RouteEndpoint, bool>?` | Predicate to filter which endpoints receive configuration |
+| `ConfigureEndpoint` | `Action<IEndpointConventionBuilder>?` | Action to configure matching endpoints |
 
 ---
 
 ## ⏳ Lazy Service Resolution
+
+Defer service resolution until first access with `Lazy<T>` support:
 
 ```csharp
 // Register lazy support
 builder.Services.AddXLazyResolved();
 
 // Use in services - services are only resolved when accessed
-public class OrderService
+public class OrderProcessor(
+    Lazy<IEmailService> emailService,
+    Lazy<IPaymentGateway> paymentGateway,
+    Lazy<IInventoryService> inventoryService)
 {
-    private readonly Lazy<IEmailService> _emailService;
-    private readonly Lazy<IPaymentService> _paymentService;
-
-    public OrderService(
-        Lazy<IEmailService> emailService,
-        Lazy<IPaymentService> paymentService)
+    public async Task ProcessOrderAsync(Order order, CancellationToken ct)
     {
-        _emailService = emailService;
-        _paymentService = paymentService;
-    }
-
-    public async Task ProcessOrderAsync(Order order)
-    {
-        // Services resolved only when .Value is accessed
+        // Payment gateway resolved only when needed
         if (order.RequiresPayment)
         {
-            await _paymentService.Value.ProcessAsync(order);
+            await paymentGateway.Value.ChargeAsync(order.Total, ct);
         }
 
-        await _emailService.Value.SendConfirmationAsync(order);
+        // Inventory service resolved only when needed
+        if (order.HasPhysicalItems)
+        {
+            await inventoryService.Value.ReserveItemsAsync(order.Items, ct);
+        }
+
+        // Email service resolved only when sending confirmation
+        await emailService.Value.SendOrderConfirmationAsync(order, ct);
     }
 }
 ```
+
+### Benefits
+
+- **Reduced startup time** — Services not resolved until needed
+- **Conditional dependencies** — Only resolve services that are actually used
+- **Circular dependency avoidance** — Break circular dependency chains
 
 ---
 
 ## 📝 JSON Serializer Options
 
+Register ASP.NET Core's configured `JsonSerializerOptions` as a singleton:
+
 ```csharp
-// Register JsonSerializerOptions from ASP.NET Core configuration
+// In Program.cs
 builder.Services.AddXJsonSerializerOptions();
 
 // Use in services
-public class DataService
+public class DataExportService(JsonSerializerOptions jsonOptions)
 {
-    private readonly JsonSerializerOptions _jsonOptions;
+    public string ExportToJson<T>(T data) =>
+        JsonSerializer.Serialize(data, jsonOptions);
 
-    public DataService(JsonSerializerOptions jsonOptions)
-        => _jsonOptions = jsonOptions;
+    public async Task ExportToFileAsync<T>(T data, string path, CancellationToken ct)
+    {
+        await using var stream = File.Create(path);
+        await JsonSerializer.SerializeAsync(stream, data, jsonOptions, ct);
+    }
 
-    public string Serialize<T>(T data) =>
-        JsonSerializer.Serialize(data, _jsonOptions);
+    public T? ImportFromJson<T>(string json) =>
+        JsonSerializer.Deserialize<T>(json, jsonOptions);
 }
+```
+
+This ensures consistent JSON serialization settings throughout your application by reusing the options configured in `JsonOptions`.
+
+---
+
+## 🔌 MEF Service Exports
+
+Use MEF (Managed Extensibility Framework) for plugin-based service registration:
+
+### Define a Service Export
+
+```csharp
+using System.ComponentModel.Composition;
+using Microsoft.AspNetCore.Builder;
+
+[Export(typeof(IUseServiceExport))]
+public class LoggingMiddlewareExport : IUseServiceExport
+{
+    public void UseServices(WebApplication application)
+    {
+        // Configure middleware from an external plugin
+        application.UseMiddleware<RequestLoggingMiddleware>();
+        application.UseMiddleware<PerformanceLoggingMiddleware>();
+    }
+}
+```
+
+### Apply Service Exports
+
+```csharp
+var app = builder.Build();
+
+// Apply all MEF-exported IUseServiceExport implementations
+app.UseXServiceExports();
+
+// Or with custom options
+app.UseXServiceExports(options =>
+{
+    options.Directories = ["/plugins", "/extensions"];
+    options.SearchPattern = "*.Plugin.dll";
+});
+
+app.Run();
+```
+
+### Assembly-Based Service Discovery
+
+```csharp
+// Discover and apply IUseService implementations from assemblies
+app.UseXServices(typeof(Program).Assembly, typeof(PluginAssembly).Assembly);
 ```
 
 ---
 
-## 🏗️ MVC Controller Support
-
-### Result Filter Attribute
+## 🏗️ Complete Example
 
 ```csharp
-using AspNetCore.Net.Mvc.Filters;
+using Microsoft.Extensions.DependencyInjection;
+using Microsoft.AspNetCore.Builder;
+using Microsoft.AspNetCore.Routing;
 
-[ApiController]
-[Route("api/[controller]")]
-[ControllerResultFilter] // Automatically converts Result returns to proper responses
-public class ProductsController : ControllerBase
+var builder = WebApplication.CreateBuilder(args);
+
+// Configure services
+builder.Services.AddXMinimalSupport(options =>
 {
-    [HttpGet]
-    public async Task<Result<IEnumerable<Product>>> GetProducts()
-    {
-        // Return Result directly - filter converts to IActionResult
-        return await _productService.GetAllAsync();
-    }
+    options.EndpointPredicate = endpoint => 
+        endpoint.RoutePattern.RawText?.StartsWith("/api") ?? false;
+});
 
-    [HttpPost]
-    [ControllerResultValidationFilter] // Validates request before execution
-    public async Task<Result<Product>> CreateProduct(CreateProductRequest request)
+builder.Services.AddXMinimalEndpointRoutes(typeof(Program).Assembly);
+builder.Services.AddXJsonSerializerOptions();
+builder.Services.AddXLazyResolved();
+
+// Add OpenAPI support
+builder.Services.AddOpenApi();
+
+var app = builder.Build();
+
+// Configure pipeline
+app.UseHttpsRedirection();
+app.MapOpenApi();
+
+// Apply endpoint routes
+app.UseXMinimalEndpointRoutes();
+
+app.Run();
+
+// Endpoint module
+public sealed class HealthEndpoints : IMinimalEndpointRoute
+{
+    public void AddRoutes(MinimalRouteBuilder app)
     {
-        return await _productService.CreateAsync(request);
+        app.MapGet("/health", () => Results.Ok(new { Status = "Healthy", Timestamp = DateTime.UtcNow }))
+            .Produces200OK()
+            .WithTags("Health");
+
+        app.MapGet("/health/ready", async (IServiceProvider services) =>
+        {
+            // Check dependencies
+            var dbContext = services.GetService<AppDbContext>();
+            if (dbContext is null)
+                return Results.Problem("Database not configured", statusCode: 503);
+
+            return Results.Ok(new { Status = "Ready" });
+        })
+        .Produces200OK()
+        .Produces500InternalServerError()
+        .WithTags("Health");
     }
 }
 ```
@@ -390,23 +483,36 @@ public class ProductsController : ControllerBase
 
 ## ✅ Best Practices
 
-1. **Use IEndpointRoute** - Organize minimal API endpoints into separate classes
-2. **Apply WithXMinimalApi()** - Enable both validation and result filters
-3. **Use ToActionResult()** - Consistently convert Results to HTTP responses
-4. **Use Lazy<T>** - For optional or expensive dependencies
-5. **Register JsonSerializerOptions** - Ensure consistent JSON serialization
-6. **Add route metadata** - Use Produces* extensions for OpenAPI documentation
+### ✅ Do
+
+- **Implement `IMinimalEndpointRoute`** — Organize endpoints into cohesive modules
+- **Use `AddServices` override** — Register module-specific services within the endpoint class
+- **Apply `AddXLazyResolved()`** — For optional or expensive dependencies
+- **Use route metadata extensions** — Ensure consistent OpenAPI documentation
+- **Configure `MinimalSupportOptions`** — Apply cross-cutting concerns consistently
+
+### ❌ Don't
+
+- **Register endpoints directly in Program.cs** — Use `IMinimalEndpointRoute` for organization
+- **Resolve services eagerly** — Use `Lazy<T>` for conditional dependencies
+- **Duplicate JSON options** — Use `AddXJsonSerializerOptions()` for consistency
+- **Mix endpoint registration approaches** — Choose one pattern per application
 
 ---
 
 ## 📚 Related Packages
 
-- **System.Results** - Core Result types and request/handler pattern
-- **System.Primitives.Validation** - Validation and specification pattern
-- **System.Results.Pipelines** - Pipeline decorators
+| Package | Description |
+|---------|-------------|
+| **AspNetCore.Results** | Result pattern integration for HTTP responses |
+| **AspNetCore.Collections.AsyncPaged** | Async paged enumerable HTTP streaming |
+| **System.Primitives.Composition** | MEF composition utilities |
 
 ---
 
 ## 📄 License
 
 Apache License 2.0 - Copyright © Kamersoft 2025
+
+Contributions welcome at [Xpandables.Net on GitHub](https://github.com/Francescolis/Xpandables.Net).
+
