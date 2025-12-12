@@ -49,16 +49,32 @@ public class AsyncPagedEnumerableBenchmark
     private List<SampleData> _smallDataSet = [];
     private List<SampleData> _mediumDataSet = [];
     private List<SampleData> _largeDataSet = [];
+    private byte[] _iAsyncEnumerableJsonBytes = [];
+    private byte[] _iAsyncPagedEnumerableJsonBytes = [];
 
     [Params(100, 1000, 10000)]
     public int ItemCount { get; set; }
 
     [GlobalSetup]
-    public void Setup()
+    public async Task Setup()
     {
         _smallDataSet = GenerateSampleData(100);
         _mediumDataSet = GenerateSampleData(1000);
         _largeDataSet = GenerateSampleData(10000);
+
+        // Pre-calculate JSON for the current ItemCount to avoid serialization cost in deserialization benchmarks
+        var data = GetDataSetBySize();
+
+        // For IAsyncEnumerable (standard array)
+        using var stream1 = new MemoryStream();
+        await JsonSerializer.SerializeAsync(stream1, data, SampleDataJsonContext.Default.ListSampleData);
+        _iAsyncEnumerableJsonBytes = stream1.ToArray();
+
+        // For IAsyncPagedEnumerable (paged object)
+        using var stream2 = new MemoryStream();
+        var paged = CreatePagedEnumerable(data);
+        await JsonSerializer.SerializeAsyncPaged(stream2, paged, SampleDataJsonContext.Default.SampleData);
+        _iAsyncPagedEnumerableJsonBytes = stream2.ToArray();
     }
 
     #region Serialization Benchmarks
@@ -109,7 +125,8 @@ public class AsyncPagedEnumerableBenchmark
     [Benchmark(Description = "Framework IAsyncEnumerable Deserialization (HttpContent)")]
     public async Task<int> DeserializeAsync_IAsyncEnumerable_FromHttpContent()
     {
-        HttpContent content = await CreateJsonHttpContent_IAsyncEnumerable();
+        using var content = new ByteArrayContent(_iAsyncEnumerableJsonBytes);
+        content.Headers.ContentType = new("application/json");
 
         IAsyncEnumerable<SampleData?> enumerable = content.ReadFromJsonAsAsyncEnumerable(
             SampleDataJsonContext.Default.SampleData);
@@ -129,7 +146,8 @@ public class AsyncPagedEnumerableBenchmark
     [Benchmark(Description = "Custom IAsyncPagedEnumerable Deserialization (HttpContent)")]
     public async Task<int> DeserializeAsync_IAsyncPagedEnumerable_FromHttpContent()
     {
-        HttpContent content = await CreateJsonHttpContent_IAsyncPagedEnumerable();
+        using var content = new ByteArrayContent(_iAsyncPagedEnumerableJsonBytes);
+        content.Headers.ContentType = new("application/json");
 
         IAsyncPagedEnumerable<SampleData?> pagedEnumerable = content
             .ReadFromJsonAsAsyncPagedEnumerable(SampleDataJsonContext.Default.SampleData);
@@ -191,46 +209,6 @@ public class AsyncPagedEnumerableBenchmark
         return AsyncPagedEnumerable.Create(
             data.ToAsyncEnumerable(),
             _ => ValueTask.FromResult(pagination));
-    }
-
-    private async Task<HttpContent> CreateJsonHttpContent_IAsyncEnumerable()
-    {
-        List<SampleData> data = GetDataSetBySize();
-        await using MemoryStream stream = new();
-
-        await JsonSerializer.SerializeAsync(
-            stream,
-            data,
-            SampleDataJsonContext.Default.ListSampleData);
-
-        stream.Position = 0;
-        byte[] bytes = stream.ToArray();
-
-        return new ByteArrayContent(bytes)
-        {
-            Headers = { ContentType = new("application/json") }
-        };
-    }
-
-    private async Task<HttpContent> CreateJsonHttpContent_IAsyncPagedEnumerable()
-    {
-        List<SampleData> data = GetDataSetBySize();
-        await using MemoryStream stream = new();
-
-        IAsyncPagedEnumerable<SampleData> pagedEnumerable = CreatePagedEnumerable(data);
-
-        await JsonSerializer.SerializeAsyncPaged(
-            stream,
-            pagedEnumerable,
-            SampleDataJsonContext.Default.SampleData);
-
-        stream.Position = 0;
-        byte[] bytes = stream.ToArray();
-
-        return new ByteArrayContent(bytes)
-        {
-            Headers = { ContentType = new("application/json") }
-        };
     }
 
     #endregion
