@@ -49,6 +49,7 @@ public sealed class AsyncPagedEnumerableDeserializer<TValue> : IAsyncPagedEnumer
     private Pagination _cachedPagination = Pagination.Empty;
     private byte[]? _cachedJsonBuffer;
     private bool _jsonBufferLoaded;
+    private bool _sourceConsumed;
     private bool _disposed;
 
     /// <inheritdoc/>
@@ -94,7 +95,7 @@ public sealed class AsyncPagedEnumerableDeserializer<TValue> : IAsyncPagedEnumer
     {
         ObjectDisposedException.ThrowIf(_disposed, this);
 
-        if (_jsonBufferLoaded)
+        if (_jsonBufferLoaded || _sourceConsumed || _cachedPagination != Pagination.Empty)
         {
             return _cachedPagination;
         }
@@ -106,6 +107,7 @@ public sealed class AsyncPagedEnumerableDeserializer<TValue> : IAsyncPagedEnumer
     /// <summary>
     /// Loads the entire JSON buffer from the PipeReader into memory.
     /// This ensures we can parse pagination and items independently.
+    /// Uses ArrayPool for efficient memory management.
     /// </summary>
     private async ValueTask LoadFullJsonBufferAsync(CancellationToken cancellationToken)
     {
@@ -114,15 +116,18 @@ public sealed class AsyncPagedEnumerableDeserializer<TValue> : IAsyncPagedEnumer
             return;
         }
 
+        byte[] pooledBuffer = ArrayPool<byte>.Shared.Rent(4096);
+        var bufferSize = 0;
+
         try
         {
-            using var buffer = new MemoryStream();
-
             while (true)
             {
                 var result = await _pipeReader.ReadAsync(cancellationToken).ConfigureAwait(false);
+                var sequence = result.Buffer;
+                var sequenceLength = (int)sequence.Length;
 
-                if (result.Buffer.Length == 0)
+                if (sequenceLength == 0)
                 {
                     _pipeReader.AdvanceTo(result.Buffer.End);
                     if (result.IsCompleted)
@@ -130,11 +135,19 @@ public sealed class AsyncPagedEnumerableDeserializer<TValue> : IAsyncPagedEnumer
                     continue;
                 }
 
-                // Copy all segments to buffer
-                foreach (var segment in result.Buffer)
+                // Grow buffer if needed
+                if (bufferSize + sequenceLength > pooledBuffer.Length)
                 {
-                    buffer.Write(segment.Span);
+                    var newSize = Math.Max(pooledBuffer.Length * 2, bufferSize + sequenceLength);
+                    var newBuffer = ArrayPool<byte>.Shared.Rent(newSize);
+                    Buffer.BlockCopy(pooledBuffer, 0, newBuffer, 0, bufferSize);
+                    ArrayPool<byte>.Shared.Return(pooledBuffer);
+                    pooledBuffer = newBuffer;
                 }
+
+                // Copy sequence to buffer
+                sequence.CopyTo(pooledBuffer.AsSpan(bufferSize));
+                bufferSize += sequenceLength;
 
                 _pipeReader.AdvanceTo(result.Buffer.End);
 
@@ -144,7 +157,9 @@ public sealed class AsyncPagedEnumerableDeserializer<TValue> : IAsyncPagedEnumer
                 }
             }
 
-            _cachedJsonBuffer = buffer.ToArray();
+            // Create exact-size array for caching (only this allocation is retained)
+            _cachedJsonBuffer = new byte[bufferSize];
+            Buffer.BlockCopy(pooledBuffer, 0, _cachedJsonBuffer, 0, bufferSize);
             _jsonBufferLoaded = true;
 
             // Extract pagination from the loaded buffer
@@ -157,12 +172,16 @@ public sealed class AsyncPagedEnumerableDeserializer<TValue> : IAsyncPagedEnumer
         catch (JsonException)
         {
             _jsonBufferLoaded = true;
-            _cachedJsonBuffer = Array.Empty<byte>();
+            _cachedJsonBuffer = [];
         }
         catch (InvalidOperationException)
         {
             _jsonBufferLoaded = true;
-            _cachedJsonBuffer = Array.Empty<byte>();
+            _cachedJsonBuffer = [];
+        }
+        finally
+        {
+            ArrayPool<byte>.Shared.Return(pooledBuffer);
         }
     }
 
@@ -220,208 +239,296 @@ public sealed class AsyncPagedEnumerableDeserializer<TValue> : IAsyncPagedEnumer
     /// </summary>
     private async IAsyncEnumerable<TValue> StreamItemsAsync([EnumeratorCancellation] CancellationToken cancellationToken)
     {
-        try
+        if (_jsonBufferLoaded && _cachedJsonBuffer is { Length: > 0 })
         {
-            // Ensure the full JSON buffer is loaded
-            if (!_jsonBufferLoaded)
+            // Use synchronous enumeration over the already-loaded buffer
+            foreach (var item in EnumerateItemsFromBuffer(_cachedJsonBuffer, cancellationToken))
             {
-                await LoadFullJsonBufferAsync(cancellationToken).ConfigureAwait(false);
+                yield return item;
             }
 
-            // Stream items from the loaded buffer
-            if (_cachedJsonBuffer != null && _cachedJsonBuffer.Length > 0)
+            await _pipeReader.CompleteAsync().ConfigureAwait(false);
+        }
+        else
+        {
+            await foreach (var item in EnumerateItemsFromPipeAsync(cancellationToken).ConfigureAwait(false))
             {
-                await foreach (var item in EnumerateItemsFromBufferAsync(_cachedJsonBuffer, cancellationToken).ConfigureAwait(false))
+                yield return item;
+            }
+        }
+    }
+
+    /// <summary>
+    /// Enumerates individual items from a fully loaded JSON buffer synchronously.
+    /// Deserializes items on-demand using AOT-safe JsonTypeInfo of TValue.
+    /// </summary>
+    private IEnumerable<TValue> EnumerateItemsFromBuffer(byte[] jsonBuffer, CancellationToken cancellationToken)
+    {
+        // First, find the items array start position
+        var reader = new Utf8JsonReader(jsonBuffer, new JsonReaderOptions { AllowTrailingCommas = false });
+        var itemsArrayStart = -1L;
+
+        while (reader.Read())
+        {
+            if (reader.TokenType == JsonTokenType.PropertyName && reader.ValueTextEquals("items"u8))
+            {
+                if (reader.Read() && reader.TokenType == JsonTokenType.StartArray)
+                {
+                    itemsArrayStart = reader.BytesConsumed;
+                    break;
+                }
+            }
+            else if (reader.TokenType == JsonTokenType.PropertyName && reader.Read())
+            {
+                reader.Skip();
+            }
+        }
+
+        if (itemsArrayStart < 0)
+        {
+            yield break;
+        }
+
+        // Now enumerate items from the array
+        var position = (int)itemsArrayStart;
+
+        while (position < jsonBuffer.Length)
+        {
+            cancellationToken.ThrowIfCancellationRequested();
+
+            var itemReader = new Utf8JsonReader(jsonBuffer.AsSpan(position), new JsonReaderOptions { AllowTrailingCommas = false });
+
+            if (!itemReader.Read())
+            {
+                break;
+            }
+
+            if (itemReader.TokenType == JsonTokenType.EndArray)
+            {
+                break;
+            }
+
+            if (itemReader.TokenType == JsonTokenType.StartObject)
+            {
+                var item = JsonSerializer.Deserialize(ref itemReader, _itemTypeInfo);
+                position += (int)itemReader.BytesConsumed;
+
+                if (item is not null)
                 {
                     yield return item;
+                }
+            }
+            else
+            {
+                // Skip any other tokens (shouldn't happen in well-formed JSON)
+                position += (int)itemReader.BytesConsumed;
+            }
+        }
+    }
+
+    /// <summary>
+    /// Enumerates individual items from the JSON items array using Utf8JsonReader and PipeReader.
+    /// Deserializes items on-demand using AOT-safe JsonTypeInfo of TValue.
+    /// Items are yielded immediately as they are parsed to minimize memory overhead.
+    /// </summary>
+    private async IAsyncEnumerable<TValue> EnumerateItemsFromPipeAsync([EnumeratorCancellation] CancellationToken cancellationToken)
+    {
+        var readerState = new JsonReaderState(options: new JsonReaderOptions { AllowTrailingCommas = false });
+        var buffer = ArrayPool<byte>.Shared.Rent(4096);
+        var bufferSize = 0;
+        var inItemsArray = false;
+        var expectingItemsArray = false;
+
+        try
+        {
+            while (true)
+            {
+                var result = await _pipeReader.ReadAsync(cancellationToken).ConfigureAwait(false);
+                var sequence = result.Buffer;
+                var sequenceLength = (int)sequence.Length;
+
+                if (sequenceLength > 0)
+                {
+                    if (bufferSize + sequenceLength > buffer.Length)
+                    {
+                        var newSize = Math.Max(buffer.Length * 2, bufferSize + sequenceLength);
+                        var newBuffer = ArrayPool<byte>.Shared.Rent(newSize);
+                        Buffer.BlockCopy(buffer, 0, newBuffer, 0, bufferSize);
+                        ArrayPool<byte>.Shared.Return(buffer);
+                        buffer = newBuffer;
+                    }
+
+                    sequence.CopyTo(buffer.AsSpan(bufferSize));
+                    bufferSize += sequenceLength;
+                }
+
+                _pipeReader.AdvanceTo(sequence.End);
+
+                var isCompleted = result.IsCompleted;
+                if (bufferSize == 0 && isCompleted)
+                {
+                    break;
+                }
+
+                var consumed = 0;
+                var reader = new Utf8JsonReader(buffer.AsSpan(0, bufferSize), isCompleted, readerState);
+
+                while (true)
+                {
+                    var stateBeforeRead = reader.CurrentState;
+                    if (!reader.Read())
+                    {
+                        readerState = reader.CurrentState;
+                        break;
+                    }
+
+                    switch (reader.TokenType)
+                    {
+                        case JsonTokenType.PropertyName:
+                            if (!inItemsArray)
+                            {
+                                if (reader.ValueTextEquals("pagination"u8))
+                                {
+                                    try
+                                    {
+                                        if (!reader.Read()) throw new JsonException();
+                                        var pagination = JsonSerializer.Deserialize(ref reader, PaginationJsonContext.Default.Pagination);
+                                        if (pagination is { } p)
+                                        {
+                                            _cachedPagination = p;
+                                        }
+                                        consumed = (int)reader.BytesConsumed;
+                                    }
+                                    catch (JsonException)
+                                    {
+                                        readerState = stateBeforeRead;
+                                        goto NeedMoreData;
+                                    }
+                                }
+                                else if (reader.ValueTextEquals("items"u8))
+                                {
+                                    expectingItemsArray = true;
+                                    consumed = (int)reader.BytesConsumed;
+                                }
+                                else
+                                {
+                                    // Skip other properties
+                                    try
+                                    {
+                                        if (!reader.Read()) throw new JsonException();
+                                        reader.Skip();
+                                        consumed = (int)reader.BytesConsumed;
+                                    }
+                                    catch (JsonException)
+                                    {
+                                        readerState = stateBeforeRead;
+                                        goto NeedMoreData;
+                                    }
+                                }
+                            }
+                            else
+                            {
+                                consumed = (int)reader.BytesConsumed;
+                            }
+                            break;
+
+                        case JsonTokenType.StartArray:
+                            if (expectingItemsArray)
+                            {
+                                inItemsArray = true;
+                                expectingItemsArray = false;
+                            }
+                            consumed = (int)reader.BytesConsumed;
+                            break;
+
+                        case JsonTokenType.EndArray:
+                            if (inItemsArray)
+                            {
+                                inItemsArray = false;
+                            }
+                            consumed = (int)reader.BytesConsumed;
+                            break;
+
+                        case JsonTokenType.StartObject:
+                            if (inItemsArray)
+                            {
+                                TValue? item;
+                                try
+                                {
+                                    item = JsonSerializer.Deserialize(ref reader, _itemTypeInfo);
+                                    consumed = (int)reader.BytesConsumed;
+                                    readerState = reader.CurrentState;
+                                }
+                                catch (JsonException)
+                                {
+                                    readerState = stateBeforeRead;
+                                    goto NeedMoreData;
+                                }
+
+                                // Shift buffer before yielding to minimize memory retained across await
+                                if (consumed > 0)
+                                {
+                                    var remaining = bufferSize - consumed;
+                                    if (remaining > 0)
+                                    {
+                                        Buffer.BlockCopy(buffer, consumed, buffer, 0, remaining);
+                                    }
+                                    bufferSize = remaining;
+                                    consumed = 0;
+                                }
+
+                                if (item is not null)
+                                {
+                                    yield return item;
+                                }
+
+                                // Reset reader with updated buffer after yield
+                                reader = new Utf8JsonReader(buffer.AsSpan(0, bufferSize), isCompleted, readerState);
+                                continue;
+                            }
+                            else
+                            {
+                                consumed = (int)reader.BytesConsumed;
+                            }
+                            break;
+
+                        default:
+                            consumed = (int)reader.BytesConsumed;
+                            break;
+                    }
+                }
+
+            NeedMoreData:
+
+                // Shift remaining data
+                if (consumed > 0)
+                {
+                    var remaining = bufferSize - consumed;
+                    if (remaining > 0)
+                    {
+                        Buffer.BlockCopy(buffer, consumed, buffer, 0, remaining);
+                    }
+                    bufferSize = remaining;
+                }
+
+                if (isCompleted && bufferSize == 0)
+                {
+                    _sourceConsumed = true;
+                    break;
+                }
+
+                // If we couldn't consume anything and we are done, break to avoid infinite loop
+                if (isCompleted && consumed == 0)
+                {
+                    _sourceConsumed = true;
+                    break;
                 }
             }
         }
         finally
         {
+            ArrayPool<byte>.Shared.Return(buffer);
             await _pipeReader.CompleteAsync().ConfigureAwait(false);
-        }
-    }
-
-    /// <summary>
-    /// Enumerates individual items from a fully loaded JSON buffer.
-    /// Deserializes items on-demand using AOT-safe JsonTypeInfo of TValue.
-    /// </summary>
-    private async IAsyncEnumerable<TValue> EnumerateItemsFromBufferAsync(byte[] jsonBuffer, [EnumeratorCancellation] CancellationToken cancellationToken)
-    {
-        // Parse the JSON to find the items array
-        var reader = new Utf8JsonReader(jsonBuffer, new JsonReaderOptions { AllowTrailingCommas = false });
-        var items = new List<TValue>();
-        
-        // Skip to root object
-        if (!reader.Read() || reader.TokenType != JsonTokenType.StartObject)
-        {
-            yield break;
-        }
-
-        // Find the items property
-        while (reader.Read())
-        {
-            cancellationToken.ThrowIfCancellationRequested();
-
-            if (reader.TokenType == JsonTokenType.PropertyName && reader.ValueTextEquals("items"u8))
-            {
-                // Read the array start
-                if (!reader.Read() || reader.TokenType != JsonTokenType.StartArray)
-                {
-                    yield break;
-                }
-
-                // Enumerate array items
-                while (reader.Read())
-                {
-                    cancellationToken.ThrowIfCancellationRequested();
-
-                    if (reader.TokenType == JsonTokenType.EndArray)
-                    {
-                        // Yield all collected items
-                        foreach (var item in items)
-                        {
-                            yield return item;
-                        }
-                        yield break;
-                    }
-
-                    if (reader.TokenType == JsonTokenType.StartObject)
-                    {
-                        try
-                        {
-                            var item = JsonSerializer.Deserialize(ref reader, _itemTypeInfo);
-                            if (item is not null)
-                            {
-                                items.Add(item);
-                            }
-                        }
-                        catch (JsonException)
-                        {
-                            // Skip malformed items
-                            continue;
-                        }
-                    }
-                }
-
-                // Yield any remaining items
-                foreach (var item in items)
-                {
-                    yield return item;
-                }
-                yield break;
-            }
-        }
-    }
-
-    /// <summary>
-    /// Enumerates individual items from the JSON items array using Utf8JsonReader.
-    /// Deserializes items on-demand using AOT-safe JsonTypeInfo of TValue.
-    /// </summary>
-    private async IAsyncEnumerable<TValue> EnumerateItemsAsync([EnumeratorCancellation] CancellationToken cancellationToken)
-    {
-        using var buffer = new MemoryStream();
-        var inArray = false;
-        var arrayDepth = 0;
-        var foundStart = false;
-
-        while (true)
-        {
-            cancellationToken.ThrowIfCancellationRequested();
-
-            var result = await _pipeReader.ReadAsync(cancellationToken).ConfigureAwait(false);
-
-            if (result.Buffer.Length == 0 && result.IsCompleted)
-            {
-                break;
-            }
-
-            foreach (var segment in result.Buffer)
-            {
-                foreach (var b in segment.Span)
-                {
-                    buffer.WriteByte(b);
-
-                    if (!foundStart && b == (byte)'[')
-                    {
-                        foundStart = true;
-                    }
-                }
-            }
-
-            _pipeReader.AdvanceTo(result.Buffer.End);
-
-            // Process buffered data for complete items
-            var buffered = buffer.ToArray();
-            var reader = new Utf8JsonReader(buffered);
-            var itemsToYield = new List<TValue>(16);
-            var currentIndex = 0;
-
-            while (reader.Read())
-            {
-                if (!inArray && reader.TokenType == JsonTokenType.StartArray)
-                {
-                    inArray = true;
-                    arrayDepth = 1;
-                    currentIndex = (int)reader.BytesConsumed;
-                    continue;
-                }
-
-                if (inArray)
-                {
-                    if (reader.TokenType == JsonTokenType.EndArray)
-                    {
-                        arrayDepth--;
-                        if (arrayDepth == 0)
-                        {
-                            // Yield any remaining items
-                            foreach (var item in itemsToYield)
-                            {
-                                yield return item;
-                            }
-                            yield break;
-                        }
-                    }
-                    else if (reader.TokenType == JsonTokenType.StartObject)
-                    {
-                        var item = JsonSerializer.Deserialize(ref reader, _itemTypeInfo);
-                        if (item is not null)
-                        {
-                            itemsToYield.Add(item);
-                        }
-                    }
-                    else if (reader.TokenType == JsonTokenType.StartArray)
-                    {
-                        arrayDepth++;
-                    }
-                }
-            }
-
-            // Yield collected items
-            foreach (var item in itemsToYield)
-            {
-                yield return item;
-            }
-
-            // Clear buffer, keep unconsumed data
-            if (currentIndex > 0 && currentIndex < buffered.Length)
-            {
-                var remaining = buffered.AsSpan(currentIndex);
-                var newBuffer = new MemoryStream();
-                newBuffer.Write(remaining);
-                buffer.SetLength(0);
-                buffer.Write(remaining);
-            }
-            else
-            {
-                buffer.SetLength(0);
-            }
-
-            if (result.IsCompleted)
-            {
-                break;
-            }
         }
     }
 
@@ -473,6 +580,12 @@ public sealed class AsyncPagedEnumerableDeserializer<TValue> : IAsyncPagedEnumer
 
             if (!await _sourceEnumerator.MoveNextAsync().ConfigureAwait(false))
             {
+                // Sync pagination from parent if we missed it (e.g. it was at the end of the stream)
+                if (_pagination == Pagination.Empty && _parent._cachedPagination != Pagination.Empty)
+                {
+                    _pagination = _parent._cachedPagination;
+                }
+
                 // Update pagination on completion
                 if (_parent._strategy == PaginationStrategy.PerItem && _pagination.TotalCount is null)
                 {
@@ -485,6 +598,12 @@ public sealed class AsyncPagedEnumerableDeserializer<TValue> : IAsyncPagedEnumer
 
             Current = _sourceEnumerator.Current;
             _itemIndex++;
+
+            // Sync pagination from parent if found
+            if (_pagination == Pagination.Empty && _parent._cachedPagination != Pagination.Empty)
+            {
+                _pagination = _parent._cachedPagination;
+            }
 
             // Update pagination based on strategy
             UpdatePagination();
