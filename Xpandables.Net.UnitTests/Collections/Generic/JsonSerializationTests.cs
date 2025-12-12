@@ -30,16 +30,13 @@ public sealed class JsonSerializationTests
 {
     private readonly JsonSerializerOptions _options;
 
-    public JsonSerializationTests()
+    public JsonSerializationTests() => _options = new JsonSerializerOptions(JsonSerializerDefaults.Web)
     {
-        _options = new JsonSerializerOptions(JsonSerializerDefaults.Web)
-        {
-            PropertyNameCaseInsensitive = true,
-            WriteIndented = false,
-            DefaultIgnoreCondition = JsonIgnoreCondition.WhenWritingNull,
-            TypeInfoResolver = TestDataJsonContext.Default
-        };
-    }
+        PropertyNameCaseInsensitive = true,
+        WriteIndented = false,
+        DefaultIgnoreCondition = JsonIgnoreCondition.WhenWritingNull,
+        TypeInfoResolver = TestDataJsonContext.Default
+    };
 
     [Fact]
     public async Task SerializeAsyncPaged_WithStream_ShouldProduceValidJson()

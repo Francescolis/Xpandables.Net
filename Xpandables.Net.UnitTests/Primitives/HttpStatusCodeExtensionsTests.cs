@@ -17,7 +17,6 @@
 using System.Data;
 using System.Net;
 using System.Security;
-using System.Security.Authentication;
 
 using FluentAssertions;
 
@@ -548,10 +547,10 @@ public sealed class HttpStatusCodeExtensionsTests
         var response = new
         {
             Status = (int)statusCode,
-            Title = statusCode.Title,
-            Detail = statusCode.Detail,
-            IsSuccess = statusCode.IsSuccess,
-            IsClientError = statusCode.IsClientError
+            statusCode.Title,
+            statusCode.Detail,
+            statusCode.IsSuccess,
+            statusCode.IsClientError
         };
 
         // Assert

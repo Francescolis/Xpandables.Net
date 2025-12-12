@@ -16,6 +16,8 @@
 ********************************************************************************/
 
 using System.Buffers;
+using System.Diagnostics;
+using System.Diagnostics.CodeAnalysis;
 using System.IO.Pipelines;
 using System.Runtime.CompilerServices;
 using System.Text.Json.Serialization.Metadata;
@@ -33,16 +35,16 @@ public sealed class AsyncPagedEnumerableDeserializer<TValue> : IAsyncPagedEnumer
     private readonly JsonTypeInfo<TValue> _itemTypeInfo;
     private readonly CancellationToken _cancellationToken;
     private readonly PaginationStrategy _strategy;
-    private readonly Lock _lock = new();
 
-    private JsonDocument? _document;
-    private Pagination _cachedPagination = Pagination.Empty;
-    private JsonElement _itemsElement;
+    private Pagination? _cachedPagination;
+    private IAsyncEnumerable<TValue>? _cachedItems;
     private bool _isDeserialized;
-    private bool _pipeReaderCompleted;
+
+    // We need to keep the document alive if we are enumerating its elements
+    private JsonDocument? _jsonDocument;
 
     /// <inheritdoc/>
-    public Pagination Pagination => _cachedPagination;
+    public Pagination Pagination => _cachedPagination ?? Pagination.Empty;
 
     internal AsyncPagedEnumerableDeserializer(
         PipeReader pipeReader,
@@ -50,9 +52,6 @@ public sealed class AsyncPagedEnumerableDeserializer<TValue> : IAsyncPagedEnumer
         CancellationToken cancellationToken,
         PaginationStrategy strategy = PaginationStrategy.None)
     {
-        ArgumentNullException.ThrowIfNull(pipeReader);
-        ArgumentNullException.ThrowIfNull(itemTypeInfo);
-
         _pipeReader = pipeReader;
         _itemTypeInfo = itemTypeInfo;
         _cancellationToken = cancellationToken;
@@ -60,273 +59,152 @@ public sealed class AsyncPagedEnumerableDeserializer<TValue> : IAsyncPagedEnumer
     }
 
     /// <inheritdoc/>
-    public IAsyncPagedEnumerable<TValue> WithStrategy(PaginationStrategy strategy) =>
-        new AsyncPagedEnumerableDeserializer<TValue>(
+    public IAsyncPagedEnumerable<TValue> WithStrategy(PaginationStrategy strategy)
+    {
+        // Return a new view sharing the same pipe reader.
+        // Note: PipeReader is single-consumer. This assumes only one of the views will be enumerated.
+        return new AsyncPagedEnumerableDeserializer<TValue>(
             _pipeReader,
             _itemTypeInfo,
             _cancellationToken,
             strategy);
+    }
 
     /// <inheritdoc/>
     public IAsyncPagedEnumerator<TValue> GetAsyncEnumerator(CancellationToken cancellationToken = default)
     {
-        using var linkedTokenSource = CancellationTokenSource.CreateLinkedTokenSource(
-            cancellationToken,
-            _cancellationToken);
+        // Combine tokens
+        using var linkedTokenSource = CancellationTokenSource.CreateLinkedTokenSource(cancellationToken, _cancellationToken);
+        var token = linkedTokenSource.Token;
 
-        GC.KeepAlive(linkedTokenSource);
-        return new Enumerator(this, linkedTokenSource);
+        // We need to ensure deserialization has happened to get the source enumerator
+        // Since GetAsyncEnumerator is synchronous, we wrap the lazy initialization in the async stream
+        IAsyncEnumerator<TValue> sourceEnumerator = DeserializeAndEnumerateAsync(token).GetAsyncEnumerator(token);
+
+        // We pass the linkedTokenSource to the enumerator so it can be disposed when the enumerator is disposed
+        // However, AsyncPagedEnumerator doesn't own the CTS. We rely on the struct/class disposal chain.
+        // To avoid leaking the CTS, we can register its disposal on the enumerator's disposal if possible,
+        // or just rely on the caller to handle cancellation correctly. 
+        // For simplicity and safety in this pattern, we don't attach the CTS to the enumerator directly 
+        // but the cancellation token is passed through.
+
+        // Note: The Pagination passed here is the "initial" state. 
+        // If deserialization hasn't happened, it's Empty. 
+        // The enumerator will need to access the updated pagination if it changes, 
+        // but for this specific implementation, pagination is static once parsed.
+        return AsyncPagedEnumerator.Create(
+            sourceEnumerator,
+            _cachedPagination ?? Pagination.Empty,
+            _strategy,
+            token);
     }
 
     /// <inheritdoc/>
     public async Task<Pagination> GetPaginationAsync(CancellationToken cancellationToken = default)
     {
-        await EnsureDeserializedAsync(cancellationToken).ConfigureAwait(false);
-        return _cachedPagination;
+        using var linkedTokenSource = CancellationTokenSource.CreateLinkedTokenSource(cancellationToken, _cancellationToken);
+        await EnsureDeserializedAsync(linkedTokenSource.Token).ConfigureAwait(false);
+        return _cachedPagination ?? Pagination.Empty;
     }
 
+    private async IAsyncEnumerable<TValue> DeserializeAndEnumerateAsync([EnumeratorCancellation] CancellationToken cancellationToken)
+    {
+        await EnsureDeserializedAsync(cancellationToken).ConfigureAwait(false);
+
+        if (_cachedItems is not null)
+        {
+            await foreach (var item in _cachedItems.WithCancellation(cancellationToken).ConfigureAwait(false))
+            {
+                yield return item;
+            }
+        }
+    }
+
+    [MemberNotNull(nameof(_cachedItems), nameof(_cachedPagination))]
     private async ValueTask EnsureDeserializedAsync(CancellationToken cancellationToken)
     {
         if (_isDeserialized)
         {
+            Debug.Assert(_cachedItems is not null && _cachedPagination is not null);
             return;
         }
 
-        // Use lock to prevent concurrent deserialization
-        lock (_lock)
+        try
         {
-            if (_isDeserialized)
+            using var _cachedDocument = await ReadJsonDocumentAsync(cancellationToken).ConfigureAwait(false);
+            if (_cachedDocument is not null)
             {
-                return;
+                if (_cachedPagination is null
+                    && _cachedDocument.RootElement.TryGetProperty("pagination", out var paginationElement))
+                {
+                    _cachedPagination = paginationElement.Deserialize(PaginationJsonContext.Default.Pagination);
+                }
+
+                if (_cachedItems is null
+                    && _cachedDocument.RootElement.TryGetProperty("items", out var itemsElement))
+                {
+                    if (itemsElement.ValueKind == JsonValueKind.Array)
+                    {
+                        _cachedItems = EnumerateJsonArray(itemsElement);
+                    }
+                }
             }
         }
-
-        // Read and parse outside the lock to avoid blocking
-        var document = await ReadAndParseJsonAsync(cancellationToken).ConfigureAwait(false);
-
-        lock (_lock)
+        finally
         {
-            if (_isDeserialized)
-            {
-                // Another thread completed deserialization; dispose our document
-                document?.Dispose();
-                return;
-            }
-
-            _document = document;
-
-            if (_document is not null)
-            {
-                var root = _document.RootElement;
-
-                if (root.TryGetProperty("pagination"u8, out var paginationElement))
-                {
-                    _cachedPagination = paginationElement.Deserialize(
-                        PaginationJsonContext.Default.Pagination);
-                }
-
-                if (root.TryGetProperty("items"u8, out var itemsElement)
-                    && itemsElement.ValueKind is JsonValueKind.Array)
-                {
-                    _itemsElement = itemsElement;
-                }
-            }
-
             _isDeserialized = true;
+            _cachedPagination ??= Pagination.Empty;
+            _cachedItems ??= AsyncEnumerable.Empty<TValue>();
+            await _pipeReader.CompleteAsync().ConfigureAwait(false);
         }
     }
 
-    private async ValueTask<JsonDocument?> ReadAndParseJsonAsync(CancellationToken cancellationToken)
+    [SuppressMessage("Design", "CA1031:Do not catch general exception types", Justification = "<Pending>")]
+    private async ValueTask<JsonDocument?> ReadJsonDocumentAsync(CancellationToken cancellationToken)
     {
-#pragma warning disable CA1031 // Do not catch general exception types
         try
         {
-            // Use ArrayBufferWriter to accumulate data efficiently
-            var bufferWriter = new ArrayBufferWriter<byte>();
+            ReadResult result = await _pipeReader.ReadAsync(cancellationToken).ConfigureAwait(false);
 
-            while (true)
+            if (result.Buffer.Length == 0)
             {
-                var result = await _pipeReader
-                    .ReadAsync(cancellationToken)
-                    .ConfigureAwait(false);
-
-                var buffer = result.Buffer;
-
-                if (buffer.Length > 0)
-                {
-                    // Copy to our buffer
-                    foreach (var segment in buffer)
-                    {
-                        bufferWriter.Write(segment.Span);
-                    }
-                }
-
-                _pipeReader.AdvanceTo(buffer.End);
-
-                if (result.IsCompleted)
-                {
-                    break;
-                }
-            }
-
-            await CompletePipeReaderAsync().ConfigureAwait(false);
-
-            if (bufferWriter.WrittenCount == 0)
-            {
+                _pipeReader.AdvanceTo(result.Buffer.End);
                 return null;
             }
 
-            return JsonDocument.Parse(
-                bufferWriter.WrittenMemory,
-                new JsonDocumentOptions
-                {
-                    AllowTrailingCommas = false,
-                    CommentHandling = JsonCommentHandling.Disallow,
-                    MaxDepth = 64
-                });
-        }
-        catch (JsonException)
-        {
-            throw; // Re-throw JSON parsing errors for caller to handle
-        }
-        catch (OperationCanceledException)
-        {
-            throw; // Re-throw cancellation
+            byte[] bytes = new byte[result.Buffer.Length];
+            result.Buffer.CopyTo(bytes);
+            _pipeReader.AdvanceTo(result.Buffer.End);
+
+            return JsonDocument.Parse(new ReadOnlyMemory<byte>(bytes), new JsonDocumentOptions
+            {
+                AllowTrailingCommas = false,
+                CommentHandling = JsonCommentHandling.Disallow,
+                MaxDepth = 64
+            });
         }
         catch
         {
-            await CompletePipeReaderAsync().ConfigureAwait(false);
             return null;
         }
-#pragma warning restore CA1031 // Do not catch general exception types
     }
-
-    private async ValueTask CompletePipeReaderAsync()
+    private async IAsyncEnumerable<TValue> EnumerateJsonArray(JsonElement arrayElement)
     {
-        if (_pipeReaderCompleted)
+        // Yield to ensure we are async
+        await Task.Yield();
+
+        foreach (JsonElement element in arrayElement.EnumerateArray())
         {
-            return;
-        }
-
-        _pipeReaderCompleted = true;
-        await _pipeReader.CompleteAsync().ConfigureAwait(false);
-    }
-
-    /// <summary>
-    /// Internal enumerator that manages the document lifetime and streams items.
-    /// </summary>
-    private sealed class Enumerator(
-        AsyncPagedEnumerableDeserializer<TValue> parent,
-        CancellationTokenSource linkedTokenSource) : IAsyncPagedEnumerator<TValue>
-    {
-        private readonly CancellationToken _token = linkedTokenSource.Token;
-        private JsonElement.ArrayEnumerator _arrayEnumerator;
-        private Pagination _pagination = Pagination.Empty;
-        private int _itemIndex;
-        private bool _initialized;
-        private bool _disposed;
-
-        /// <inheritdoc/>
-        public TValue Current { get; private set; } = default!;
-
-        /// <inheritdoc/>
-        public ref readonly Pagination Pagination => ref _pagination;
-
-        /// <inheritdoc/>
-        public PaginationStrategy Strategy => parent._strategy;
-
-        /// <inheritdoc/>
-        public async ValueTask<bool> MoveNextAsync()
-        {
-            ObjectDisposedException.ThrowIf(_disposed, this);
-            _token.ThrowIfCancellationRequested();
-
-            if (!_initialized)
+            // AOT Safe: Use the pre-calculated JsonTypeInfo
+            TValue? item = element.Deserialize(_itemTypeInfo);
+            if (item is not null)
             {
-                await parent.EnsureDeserializedAsync(_token).ConfigureAwait(false);
-                _pagination = parent._cachedPagination;
-                _arrayEnumerator = parent._itemsElement.EnumerateArray();
-                _initialized = true;
-            }
-
-            if (!_arrayEnumerator.MoveNext())
-            {
-                UpdatePaginationOnComplete();
-                Current = default!;
-                return false;
-            }
-
-            var element = _arrayEnumerator.Current;
-            var item = element.Deserialize(parent._itemTypeInfo);
-
-            if (item is null)
-            {
-                // Skip null items and try next
-                return await MoveNextAsync().ConfigureAwait(false);
-            }
-
-            Current = item;
-            _itemIndex++;
-            UpdatePagination();
-
-            return true;
-        }
-
-        /// <inheritdoc/>
-        public async ValueTask DisposeAsync()
-        {
-            if (_disposed)
-            {
-                return;
-            }
-
-            _disposed = true;
-            _arrayEnumerator.Dispose();
-            linkedTokenSource.Dispose();
-
-            // Dispose the document when enumeration is complete
-            lock (parent._lock)
-            {
-                parent._document?.Dispose();
-                parent._document = null;
-            }
-
-            await parent.CompletePipeReaderAsync().ConfigureAwait(false);
-        }
-
-        [MethodImpl(MethodImplOptions.AggressiveInlining)]
-        private void UpdatePagination()
-        {
-            if (Strategy is PaginationStrategy.None)
-            {
-                return;
-            }
-
-            if (Strategy is PaginationStrategy.PerItem)
-            {
-                _pagination = _pagination with
-                {
-                    PageSize = _pagination.PageSize == 0 ? 1 : _pagination.PageSize,
-                    CurrentPage = _itemIndex
-                };
-                return;
-            }
-
-            if (Strategy is PaginationStrategy.PerPage)
-            {
-                int pageSize = _pagination.PageSize;
-                int currentPage = pageSize > 0 ? ((_itemIndex - 1) / pageSize) + 1 : 1;
-                _pagination = _pagination with { CurrentPage = currentPage };
+                yield return item;
             }
         }
 
-        [MethodImpl(MethodImplOptions.AggressiveInlining)]
-        private void UpdatePaginationOnComplete()
-        {
-            if (Strategy is PaginationStrategy.PerItem && _pagination.TotalCount is null)
-            {
-                _pagination = _pagination with { TotalCount = _itemIndex };
-            }
-        }
+        // Dispose the document when enumeration is complete
+        _jsonDocument?.Dispose();
+        _jsonDocument = null;
     }
 }

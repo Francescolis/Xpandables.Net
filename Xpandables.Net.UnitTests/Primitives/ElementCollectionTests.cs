@@ -129,10 +129,11 @@ public sealed class ElementCollectionTests
     public void WhenAddingEntryThenShouldBeInCollection()
     {
         // Arrange
-        var collection = new ElementCollection();
-
-        // Act
-        collection.Add("name", "John");
+        var collection = new ElementCollection
+        {
+            // Act
+            { "name", "John" }
+        };
 
         // Assert
         collection.Count.Should().Be(1);
@@ -143,12 +144,13 @@ public sealed class ElementCollectionTests
     public void WhenAddingMultipleEntriesThenAllShouldBeInCollection()
     {
         // Arrange
-        var collection = new ElementCollection();
-
-        // Act
-        collection.Add("name", "John");
-        collection.Add("email", "john@example.com");
-        collection.Add("age", "30");
+        var collection = new ElementCollection
+        {
+            // Act
+            { "name", "John" },
+            { "email", "john@example.com" },
+            { "age", "30" }
+        };
 
         // Assert
         collection.Count.Should().Be(3);
@@ -158,11 +160,12 @@ public sealed class ElementCollectionTests
     public void WhenAddingDuplicateKeyThenShouldMergeValues()
     {
         // Arrange
-        var collection = new ElementCollection();
-
-        // Act
-        collection.Add("errors", "Error 1");
-        collection.Add("errors", "Error 2");
+        var collection = new ElementCollection
+        {
+            // Act
+            { "errors", "Error 1" },
+            { "errors", "Error 2" }
+        };
 
         // Assert
         collection.Count.Should().Be(1);
@@ -279,10 +282,12 @@ public sealed class ElementCollectionTests
     public void WhenRemovingFromMiddleThenShouldMaintainOtherEntries()
     {
         // Arrange
-        var collection = new ElementCollection();
-        collection.Add("first", "1");
-        collection.Add("second", "2");
-        collection.Add("third", "3");
+        var collection = new ElementCollection
+        {
+            { "first", "1" },
+            { "second", "2" },
+            { "third", "3" }
+        };
 
         // Act
         collection.Remove("second");
@@ -423,9 +428,11 @@ public sealed class ElementCollectionTests
     public void WhenClearingCollectionThenShouldBeEmpty()
     {
         // Arrange
-        var collection = new ElementCollection();
-        collection.Add("key1", "value1");
-        collection.Add("key2", "value2");
+        var collection = new ElementCollection
+        {
+            { "key1", "value1" },
+            { "key2", "value2" }
+        };
 
         // Act
         collection.Clear();
@@ -499,9 +506,11 @@ public sealed class ElementCollectionTests
     public void WhenUsingSubtractionOperatorWithKeyThenShouldRemoveKey()
     {
         // Arrange
-        var collection = new ElementCollection();
-        collection.Add("key1", "value1");
-        collection.Add("key2", "value2");
+        var collection = new ElementCollection
+        {
+            { "key1", "value1" },
+            { "key2", "value2" }
+        };
 
         // Act
         var result = collection - "key1";
@@ -530,10 +539,12 @@ public sealed class ElementCollectionTests
     public void WhenUsingSubtractionOperatorWithCollectionThenShouldRemoveAll()
     {
         // Arrange
-        var left = new ElementCollection();
-        left.Add("key1", "value1");
-        left.Add("key2", "value2");
-        left.Add("key3", "value3");
+        var left = new ElementCollection
+        {
+            { "key1", "value1" },
+            { "key2", "value2" },
+            { "key3", "value3" }
+        };
 
         var right = ElementCollection.With("key2", "value2");
 
@@ -553,9 +564,11 @@ public sealed class ElementCollectionTests
     public void WhenConvertingToReadOnlyDictionaryThenShouldContainAllEntries()
     {
         // Arrange
-        var collection = new ElementCollection();
-        collection.Add("key1", "value1");
-        collection.Add("key2", "value2");
+        var collection = new ElementCollection
+        {
+            { "key1", "value1" },
+            { "key2", "value2" }
+        };
 
         // Act
         ReadOnlyDictionary<string, StringValues> dict = collection;
@@ -569,9 +582,11 @@ public sealed class ElementCollectionTests
     public void WhenConvertingToDictionaryThenShouldContainAllEntries()
     {
         // Arrange
-        var collection = new ElementCollection();
-        collection.Add("key1", "value1");
-        collection.Add("key2", "value2", "value3");
+        var collection = new ElementCollection
+        {
+            { "key1", "value1" },
+            { "key2", "value2", "value3" }
+        };
 
         // Act
         var dict = collection.ToDictionary();
@@ -599,10 +614,12 @@ public sealed class ElementCollectionTests
     public void WhenEnumeratingCollectionThenShouldYieldAllEntries()
     {
         // Arrange
-        var collection = new ElementCollection();
-        collection.Add("key1", "value1");
-        collection.Add("key2", "value2");
-        collection.Add("key3", "value3");
+        var collection = new ElementCollection
+        {
+            { "key1", "value1" },
+            { "key2", "value2" },
+            { "key3", "value3" }
+        };
 
         // Act
         var keys = collection.Select(e => e.Key).ToList();
@@ -618,9 +635,11 @@ public sealed class ElementCollectionTests
     public void WhenAccessingKeysThenShouldReturnAllKeys()
     {
         // Arrange
-        var collection = new ElementCollection();
-        collection.Add("key1", "value1");
-        collection.Add("key2", "value2");
+        var collection = new ElementCollection
+        {
+            { "key1", "value1" },
+            { "key2", "value2" }
+        };
 
         // Act
         var keys = collection.Keys.ToList();
@@ -635,9 +654,11 @@ public sealed class ElementCollectionTests
     public void WhenAccessingValuesThenShouldReturnAllValues()
     {
         // Arrange
-        var collection = new ElementCollection();
-        collection.Add("key1", "value1");
-        collection.Add("key2", "value2");
+        var collection = new ElementCollection
+        {
+            { "key1", "value1" },
+            { "key2", "value2" }
+        };
 
         // Act
         var values = collection.Values.ToList();
@@ -664,9 +685,11 @@ public sealed class ElementCollectionTests
     public void WhenCallingToStringThenShouldFormatCorrectly()
     {
         // Arrange
-        var collection = new ElementCollection();
-        collection.Add("name", "John");
-        collection.Add("email", "john@example.com");
+        var collection = new ElementCollection
+        {
+            { "name", "John" },
+            { "email", "john@example.com" }
+        };
 
         // Act
         var result = collection.ToString();
@@ -699,9 +722,11 @@ public sealed class ElementCollectionTests
     public void WhenSerializingCollectionThenShouldProduceValidJson()
     {
         // Arrange
-        var collection = new ElementCollection();
-        collection.Add("name", "John");
-        collection.Add("age", "30");
+        var collection = new ElementCollection
+        {
+            { "name", "John" },
+            { "age", "30" }
+        };
 
         // Act
         var json = JsonSerializer.Serialize(collection, ElementCollectionContext.Default.ElementCollection);
@@ -714,9 +739,11 @@ public sealed class ElementCollectionTests
     public void WhenDeserializingCollectionThenShouldRecreateCollection()
     {
         // Arrange
-        var original = new ElementCollection();
-        original.Add("field1", "value1");
-        original.Add("field2", "value2", "value3");
+        var original = new ElementCollection
+        {
+            { "field1", "value1" },
+            { "field2", "value2", "value3" }
+        };
 
         var json = JsonSerializer.Serialize(original, ElementCollectionContext.Default.ElementCollection);
 
@@ -736,14 +763,15 @@ public sealed class ElementCollectionTests
     public void WhenBuildingValidationErrorsThenShouldAccumulateErrors()
     {
         // Arrange
-        var errors = new ElementCollection();
-
-        // Act - Simulating form validation
-        errors.Add("Email", "Email is required");
-        errors.Add("Email", "Invalid email format");
-        errors.Add("Password", "Password must be at least 8 characters");
-        errors.Add("Password", "Password must contain a number");
-        errors.Add("ConfirmPassword", "Passwords do not match");
+        var errors = new ElementCollection
+        {
+            // Act - Simulating form validation
+            { "Email", "Email is required" },
+            { "Email", "Invalid email format" },
+            { "Password", "Password must be at least 8 characters" },
+            { "Password", "Password must contain a number" },
+            { "ConfirmPassword", "Passwords do not match" }
+        };
 
         // Assert
         errors.Count.Should().Be(3);
@@ -756,13 +784,14 @@ public sealed class ElementCollectionTests
     public void WhenBuildingHttpHeadersThenShouldSupportMultipleValues()
     {
         // Arrange
-        var headers = new ElementCollection();
-
-        // Act
-        headers.Add("Accept", "application/json");
-        headers.Add("Accept", "text/plain");
-        headers.Add("Content-Type", "application/json");
-        headers.Add("Authorization", "Bearer token123");
+        var headers = new ElementCollection
+        {
+            // Act
+            { "Accept", "application/json" },
+            { "Accept", "text/plain" },
+            { "Content-Type", "application/json" },
+            { "Authorization", "Bearer token123" }
+        };
 
         // Assert
         headers["Accept"]!.Value.Values.Count.Should().Be(2);
@@ -773,13 +802,14 @@ public sealed class ElementCollectionTests
     public void WhenBuildingQueryParametersThenShouldAccumulateValues()
     {
         // Arrange
-        var queryParams = new ElementCollection();
-
-        // Act - Building: ?category=electronics&category=books&sort=price&page=1
-        queryParams.Add("category", "electronics");
-        queryParams.Add("category", "books");
-        queryParams.Add("sort", "price");
-        queryParams.Add("page", "1");
+        var queryParams = new ElementCollection
+        {
+            // Act - Building: ?category=electronics&category=books&sort=price&page=1
+            { "category", "electronics" },
+            { "category", "books" },
+            { "sort", "price" },
+            { "page", "1" }
+        };
 
         // Assert
         queryParams["category"]!.Value.Values.Count.Should().Be(2);
@@ -806,10 +836,12 @@ public sealed class ElementCollectionTests
     public void WhenFilteringErrorsThenShouldWorkCorrectly()
     {
         // Arrange
-        var errors = new ElementCollection();
-        errors.Add("critical_error", "Database connection failed");
-        errors.Add("warning", "Cache miss");
-        errors.Add("info", "Request processed");
+        var errors = new ElementCollection
+        {
+            { "critical_error", "Database connection failed" },
+            { "warning", "Cache miss" },
+            { "info", "Request processed" }
+        };
 
         // Act
         var criticalOnly = errors.Where(e => e.Key.StartsWith("critical", StringComparison.Ordinal));

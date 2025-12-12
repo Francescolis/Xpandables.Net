@@ -379,15 +379,10 @@ public sealed class DisposableTests
         }
     }
 
-    private sealed class SimulatedFileHandler : Disposable
+    private sealed class SimulatedFileHandler(string filePath) : Disposable
     {
-        private StreamWriter? _writer;
+        private StreamWriter? _writer = new(filePath);
         public bool IsHandleOpen => _writer is not null;
-
-        public SimulatedFileHandler(string filePath)
-        {
-            _writer = new StreamWriter(filePath);
-        }
 
         public void Write(string content)
         {

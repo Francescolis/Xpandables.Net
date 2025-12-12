@@ -91,7 +91,7 @@ public sealed class ElementEntryTests
     {
         // Arrange
         string[] emptyArray = [];
-        
+
         // Act
         var act = () => new ElementEntry("key", emptyArray);
 
@@ -104,7 +104,7 @@ public sealed class ElementEntryTests
     public void WhenCreatingWithEmptyStringValuesThenShouldThrowArgumentOutOfRangeException()
     {
         // Arrange
-        StringValues values = new(Array.Empty<string>());
+        StringValues values = new([]);
 
         // Act
         var act = () => new ElementEntry("key", values);

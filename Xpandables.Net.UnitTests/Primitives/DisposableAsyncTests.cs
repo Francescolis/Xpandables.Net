@@ -76,18 +76,13 @@ public sealed class DisposableAsyncTests
         }
     }
 
-    private sealed class AsyncDatabaseConnection : DisposableAsync
+    private sealed class AsyncDatabaseConnection(string connectionString) : DisposableAsync
     {
-        public string? ConnectionString { get; private set; }
+        public string? ConnectionString { get; private set; } = connectionString;
         public bool IsConnected { get; private set; }
         public List<string> ExecutedCommands { get; } = [];
         public bool TransactionRolledBack { get; private set; }
         public bool ConnectionClosed { get; private set; }
-
-        public AsyncDatabaseConnection(string connectionString)
-        {
-            ConnectionString = connectionString;
-        }
 
         public async Task ConnectAsync(CancellationToken cancellationToken = default)
         {
@@ -125,17 +120,11 @@ public sealed class DisposableAsyncTests
         public bool ClientDisposed { get; private set; }
         public List<string> RequestsMade { get; } = [];
 
-        public AsyncHttpClientWrapper()
-        {
-            _httpClient = new HttpClient();
-        }
+        public AsyncHttpClientWrapper() => _httpClient = new HttpClient();
 
         public async Task<string> GetAsync(string url, CancellationToken cancellationToken = default)
         {
-            if (_httpClient is null)
-            {
-                throw new ObjectDisposedException(nameof(AsyncHttpClientWrapper));
-            }
+            ObjectDisposedException.ThrowIf(_httpClient is null, _httpClient);
 
             RequestsMade.Add(url);
             // Simulate a request without actually making one
@@ -510,23 +499,15 @@ public sealed class DisposableAsyncTests
         File.Delete(tempFile);
     }
 
-    private sealed class AsyncFileWriter : DisposableAsync
+    private sealed class AsyncFileWriter(string path) : DisposableAsync
     {
-        private StreamWriter? _writer;
+        private StreamWriter? _writer = new(path);
         public bool IsClosed { get; private set; }
         public bool WasFlushed { get; private set; }
 
-        public AsyncFileWriter(string path)
-        {
-            _writer = new StreamWriter(path);
-        }
-
         public async Task WriteLineAsync(string content)
         {
-            if (_writer is null)
-            {
-                throw new ObjectDisposedException(nameof(AsyncFileWriter));
-            }
+            ObjectDisposedException.ThrowIf(_writer is null, _writer);
 
             await _writer.WriteLineAsync(content).ConfigureAwait(false);
         }

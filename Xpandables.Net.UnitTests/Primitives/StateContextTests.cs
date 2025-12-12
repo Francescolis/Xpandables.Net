@@ -25,17 +25,11 @@ public sealed class StateContextTests
 {
     #region Test States and Context
 
-    private sealed class OrderContext : StateContext<OrderState>
+    private sealed class OrderContext(string orderId, StateContextTests.OrderState initialState) : StateContext<OrderState>(initialState)
     {
-        public string OrderId { get; }
+        public string OrderId { get; } = orderId;
         public List<string> StateHistory { get; } = [];
         public List<string> TransitionLog { get; } = [];
-
-        public OrderContext(string orderId, OrderState initialState)
-            : base(initialState)
-        {
-            OrderId = orderId;
-        }
 
         protected override void OnStateTransitioning(OrderState? currentState, OrderState newState)
         {
@@ -179,15 +173,9 @@ public sealed class StateContextTests
 
     #region Validation Context
 
-    private sealed class ValidatedStateContext : StateContext<ValidatedState>
+    private sealed class ValidatedStateContext(StateContextTests.ValidatedState initialState, HashSet<Type> allowedTransitions) : StateContext<ValidatedState>(initialState)
     {
-        private readonly HashSet<Type> _allowedTransitions = [];
-
-        public ValidatedStateContext(ValidatedState initialState, HashSet<Type> allowedTransitions)
-            : base(initialState)
-        {
-            _allowedTransitions = allowedTransitions;
-        }
+        private readonly HashSet<Type> _allowedTransitions = allowedTransitions;
 
         protected override bool CanTransitionTo(ValidatedState newState)
         {
@@ -549,10 +537,7 @@ public sealed class StateContextTests
         var context = new OrderContext("ORD-001", new PendingState());
         var eventLog = new List<string>();
 
-        context.StateTransitioned += (s, e) =>
-        {
-            eventLog.Add($"Transitioned to {e.NewState.GetType().Name} at {e.TransitionTime:HH:mm:ss}");
-        };
+        context.StateTransitioned += (s, e) => eventLog.Add($"Transitioned to {e.NewState.GetType().Name} at {e.TransitionTime:HH:mm:ss}");
 
         // Act
         var pending = (PendingState)context.CurrentState;
