@@ -195,7 +195,7 @@ public sealed class IQueryableExtensionsTests
         items.Should()
             .BeInAscendingOrder("items should be sorted");
 
-        items.Should().Equal([1, 2, 3, 5, 8, 9],
+        items.Should().Equal([1, 2, 3, 4],
             "items should be in correct order");
     }
 

@@ -45,6 +45,11 @@ public readonly record struct ElementEntry
     public readonly required StringValues Values { get; init; }
 
     /// <summary>
+    /// Gets a value indicating whether the current instance contains no key and no values.
+    /// </summary>
+    public readonly bool IsEmpty => string.IsNullOrEmpty(Key) && Values.Count == 0;
+
+    /// <summary>
     /// Initializes a new instance of the <see cref="ElementEntry"/> struct.
     /// </summary>
     /// <param name="key">The key of the entry.</param>

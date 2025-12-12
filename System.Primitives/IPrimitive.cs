@@ -133,7 +133,7 @@ public interface IPrimitive<TPrimitive, TValue> :
     /// Returns a string representation of the current value.
     /// </summary>
     /// <returns>A string that represents the value. Returns an empty string if the value is null.</returns>
-    string ToString() => Value.ToString() ?? string.Empty;
+    public string ToString() => Value.ToString() ?? string.Empty;
 
     /// <summary>
     /// Returns a hash code for the current instance.
