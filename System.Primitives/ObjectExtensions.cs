@@ -59,7 +59,8 @@ public static class ObjectExtensions
             if (!conversionType.IsGenericType
                 || conversionType.GetGenericTypeDefinition() != typeof(Nullable<>))
             {
-                return Convert.ChangeType(obj, targetType, formatProvider);
+                return TryConvertSpecialTypes(obj, targetType, formatProvider)
+                    ?? Convert.ChangeType(obj, targetType, formatProvider);
             }
 
             Type? underlyingType = Nullable.GetUnderlyingType(targetType);
@@ -70,7 +71,8 @@ public static class ObjectExtensions
 
             targetType = underlyingType;
 
-            return Convert.ChangeType(obj, targetType, formatProvider);
+            return TryConvertSpecialTypes(obj, targetType, formatProvider)
+                ?? Convert.ChangeType(obj, targetType, formatProvider);
         }
 
         /// <summary>
@@ -169,5 +171,40 @@ public static class ObjectExtensions
 
             return condition ? func(obj) : obj;
         }
+    }
+
+    private static object? TryConvertSpecialTypes(object obj, Type targetType, IFormatProvider? formatProvider)
+    {
+        // Guid conversion
+        if (targetType == typeof(Guid) && obj is string guidString)
+        {
+            return Guid.Parse(guidString);
+        }
+
+        // TimeSpan conversion
+        if (targetType == typeof(TimeSpan) && obj is string timeSpanString)
+        {
+            return TimeSpan.Parse(timeSpanString, formatProvider);
+        }
+
+        // Uri conversion
+        if (targetType == typeof(Uri) && obj is string uriString)
+        {
+            return new Uri(uriString);
+        }
+
+        // Version conversion
+        if (targetType == typeof(Version) && obj is string versionString)
+        {
+            return Version.Parse(versionString);
+        }
+
+        // Enum conversion
+        if (targetType.IsEnum && obj is string enumString)
+        {
+            return Enum.Parse(targetType, enumString, ignoreCase: true);
+        }
+
+        return null;
     }
 }
