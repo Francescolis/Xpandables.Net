@@ -15,7 +15,7 @@
  *
 ********************************************************************************/
 using System.Diagnostics;
-using System.IO.Pipelines;
+using System.Diagnostics.CodeAnalysis;
 using System.Text;
 using System.Text.Json;
 using System.Text.Json.Serialization.Metadata;
@@ -39,22 +39,42 @@ public static class HttpContentExtensions
     extension(HttpContent content)
     {
         /// <summary>
+        /// Reads the HTTP content as an asynchronous paged enumerable of JSON values of the specified type.
+        /// </summary>
+        /// <typeparam name="TValue">The type of the elements to deserialize from the JSON content.</typeparam>
+        /// <param name="strategy">The pagination strategy to use when reading the content. Specifies how the content should be split into
+        /// pages. The default is PaginationStrategy.None.</param>
+        /// <param name="cancellationToken">A cancellation token that can be used to cancel the asynchronous operation.</param>
+        /// <returns>An asynchronous paged enumerable that yields deserialized values of type TValue from the JSON content. The
+        /// enumerable may be empty if the content contains no items.</returns>
+        [RequiresUnreferencedCode("Calls System.Net.Http.Json.HttpContentExtensions.GetJsonTypeInfo(Type, JsonSerializerOptions)")]
+        [RequiresDynamicCode("Calls System.Net.Http.Json.HttpContentExtensions.GetJsonTypeInfo(Type, JsonSerializerOptions)")]
+        public IAsyncPagedEnumerable<TValue?> ReadFromJsonAsAsyncPagedEnumerable<TValue>(
+            PaginationStrategy strategy = PaginationStrategy.None,
+            CancellationToken cancellationToken = default)
+        {
+            ArgumentNullException.ThrowIfNull(content);
+            return content.ReadFromJsonAsAsyncPagedEnumerable<TValue>(options: null, strategy, cancellationToken);
+        }
+
+        /// <summary>
         /// Deserializes the HTTP JSON content into an <see cref="IAsyncPagedEnumerable{T}"/> using
         /// the supplied <see cref="JsonSerializerOptions"/>.
         /// </summary>
         /// <param name="options">The options to use when deserializing the JSON content.</param>
         /// <param name="strategy">The pagination strategy to use when deserializing the paged data.</param>
         /// <param name="cancellationToken">The token to monitor for cancellation requests.</param>
+        [RequiresUnreferencedCode("Calls System.Net.Http.Json.HttpContentExtensions.GetJsonTypeInfo(Type, JsonSerializerOptions)")]
+        [RequiresDynamicCode("Calls System.Net.Http.Json.HttpContentExtensions.GetJsonTypeInfo(Type, JsonSerializerOptions)")]
         public IAsyncPagedEnumerable<TValue?> ReadFromJsonAsAsyncPagedEnumerable<TValue>(
-            JsonSerializerOptions options,
+            JsonSerializerOptions? options,
             PaginationStrategy strategy = PaginationStrategy.None,
             CancellationToken cancellationToken = default)
         {
             ArgumentNullException.ThrowIfNull(content);
             ArgumentNullException.ThrowIfNull(options);
 
-            PipeReader reader = PipeReader.Create(GetContentStream(content));
-            return JsonSerializer.DeserializeAsyncPagedEnumerable<TValue>(reader, options, strategy, cancellationToken);
+            return ReadFromJsonAsAsyncPagedEnumerableCore<TValue>(content, options, strategy, cancellationToken);
         }
 
         /// <summary>
@@ -72,12 +92,39 @@ public static class HttpContentExtensions
             ArgumentNullException.ThrowIfNull(content);
             ArgumentNullException.ThrowIfNull(jsonTypeInfo);
 
-            PipeReader reader = PipeReader.Create(GetContentStream(content));
-            return JsonSerializer.DeserializeAsyncPagedEnumerable(reader, jsonTypeInfo, strategy, cancellationToken);
+            return ReadFromJsonAsAsyncPagedEnumerableCore(content, jsonTypeInfo, strategy, cancellationToken);
         }
     }
 
-    internal static ValueTask<Stream> GetContentStreamAsync(HttpContent content, CancellationToken cancellationToken)
+    [RequiresUnreferencedCode("Calls System.Net.Http.Json.HttpContentExtensions.GetJsonTypeInfo(Type, JsonSerializerOptions)")]
+    [RequiresDynamicCode("Calls System.Net.Http.Json.HttpContentExtensions.GetJsonTypeInfo(Type, JsonSerializerOptions)")]
+    private static IAsyncPagedEnumerable<TValue?> ReadFromJsonAsAsyncPagedEnumerableCore<TValue>(
+        HttpContent content,
+        JsonSerializerOptions? options,
+        PaginationStrategy strategy,
+        CancellationToken cancellationToken)
+    {
+        var jsonTypeInfo = (JsonTypeInfo<TValue>)GetJsonTypeInfo(typeof(TValue), options);
+        return ReadFromJsonAsAsyncPagedEnumerableCore(content, jsonTypeInfo, strategy, cancellationToken);
+    }
+
+    private static IAsyncPagedEnumerable<TValue?> ReadFromJsonAsAsyncPagedEnumerableCore<TValue>(
+        HttpContent content,
+        JsonTypeInfo<TValue> jsonTypeInfo,
+        PaginationStrategy strategy,
+        CancellationToken cancellationToken)
+    {
+        return AsyncPagedEnumerable.Create(async ct =>
+        {
+            using Stream contentStream = await GetContentStreamAsync(content, ct)
+                .ConfigureAwait(false);
+
+            return JsonSerializer.DeserializeAsyncPagedEnumerable(
+                contentStream, jsonTypeInfo, strategy, ct);
+        });
+    }
+
+    private static ValueTask<Stream> GetContentStreamAsync(HttpContent content, CancellationToken cancellationToken)
     {
         Task<Stream> task = ReadHttpContentStreamAsync(content, cancellationToken);
 
@@ -86,7 +133,7 @@ public static class HttpContentExtensions
             : new(task);
     }
 
-    internal static Stream GetContentStream(HttpContent content)
+    private static Stream GetContentStream(HttpContent content)
     {
         Stream stream = ReadHttpContentStream(content);
 
@@ -103,19 +150,25 @@ public static class HttpContentExtensions
         return GetTranscodingStream(contentStream, sourceEncoding);
     }
 
-    private static Stream ReadHttpContentStream(HttpContent content)
-    {
-        return content.ReadAsStream();
-    }
+    private static Stream ReadHttpContentStream(HttpContent content) => content.ReadAsStream();
 
-    private static Task<Stream> ReadHttpContentStreamAsync(HttpContent content, CancellationToken cancellationToken)
-    {
-        return content.ReadAsStreamAsync(cancellationToken);
-    }
+    private static Task<Stream> ReadHttpContentStreamAsync(HttpContent content, CancellationToken cancellationToken) =>
+        content.ReadAsStreamAsync(cancellationToken);
 
-    private static Stream GetTranscodingStream(Stream contentStream, Encoding sourceEncoding)
+    private static Stream GetTranscodingStream(Stream contentStream, Encoding sourceEncoding) =>
+        Encoding.CreateTranscodingStream(contentStream, innerStreamEncoding: sourceEncoding, outerStreamEncoding: Encoding.UTF8);
+
+    [RequiresUnreferencedCode("Calls System.Text.Json.JsonSerializerOptions.Web")]
+    [RequiresDynamicCode("Calls System.Text.Json.JsonSerializerOptions.Web")]
+    internal static JsonTypeInfo GetJsonTypeInfo(Type type, JsonSerializerOptions? options)
     {
-        return Encoding.CreateTranscodingStream(contentStream, innerStreamEncoding: sourceEncoding, outerStreamEncoding: Encoding.UTF8);
+        Debug.Assert(type is not null);
+
+        // Resolves JsonTypeInfo metadata using the appropriate JsonSerializerOptions configuration,
+        // following the semantics of the JsonSerializer reflection methods.
+        options ??= JsonSerializerOptions.Web;
+        options.MakeReadOnly(populateMissingResolver: true);
+        return options.GetTypeInfo(type);
     }
 
     internal const string DefaultMediaType = "application/json; charset=utf-8";

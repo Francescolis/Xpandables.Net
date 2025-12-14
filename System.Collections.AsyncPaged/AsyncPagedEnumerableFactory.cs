@@ -42,7 +42,7 @@ public static class AsyncPagedEnumerable
     /// <returns>An asynchronous paged enumerable that iterates over the items in the source sequence according to the specified
     /// pagination strategy.</returns>
     public static IAsyncPagedEnumerable<T> Create<T>(
-         IAsyncEnumerable<T> source,
+        IAsyncEnumerable<T> source,
         Func<CancellationToken, ValueTask<Pagination>>? paginationFactory = default,
         PaginationStrategy strategy = PaginationStrategy.None) =>
         new AsyncPagedEnumerable<T>(source, paginationFactory, strategy);
@@ -63,10 +63,26 @@ public static class AsyncPagedEnumerable
     /// <returns>An asynchronous paged enumerable that yields elements of type T from the source query according to the specified
     /// or default pagination.</returns>
     public static IAsyncPagedEnumerable<T> Create<T>(
-         IQueryable<T> query,
+        IQueryable<T> query,
         Func<CancellationToken, ValueTask<Pagination>>? paginationFactory = default,
         PaginationStrategy strategy = PaginationStrategy.None) =>
         new AsyncPagedEnumerable<T>(query, paginationFactory, strategy);
+
+    /// <summary>
+    /// Creates a new asynchronous paged enumerable using the specified factory and pagination strategy.
+    /// </summary>
+    /// <remarks>Use this method to construct an <see cref="IAsyncPagedEnumerable{T}"/> when you need to defer creation or
+    /// customize pagination behavior. The factory function is invoked each time enumeration begins, allowing for fresh
+    /// state or context per enumeration.</remarks>
+    /// <typeparam name="T">The type of the elements in the paged enumerable.</typeparam>
+    /// <param name="factory">A factory function that, given a cancellation token, returns a task that produces an asynchronous paged
+    /// enumerable of type T. Cannot be null.</param>
+    /// <param name="strategy">The pagination strategy to use when enumerating pages. The default is PaginationStrategy.None.</param>
+    /// <returns>An asynchronous paged enumerable of type T created by the specified factory and pagination strategy.</returns>
+    public static IAsyncPagedEnumerable<T> Create<T>(
+        Func<CancellationToken, ValueTask<IAsyncPagedEnumerable<T>>> factory,
+        PaginationStrategy strategy = PaginationStrategy.None) =>
+        new AsyncPagedFactoryEnumerable<T>(factory, strategy);
 
     /// <summary>
     /// Creates an empty asynchronous paged enumerable of the specified type.

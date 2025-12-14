@@ -102,7 +102,7 @@ public sealed class AsyncPagedEnumerable<T> : IAsyncPagedEnumerable<T>, IDisposa
         {
             return new AsyncPagedEnumerable<T>(_source, _paginationFactory, strategy);
         }
-        
+
         if (_queryable is not null)
         {
             return new AsyncPagedEnumerable<T>(_queryable, _paginationFactory, strategy);
@@ -124,7 +124,7 @@ public sealed class AsyncPagedEnumerable<T> : IAsyncPagedEnumerable<T>, IDisposa
             _ => AsyncPagedEnumerator.Empty<T>(initial)
         };
 
-        return AsyncPagedEnumerator.Create(enumerator, initial,_strategy, cancellationToken);
+        return AsyncPagedEnumerator.Create(enumerator, initial, _strategy, cancellationToken);
     }
 
     /// <inheritdoc/>
@@ -250,4 +250,76 @@ public sealed class AsyncPagedEnumerable<T> : IAsyncPagedEnumerable<T>, IDisposa
         };
     }
 
+}
+
+internal sealed class AsyncPagedFactoryEnumerable<T> : IAsyncPagedEnumerable<T>
+{
+    private readonly Func<CancellationToken, ValueTask<IAsyncPagedEnumerable<T>>> _factory;
+    private readonly PaginationStrategy _strategy;
+    private IAsyncPagedEnumerable<T> _inner = AsyncPagedEnumerable.Empty<T>();
+    private Pagination _pagination = Pagination.Empty;
+    private bool _initialized;
+
+    internal AsyncPagedFactoryEnumerable(
+        Func<CancellationToken, ValueTask<IAsyncPagedEnumerable<T>>> factory,
+        PaginationStrategy strategy)
+    {
+        _factory = factory;
+        _strategy = strategy;
+    }
+
+    /// <inheritdoc/>
+    public Pagination Pagination => _pagination;
+
+    /// <inheritdoc/>
+    public IAsyncPagedEnumerator<T> GetAsyncEnumerator(CancellationToken cancellationToken = default) =>
+        new Enumerator(this, cancellationToken);
+
+    /// <inheritdoc/>
+    public async Task<Pagination> GetPaginationAsync(CancellationToken cancellationToken = default)
+    {
+        if (!_initialized)
+        {
+            _inner = await _factory(cancellationToken).ConfigureAwait(false);
+            _pagination = _inner.Pagination;
+            _initialized = true;
+        }
+
+        return _pagination;
+    }
+
+    /// <inheritdoc/>
+    public IAsyncPagedEnumerable<T> WithStrategy(PaginationStrategy strategy) => throw new NotImplementedException();
+
+    private sealed class Enumerator(
+        AsyncPagedFactoryEnumerable<T> parent,
+        CancellationToken token) : IAsyncPagedEnumerator<T>
+    {
+        private readonly AsyncPagedFactoryEnumerable<T> _parent = parent;
+        private readonly CancellationToken _token = token;
+        private IAsyncPagedEnumerator<T>? _inner;
+
+        public T Current => _inner!.Current;
+        public ref readonly Pagination Pagination => ref _inner!.Pagination;
+        public PaginationStrategy Strategy => _inner!.Strategy;
+
+        public async ValueTask<bool> MoveNextAsync()
+        {
+            if (!_parent._initialized)
+            {
+                _parent._inner = await _parent._factory(_token).ConfigureAwait(false);
+                _parent._pagination = _parent._inner.Pagination;
+                _parent._initialized = true;
+            }
+
+            _inner ??= _parent._inner.GetAsyncEnumerator(_token);
+            return await _inner.MoveNextAsync().ConfigureAwait(false);
+        }
+
+        public async ValueTask DisposeAsync()
+        {
+            if (_inner is not null)
+                await _inner.DisposeAsync().ConfigureAwait(false);
+        }
+    }
 }
