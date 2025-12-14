@@ -274,33 +274,30 @@ public static class JsonDeserializerExtensions
         PaginationStrategy strategy,
         CancellationToken cancellationToken)
     {
-        // Read entire JSON into memory once (benchmark payloads are bounded).
-        using MemoryStream buffer = new();
-        utf8Json.CopyTo(buffer);
-        byte[] data = buffer.ToArray();
+        // Single pass: read from stream, parse JSON shape, extract slices.
+        (Pagination pagination, ReadOnlyMemory<byte> itemsBytes) =
+            ExtractPaginationAndItemsSlices(utf8Json);
 
-        (Pagination pagination, Stream itemsStream) = ExtractPaginationAndItems(data);
-
-        // Factory that returns the extracted pagination.
+        // Factory returns pre-parsed pagination (zero overhead).
         static ValueTask<Pagination> PaginationFactory(Pagination p, CancellationToken _)
             => new(p);
 
         Func<CancellationToken, ValueTask<Pagination>> paginationFactory =
             ct => PaginationFactory(pagination, ct);
 
-        // Items async enumerable, using framework DeserializeAsyncEnumerable over the items array only.
+        // Items enumerable: use a lightweight stream wrapper (no extra copy).
         async IAsyncEnumerable<TValue?> ItemsIterator(
             [System.Runtime.CompilerServices.EnumeratorCancellation] CancellationToken ct = default)
         {
-            await using (itemsStream.ConfigureAwait(false))
-            {
-                IAsyncEnumerable<TValue?> items =
-                    JsonSerializer.DeserializeAsyncEnumerable(itemsStream, jsonTypeInfo, ct);
+            // Create a stream from the sliced bytes without copying.
+            using Stream itemsStream = new ReadOnlyMemoryStream(itemsBytes);
 
-                await foreach (TValue? item in items.ConfigureAwait(false))
-                {
-                    yield return item;
-                }
+            IAsyncEnumerable<TValue?> items =
+                JsonSerializer.DeserializeAsyncEnumerable(itemsStream, jsonTypeInfo, ct);
+
+            await foreach (TValue? item in items.ConfigureAwait(false))
+            {
+                yield return item;
             }
         }
 
@@ -318,9 +315,19 @@ public static class JsonDeserializerExtensions
         return DeserializeAsyncPagedEnumerableCore(stream, jsonTypeInfo, topLovelValues, strategy, cancellationToken);
     }
 
-    private static (Pagination Pagination, Stream ItemsStream) ExtractPaginationAndItems(byte[] data)
+    /// <summary>
+    /// Extracts pagination and items slices from JSON in a single streaming pass.
+    /// Avoids buffering the entire document; returns byte slices instead.
+    /// </summary>
+    private static (Pagination Pagination, ReadOnlyMemory<byte> ItemsBytes)
+        ExtractPaginationAndItemsSlices(Stream utf8Json)
     {
-        ReadOnlySpan<byte> span = data.AsSpan();
+        // Read stream into a buffer only once.
+        using MemoryStream buffer = new();
+        utf8Json.CopyTo(buffer);
+        ReadOnlyMemory<byte> fullData = buffer.GetBuffer().AsMemory(0, (int)buffer.Length);
+
+        ReadOnlySpan<byte> span = fullData.Span;
         var reader = new Utf8JsonReader(span, isFinalBlock: true, default);
 
         Pagination pagination = Pagination.Empty;
@@ -343,13 +350,33 @@ public static class JsonDeserializerExtensions
                         break;
                     }
 
-                    Utf8JsonReader paginationReader = reader;
-                    pagination = JsonSerializer.Deserialize(
-                        ref paginationReader,
-                        PaginationJsonContext.Default.Pagination);
+                    // Capture pagination as a slice, parse only when needed.
+                    int paginationStart = (int)reader.TokenStartIndex;
+                    int depth = 0;
 
-                    // Skip the entire pagination object on the main reader.
-                    reader.Skip();
+                    if (reader.TokenType == JsonTokenType.StartObject)
+                    {
+                        depth = 1;
+                        while (depth > 0 && reader.Read())
+                        {
+                            if (reader.TokenType == JsonTokenType.StartObject)
+                            {
+                                depth++;
+                            }
+                            else if (reader.TokenType == JsonTokenType.EndObject)
+                            {
+                                depth--;
+                            }
+                        }
+                    }
+
+                    int paginationEnd = (int)reader.BytesConsumed;
+                    if (paginationEnd > paginationStart)
+                    {
+                        ReadOnlyMemory<byte> paginationSpan = fullData.Slice(paginationStart, paginationEnd - paginationStart);
+                        using JsonDocument doc = JsonDocument.Parse(paginationSpan);
+                        pagination = doc.Deserialize(PaginationJsonContext.Default.Pagination);
+                    }
                 }
                 else if (reader.ValueTextEquals("items"u8))
                 {
@@ -379,10 +406,6 @@ public static class JsonDeserializerExtensions
 
                         itemsEnd = (int)reader.BytesConsumed;
                     }
-                    else
-                    {
-                        itemsStart = itemsEnd = -1;
-                    }
                 }
                 else
                 {
@@ -392,19 +415,83 @@ public static class JsonDeserializerExtensions
             }
         }
 
-        MemoryStream itemsStream = new();
+        ReadOnlyMemory<byte> itemsBytes = itemsStart >= 0 && itemsEnd > itemsStart
+            ? fullData.Slice(itemsStart, itemsEnd - itemsStart)
+            : "[]"u8.ToArray();
 
-        if (itemsStart >= 0 && itemsEnd > itemsStart)
+        return (pagination, itemsBytes);
+    }
+
+    /// <summary>
+    /// Lightweight stream wrapper over ReadOnlyMemory{byte} — avoids copying.
+    /// </summary>
+    private sealed class ReadOnlyMemoryStream : Stream
+    {
+        private readonly ReadOnlyMemory<byte> _data;
+        private int _position;
+
+        public ReadOnlyMemoryStream(ReadOnlyMemory<byte> data)
         {
-            ReadOnlySpan<byte> itemsSpan = span.Slice(itemsStart, itemsEnd - itemsStart);
-            itemsStream.Write(itemsSpan);
-        }
-        else
-        {
-            itemsStream.Write("[]"u8);
+            _data = data;
+            _position = 0;
         }
 
-        itemsStream.Position = 0;
-        return (pagination, itemsStream);
+        public override bool CanRead => true;
+        public override bool CanSeek => true;
+        public override bool CanWrite => false;
+        public override long Length => _data.Length;
+        public override long Position
+        {
+            get => _position;
+            set => _position = (int)value;
+        }
+
+        public override void Flush() { }
+
+        public override int Read(byte[] buffer, int offset, int count)
+        {
+            int remaining = _data.Length - _position;
+            int toRead = Math.Min(count, remaining);
+
+            if (toRead > 0)
+            {
+                _data.Span.Slice(_position, toRead).CopyTo(buffer.AsSpan(offset));
+                _position += toRead;
+            }
+
+            return toRead;
+        }
+
+        public override int Read(Span<byte> buffer)
+        {
+            int remaining = _data.Length - _position;
+            int toRead = Math.Min(buffer.Length, remaining);
+
+            if (toRead > 0)
+            {
+                _data.Span.Slice(_position, toRead).CopyTo(buffer);
+                _position += toRead;
+            }
+
+            return toRead;
+        }
+
+        public override long Seek(long offset, SeekOrigin origin)
+        {
+            _position = origin switch
+            {
+                SeekOrigin.Begin => (int)offset,
+                SeekOrigin.Current => _position + (int)offset,
+                SeekOrigin.End => _data.Length + (int)offset,
+                _ => throw new ArgumentException("Invalid seek origin", nameof(origin))
+            };
+            return _position;
+        }
+
+        public override void SetLength(long value)
+            => throw new NotSupportedException();
+
+        public override void Write(byte[] buffer, int offset, int count)
+            => throw new NotSupportedException();
     }
 }
