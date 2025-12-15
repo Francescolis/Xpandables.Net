@@ -16,6 +16,7 @@
 ********************************************************************************/
 using System.Diagnostics;
 using System.Diagnostics.CodeAnalysis;
+using System.IO.Pipelines;
 using System.Text;
 using System.Text.Json;
 using System.Text.Json.Serialization.Metadata;
@@ -116,11 +117,17 @@ public static class HttpContentExtensions
     {
         return AsyncPagedEnumerable.Create(async ct =>
         {
-            Stream contentStream = await GetContentStreamAsync(content, ct)
-                .ConfigureAwait(false);
+            Stream contentStream = await GetContentStreamAsync(content, ct).ConfigureAwait(false);
+            PipeReader reader = PipeReader.Create(
+                contentStream,
+                new StreamPipeReaderOptions(
+                    bufferSize: 32 * 1024,
+                    minimumReadSize: 4 * 1024,
+                    leaveOpen: true,
+                    useZeroByteReads: true));
 
             return JsonSerializer.DeserializeAsyncPagedEnumerable(
-                contentStream, jsonTypeInfo, strategy, ct);
+                reader, jsonTypeInfo, strategy, ct);
         });
     }
 
