@@ -22,7 +22,7 @@
       <Platform Project="x64" />
     </Project>
   </Folder>
-  <Project Path="AspNetCore.Collections.AsyncPaged/AspNetCore.AsyncPaged.csproj" Id="08987866-6b93-4ff0-91f6-ada314aa75a4">
+  <Project Path="AspNetCore.AsyncPaged/AspNetCore.AsyncPaged.csproj" Id="08987866-6b93-4ff0-91f6-ada314aa75a4">
     <Platform Project="x64" />
   </Project>
   <Project Path="AspNetCore.Net/AspNetCore.Net.csproj" Id="a820677a-3901-4f62-a6a0-decd0a485702">
@@ -31,7 +31,7 @@
   <Project Path="AspNetCore.Results/AspNetCore.Results.csproj" Id="bf30d61b-f361-4867-b607-903110b64fb0">
     <Platform Project="x64" />
   </Project>
-  <Project Path="System.Collections.AsyncPaged/System.AsyncPaged.csproj" Id="73a0cebd-fdb7-4fea-8320-65193fec2f12">
+  <Project Path="System.AsyncPaged/System.AsyncPaged.csproj" Id="73a0cebd-fdb7-4fea-8320-65193fec2f12">
     <Platform Project="x64" />
   </Project>
   <Project Path="System.Entities.Data/System.Entities.Data.csproj" Id="d3e941fc-222a-4861-bd00-c142052b9d06">
@@ -43,16 +43,16 @@
   <Project Path="System.Events/System.Events.csproj" Id="2ba7d386-a42a-467c-bf64-bb53e3d6dd0c">
     <Platform Project="x64" />
   </Project>
-  <Project Path="System.Linq.AsyncPaged/System.AsyncPaged.Linq.csproj" Id="e895107b-ff7a-4abf-93f1-a57390e38b26">
+  <Project Path="System.AsyncPaged.Linq/System.AsyncPaged.Linq.csproj" Id="e895107b-ff7a-4abf-93f1-a57390e38b26">
     <Platform Project="x64" />
   </Project>
   <Project Path="System.Optionals/System.Optionals.csproj" Id="8bff6792-1c31-40ab-8ef0-f2e2a74347c2">
     <Platform Project="x64" />
   </Project>
-  <Project Path="System.Primitives.Composition/System.Composition.csproj" Id="6c66642b-ffdb-4002-8e91-fe35aa18dd38">
+  <Project Path="System.Composition/System.Composition.csproj" Id="6c66642b-ffdb-4002-8e91-fe35aa18dd38">
     <Platform Project="x64" />
   </Project>
-  <Project Path="System.Primitives.Validation/System.Validation.csproj" Id="d2b45f03-a0ae-4c5e-8f35-c0c879a6a9e0">
+  <Project Path="System.Validation/System.Validation.csproj" Id="d2b45f03-a0ae-4c5e-8f35-c0c879a6a9e0">
     <Platform Project="x64" />
   </Project>
   <Project Path="System.Primitives/System.Primitives.csproj" Id="cb6a404f-1663-43ab-82ed-88d3647797ef">
@@ -70,7 +70,7 @@
   <Project Path="System.Results/System.Results.csproj">
     <Platform Project="x64" />
   </Project>
-  <Project Path="System.Text.Json.AsyncPaged/System.AsyncPaged.Json.csproj" Id="dd6e91b8-79e2-4b90-9123-4fabebf66505">
+  <Project Path="System.AsyncPaged.Json/System.AsyncPaged.Json.csproj" Id="dd6e91b8-79e2-4b90-9123-4fabebf66505">
     <Platform Project="x64" />
   </Project>
 </Solution>

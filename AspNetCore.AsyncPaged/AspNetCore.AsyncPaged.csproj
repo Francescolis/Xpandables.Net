@@ -85,7 +85,7 @@
 	</ItemGroup>
 
 	<ItemGroup>
-	  <ProjectReference Include="..\System.Text.Json.AsyncPaged\System.AsyncPaged.Json.csproj" />
+	  <ProjectReference Include="..\System.AsyncPaged.Json\System.AsyncPaged.Json.csproj" />
 	</ItemGroup>
 
 </Project>

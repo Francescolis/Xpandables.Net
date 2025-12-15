@@ -1,6 +1,6 @@
 ﻿# 🌐 AspNetCore.AsyncPaged
 
-[![NuGet](https://img.shields.io/badge/NuGet-10.0.0-blue.svg)](https://www.nuget.org/packages/AspNetCore.Collections.AsyncPaged)
+[![NuGet](https://img.shields.io/badge/NuGet-10.0.0-blue.svg)](https://www.nuget.org/packages/AspNetCore.AsyncPaged)
 [![.NET](https://img.shields.io/badge/.NET-10.0-purple.svg)](https://dotnet.microsoft.com/)
 [![License](https://img.shields.io/badge/License-Apache%202.0-green.svg)](LICENSE)
 
@@ -10,7 +10,7 @@
 
 ## 📋 Overview
 
-`AspNetCore.Collections.AsyncPaged` provides seamless ASP.NET Core integration for `IAsyncPagedEnumerable<T>`, enabling efficient streaming of paginated data directly to HTTP responses. The library automatically wraps paged data with pagination metadata, supports both minimal APIs and MVC controllers, and leverages `System.Text.Json` for high-performance JSON serialization.
+`AspNetCore.AsyncPaged` provides seamless ASP.NET Core integration for `IAsyncPagedEnumerable<T>`, enabling efficient streaming of paginated data directly to HTTP responses. The library automatically wraps paged data with pagination metadata, supports both minimal APIs and MVC controllers, and leverages `System.Text.Json` for high-performance JSON serialization.
 
 Built for .NET 10 with C# 14 extension members, this package bridges the gap between your data layer and HTTP responses with zero boilerplate.
 
@@ -29,13 +29,13 @@ Built for .NET 10 with C# 14 extension members, this package bridges the gap bet
 ## 📦 Installation
 
 ```bash
-dotnet add package AspNetCore.Collections.AsyncPaged
+dotnet add package AspNetCore.AsyncPaged
 ```
 
 Or via NuGet Package Manager:
 
 ```powershell
-Install-Package AspNetCore.Collections.AsyncPaged
+Install-Package AspNetCore.AsyncPaged
 ```
 
 ---
@@ -443,9 +443,9 @@ app.MapGet("/api/custom", async (DataService service, HttpContext context) =>
 
 | Package | Description |
 |---------|-------------|
-| **System.Collections.AsyncPaged** | Core `IAsyncPagedEnumerable<T>` and `Pagination` types |
-| **System.Text.Json.AsyncPaged** | JSON serialization extensions for paged enumerables |
-| **System.Linq.AsyncPaged** | LINQ operators (`SelectManyPaged`, transformations) |
+| **System.AsyncPaged** | Core `IAsyncPagedEnumerable<T>` and `Pagination` types |
+| **System.AsyncPaged.Json** | JSON serialization extensions for paged enumerables |
+| **System.AsyncPaged.Linq** | LINQ operators (`SelectManyPaged`, transformations) |
 
 ---
 

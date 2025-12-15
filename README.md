@@ -38,11 +38,11 @@
 | ✅ **Operation Results** | Robust error handling with HTTP-aware result types | [System.Results](#systemresults) |
 | 🎁 **Optional Values** | Null-safe optional value handling (like Rust's Option) | [System.Optionals](#systemoptionals) |
 | 📡 **Mediator Pattern** | CQRS and request/response pipeline implementation | [System.Results.Tasks](#systemresultstasks) |
-| ✔️ **Validation** | Flexible validation framework with specifications | [System.Primitives.Validation](#systemprimitivesvalidation) |
+| ✔️ **Validation** | Flexible validation framework with specifications | [System.Primitives.Validation](#systemvalidation) |
 | 💾 **Repository Pattern** | Generic repository with unit of work support | [System.Entities.Data](#systementitiesdata) |
 | 🌐 **REST Client** | Type-safe, attribute-based HTTP client | [System.Rests](#systemrests) |
 | 📝 **Event Sourcing** | Complete event sourcing and CQRS implementation | [System.Events](#systemevents) |
-| 🔄 **Async Paging** | Asynchronous enumerable extensions and pagination | [System.Collections.AsyncPaged](#systemcollectionsasyncpaged) |
+| 🔄 **Async Paging** | Asynchronous enumerable extensions and pagination | [System.AsyncPaged](#systemasyncpaged) |
 
 ---
 
@@ -184,8 +184,8 @@ Each package has detailed documentation with examples and API references:
 #### Application Layer
 - 📡 [**System.Results.Tasks**](./System.Results.Tasks/README.md) - Mediator pattern and request dispatching
 - 🔗 [**System.Results.Pipelines**](./System.Results.Pipelines/README.md) - Pipeline decorators for validation, transactions, events
-- ✔️ [**System.Primitives.Validation**](./System.Primitives.Validation/README.md) - Specification pattern and rule validators
-- 🧩 [**System.Primitives.Composition**](./System.Primitives.Composition/README.md) - MEF-based service composition
+- ✔️ [**System.Validation**](./System.Validation/README.md) - Specification pattern and rule validators
+- 🧩 [**System.Composition**](./System.Composition/README.md) - MEF-based service composition
 
 #### Data Access
 - 💾 [**System.Entities.Data**](./System.Entities.Data/README.md) - EF Core repository with DataContext
@@ -198,9 +198,9 @@ Each package has detailed documentation with examples and API references:
 - 🌐 [**System.Rests**](./System.Rests/README.md) - Type-safe REST client with attribute-based routing
 
 #### Async & Utilities
-- 🔄 [**System.Collections.AsyncPaged**](./System.Collections.AsyncPaged/README.md) - Async paged collections
-- 🔄 [**System.Linq.AsyncPaged**](./System.Linq.AsyncPaged/README.md) - LINQ extensions for async paging
-- 📄 [**System.Text.Json.AsyncPaged**](./System.Text.Json.AsyncPaged/README.md) - JSON serialization for paged data
+- 🔄 [**System.Collections.AsyncPaged**](./System.AsyncPaged/README.md) - Async paged collections
+- 🔄 [**System.Linq.AsyncPaged**](./System.AsyncPaged.Linq/README.md) - LINQ extensions for async paging
+- 📄 [**System.Text.Json.AsyncPaged**](./System.AsyncPaged.Json/README.md) - JSON serialization for paged data
 
 #### ASP.NET Core Integration
 - 🌐 [**AspNetCore.Net**](./AspNetCore.Net/README.md) - ASP.NET Core integrations with endpoint routing
@@ -380,15 +380,15 @@ dotnet test Xpandables.Net.UnitTests
 | **System.Results.Pipelines** | Pipeline decorators (validation, transactions, events) |
 | **System.Optionals** | Null-safe optional value handling |
 | **System.Primitives** | Core primitives and utilities |
-| **System.Primitives.Validation** | Specification pattern and rule validators |
-| **System.Primitives.Composition** | MEF-based service composition |
+| **System.Validation** | Specification pattern and rule validators |
+| **System.Composition** | MEF-based service composition |
 | **System.Events** | Domain events and event sourcing abstractions |
 | **System.Events.Data** | EF Core event store implementation |
 | **System.Entities.Data** | EF Core repository with DataContext |
 | **System.Rests** | Type-safe REST client |
-| **System.Collections.AsyncPaged** | Async paged collections |
-| **System.Linq.AsyncPaged** | LINQ extensions for async paging |
-| **System.Text.Json.AsyncPaged** | JSON serialization for paged data |
+| **System.AsyncPaged** | Async paged collections |
+| **System.AsyncPaged.Linq** | LINQ extensions for async paging |
+| **System.AsyncPaged.Json** | JSON serialization for paged data |
 | **AspNetCore.Net** | ASP.NET Core integrations |
 
 ---

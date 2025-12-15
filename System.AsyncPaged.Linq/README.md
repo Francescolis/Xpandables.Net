@@ -33,18 +33,18 @@ Built for .NET 10 with AOT compatibility, this library seamlessly integrates wit
 ## 📦 Installation
 
 ```bash
-dotnet add package System.Linq.AsyncPaged
+dotnet add package System.AsyncPaged.Linq
 ```
 
 Or via NuGet Package Manager:
 
 ```powershell
-Install-Package System.Linq.AsyncPaged
+Install-Package System.AsyncPaged.Linq
 ```
 
 ### Prerequisites
 
-- `System.Collections.AsyncPaged` (automatically installed as a dependency)
+- `System.AsyncPaged` (automatically installed as a dependency)
 
 ---
 
@@ -575,14 +575,14 @@ IAsyncPagedEnumerable<TSource> ScanPaged(Func<TSource, TSource, TSource> func);
 ## 🔗 Dependency
 
 This library depends on:
-- **System.Collections.AsyncPaged** — Core pagination types and interfaces
+- **System.AsyncPaged** — Core pagination types and interfaces
 
 ---
 
 ## 📚 Related Packages
 
-- **[System.Collections.AsyncPaged](https://www.nuget.org/packages/System.Collections.AsyncPaged)** — Core async pagination library
-- **[System.Text.Json.AsyncPaged](https://www.nuget.org/packages/System.Text.Json.AsyncPaged)** — JSON serialization support
+- **[System.AsyncPaged](https://www.nuget.org/packages/System.Collections.AsyncPaged)** — Core async pagination library
+- **[System.AsyncPaged.Json](https://www.nuget.org/packages/System.Text.Json.AsyncPaged)** — JSON serialization support
 - **[System.Net.Http.AsyncPaged](https://www.nuget.org/packages/System.Net.Http.AsyncPaged)** — REST API pagination
 
 ---

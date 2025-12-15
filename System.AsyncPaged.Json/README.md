@@ -42,7 +42,7 @@ Install-Package System.Text.Json.AsyncPaged
 
 ### Prerequisites
 
-- `System.Collections.AsyncPaged` (automatically installed as a dependency)
+- `System.AsyncPaged` (automatically installed as a dependency)
 - .NET 10.0 or later
 
 ---
@@ -569,15 +569,15 @@ await JsonSerializer.SerializeAsyncPaged(
 ## 🔗 Dependency
 
 This library depends on:
-- **System.Collections.AsyncPaged** — Core pagination types and interfaces
+- **System.AsyncPaged** — Core pagination types and interfaces
 
 ---
 
 ## 📚 Related Packages
 
-- **[System.Collections.AsyncPaged](https://www.nuget.org/packages/System.Collections.AsyncPaged)** — Core async pagination library
-- **[System.Linq.AsyncPaged](https://www.nuget.org/packages/System.Linq.AsyncPaged)** — LINQ operators for async paged enumerables
-- **[System.Net.Http.AsyncPaged](https://www.nuget.org/packages/System.Net.Http.AsyncPaged)** — REST API pagination support
+- **[System.AsyncPaged](https://www.nuget.org/packages/System.Collections.AsyncPaged)** — Core async pagination library
+- **[System.AsyncPaged.Linq](https://www.nuget.org/packages/System.Linq.AsyncPaged)** — LINQ operators for async paged enumerables
+- **[System.AsyncPaged.Json](https://www.nuget.org/packages/System.Net.Http.AsyncPaged)** — REST API pagination support
 
 ---
 

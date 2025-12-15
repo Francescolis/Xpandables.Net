@@ -23,13 +23,12 @@
   </ItemGroup>
 
   <ItemGroup>
-    <ProjectReference Include="..\AspNetCore.Collections.AsyncPaged\AspNetCore.AsyncPaged.csproj" />
+    <ProjectReference Include="..\AspNetCore.AsyncPaged\AspNetCore.AsyncPaged.csproj" />
     <ProjectReference Include="..\AspNetCore.Net\AspNetCore.Net.csproj" />
     <ProjectReference Include="..\AspNetCore.Results\AspNetCore.Results.csproj" />
-    <ProjectReference Include="..\System.Collections.AsyncPaged\System.AsyncPaged.csproj" />
     <ProjectReference Include="..\System.Entities.Data\System.Entities.Data.csproj" />
     <ProjectReference Include="..\System.Events.Data\System.Events.Data.csproj" />
-    <ProjectReference Include="..\System.Linq.AsyncPaged\System.AsyncPaged.Linq.csproj" />
+    <ProjectReference Include="..\System.AsyncPaged.Linq\System.AsyncPaged.Linq.csproj" />
     <ProjectReference Include="..\System.Results.Tasks\System.Results.Tasks.csproj" />
   </ItemGroup>
 

@@ -15,6 +15,8 @@
  *
 ********************************************************************************/
 
+using System.Diagnostics.CodeAnalysis;
+
 using Microsoft.AspNetCore.Mvc;
 
 namespace Microsoft.AspNetCore.Http;
@@ -40,6 +42,7 @@ public sealed class AsyncPagedEnpointFilter : IEndpointFilter
     /// <param name="next">The delegate representing the next filter or endpoint in the pipeline. Cannot be null.</param>
     /// <returns>A <see cref="ValueTask{Object}"/> that represents the asynchronous operation. Returns a paged result if the
     /// endpoint produces an <see cref="IAsyncPagedEnumerable"/>; otherwise, returns the original result.</returns>
+    [UnconditionalSuppressMessage("AOT", "IL3050:Calling members annotated with 'RequiresDynamicCodeAttribute' may break functionality when AOT compiling.", Justification = "<Pending>")]
     public async ValueTask<object?> InvokeAsync(
         EndpointFilterInvocationContext context,
         EndpointFilterDelegate next)

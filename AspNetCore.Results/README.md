@@ -551,7 +551,7 @@ app.MapPost("/api/orders", async (CreateOrderRequest request, IOrderService orde
 | **System.Results** | Core `Result` and `Result<T>` types |
 | **System.Primitives.Validation** | `IRuleValidator` and validation infrastructure |
 | **AspNetCore.Net** | Minimal API infrastructure and endpoint routing |
-| **AspNetCore.Collections.AsyncPaged** | Async paged enumerable HTTP streaming |
+| **AspNetCore.AsyncPaged** | Async paged enumerable HTTP streaming |
 
 ---
 

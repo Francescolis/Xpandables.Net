@@ -87,8 +87,8 @@
 
 	<ItemGroup>
 	  <ProjectReference Include="..\System.Events\System.Events.csproj" />
-	  <ProjectReference Include="..\System.Primitives.Validation\System.Validation.csproj" />
 	  <ProjectReference Include="..\System.Results\System.Results.csproj" />
+	  <ProjectReference Include="..\System.Validation\System.Validation.csproj" />
 	</ItemGroup>
 
 </Project>

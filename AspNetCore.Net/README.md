@@ -505,8 +505,8 @@ public sealed class HealthEndpoints : IMinimalEndpointRoute
 | Package | Description |
 |---------|-------------|
 | **AspNetCore.Results** | Result pattern integration for HTTP responses |
-| **AspNetCore.Collections.AsyncPaged** | Async paged enumerable HTTP streaming |
-| **System.Primitives.Composition** | MEF composition utilities |
+| **AspNetCore.AsyncPaged** | Async paged enumerable HTTP streaming |
+| **System.Composition** | MEF composition utilities |
 
 ---
 
