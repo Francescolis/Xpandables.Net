@@ -15,8 +15,6 @@
  *
 ********************************************************************************/
 
-using System.Diagnostics.CodeAnalysis;
-
 using Microsoft.AspNetCore.Mvc;
 
 namespace Microsoft.AspNetCore.Http;
@@ -26,7 +24,7 @@ namespace Microsoft.AspNetCore.Http;
 /// applicable.
 /// </summary>
 /// <remarks>Use this filter to automatically wrap endpoint results of type <see cref="IAsyncPagedEnumerable"/> in
-/// a <see cref="ResultAsyncPaged{T}"/> for consistent paged response semantics. If the endpoint does not produce an
+/// a <see cref="AsyncPagedResult{T}"/> for consistent paged response semantics. If the endpoint does not produce an
 /// <see cref="IAsyncPagedEnumerable"/>, the result is returned unchanged. This filter is typically used in scenarios
 /// where endpoints may return large datasets that benefit from paging.</remarks>
 public sealed class AsyncPagedEnpointFilter : IEndpointFilter
@@ -36,13 +34,12 @@ public sealed class AsyncPagedEnpointFilter : IEndpointFilter
     /// applicable.
     /// </summary>
     /// <remarks>If the result of the endpoint is an <see cref="IAsyncPagedEnumerable"/>, it is wrapped in a
-    /// <see cref="ResultAsyncPaged{T}"/> to provide paged response semantics. Otherwise, the original result is
+    /// <see cref="AsyncPagedResult{T}"/> to provide paged response semantics. Otherwise, the original result is
     /// returned unchanged.</remarks>
     /// <param name="context">The invocation context containing information about the current endpoint execution. Cannot be null.</param>
     /// <param name="next">The delegate representing the next filter or endpoint in the pipeline. Cannot be null.</param>
     /// <returns>A <see cref="ValueTask{Object}"/> that represents the asynchronous operation. Returns a paged result if the
     /// endpoint produces an <see cref="IAsyncPagedEnumerable"/>; otherwise, returns the original result.</returns>
-    [UnconditionalSuppressMessage("AOT", "IL3050:Calling members annotated with 'RequiresDynamicCodeAttribute' may break functionality when AOT compiling.", Justification = "<Pending>")]
     public async ValueTask<object?> InvokeAsync(
         EndpointFilterInvocationContext context,
         EndpointFilterDelegate next)
@@ -68,7 +65,7 @@ public sealed class AsyncPagedEnpointFilter : IEndpointFilter
         }
 
         Type itemType = pagedEnumerable.GetArgumentType();
-        Type resultAsyncPagedType = typeof(ResultAsyncPaged<>).MakeGenericType(itemType);
+        Type resultAsyncPagedType = typeof(AsyncPagedResult<>).MakeGenericType(itemType);
 
         object resultAsyncPaged = Activator.CreateInstance(resultAsyncPagedType, pagedEnumerable, null, null)!;
 

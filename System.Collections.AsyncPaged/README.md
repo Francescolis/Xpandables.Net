@@ -1,4 +1,4 @@
-﻿# 📖 System.Collections.AsyncPaged
+﻿# 📖 System.AsyncPaged
 
 [![NuGet](https://img.shields.io/badge/NuGet-10.0.0-blue.svg)](https://www.nuget.org/packages/System.Collections.AsyncPaged)
 [![.NET](https://img.shields.io/badge/.NET-10.0+-purple.svg)](https://dotnet.microsoft.com/)

@@ -34,14 +34,14 @@ public static class AsyncPagedExtensions
         /// Converts the current enumerable sequence to an asynchronous paged result.
         /// </summary>
         /// <returns>An <see cref="IResult"/> instance that represents the asynchronous paged result of the sequence.</returns>
-        public IResult ToResult() => new ResultAsyncPaged<TResult>(enumerable);
+        public IResult ToResult() => new AsyncPagedResult<TResult>(enumerable);
 
         /// <summary>
         /// Converts the current paged enumerable to an HTTP result using the specified JSON serialization options.
         /// </summary>
         /// <param name="options">The <see cref="JsonSerializerOptions"/> to use when serializing the result to JSON. Cannot be null.</param>
         /// <returns>An <see cref="IResult"/> that represents the paged data serialized as JSON using the provided options.</returns>
-        public IResult ToResult(JsonSerializerOptions options) => new ResultAsyncPaged<TResult>(enumerable, options);
+        public IResult ToResult(JsonSerializerOptions options) => new AsyncPagedResult<TResult>(enumerable, options);
 
         /// <summary>
         /// Creates an asynchronous paged result that serializes items using the specified JSON type information.
@@ -49,6 +49,6 @@ public static class AsyncPagedExtensions
         /// <param name="jsonTypeInfo">The metadata used to control JSON serialization for the result items. Cannot be null.</param>
         /// <returns>An <see cref="IResult"/> that represents the asynchronous paged result, serialized according to the provided
         /// JSON type information.</returns>
-        public IResult ToResult(JsonTypeInfo<TResult> jsonTypeInfo) => new ResultAsyncPaged<TResult>(enumerable, null, jsonTypeInfo);
+        public IResult ToResult(JsonTypeInfo<TResult> jsonTypeInfo) => new AsyncPagedResult<TResult>(enumerable, null, jsonTypeInfo);
     }
 }

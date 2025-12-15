@@ -22,15 +22,15 @@ namespace System.ComponentModel.DataAnnotations;
 /// <remarks>Implementations of this interface provide access to validators that can be used to validate objects
 /// at runtime. This is typically used in scenarios where validation logic needs to be applied dynamically based on the
 /// type of the object or argument.</remarks>
-public interface IRuleValidatorProvider
+public interface IValidatorProvider
 {
     /// <summary>
     /// Attempts to retrieve a validator for the specified type.
     /// </summary>
     /// <param name="type">The type for which to retrieve a validator. Cannot be null.</param>
-    /// <returns>An instance of <see cref="IRuleValidator"/> for the specified type if one is available; otherwise, <see
+    /// <returns>An instance of <see cref="IValidator"/> for the specified type if one is available; otherwise, <see
     /// langword="null"/>.</returns>
-    IRuleValidator? TryGetValidator(Type type);
+    IValidator? TryGetValidator(Type type);
 
     /// <summary>
     /// Attempts to retrieve a validator for the specified argument type.
@@ -38,6 +38,6 @@ public interface IRuleValidatorProvider
     /// <typeparam name="TArgument">The type of argument for which to retrieve a validator. Must be a reference type that implements
     /// IRequiresValidation.</typeparam>
     /// <returns>An instance of IRuleValidator for the specified argument type if one is available; otherwise, null.</returns>
-    IRuleValidator? TryGetValidator<TArgument>()
+    IValidator? TryGetValidator<TArgument>()
         where TArgument : class, IRequiresValidation;
 }

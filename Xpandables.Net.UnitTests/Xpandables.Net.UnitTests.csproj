@@ -30,9 +30,9 @@
 	</ItemGroup>
 
 	<ItemGroup>
-	  <ProjectReference Include="..\System.Linq.AsyncPaged\System.Linq.AsyncPaged.csproj" />
+	  <ProjectReference Include="..\System.Linq.AsyncPaged\System.AsyncPaged.Linq.csproj" />
 	  <ProjectReference Include="..\System.Primitives\System.Primitives.csproj" />
-	  <ProjectReference Include="..\System.Text.Json.AsyncPaged\System.Text.Json.AsyncPaged.csproj" />
+	  <ProjectReference Include="..\System.Text.Json.AsyncPaged\System.AsyncPaged.Json.csproj" />
 	</ItemGroup>
 
 	<ItemGroup>

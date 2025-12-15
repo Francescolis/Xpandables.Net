@@ -43,10 +43,10 @@ namespace Microsoft.AspNetCore.Mvc.Formatters;
 /// The "pagination" property contains metadata about the paginated data, while the "items" property
 /// contains the serialized items in the paginated collection.
 /// </remarks>
-public sealed class ControllerResultAsyncPagedOutputFormatter : TextOutputFormatter
+public sealed class AsyncPagedTextOutputFormatter : TextOutputFormatter
 {
     /// <summary>
-    /// Initializes a new instance of the <see cref="ControllerResultAsyncPagedOutputFormatter"/> class.
+    /// Initializes a new instance of the <see cref="AsyncPagedTextOutputFormatter"/> class.
     /// </summary>
     /// <param name="jsonSerializerOptions">The <see cref="JsonSerializerOptions"/> used for serialization.</param>
     /// <remarks>
@@ -54,7 +54,7 @@ public sealed class ControllerResultAsyncPagedOutputFormatter : TextOutputFormat
     /// and the UTF-8 and Unicode encodings. It is designed to handle JSON output for asynchronous paged
     /// enumerable data.
     /// </remarks>
-    public ControllerResultAsyncPagedOutputFormatter(JsonSerializerOptions jsonSerializerOptions)
+    public AsyncPagedTextOutputFormatter(JsonSerializerOptions jsonSerializerOptions)
     {
         SerializerOptions = jsonSerializerOptions ?? throw new ArgumentNullException(nameof(jsonSerializerOptions));
         jsonSerializerOptions.MakeReadOnly();
@@ -67,7 +67,7 @@ public sealed class ControllerResultAsyncPagedOutputFormatter : TextOutputFormat
         SupportedMediaTypes.Add(MediaTypeHeaderValue.Parse("application/*+json"));
     }
 
-    internal static ControllerResultAsyncPagedOutputFormatter CreateFormatter(JsonOptions jsonOptions)
+    internal static AsyncPagedTextOutputFormatter CreateFormatter(JsonOptions jsonOptions)
     {
         var jsonSerializerOptions = jsonOptions.JsonSerializerOptions;
 
@@ -80,7 +80,7 @@ public sealed class ControllerResultAsyncPagedOutputFormatter : TextOutputFormat
             };
         }
 
-        return new ControllerResultAsyncPagedOutputFormatter(jsonSerializerOptions);
+        return new AsyncPagedTextOutputFormatter(jsonSerializerOptions);
     }
 
     /// <summary>

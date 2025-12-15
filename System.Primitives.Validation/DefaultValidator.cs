@@ -27,7 +27,7 @@ namespace System.ComponentModel.DataAnnotations;
 /// is not guaranteed; if multiple threads access the same instance concurrently, external synchronization is
 /// required.</remarks>
 /// <typeparam name="TArgument">The type of object to validate. Must be a reference type that implements <see cref="IRequiresValidation"/>.</typeparam>
-public class RuleValidator<TArgument> : IRuleValidator<TArgument>
+public class DefaultValidator<TArgument> : IValidator<TArgument>
     where TArgument : class, IRequiresValidation
 {
     /// <summary>
@@ -38,17 +38,17 @@ public class RuleValidator<TArgument> : IRuleValidator<TArgument>
     /// <summary>
     /// Creates a default instance of the validator.
     /// </summary>
-    public RuleValidator() { }
+    public DefaultValidator() { }
 
     /// <summary>
     /// Creates a new instance of the validator with the specified service provider.
     /// </summary>
     /// <param name="serviceProvider">The service provider to use.</param>
-    public RuleValidator(IServiceProvider serviceProvider) =>
+    public DefaultValidator(IServiceProvider serviceProvider) =>
         ServiceProvider = serviceProvider;
 
     /// <inheritdoc/>
-    [UnconditionalSuppressMessage("Trimming", "IL2026:Members annotated with 'RequiresUnreferencedCodeAttribute' require dynamic access otherwise can break functionality when trimming application code", Justification = "<Pending>")]
+    [RequiresUnreferencedCode("Validation may require types that are trimmed.")]
     public virtual IReadOnlyCollection<ValidationResult> Validate(TArgument instance)
     {
         List<ValidationResult> validationResults = [];
@@ -65,6 +65,7 @@ public class RuleValidator<TArgument> : IRuleValidator<TArgument>
     }
 
     /// <inheritdoc/>
+    [RequiresUnreferencedCode("Validation may require types that are trimmed.")]
     public virtual ValueTask<IReadOnlyCollection<ValidationResult>> ValidateAsync(TArgument instance)
     {
         IReadOnlyCollection<ValidationResult> result = Validate(instance);

@@ -24,7 +24,7 @@ namespace System.ComponentModel.DataAnnotations;
 /// <remarks>Implementations of this interface allow dynamic retrieval of validators, typically based on
 /// dependency injection or service location. This is useful in scenarios where validation logic needs to be decoupled
 /// from object creation or where multiple validator implementations may exist for different types.</remarks>
-public interface IRuleValidatorResolver
+public interface IValidatorResolver
 {
     /// <summary>
     /// Gets the type of object that this instance targets.
@@ -32,9 +32,9 @@ public interface IRuleValidatorResolver
     Type TargetType { get; }
 
     /// <summary>
-    /// Resolves an instance of an <see cref="IRuleValidator"/> using the specified service provider.
+    /// Resolves an instance of an <see cref="IValidator"/> using the specified service provider.
     /// </summary>
-    /// <param name="serviceProvider">The service provider used to obtain the <see cref="IRuleValidator"/> instance. Cannot be null.</param>
-    /// <returns>An <see cref="IRuleValidator"/> instance resolved from the service provider.</returns>
-    IRuleValidator? Resolve(IServiceProvider serviceProvider);
+    /// <param name="serviceProvider">The service provider used to obtain the <see cref="IValidator"/> instance. Cannot be null.</param>
+    /// <returns>An <see cref="IValidator"/> instance resolved from the service provider.</returns>
+    IValidator? Resolve(IServiceProvider serviceProvider);
 }

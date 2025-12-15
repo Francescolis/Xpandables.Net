@@ -23,12 +23,12 @@ namespace System.ComponentModel.DataAnnotations;
 /// IRequiresValidation interface. If a service provider is supplied, it is used to resolve validators from the
 /// dependency injection container; otherwise, default validator instances are created at runtime. This class is sealed
 /// and cannot be inherited.</remarks>
-public sealed class RuleValidatorProvider(IRuleValidatorFactory validatorFactory) : IRuleValidatorProvider
+public sealed class ValidatorProvider(IValidatorFactory validatorFactory) : IValidatorProvider
 {
-    private readonly IRuleValidatorFactory _validatorFactory = validatorFactory;
+    private readonly IValidatorFactory _validatorFactory = validatorFactory;
 
     /// <inheritdoc/>
-    public IRuleValidator? TryGetValidator(Type type)
+    public IValidator? TryGetValidator(Type type)
     {
         ArgumentNullException.ThrowIfNull(type, nameof(type));
 
@@ -41,7 +41,7 @@ public sealed class RuleValidatorProvider(IRuleValidatorFactory validatorFactory
     }
 
     /// <inheritdoc/>
-    public IRuleValidator? TryGetValidator<TArgument>()
+    public IValidator? TryGetValidator<TArgument>()
         where TArgument : class, IRequiresValidation
     {
         return _validatorFactory.CreateValidator<TArgument>();

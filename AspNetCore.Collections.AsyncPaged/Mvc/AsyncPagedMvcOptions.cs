@@ -27,7 +27,7 @@ namespace Microsoft.AspNetCore.Mvc;
 /// <remarks>This options class is intended for use with ASP.NET Core MVC and configures settings such as endpoint
 /// routing, content negotiation, and filter registration to enable consistent handling of execution results. It is
 /// typically registered via dependency injection and used internally by the framework.</remarks>
-public sealed class ControllerAsyncPagedMvcOptions(IOptions<JsonOptions> jsonOptions) : IConfigureOptions<MvcOptions>
+public sealed class AsyncPagedMvcOptions(IOptions<JsonOptions> jsonOptions) : IConfigureOptions<MvcOptions>
 {
     private readonly JsonOptions _jsonOptions = jsonOptions.Value;
     /// <inheritdoc/>
@@ -40,6 +40,6 @@ public sealed class ControllerAsyncPagedMvcOptions(IOptions<JsonOptions> jsonOpt
         options.ReturnHttpNotAcceptable = true;
 
         options.OutputFormatters
-            .Insert(0, new ControllerResultAsyncPagedOutputFormatter(_jsonOptions.JsonSerializerOptions));
+            .Insert(0, new AsyncPagedTextOutputFormatter(_jsonOptions.JsonSerializerOptions));
     }
 }

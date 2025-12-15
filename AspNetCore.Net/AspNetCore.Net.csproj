@@ -90,7 +90,7 @@
 	</ItemGroup>
 
 	<ItemGroup>
-	  <ProjectReference Include="..\System.Primitives.Composition\System.Primitives.Composition.csproj" />
+	  <ProjectReference Include="..\System.Primitives.Composition\System.Composition.csproj" />
 	</ItemGroup>
 
 </Project>

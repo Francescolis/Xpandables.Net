@@ -38,7 +38,7 @@ using System.Text.Json.Serialization.Metadata;
 /// <param name="jsonTypeInfo">Optional type metadata for JSON serialization of result items. If specified, this overrides type information
 /// inferred from the result type.</param>
 /// <exception cref="ArgumentNullException">Thrown if the results parameter is null.</exception>
-public sealed class ResultAsyncPaged<TResult>(
+public sealed class AsyncPagedResult<TResult>(
     IAsyncPagedEnumerable<TResult> results,
     JsonSerializerOptions? serializerOptions = null,
     JsonTypeInfo<TResult>? jsonTypeInfo = null) : IResult

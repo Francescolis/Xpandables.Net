@@ -29,12 +29,12 @@ namespace System.ComponentModel.DataAnnotations;
 /// dynamically or require custom resolution logic.</remarks>
 /// <param name="serviceProvider">The service provider used to resolve validator instances and dependencies.</param>
 /// <param name="validatorResolvers">A collection of validator resolvers that map specific types to their corresponding validators.</param>
-public sealed class RuleValidatorFactory(
+public sealed class ValidatorFactory(
     IServiceProvider serviceProvider,
-    IEnumerable<IRuleValidatorResolver> validatorResolvers) : IRuleValidatorFactory
+    IEnumerable<IValidatorResolver> validatorResolvers) : IValidatorFactory
 {
     /// <inheritdoc/>
-    public IRuleValidator? CreateValidator(Type type)
+    public IValidator? CreateValidator(Type type)
     {
         ArgumentNullException.ThrowIfNull(type);
         var resolver = validatorResolvers.FirstOrDefault(r => r.TargetType == type);
@@ -42,8 +42,8 @@ public sealed class RuleValidatorFactory(
     }
 
     /// <inheritdoc/>
-    IRuleValidator<TArgument>? IRuleValidatorFactory.CreateValidator<TArgument>()
+    IValidator<TArgument>? IValidatorFactory.CreateValidator<TArgument>()
     {
-        return serviceProvider.GetService<IRuleValidator<TArgument>>();
+        return serviceProvider.GetService<IValidator<TArgument>>();
     }
 }

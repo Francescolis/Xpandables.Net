@@ -23,22 +23,22 @@ namespace System.ComponentModel.DataAnnotations;
 /// validation logic to be decoupled from object creation. This is commonly used in scenarios where validation rules are
 /// registered or discovered at runtime. Thread safety and lifetime management of returned validators depend on the
 /// concrete implementation.</remarks>
-public interface IRuleValidatorFactory
+public interface IValidatorFactory
 {
     /// <summary>
     /// Creates a validator instance for the specified type, if one is available.
     /// </summary>
     /// <param name="type">The type for which to create a validator. Cannot be null.</param>
-    /// <returns>An <see cref="IRuleValidator"/> instance for the specified type, or <see langword="null"/> if no validator is
+    /// <returns>An <see cref="IValidator"/> instance for the specified type, or <see langword="null"/> if no validator is
     /// available.</returns>
-    IRuleValidator? CreateValidator(Type type);
+    IValidator? CreateValidator(Type type);
 
     /// <summary>
     /// Creates a validator instance for the specified argument type, if one is available.
     /// </summary>
     /// <typeparam name="TArgument">The type of argument that requires validation. Must implement <see cref="IRequiresValidation"/>.</typeparam>
-    /// <returns>An <see cref="IRuleValidator{TArgument}"/> instance for the specified type, or <see langword="null"/> if no
+    /// <returns>An <see cref="IValidator{TArgument}"/> instance for the specified type, or <see langword="null"/> if no
     /// validator is available.</returns>
-    IRuleValidator<TArgument>? CreateValidator<TArgument>()
+    IValidator<TArgument>? CreateValidator<TArgument>()
         where TArgument : class, IRequiresValidation;
 }

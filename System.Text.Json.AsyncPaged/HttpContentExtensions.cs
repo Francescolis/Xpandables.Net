@@ -120,11 +120,7 @@ public static class HttpContentExtensions
             Stream contentStream = await GetContentStreamAsync(content, ct).ConfigureAwait(false);
             PipeReader reader = PipeReader.Create(
                 contentStream,
-                new StreamPipeReaderOptions(
-                    bufferSize: 32 * 1024,
-                    minimumReadSize: 4 * 1024,
-                    leaveOpen: true,
-                    useZeroByteReads: true));
+                new StreamPipeReaderOptions(leaveOpen: true));
 
             return JsonSerializer.DeserializeAsyncPagedEnumerable(
                 reader, jsonTypeInfo, strategy, ct);

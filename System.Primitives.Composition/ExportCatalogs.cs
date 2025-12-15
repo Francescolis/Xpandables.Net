@@ -19,7 +19,7 @@ using System.ComponentModel.Composition.Hosting;
 using System.ComponentModel.Composition.Primitives;
 using System.Diagnostics.CodeAnalysis;
 
-namespace System.Primitives.Composition;
+namespace System.Composition;
 
 /// <summary>
 /// Represents an empty catalog of composable parts.

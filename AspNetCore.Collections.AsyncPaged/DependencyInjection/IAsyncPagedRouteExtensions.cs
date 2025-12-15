@@ -38,10 +38,10 @@ public static class IAsyncPagedRouteExtensions
     /// XController. This method registers the necessary configuration as a singleton service.</remarks>
     /// <returns>The service collection with Controller MVC options configured. The same instance as the input is returned
     /// for chaining.</returns>
-    public static IServiceCollection AddXControllerAsyncPagedMvcOptions(this IServiceCollection services)
+    public static IServiceCollection AddXAsyncPagedMvcOptions(this IServiceCollection services)
     {
         ArgumentNullException.ThrowIfNull(services);
-        services.AddSingleton<IConfigureOptions<MvcOptions>, ControllerAsyncPagedMvcOptions>();
+        services.AddSingleton<IConfigureOptions<MvcOptions>, AsyncPagedMvcOptions>();
 
         return services;
     }

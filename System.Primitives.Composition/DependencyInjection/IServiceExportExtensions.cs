@@ -18,7 +18,6 @@ using System.ComponentModel.Composition.Hosting;
 using System.ComponentModel.Composition.Primitives;
 using System.Composition;
 using System.Diagnostics.CodeAnalysis;
-using System.Primitives.Composition;
 using System.Reflection;
 
 using Microsoft.Extensions.Configuration;

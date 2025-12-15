@@ -5,10 +5,15 @@
 		<ImplicitUsings>enable</ImplicitUsings>
 		<Nullable>enable</Nullable>
 		<Platforms>x64</Platforms>
+		<LangVersion>latest</LangVersion>
+		<Title>System.AsyncPaged</Title>
+		<Description>IAsyncPagedEnumerable implementation.</Description>
+		<Company>Kamersoft</Company>
+		<Authors>Francescolis</Authors>
 
-		<AssemblyName>AspNetCore.Collections.AsyncPaged</AssemblyName>
-		<RootNamespace>Microsoft.AspNetCore</RootNamespace>
-		<PackageId>AspNetCore.Collections.AsyncPaged</PackageId>
+		<AssemblyName>System.AsyncPaged</AssemblyName>
+		<RootNamespace>System.Collections.Generic</RootNamespace>
+		<PackageId>System.AsyncPaged</PackageId>
 		<PackageProjectUrl>https://github.com/Francescolis/Xpandables.Net</PackageProjectUrl>
 		<RepositoryUrl>https://github.com/Francescolis/Xpandables.Net</RepositoryUrl>
 		<RepositoryType>git</RepositoryType>
@@ -25,7 +30,7 @@
 		<PackageIcon>Xpandables.Net.png</PackageIcon>
 		<ApplicationIcon>Xpandables.Net.ico</ApplicationIcon>
 		<PackageReadmeFile>README.md</PackageReadmeFile>
-		<PackageTags>IAsyncPagedEnumerable, IResultEndpointValidator</PackageTags>
+		<PackageTags>IAsyncPagedEnumerable, IAsyncPagedEnumerator</PackageTags>
 		<NeutralLanguage>en-US</NeutralLanguage>
 		<PackageLicenseExpression>Apache-2.0</PackageLicenseExpression>
 		<PackageRequireLicenseAcceptance>true</PackageRequireLicenseAcceptance>
@@ -66,11 +71,7 @@
 	</PropertyGroup>
 
 	<ItemGroup>
-		<FrameworkReference Include="Microsoft.AspNetCore.App" />
-	</ItemGroup>
-
-	<ItemGroup>
-		<Content Include="Xpandables.Net.ico" />
+	  <Content Include="Xpandables.Net.ico" />
 	</ItemGroup>
 
 	<ItemGroup>
@@ -82,10 +83,6 @@
 			<PackagePath>\</PackagePath>
 			<Pack>True</Pack>
 		</None>
-	</ItemGroup>
-
-	<ItemGroup>
-	  <ProjectReference Include="..\System.Text.Json.AsyncPaged\System.Text.Json.AsyncPaged.csproj" />
 	</ItemGroup>
 
 </Project>

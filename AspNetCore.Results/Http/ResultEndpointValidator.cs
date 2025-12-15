@@ -16,6 +16,7 @@
 ********************************************************************************/
 using System.Collections.Immutable;
 using System.ComponentModel.DataAnnotations;
+using System.Diagnostics.CodeAnalysis;
 using System.Results;
 
 using Microsoft.AspNetCore.Http;
@@ -30,7 +31,7 @@ namespace Microsoft.AspNetCore.Http;
 /// endpoints to handle errors consistently. The validator provider determines which validators are applied to each
 /// argument type.</remarks>
 /// <param name="validatorProvider">The provider used to retrieve validators for endpoint arguments requiring validation.</param>
-public sealed class ResultEndpointValidator(IRuleValidatorProvider validatorProvider) : IResultEndpointValidator
+public sealed class ResultEndpointValidator(IValidatorProvider validatorProvider) : IResultEndpointValidator
 {
     /// <inheritdoc/>
     public async ValueTask<object?> ValidateAsync(
@@ -59,7 +60,7 @@ public sealed class ResultEndpointValidator(IRuleValidatorProvider validatorProv
         return await nextDelegate(context).ConfigureAwait(false);
     }
 
-
+    [UnconditionalSuppressMessage("Trimming", "IL2026:Members annotated with 'RequiresUnreferencedCodeAttribute' require dynamic access otherwise can break functionality when trimming application code", Justification = "<Pending>")]
     static async Task<Result> ApplyValidationAsync(ImmutableHashSet<ValidatorDescriptor> validators)
     {
         FailureResultBuilder failureBuilder = Result.BadRequest();
@@ -116,12 +117,12 @@ public sealed class ResultEndpointValidator(IRuleValidatorProvider validatorProv
     }
 
     static ImmutableHashSet<ValidatorDescriptor> GetAppropriateValidators(
-        ImmutableHashSet<ArgumentDescriptor> arguments, IRuleValidatorProvider provider)
+        ImmutableHashSet<ArgumentDescriptor> arguments, IValidatorProvider provider)
     {
         List<ValidatorDescriptor> validators = [];
         foreach (ArgumentDescriptor argument in arguments)
         {
-            IRuleValidator? validator = provider.TryGetValidator(argument.ParameterType);
+            IValidator? validator = provider.TryGetValidator(argument.ParameterType);
             if (validator is not null)
             {
                 validators.Add(new ValidatorDescriptor
@@ -150,5 +151,5 @@ internal readonly record struct ValidatorDescriptor
     public readonly required int ArgumentIndex { get; init; }
     public readonly required Type ArgumentType { get; init; }
     public readonly required IRequiresValidation Argument { get; init; }
-    public readonly required IRuleValidator Validator { get; init; }
+    public readonly required IValidator Validator { get; init; }
 }

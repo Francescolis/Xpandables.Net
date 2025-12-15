@@ -19,9 +19,9 @@ namespace System.ComponentModel.DataAnnotations;
 /// <summary>
 /// Represents a composite validator for objects that require validation.
 /// </summary>
-/// <remarks>This interface extends <see cref="IRuleValidator{TArgument}"/> to provide a mechanism for combining
+/// <remarks>This interface extends <see cref="IValidator{TArgument}"/> to provide a mechanism for combining
 /// multiple validators into a single validation operation for objects of type <typeparamref
 /// name="TArgument"/>.</remarks>
 /// <typeparam name="TArgument">The type of the object to be validated. Must be a class that implements <see cref="IRequiresValidation"/>.</typeparam>
-public interface ICompositeRuleValidator<in TArgument> : IRuleValidator<TArgument>
+public interface ICompositeValidator<in TArgument> : IValidator<TArgument>
     where TArgument : class, IRequiresValidation;

@@ -14,6 +14,8 @@
  * limitations under the License.
  *
 ********************************************************************************/
+using System.Diagnostics.CodeAnalysis;
+
 namespace System.ComponentModel.DataAnnotations;
 
 /// <summary>
@@ -24,18 +26,19 @@ namespace System.ComponentModel.DataAnnotations;
 /// collection determines the order in which they are applied.</remarks>
 /// <typeparam name="TArgument">The type of the object to validate. Must be a reference type that implements <see cref="IRequiresValidation"/>.</typeparam>
 /// <param name="validators">The collection of validators to apply to the argument instance. Cannot be null.</param>
-public sealed class CompositeRuleValidator<TArgument>(IEnumerable<IRuleValidator<TArgument>> validators) :
-    RuleValidator<TArgument>, ICompositeRuleValidator<TArgument>
+public sealed class CompositeValidator<TArgument>(IEnumerable<IValidator<TArgument>> validators) :
+    DefaultValidator<TArgument>, ICompositeValidator<TArgument>
     where TArgument : class, IRequiresValidation
 {
-    private readonly IEnumerable<IRuleValidator<TArgument>> _validators = validators
+    private readonly IEnumerable<IValidator<TArgument>> _validators = validators
         ?? throw new ArgumentNullException(nameof(validators));
 
     /// <inheritdoc/>
+    [RequiresUnreferencedCode("Validation may require types that are trimmed.")]
     public override IReadOnlyCollection<ValidationResult> Validate(TArgument instance)
     {
         List<ValidationResult> validationResults = [];
-        foreach (IRuleValidator<TArgument> validator in _validators)
+        foreach (IValidator<TArgument> validator in _validators)
         {
             var results = validator.Validate(instance);
             if (results is { Count: > 0 })
@@ -48,11 +51,12 @@ public sealed class CompositeRuleValidator<TArgument>(IEnumerable<IRuleValidator
     }
 
     /// <inheritdoc/>
+    [RequiresUnreferencedCode("Validation may require types that are trimmed.")]
     public override async ValueTask<IReadOnlyCollection<ValidationResult>> ValidateAsync(TArgument instance)
     {
         List<ValidationResult> validationResults = [];
 
-        foreach (IRuleValidator<TArgument> validator in _validators)
+        foreach (IValidator<TArgument> validator in _validators)
         {
             var results = await validator
                 .ValidateAsync(instance)

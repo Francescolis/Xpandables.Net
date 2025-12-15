@@ -6,14 +6,14 @@
 		<Nullable>enable</Nullable>
 		<Platforms>x64</Platforms>
 		<LangVersion>latest</LangVersion>
-		<Title>System.Primitives.Composition</Title>
+		<Title>System.Composition</Title>
 		<Description>Composition classes.</Description>
 		<Company>Kamersoft</Company>
 		<Authors>Francescolis</Authors>
 
-		<AssemblyName>System.Primitives.Composition</AssemblyName>
-		<RootNamespace>System.Primitives.Composition</RootNamespace>
-		<PackageId>System.Primitives.Composition</PackageId>
+		<AssemblyName>System.Composition</AssemblyName>
+		<RootNamespace>System.Composition</RootNamespace>
+		<PackageId>System.Composition</PackageId>
 		<PackageProjectUrl>https://github.com/Francescolis/Xpandables.Net</PackageProjectUrl>
 		<RepositoryUrl>https://github.com/Francescolis/Xpandables.Net</RepositoryUrl>
 		<RepositoryType>git</RepositoryType>

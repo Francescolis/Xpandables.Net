@@ -30,7 +30,7 @@ namespace System.Results.Pipelines;
 /// If the validation fails, the pipeline will short-circuit and return a validation error response.
 /// If the validation succeeds, the execution continues to the next component in the pipeline.
 /// </remarks>
-public sealed class PipelineValidationDecorator<TRequest>(ICompositeRuleValidator<TRequest> validators) :
+public sealed class PipelineValidationDecorator<TRequest>(ICompositeValidator<TRequest> validators) :
     IPipelineDecorator<TRequest>
     where TRequest : class, IRequest, IRequiresValidation
 {

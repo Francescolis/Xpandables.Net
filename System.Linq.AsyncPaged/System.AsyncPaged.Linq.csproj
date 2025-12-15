@@ -6,14 +6,14 @@
 		<Nullable>enable</Nullable>
 		<Platforms>x64</Platforms>
 		<LangVersion>latest</LangVersion>
-		<Title>System.Primitives.Validation</Title>
-		<Description>Validation classes.</Description>
+		<Title>System.AsyncPaged.Linq</Title>
+		<Description>IAsyncPagedEnumerable linq.</Description>
 		<Company>Kamersoft</Company>
 		<Authors>Francescolis</Authors>
 
-		<AssemblyName>System.Primitives.Validation</AssemblyName>
-		<RootNamespace>System.ComponentModel.DataAnnotations</RootNamespace>
-		<PackageId>System.Primitives.Validation</PackageId>
+		<AssemblyName>System.AsyncPaged.Linq</AssemblyName>
+		<RootNamespace>System.Linq</RootNamespace>
+		<PackageId>System.AsyncPaged.Linq</PackageId>
 		<PackageProjectUrl>https://github.com/Francescolis/Xpandables.Net</PackageProjectUrl>
 		<RepositoryUrl>https://github.com/Francescolis/Xpandables.Net</RepositoryUrl>
 		<RepositoryType>git</RepositoryType>
@@ -30,7 +30,7 @@
 		<PackageIcon>Xpandables.Net.png</PackageIcon>
 		<ApplicationIcon>Xpandables.Net.ico</ApplicationIcon>
 		<PackageReadmeFile>README.md</PackageReadmeFile>
-		<PackageTags>IRuleValidator, IRuleValidatorResolver, IRuleValidatorProvider</PackageTags>
+		<PackageTags>IAsyncPagedEnumerable, IAsyncPagedEnumerator</PackageTags>
 		<NeutralLanguage>en-US</NeutralLanguage>
 		<PackageLicenseExpression>Apache-2.0</PackageLicenseExpression>
 		<PackageRequireLicenseAcceptance>true</PackageRequireLicenseAcceptance>
@@ -86,7 +86,7 @@
 	</ItemGroup>
 
 	<ItemGroup>
-	  <PackageReference Include="Microsoft.Extensions.DependencyInjection" Version="10.0.1" />
+	  <ProjectReference Include="..\System.Collections.AsyncPaged\System.AsyncPaged.csproj" />
 	</ItemGroup>
 
 </Project>

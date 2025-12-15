@@ -30,7 +30,7 @@ namespace Microsoft.Extensions.DependencyInjection;
 /// <remarks>This static class contains helper methods that extend the functionality of IServiceCollection,
 /// enabling additional service registration patterns and configuration options commonly used in dependency injection
 /// scenarios.</remarks>
-public static class IRuleValiadatorExtensions
+public static class IValiadatorExtensions
 {
     /// <summary>
     /// Adds the validation services to the specified IServiceCollection.
@@ -41,15 +41,15 @@ public static class IRuleValiadatorExtensions
         /// <summary>
         /// Adds Validator services to the current <see cref="IServiceCollection"/> for dependency injection.
         /// </summary>
-        /// <remarks>This method registers the generic <see cref="IRuleValidator{T}"/> and <see
-        /// cref="ICompositeRuleValidator{TArgument}"/> services with a transient lifetime. Call this method during application
+        /// <remarks>This method registers the generic <see cref="IValidator{T}"/> and <see
+        /// cref="ICompositeValidator{TArgument}"/> services with a transient lifetime. Call this method during application
         /// startup to enable XValidator-based validation throughout the application.</remarks>
         /// <returns>The <see cref="IServiceCollection"/> instance with Validator services registered. This enables chaining of
         /// further service configuration calls.</returns>
         public IServiceCollection AddXValidator()
         {
-            services.TryAdd(new ServiceDescriptor(typeof(IRuleValidator<>), typeof(RuleValidator<>), ServiceLifetime.Transient));
-            services.TryAdd(new ServiceDescriptor(typeof(ICompositeRuleValidator<>), typeof(CompositeRuleValidator<>), ServiceLifetime.Transient));
+            services.TryAdd(new ServiceDescriptor(typeof(IValidator<>), typeof(DefaultValidator<>), ServiceLifetime.Transient));
+            services.TryAdd(new ServiceDescriptor(typeof(ICompositeValidator<>), typeof(CompositeValidator<>), ServiceLifetime.Transient));
             return services;
         }
 
@@ -62,25 +62,25 @@ public static class IRuleValiadatorExtensions
         /// public constructor.</typeparam>
         /// <returns>The IServiceCollection instance for chaining additional service registrations.</returns>
         public IServiceCollection AddXValidatorFactory<[DynamicallyAccessedMembers(DynamicallyAccessedMemberTypes.PublicConstructors)] TValidatorFactory>()
-            where TValidatorFactory : class, IRuleValidatorFactory
+            where TValidatorFactory : class, IValidatorFactory
         {
-            services.Replace(new ServiceDescriptor(typeof(IRuleValidatorFactory), typeof(TValidatorFactory), ServiceLifetime.Singleton));
+            services.Replace(new ServiceDescriptor(typeof(IValidatorFactory), typeof(TValidatorFactory), ServiceLifetime.Singleton));
             return services;
         }
 
         /// <summary>
-        /// Replaces the current <see cref="IRuleValidatorFactory"/> registration in the service collection with the
+        /// Replaces the current <see cref="IValidatorFactory"/> registration in the service collection with the
         /// specified factory.
         /// </summary>
-        /// <remarks>This method removes any existing <see cref="IRuleValidatorFactory"/> registration and
+        /// <remarks>This method removes any existing <see cref="IValidatorFactory"/> registration and
         /// adds the specified factory as a singleton. Use this method to customize validation behavior by supplying a
         /// custom factory.</remarks>
-        /// <param name="factory">The <see cref="IRuleValidatorFactory"/> instance to register. Cannot be null.</param>
+        /// <param name="factory">The <see cref="IValidatorFactory"/> instance to register. Cannot be null.</param>
         /// <returns>The <see cref="IServiceCollection"/> instance, to allow for method chaining.</returns>
-        public IServiceCollection AddXValidatorFactory(IRuleValidatorFactory factory)
+        public IServiceCollection AddXValidatorFactory(IValidatorFactory factory)
         {
             ArgumentNullException.ThrowIfNull(factory);
-            services.Replace(new ServiceDescriptor(typeof(IRuleValidatorFactory), factory));
+            services.Replace(new ServiceDescriptor(typeof(IValidatorFactory), factory));
             return services;
         }
 
@@ -93,7 +93,7 @@ public static class IRuleValiadatorExtensions
         /// <returns>The <see cref="IServiceCollection"/> instance with the XValidator factory registered. This enables
         /// Validator-based validation in the application's dependency injection container.</returns>
         public IServiceCollection AddXValidatorFactory() =>
-            services.AddXValidatorFactory<RuleValidatorFactory>();
+            services.AddXValidatorFactory<ValidatorFactory>();
 
         /// <summary>
         /// Registers the specified validator provider type as a scoped service in the dependency injection container.
@@ -104,25 +104,25 @@ public static class IRuleValiadatorExtensions
         /// public constructor.</typeparam>
         /// <returns>The IServiceCollection instance for chaining additional service registrations.</returns>
         public IServiceCollection AddXValidatorProvider<[DynamicallyAccessedMembers(DynamicallyAccessedMemberTypes.PublicConstructors)] TValidatorProvider>()
-            where TValidatorProvider : class, IRuleValidatorProvider
+            where TValidatorProvider : class, IValidatorProvider
         {
-            services.Replace(new ServiceDescriptor(typeof(IRuleValidatorProvider), typeof(TValidatorProvider), ServiceLifetime.Scoped));
+            services.Replace(new ServiceDescriptor(typeof(IValidatorProvider), typeof(TValidatorProvider), ServiceLifetime.Scoped));
             return services;
         }
 
         /// <summary>
-        /// Replaces the current <see cref="IRuleValidatorProvider"/> registration in the service collection with the
+        /// Replaces the current <see cref="IValidatorProvider"/> registration in the service collection with the
         /// specified provider.
         /// </summary>
-        /// <remarks>This method removes any existing <see cref="IRuleValidatorProvider"/> registration and
+        /// <remarks>This method removes any existing <see cref="IValidatorProvider"/> registration and
         /// adds the specified provider as a singleton. Use this method to customize validation behavior by supplying a
         /// custom provider.</remarks>
-        /// <param name="provider">The <see cref="IRuleValidatorProvider"/> instance to register. Cannot be null.</param>
+        /// <param name="provider">The <see cref="IValidatorProvider"/> instance to register. Cannot be null.</param>
         /// <returns>The <see cref="IServiceCollection"/> instance, to allow for method chaining.</returns>
-        public IServiceCollection AddXValidatorProvider(IRuleValidatorProvider provider)
+        public IServiceCollection AddXValidatorProvider(IValidatorProvider provider)
         {
             ArgumentNullException.ThrowIfNull(provider);
-            services.Replace(new ServiceDescriptor(typeof(IRuleValidatorProvider), provider));
+            services.Replace(new ServiceDescriptor(typeof(IValidatorProvider), provider));
             return services;
         }
 
@@ -135,17 +135,17 @@ public static class IRuleValiadatorExtensions
         /// <returns>The <see cref="IServiceCollection"/> instance with the XValidator provider registered. This enables
         /// Validator-based validation in the application's dependency injection container.</returns>
         public IServiceCollection AddXValidatorProvider() =>
-            services.AddXValidatorProvider<RuleValidatorProvider>();
+            services.AddXValidatorProvider<ValidatorProvider>();
 
         /// <summary>
-        /// Registers all sealed implementations of <see cref="IRuleValidator{TArgument}"/> found in the specified assemblies 
+        /// Registers all sealed implementations of <see cref="IValidator{TArgument}"/> found in the specified assemblies 
         /// with the dependency injection container.
         /// </summary>
         /// <remarks>This method uses reflection to locate and register all sealed types implementing
-        /// <see cref="IRuleValidator{TArgument}"/> in the provided assemblies. It also registers corresponding <see cref="ICompositeRuleValidator{TArgument}"/> types for
+        /// <see cref="IValidator{TArgument}"/> in the provided assemblies. It also registers corresponding <see cref="ICompositeValidator{TArgument}"/> types for
         /// each discovered argument type. Dynamic code generation and unreferenced code may be required; see method
         /// attributes for details.</remarks>
-        /// <param name="assemblies">An array of assemblies to scan for sealed <see cref="IRuleValidator{TArgument}"/>> implementations. If no assemblies are provided, the
+        /// <param name="assemblies">An array of assemblies to scan for sealed <see cref="IValidator{TArgument}"/>> implementations. If no assemblies are provided, the
         /// calling assembly is used.</param>
         /// <returns>The IServiceCollection instance with the discovered validators registered.</returns>
         [RequiresDynamicCode("Dynamic code generation is required for this method.")]
@@ -160,14 +160,14 @@ public static class IRuleValiadatorExtensions
                      && Array.Exists(type.GetInterfaces(),
                          interfaceType => interfaceType.IsGenericType
                              && interfaceType
-                                 .GetGenericTypeDefinition() == typeof(IRuleValidator<>)))
+                                 .GetGenericTypeDefinition() == typeof(IValidator<>)))
                  .Select(type => new
                  {
                      ValidatorType = type,
                      ArgumentType = type.GetInterfaces()
                          .First(interfaceType => interfaceType.IsGenericType
                              && interfaceType
-                                 .GetGenericTypeDefinition() == typeof(IRuleValidator<>))
+                                 .GetGenericTypeDefinition() == typeof(IValidator<>))
                          .GetGenericArguments()[0]
                  })
                  .ToList();
@@ -177,23 +177,23 @@ public static class IRuleValiadatorExtensions
                 if (validatorType.ValidatorType.IsGenericType)
                 {
                     _ = services.AddTransient(
-                        typeof(IRuleValidator<>),
+                        typeof(IValidator<>),
                         validatorType.ValidatorType);
 
                     continue;
                 }
 
                 _ = services.AddTransient(
-                    typeof(IRuleValidator<>).MakeGenericType(validatorType.ArgumentType),
+                    typeof(IValidator<>).MakeGenericType(validatorType.ArgumentType),
                     validatorType.ValidatorType);
 
                 _ = services.AddSingleton(
-                    typeof(IRuleValidatorResolver),
-                    typeof(RuleValidatorResolver<>).MakeGenericType(validatorType.ArgumentType));
+                    typeof(IValidatorResolver),
+                    typeof(ValidatorResolver<>).MakeGenericType(validatorType.ArgumentType));
 
                 _ = services.AddTransient(
-                    typeof(ICompositeRuleValidator<>).MakeGenericType(validatorType.ArgumentType),
-                    typeof(CompositeRuleValidator<>).MakeGenericType(validatorType.ArgumentType));
+                    typeof(ICompositeValidator<>).MakeGenericType(validatorType.ArgumentType),
+                    typeof(CompositeValidator<>).MakeGenericType(validatorType.ArgumentType));
             }
 
             return services;

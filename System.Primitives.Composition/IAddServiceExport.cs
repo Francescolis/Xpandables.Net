@@ -15,9 +15,8 @@
  *
 ********************************************************************************/
 using System.ComponentModel.Composition;
-using System.Composition;
 
-namespace System.Primitives.Composition;
+namespace System.Composition;
 
 /// <summary>
 /// Interface for adding service exports to the service collection.

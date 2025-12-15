@@ -14,16 +14,19 @@
  * limitations under the License.
  *
 ********************************************************************************/
+using System.Diagnostics.CodeAnalysis;
+
 namespace System.ComponentModel.DataAnnotations;
 
 /// <summary>
 /// Provides a validator that performs no validation and always returns an empty set of validation results.
 /// </summary>
 /// <typeparam name="TArgument">The type of object to validate. Must be a reference type that implements <see cref="IRequiresValidation"/>.</typeparam>
-public sealed class NullRuleValidator<TArgument> : RuleValidator<TArgument>
+public sealed class EmptyValidator<TArgument> : DefaultValidator<TArgument>
     where TArgument : class, IRequiresValidation
 {
     /// <inheritdoc/>
     /// Does nothing and returns an empty collection of validation results.
+    [RequiresUnreferencedCode("Validation may require types that are trimmed.")]
     public override IReadOnlyCollection<ValidationResult> Validate(TArgument instance) => [];
 }
