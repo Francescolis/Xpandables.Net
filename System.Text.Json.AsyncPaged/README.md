@@ -358,21 +358,21 @@ The following benchmarks compare `System.Text.Json.AsyncPaged` serialization/des
 
 | Scenario | Dataset | Custom AsyncPaged | Framework IAsyncEnumerable | Improvement |
 |----------|---------|------------------:|---------------------------:|------------:|
-| Small    | 100     | **77 μs**          | 85 μs                      | **+9%**     |
-| Medium   | 1,000   | **935 μs**         | 968 μs                     | **+3%**     |
-| Large    | 10,000  | **8,833 μs**       | 8,896 μs                   | **+1%**     |
+| Small    | 100     | **74 μs**          | 85 μs                      | **+12%**     |
+| Medium   | 1,000   | **892 μs**         | 956 μs                     | **+6%**     |
+| Large    | 10,000  | **6,412 μs**       | 6,644 μs                   | **+3%**     |
 
 ### Deserialization Performance (Read from JSON)
 
 | Scenario | Dataset | Custom AsyncPaged | Framework IAsyncEnumerable | Improvement |
 |----------|---------|------------------:|---------------------------:|------------:|
-| Small    | 100     | **95 μs**          | 100 μs                     | **+5%**     |
-| Medium   | 1,000   | **1,044 μs**       | 1,346 μs                   | **+22%**    |
-| Large    | 10,000  | **6,964 μs**       | 14,834 μs                  | **+53%**    |
+| Small    | 100     | **112 μs**         | 66 μs                     | **-69%**     |
+| Medium   | 1,000   | **389 μs**       | 626 μs                   | **+37%**    |
+| Large    | 10,000  | **2,001 μs**       | 6,631 μs                  | **+69%**    |
 
 **Key Findings:**
 - ⚡ **Serialization:** Comparable performance with slightly better memory efficiency for large datasets
-- ⚡ **Deserialization:** Significant performance advantage (22-53% faster), especially for medium and large datasets
+- ⚡ **Deserialization:** Significant performance advantage (37-69% faster), especially for medium and large datasets
 - 💾 **Memory Allocation:** Efficient buffer management with reduced memory pressure
 - 📈 **Scalability:** Performance improves relative to dataset size due to adaptive flushing
 
