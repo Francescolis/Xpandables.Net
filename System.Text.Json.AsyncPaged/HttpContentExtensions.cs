@@ -116,7 +116,7 @@ public static class HttpContentExtensions
     {
         return AsyncPagedEnumerable.Create(async ct =>
         {
-            using Stream contentStream = await GetContentStreamAsync(content, ct)
+            Stream contentStream = await GetContentStreamAsync(content, ct)
                 .ConfigureAwait(false);
 
             return JsonSerializer.DeserializeAsyncPagedEnumerable(

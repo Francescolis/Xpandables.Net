@@ -14,9 +14,11 @@
  * limitations under the License.
  *
 ********************************************************************************/
+using System.Buffers;
 using System.Diagnostics.CodeAnalysis;
 using System.IO.Pipelines;
 using System.Net.Http.Json;
+using System.Runtime.CompilerServices;
 using System.Text.Json.Serialization.Metadata;
 
 namespace System.Text.Json;
@@ -274,34 +276,17 @@ public static class JsonDeserializerExtensions
         PaginationStrategy strategy,
         CancellationToken cancellationToken)
     {
-        // Single pass: read from stream, parse JSON shape, extract slices.
-        (Pagination pagination, ReadOnlyMemory<byte> itemsBytes) =
-            ExtractPaginationAndItemsSlices(utf8Json);
+        ArgumentNullException.ThrowIfNull(utf8Json);
+        ArgumentNullException.ThrowIfNull(jsonTypeInfo);
 
-        // Factory returns pre-parsed pagination (zero overhead).
-        static ValueTask<Pagination> PaginationFactory(Pagination p, CancellationToken _)
-            => new(p);
+        var reader = PipeReader.Create(
+            utf8Json,
+            new StreamPipeReaderOptions(
+                bufferSize: 32 * 1024,
+                minimumReadSize: 4 * 1024,
+                useZeroByteReads: true));
 
-        Func<CancellationToken, ValueTask<Pagination>> paginationFactory =
-            ct => PaginationFactory(pagination, ct);
-
-        // Items enumerable: use a lightweight stream wrapper (no extra copy).
-        async IAsyncEnumerable<TValue?> ItemsIterator(
-            [System.Runtime.CompilerServices.EnumeratorCancellation] CancellationToken ct = default)
-        {
-            // Create a stream from the sliced bytes without copying.
-            using Stream itemsStream = new ReadOnlyMemoryStream(itemsBytes);
-
-            IAsyncEnumerable<TValue?> items =
-                JsonSerializer.DeserializeAsyncEnumerable(itemsStream, jsonTypeInfo, ct);
-
-            await foreach (TValue? item in items.ConfigureAwait(false))
-            {
-                yield return item;
-            }
-        }
-
-        return AsyncPagedEnumerable.Create(ItemsIterator(cancellationToken), paginationFactory, strategy);
+        return DeserializeAsyncPagedEnumerableCore(reader, jsonTypeInfo, topLovelValues, strategy, cancellationToken);
     }
 
     private static IAsyncPagedEnumerable<TValue?> DeserializeAsyncPagedEnumerableCore<TValue>(
@@ -311,187 +296,225 @@ public static class JsonDeserializerExtensions
         PaginationStrategy strategy,
         CancellationToken cancellationToken)
     {
-        Stream stream = utf8Json.AsStream();
-        return DeserializeAsyncPagedEnumerableCore(stream, jsonTypeInfo, topLovelValues, strategy, cancellationToken);
-    }
-
-    /// <summary>
-    /// Extracts pagination and items slices from JSON in a single streaming pass.
-    /// Avoids buffering the entire document; returns byte slices instead.
-    /// </summary>
-    private static (Pagination Pagination, ReadOnlyMemory<byte> ItemsBytes)
-        ExtractPaginationAndItemsSlices(Stream utf8Json)
-    {
-        // Read stream into a buffer only once.
-        using MemoryStream buffer = new();
-        utf8Json.CopyTo(buffer);
-        ReadOnlyMemory<byte> fullData = buffer.GetBuffer().AsMemory(0, (int)buffer.Length);
-
-        ReadOnlySpan<byte> span = fullData.Span;
-        var reader = new Utf8JsonReader(span, isFinalBlock: true, default);
+        ArgumentNullException.ThrowIfNull(utf8Json);
+        ArgumentNullException.ThrowIfNull(jsonTypeInfo);
 
         Pagination pagination = Pagination.Empty;
-        int itemsStart = -1;
-        int itemsEnd = -1;
 
-        if (reader.Read() && reader.TokenType == JsonTokenType.StartObject)
+        async IAsyncEnumerable<TValue?> ItemsIterator(
+            [EnumeratorCancellation] CancellationToken ct = default)
         {
-            while (reader.Read())
+            JsonReaderState state = new(new JsonReaderOptions { CommentHandling = JsonCommentHandling.Skip });
+
+            while (true)
             {
-                if (reader.TokenType != JsonTokenType.PropertyName)
+                ReadResult result = await utf8Json.ReadAsync(ct).ConfigureAwait(false);
+                ReadOnlySequence<byte> buffer = result.Buffer;
+
+                // Buffer parsed items for this read before yielding (so Utf8JsonReader doesn't cross yields).
+                using PooledList<TValue?> items = new(initialCapacity: 8);
+
+                bool needMoreData;
+
                 {
+                    var reader = new Utf8JsonReader(buffer, result.IsCompleted, state);
+                    needMoreData = false;
+
+                    while (reader.Read())
+                    {
+                        if (reader.TokenType == JsonTokenType.PropertyName)
+                        {
+                            if (reader.ValueTextEquals("pagination"u8))
+                            {
+                                if (!reader.Read())
+                                {
+                                    needMoreData = true;
+                                    break;
+                                }
+
+                                if (!TryDeserializeValue(ref reader, buffer, PaginationJsonContext.Default.Pagination, out Pagination paginationValue))
+                                {
+                                    needMoreData = true;
+                                    break;
+                                }
+
+                                pagination = paginationValue;
+                            }
+                            else if (reader.ValueTextEquals("items"u8))
+                            {
+                                if (!reader.Read())
+                                {
+                                    needMoreData = true;
+                                    break;
+                                }
+
+                                if (reader.TokenType == JsonTokenType.StartArray)
+                                {
+                                    if (!TryReadArrayItems(ref reader, buffer, jsonTypeInfo, items))
+                                    {
+                                        needMoreData = true;
+                                        break;
+                                    }
+                                }
+                                else
+                                {
+                                    if (!reader.TrySkip())
+                                    {
+                                        needMoreData = true;
+                                        break;
+                                    }
+                                }
+                            }
+                            else
+                            {
+                                if (!reader.TrySkip())
+                                {
+                                    needMoreData = true;
+                                    break;
+                                }
+                            }
+                        }
+                        else if (topLovelValues && reader.TokenType == JsonTokenType.StartArray)
+                        {
+                            if (!TryReadArrayItems(ref reader, buffer, jsonTypeInfo, items))
+                            {
+                                needMoreData = true;
+                                break;
+                            }
+                        }
+
+                        if (needMoreData)
+                        {
+                            break;
+                        }
+                    }
+
+                    state = reader.CurrentState;
+                    SequencePosition consumed = buffer.GetPosition(reader.BytesConsumed);
+                    utf8Json.AdvanceTo(consumed, buffer.End);
+                }
+
+                for (int i = 0; i < items.Count; i++)
+                {
+                    yield return items[i];
+                }
+
+                if (needMoreData)
+                {
+                    if (result.IsCompleted)
+                    {
+                        throw new JsonException("Incomplete JSON data encountered while deserializing paged items.");
+                    }
+
                     continue;
                 }
 
-                if (reader.ValueTextEquals("pagination"u8))
-                {
-                    if (!reader.Read())
-                    {
-                        break;
-                    }
+                if (result.IsCompleted)
+                    break;
 
-                    // Capture pagination as a slice, parse only when needed.
-                    int paginationStart = (int)reader.TokenStartIndex;
-                    int depth = 0;
-
-                    if (reader.TokenType == JsonTokenType.StartObject)
-                    {
-                        depth = 1;
-                        while (depth > 0 && reader.Read())
-                        {
-                            if (reader.TokenType == JsonTokenType.StartObject)
-                            {
-                                depth++;
-                            }
-                            else if (reader.TokenType == JsonTokenType.EndObject)
-                            {
-                                depth--;
-                            }
-                        }
-                    }
-
-                    int paginationEnd = (int)reader.BytesConsumed;
-                    if (paginationEnd > paginationStart)
-                    {
-                        ReadOnlyMemory<byte> paginationSpan = fullData.Slice(paginationStart, paginationEnd - paginationStart);
-                        using JsonDocument doc = JsonDocument.Parse(paginationSpan);
-                        pagination = doc.Deserialize(PaginationJsonContext.Default.Pagination);
-                    }
-                }
-                else if (reader.ValueTextEquals("items"u8))
-                {
-                    if (!reader.Read())
-                    {
-                        break;
-                    }
-
-                    if (reader.TokenType == JsonTokenType.StartArray)
-                    {
-                        itemsStart = (int)reader.TokenStartIndex;
-
-                        int depth = 1;
-                        while (depth > 0 && reader.Read())
-                        {
-                            if (reader.TokenType == JsonTokenType.StartArray ||
-                                reader.TokenType == JsonTokenType.StartObject)
-                            {
-                                depth++;
-                            }
-                            else if (reader.TokenType == JsonTokenType.EndArray ||
-                                     reader.TokenType == JsonTokenType.EndObject)
-                            {
-                                depth--;
-                            }
-                        }
-
-                        itemsEnd = (int)reader.BytesConsumed;
-                    }
-                }
-                else
-                {
-                    reader.Read();
-                    reader.Skip();
-                }
+                // No buffered items this iteration, continue reading.
             }
+
+            await utf8Json.CompleteAsync().ConfigureAwait(false);
         }
 
-        ReadOnlyMemory<byte> itemsBytes = itemsStart >= 0 && itemsEnd > itemsStart
-            ? fullData.Slice(itemsStart, itemsEnd - itemsStart)
-            : "[]"u8.ToArray();
+        static ValueTask<Pagination> PaginationFactory(Pagination p, CancellationToken _) => new(p);
+        Func<CancellationToken, ValueTask<Pagination>> paginationFactory = ct => PaginationFactory(pagination, ct);
 
-        return (pagination, itemsBytes);
+        return AsyncPagedEnumerable.Create(
+            ItemsIterator(cancellationToken),
+            paginationFactory,
+            strategy);
     }
 
-    /// <summary>
-    /// Lightweight stream wrapper over ReadOnlyMemory{byte} — avoids copying.
-    /// </summary>
-    private sealed class ReadOnlyMemoryStream : Stream
+    private static bool TryReadArrayItems<TValue>(
+        ref Utf8JsonReader reader,
+        ReadOnlySequence<byte> buffer,
+        JsonTypeInfo<TValue> jsonTypeInfo,
+        PooledList<TValue?> items)
     {
-        private readonly ReadOnlyMemory<byte> _data;
-        private int _position;
-
-        public ReadOnlyMemoryStream(ReadOnlyMemory<byte> data)
+        while (true)
         {
-            _data = data;
-            _position = 0;
-        }
-
-        public override bool CanRead => true;
-        public override bool CanSeek => true;
-        public override bool CanWrite => false;
-        public override long Length => _data.Length;
-        public override long Position
-        {
-            get => _position;
-            set => _position = (int)value;
-        }
-
-        public override void Flush() { }
-
-        public override int Read(byte[] buffer, int offset, int count)
-        {
-            int remaining = _data.Length - _position;
-            int toRead = Math.Min(count, remaining);
-
-            if (toRead > 0)
+            if (!reader.Read())
             {
-                _data.Span.Slice(_position, toRead).CopyTo(buffer.AsSpan(offset));
-                _position += toRead;
+                return false;
             }
 
-            return toRead;
-        }
-
-        public override int Read(Span<byte> buffer)
-        {
-            int remaining = _data.Length - _position;
-            int toRead = Math.Min(buffer.Length, remaining);
-
-            if (toRead > 0)
+            if (reader.TokenType == JsonTokenType.EndArray)
             {
-                _data.Span.Slice(_position, toRead).CopyTo(buffer);
-                _position += toRead;
+                return true;
             }
 
-            return toRead;
-        }
-
-        public override long Seek(long offset, SeekOrigin origin)
-        {
-            _position = origin switch
+            if (!TryDeserializeValue(ref reader, buffer, jsonTypeInfo, out TValue? value))
             {
-                SeekOrigin.Begin => (int)offset,
-                SeekOrigin.Current => _position + (int)offset,
-                SeekOrigin.End => _data.Length + (int)offset,
-                _ => throw new ArgumentException("Invalid seek origin", nameof(origin))
-            };
-            return _position;
+                return false;
+            }
+
+            items.Add(value);
+        }
+    }
+
+    private static bool TryDeserializeValue<TValue>(
+        ref Utf8JsonReader reader,
+        ReadOnlySequence<byte> buffer,
+        JsonTypeInfo<TValue> jsonTypeInfo,
+        out TValue? value)
+    {
+        var lookahead = reader;
+
+        if (!lookahead.TrySkip())
+        {
+            value = default;
+            return false;
         }
 
-        public override void SetLength(long value)
-            => throw new NotSupportedException();
+        SequencePosition start = buffer.GetPosition(reader.TokenStartIndex);
+        SequencePosition end = buffer.GetPosition(lookahead.BytesConsumed);
+        ReadOnlySequence<byte> slice = buffer.Slice(start, end);
 
-        public override void Write(byte[] buffer, int offset, int count)
-            => throw new NotSupportedException();
+        var valueReader = new Utf8JsonReader(slice, isFinalBlock: true, state: default);
+        value = JsonSerializer.Deserialize(ref valueReader, jsonTypeInfo);
+
+        reader = lookahead;
+        return true;
+    }
+
+    /// <summary>Pooled list to avoid per-buffer allocations while remaining safe across async yields.</summary>
+    private sealed class PooledList<T> : IDisposable
+    {
+        private T[] _array;
+        private int _count;
+
+        public PooledList(int initialCapacity = 8)
+        {
+            _array = ArrayPool<T>.Shared.Rent(Math.Max(1, initialCapacity));
+            _count = 0;
+        }
+
+        public int Count => _count;
+
+        public T this[int index] => _array[index];
+
+        public void Add(T item)
+        {
+            if (_count == _array.Length)
+                Grow();
+            _array[_count++] = item;
+        }
+
+        private void Grow()
+        {
+            T[] newArray = ArrayPool<T>.Shared.Rent(_array.Length * 2);
+            Array.Copy(_array, 0, newArray, 0, _count);
+            ArrayPool<T>.Shared.Return(_array, RuntimeHelpers.IsReferenceOrContainsReferences<T>());
+            _array = newArray;
+        }
+
+        public void Dispose()
+        {
+            ArrayPool<T>.Shared.Return(_array, RuntimeHelpers.IsReferenceOrContainsReferences<T>());
+            _array = Array.Empty<T>();
+            _count = 0;
+        }
     }
 }
