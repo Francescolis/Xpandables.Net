@@ -480,16 +480,10 @@ public static class JsonDeserializerExtensions
     }
 
     /// <summary>Pooled list to avoid per-buffer allocations while remaining safe across async yields.</summary>
-    private sealed class PooledList<T> : IDisposable
+    private sealed class PooledList<T>(int initialCapacity = 8) : IDisposable
     {
-        private T[] _array;
+        private T[] _array = ArrayPool<T>.Shared.Rent(Math.Max(1, initialCapacity));
         private int _count;
-
-        public PooledList(int initialCapacity = 8)
-        {
-            _array = ArrayPool<T>.Shared.Rent(Math.Max(1, initialCapacity));
-            _count = 0;
-        }
 
         public int Count => _count;
 
@@ -513,7 +507,7 @@ public static class JsonDeserializerExtensions
         public void Dispose()
         {
             ArrayPool<T>.Shared.Return(_array, RuntimeHelpers.IsReferenceOrContainsReferences<T>());
-            _array = Array.Empty<T>();
+            _array = [];
             _count = 0;
         }
     }
