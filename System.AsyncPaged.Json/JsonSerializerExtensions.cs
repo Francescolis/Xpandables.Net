@@ -321,19 +321,33 @@ public static class JsonSerializerExtensions
     {
         cancellationToken.ThrowIfCancellationRequested();
 
+        JsonSerializerOptions serializerOptions = jsonTypeInfo.Options;
         JsonWriterOptions writerOptions = new()
         {
-            Indented = jsonTypeInfo.Options.WriteIndented,
-            Encoder = jsonTypeInfo.Options.Encoder,
-            SkipValidation = !jsonTypeInfo.Options.WriteIndented
+            Indented = serializerOptions.WriteIndented,
+            Encoder = serializerOptions.Encoder,
+            SkipValidation = !serializerOptions.WriteIndented
         };
 
-        using Utf8JsonWriter writer = output switch
+        PipeWriter pipeWriter;
+        bool ownsPipeWriter = false;
+
+        switch (output)
         {
-            PipeWriter pipe => new Utf8JsonWriter(pipe, writerOptions),
-            Stream stream => new Utf8JsonWriter(stream, writerOptions),
-            _ => throw new ArgumentException("Output must be PipeWriter or Stream", nameof(output))
-        };
+            case PipeWriter providedPipe:
+                pipeWriter = providedPipe;
+                break;
+            case Stream stream:
+                pipeWriter = PipeWriter.Create(
+                    stream,
+                    new StreamPipeWriterOptions(leaveOpen: true));
+                ownsPipeWriter = true;
+                break;
+            default:
+                throw new ArgumentException("Output must be PipeWriter or Stream", nameof(output));
+        }
+
+        using Utf8JsonWriter writer = new(pipeWriter, writerOptions);
 
         Pagination pagination = await paged
             .GetPaginationAsync(cancellationToken)
@@ -363,6 +377,12 @@ public static class JsonSerializerExtensions
         writer.WriteEndArray();
         writer.WriteEndObject();
         await writer.FlushAsync(cancellationToken).ConfigureAwait(false);
+
+        if (ownsPipeWriter)
+        {
+            await pipeWriter.FlushAsync(cancellationToken).ConfigureAwait(false);
+            await pipeWriter.CompleteAsync().ConfigureAwait(false);
+        }
     }
 
     [RequiresUnreferencedCode("Calls System.Net.Http.Json.HttpContentExtensions.GetJsonTypeInfo(Type, JsonSerializerOptions)")]
