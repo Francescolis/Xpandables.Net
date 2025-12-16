@@ -352,27 +352,27 @@ public async Task<IAsyncResult> GetProductsStreamAsync(int pageNumber = 1, int p
 
 ## ⚙️ Performance Benchmarks
 
-The following benchmarks compare `System.Text.Json.AsyncPaged` serialization/deserialization with standard `IAsyncEnumerable<T>` approaches:
+The following benchmarks compare `System.AsyncPaged.Json` serialization/deserialization with standard `IAsyncEnumerable<T>` approaches:
 
 ### Serialization Performance (Write to JSON)
 
 | Scenario | Dataset | Custom AsyncPaged | Framework IAsyncEnumerable | Improvement |
 |----------|---------|------------------:|---------------------------:|------------:|
-| Small    | 100     | **74 μs**          | 85 μs                      | **+12%**     |
-| Medium   | 1,000   | **892 μs**         | 956 μs                     | **+6%**     |
-| Large    | 10,000  | **6,412 μs**       | 6,644 μs                   | **+3%**     |
+| Small    | 100     | **76 μs**          | 87 μs                      | **+12%**     |
+| Medium   | 1,000   | **858 μs**         | 974 μs                     | **+11%**     |
+| Large    | 10,000  | **6,441 μs**       | 6,859 μs                   | **+6%**     |
 
 ### Deserialization Performance (Read from JSON)
 
 | Scenario | Dataset | Custom AsyncPaged | Framework IAsyncEnumerable | Improvement |
 |----------|---------|------------------:|---------------------------:|------------:|
-| Small    | 100     | **112 μs**         | 66 μs                     | **-69%**     |
-| Medium   | 1,000   | **389 μs**       | 626 μs                   | **+37%**    |
-| Large    | 10,000  | **2,001 μs**       | 6,631 μs                  | **+69%**    |
+| Small    | 100     | **43 μs**         | 67 μs                     | **+34%**     |
+| Medium   | 1,000   | **226 μs**       | 654 μs                   | **+65%**    |
+| Large    | 10,000  | **2,015 μs**       | 6,542 μs                  | **+69%**    |
 
 **Key Findings:**
 - ⚡ **Serialization:** Comparable performance with slightly better memory efficiency for large datasets
-- ⚡ **Deserialization:** Significant performance advantage (37-69% faster), especially for medium and large datasets
+- ⚡ **Deserialization:** Significant performance advantage (34-69% faster), especially for medium and large datasets
 - 💾 **Memory Allocation:** Efficient buffer management with reduced memory pressure
 - 📈 **Scalability:** Performance improves relative to dataset size due to adaptive flushing
 
