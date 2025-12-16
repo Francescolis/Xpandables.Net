@@ -406,7 +406,7 @@ public sealed class ElementEntryTests
         // Assert
         entry.Key.Should().Be("username");
         entry.Values.Count.Should().Be(1);
-        ((string)entry.Values).Should().Be("john_doe");
+        ((string?)entry.Values).Should().Be("john_doe");
     }
 
     [Fact]
@@ -481,7 +481,7 @@ public sealed class ElementEntryTests
 
         // Assert
         entry.Values.Count.Should().Be(1);
-        ((string)entry.Values).Should().BeEmpty();
+        ((string?)entry.Values).Should().BeEmpty();
     }
 
     [Fact]

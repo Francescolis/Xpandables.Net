@@ -113,7 +113,7 @@ public static class ObjectExtensions
         /// <typeparam name="T">The reference type to which to cast the underlying object.</typeparam>
         /// <param name="_">A dummy parameter used to infer the target type. The value is ignored.</param>
         /// <returns>The underlying object cast to type T if it is compatible; otherwise, null.</returns>
-        public T? As<T>(T _) where T : class => obj is T t ? t : null;
+        public T? As<T>(T? _) where T : class => obj is T t ? t : null;
 
         /// <summary>
         /// Casts the current object to the specified reference type, throwing an exception if the object is null.

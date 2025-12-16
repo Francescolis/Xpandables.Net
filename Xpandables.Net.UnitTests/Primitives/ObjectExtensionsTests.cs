@@ -102,7 +102,7 @@ public sealed class ObjectExtensionsTests
         object obj = "123";
 
         // Act
-        var result = obj.ChangeTypeNullable(typeof(int));
+        var result = obj.ChangeTypeNullable<int>();
 
         // Assert
         result.Should().Be(123);
@@ -168,7 +168,7 @@ public sealed class ObjectExtensionsTests
         object obj = 42;
 
         // Act
-        var result = obj.ChangeTypeNullable(typeof(int?));
+        var result = obj.ChangeTypeNullable<int?>();
 
         // Assert
         result.Should().Be(42);
@@ -181,7 +181,7 @@ public sealed class ObjectExtensionsTests
         object obj = "true";
 
         // Act
-        var result = obj.ChangeTypeNullable(typeof(bool));
+        var result = obj.ChangeTypeNullable<bool>();
 
         // Assert
         result.Should().Be(true);

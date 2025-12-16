@@ -157,12 +157,12 @@ public sealed class JsonSerializationTests
                 item.Name.Should().NotBeNullOrEmpty();
             });
 
-        items[0].Id.Should().Be(0, "first item should have id 0");
-        items[0].Name.Should().Be("Item_0", "first item should have correct name");
-        items[1].Id.Should().Be(1, "second item should have id 1");
-        items[1].Name.Should().Be("Item_1", "second item should have correct name");
-        items[2].Id.Should().Be(2, "third item should have id 2");
-        items[2].Name.Should().Be("Item_2", "third item should have correct name");
+        items[0]!.Id.Should().Be(0, "first item should have id 0");
+        items[0]!.Name.Should().Be("Item_0", "first item should have correct name");
+        items[1]!.Id.Should().Be(1, "second item should have id 1");
+        items[1]!.Name.Should().Be("Item_1", "second item should have correct name");
+        items[2]!.Id.Should().Be(2, "third item should have id 2");
+        items[2]!.Name.Should().Be("Item_2", "third item should have correct name");
 
         pagination.PageSize.Should().Be(5, "pagination pageSize should match");
         pagination.CurrentPage.Should().Be(1, "pagination currentPage should match");

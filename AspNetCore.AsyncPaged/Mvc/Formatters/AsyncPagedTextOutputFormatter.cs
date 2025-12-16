@@ -14,6 +14,7 @@
  * limitations under the License.
  *
 ********************************************************************************/
+using System.Diagnostics.CodeAnalysis;
 using System.IO.Pipelines;
 using System.Runtime.ExceptionServices;
 using System.Text;
@@ -102,6 +103,8 @@ public sealed class AsyncPagedTextOutputFormatter : TextOutputFormatter
     }
 
     /// <inheritdoc/>
+    [UnconditionalSuppressMessage("Trimming", "IL2026:Members annotated with 'RequiresUnreferencedCodeAttribute' require dynamic access otherwise can break functionality when trimming application code", Justification = "<Pending>")]
+    [UnconditionalSuppressMessage("AOT", "IL3050:Calling members annotated with 'RequiresDynamicCodeAttribute' may break functionality when AOT compiling.", Justification = "<Pending>")]
     public sealed override async Task WriteResponseBodyAsync(OutputFormatterWriteContext context, Encoding selectedEncoding)
     {
         ArgumentNullException.ThrowIfNull(context);
@@ -170,9 +173,11 @@ public sealed class AsyncPagedTextOutputFormatter : TextOutputFormatter
                 }
                 else
                 {
-                    await JsonSerializer
-                        .SerializeAsyncPaged(transcodingStream, paged, SerializerOptions, httpContext.RequestAborted)
-                        .ConfigureAwait(false);
+                    await JsonSerializer.SerializeAsyncPaged(
+                        transcodingStream,
+                        paged,
+                        SerializerOptions,
+                        httpContext.RequestAborted).ConfigureAwait(false);
                 }
 
                 await transcodingStream.FlushAsync(httpContext.RequestAborted).ConfigureAwait(false);

@@ -419,7 +419,7 @@ public static class JsonDeserializerExtensions
         }
 
         static ValueTask<Pagination> PaginationFactory(Pagination p, CancellationToken _) => new(p);
-        Func<CancellationToken, ValueTask<Pagination>> paginationFactory = ct => PaginationFactory(pagination, ct);
+        ValueTask<Pagination> paginationFactory(CancellationToken ct) => PaginationFactory(pagination, ct);
 
         return AsyncPagedEnumerable.Create(
             ItemsIterator(cancellationToken),

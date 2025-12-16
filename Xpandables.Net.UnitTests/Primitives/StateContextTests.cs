@@ -59,7 +59,9 @@ public sealed class StateContextTests
             Actions.Add($"Order {context.OrderId} leaving pending state");
         }
 
+#pragma warning disable CA1822 // Mark members as static
         public void Submit(OrderContext context)
+#pragma warning restore CA1822 // Mark members as static
         {
             context.TransitionToState(new ProcessingState());
         }
@@ -77,6 +79,7 @@ public sealed class StateContextTests
             Actions.Add($"Order {context.OrderId} finished processing");
         }
 
+#pragma warning disable CA1822 // Mark members as static
         public void Ship(OrderContext context)
         {
             context.TransitionToState(new ShippedState());
@@ -86,6 +89,7 @@ public sealed class StateContextTests
         {
             context.TransitionToState(new CancelledState());
         }
+#pragma warning restore CA1822 // Mark members as static
     }
 
     private sealed class ShippedState : OrderState
@@ -95,7 +99,9 @@ public sealed class StateContextTests
             Actions.Add($"Order {context.OrderId} has been shipped");
         }
 
+#pragma warning disable CA1822 // Mark members as static
         public void Deliver(OrderContext context)
+#pragma warning restore CA1822 // Mark members as static
         {
             context.TransitionToState(new DeliveredState());
         }
