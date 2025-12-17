@@ -10,7 +10,7 @@
 
 ## 📋 Overview
 
-`System.Primitives.Composition` enables modular service registration through MEF (Managed Extensibility Framework). The library provides `IAddServiceExport` for plugin-style service discovery, `RecursiveDirectoryCatalog` for scanning assembly directories, and extension methods for automatic service registration from external DLLs.
+`System.Composition` enables modular service registration through MEF (Managed Extensibility Framework). The library provides `IAddServiceExport` for plugin-style service discovery, `RecursiveDirectoryCatalog` for scanning assembly directories, and extension methods for automatic service registration from external DLLs.
 
 Built for .NET 10 with C# 14 extension members, this package enables building extensible applications where plugins can self-register their services without requiring compile-time references.
 
@@ -28,13 +28,13 @@ Built for .NET 10 with C# 14 extension members, this package enables building ex
 ## 📦 Installation
 
 ```bash
-dotnet add package System.Primitives.Composition
+dotnet add package System.Composition
 ```
 
 Or via NuGet Package Manager:
 
 ```powershell
-Install-Package System.Primitives.Composition
+Install-Package System.Composition
 ```
 
 ---
@@ -47,7 +47,6 @@ Install-Package System.Primitives.Composition
 // In your plugin project (e.g., MyPlugin.dll)
 using System.ComponentModel.Composition;
 using System.Composition;
-using System.Primitives.Composition;
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
 

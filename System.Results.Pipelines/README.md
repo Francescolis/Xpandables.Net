@@ -291,7 +291,11 @@ builder.Services.AddXPipelineIntegrationOutboxDecorator();   // 7. Outbox
 builder.Services.AddXPipelinePostDecorator();                // 8. Post-processing
 
 // Register validators
-builder.Services.AddXRuleValidators(typeof(Program).Assembly);
+builder.Services
+    .AddXValidator()
+    .AddXValidatorFactory()
+    .AddXValidatorProvider()
+    .AddXValidators(typeof(Program).Assembly);
 ```
 
 ---
@@ -311,7 +315,7 @@ builder.Services.AddXRuleValidators(typeof(Program).Assembly);
 
 - **System.Results** - Core Result types and request/handler interfaces
 - **System.Results.Tasks** - Mediator implementation
-- **System.Primitives.Validation** - Rule validators and specifications
+- **System.Validation** - Specifications and validator abstractions
 - **System.Events** - Domain and integration event abstractions
 
 ---

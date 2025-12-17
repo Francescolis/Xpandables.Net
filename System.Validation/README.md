@@ -9,17 +9,19 @@
 
 ## 🎯 Overview
 
-`System.Primitives.Validation` provides the Specification pattern for encapsulating business rules and validation logic. It includes composable specifications with LINQ support, rule validators, and integration with request pipelines for automatic validation.
+`System.Validation` provides the Specification pattern for encapsulating business rules and validation logic. It includes composable specifications with LINQ support, rule validators, and integration with request pipelines for automatic validation.
 
 ### ✨ Key Features
 
 - 📋 **ISpecification<T>** - Specification pattern with expression-based criteria
 - 🔗 **Combinators** - And, Or, Not, All, Any for composing specifications
-- ✅ **IRuleValidator<T>** - Strongly-typed validation with ValidationResult
-- 🏭 **Factory Methods** - Equal, NotEqual, Contains, GreaterThan, LessThan, etc.
-- 🔍 **LINQ Integration** - Use specifications in Where clauses
-- 🚀 **IRequiresValidation** - Marker interface for auto-validation in pipelines
-- 🧩 **Composite Validators** - Combine multiple validators
+- ✅ **IValidator<T> & DefaultValidator<T>** - Strongly-typed validation with synchronous and async helpers
+- 🧩 **CompositeValidator<T>** - Aggregate multiple validators for the same argument type
+- 🏭 **Specification Factory Methods** - Equal, NotEqual, Contains, GreaterThan, LessThan, etc.
+- 🔍 **LINQ Integration** - Use specifications in Where clauses and repositories
+- 🧠 **ValidatorFactory / ValidatorProvider / ValidatorResolver** - Resolve validators dynamically through DI
+- 🧱 **AddXValidator / AddXValidators** - Register built-in and custom validators from assemblies
+- 🚀 **IRequiresValidation** - Marker interface for automatic pipeline validation
 
 ---
 
@@ -28,7 +30,7 @@
 ### Installation
 
 ```bash
-dotnet add package System.Primitives.Validation
+dotnet add package System.Validation
 ```
 
 ### Basic Specification Usage
@@ -129,7 +131,7 @@ var results = await repository
 
 ---
 
-## ✔️ Rule Validators
+## ✔️ Validators
 
 ### Define a Validator
 
@@ -138,9 +140,9 @@ using System.ComponentModel.DataAnnotations;
 
 public sealed record CreateUserRequest(string Name, string Email, int Age) : IRequiresValidation;
 
-public sealed class CreateUserValidator : RuleValidator<CreateUserRequest>
+public sealed class CreateUserValidator : IValidator<CreateUserRequest>
 {
-    public override IReadOnlyCollection<ValidationResult> Validate(CreateUserRequest instance)
+    public IReadOnlyCollection<ValidationResult> Validate(CreateUserRequest instance)
     {
         var results = new List<ValidationResult>();
 
@@ -161,15 +163,18 @@ public sealed class CreateUserValidator : RuleValidator<CreateUserRequest>
 
         return results;
     }
+
+    public ValueTask<IReadOnlyCollection<ValidationResult>> ValidateAsync(CreateUserRequest instance)
+        => new(Validate(instance));
 }
 ```
 
 ### Using Specifications in Validators
 
 ```csharp
-public sealed class ProductValidator : RuleValidator<CreateProductRequest>
+public sealed class ProductValidator : IValidator<CreateProductRequest>
 {
-    public override IReadOnlyCollection<ValidationResult> Validate(CreateProductRequest instance)
+    public IReadOnlyCollection<ValidationResult> Validate(CreateProductRequest instance)
     {
         var results = new List<ValidationResult>();
 
@@ -194,25 +199,28 @@ public sealed class ProductValidator : RuleValidator<CreateProductRequest>
 
         return results;
     }
+
+    public ValueTask<IReadOnlyCollection<ValidationResult>> ValidateAsync(CreateProductRequest instance)
+        => new(Validate(instance));
 }
 ```
 
 ### Async Validation
 
 ```csharp
-public sealed class UniqueEmailValidator : RuleValidator<CreateUserRequest>
+public sealed class UniqueEmailValidator : IValidator<CreateUserRequest>
 {
     private readonly IUserRepository _repository;
 
     public UniqueEmailValidator(IUserRepository repository)
         => _repository = repository;
 
-    public override async ValueTask<IReadOnlyCollection<ValidationResult>> ValidateAsync(
+    public async ValueTask<IReadOnlyCollection<ValidationResult>> ValidateAsync(
         CreateUserRequest instance)
     {
         var results = new List<ValidationResult>();
 
-        var existingUser = await _repository.FindByEmailAsync(instance.Email);
+        var existingUser = await _repository.FindByEmailAsync(instance.Email).ConfigureAwait(false);
         if (existingUser is not null)
         {
             results.Add(new ValidationResult("Email already exists", [nameof(instance.Email)]));
@@ -220,6 +228,9 @@ public sealed class UniqueEmailValidator : RuleValidator<CreateUserRequest>
 
         return results;
     }
+
+    public IReadOnlyCollection<ValidationResult> Validate(CreateUserRequest instance)
+        => ValidateAsync(instance).GetAwaiter().GetResult();
 }
 ```
 
@@ -234,11 +245,11 @@ using Microsoft.Extensions.DependencyInjection;
 
 var builder = WebApplication.CreateBuilder(args);
 
-// Register validators
-builder.Services.AddXRuleValidators(typeof(CreateUserValidator).Assembly);
-
-// Register validator resolver
-builder.Services.AddScoped<IRuleValidatorResolver, RuleValidatorResolver>();
+builder.Services
+    .AddXValidator()
+    .AddXValidatorFactory()
+    .AddXValidatorProvider()
+    .AddXValidators(typeof(CreateUserValidator).Assembly);
 ```
 
 ---

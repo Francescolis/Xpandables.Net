@@ -1,6 +1,6 @@
 ﻿# 📊 System.AsyncPaged.Linq
 
-[![NuGet](https://img.shields.io/badge/NuGet-10.0.0-blue.svg)](https://www.nuget.org/packages/System.Linq.AsyncPaged)
+[![NuGet](https://img.shields.io/badge/NuGet-10.0.0-blue.svg)](https://www.nuget.org/packages/System.AsyncPaged.Linq)
 [![.NET](https://img.shields.io/badge/.NET-10.0+-purple.svg)](https://dotnet.microsoft.com/)
 [![License](https://img.shields.io/badge/License-Apache%202.0-green.svg)](LICENSE)
 
@@ -10,7 +10,7 @@
 
 ## 🎯 Overview
 
-`System.Linq.AsyncPaged` extends `IAsyncPagedEnumerable<T>` with a complete suite of LINQ operators specifically designed for async pagination scenarios. It provides projection, filtering, aggregation, ordering, grouping, and materialization methods that preserve pagination metadata throughout the query chain.
+`System.AsyncPaged.Linq` extends `IAsyncPagedEnumerable<T>` with a complete suite of LINQ operators specifically designed for async pagination scenarios. It provides projection, filtering, aggregation, ordering, grouping, and materialization methods that preserve pagination metadata throughout the query chain.
 
 Built for .NET 10 with AOT compatibility, this library seamlessly integrates with LINQ queries while maintaining the performance and memory efficiency benefits of async enumeration.
 

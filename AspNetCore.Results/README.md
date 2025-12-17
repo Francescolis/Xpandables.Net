@@ -21,7 +21,7 @@ Built for .NET 10 with C# 14 extension members, this package ensures your APIs r
 - 🏗️ **MVC Filters** — `ControllerResultFilter` and `ControllerResultValidationFilterAttribute` for controllers
 - 📝 **Header Writing** — `IResultHeaderWriter` for custom response header handling
 - ⚡ **Exception Middleware** — `ResultMiddleware` for global exception-to-ProblemDetails conversion
-- ✅ **Validation Integration** — Automatic validation via `IResultEndpointValidator` and `IRuleValidatorProvider`
+- ✅ **Validation Integration** — Automatic validation via `IResultEndpointValidator` and `IValidatorProvider`
 - 🔐 **Authentication Support** — Automatic `WWW-Authenticate` header for 401 responses
 
 ---
@@ -432,13 +432,14 @@ builder.Services.AddXResultHeaderWriter<CustomResultHeaderWriter>();
 The `ResultEndpointValidator` automatically validates endpoint arguments that implement `IRequiresValidation`:
 
 ```csharp
+using System.ComponentModel.DataAnnotations;
 using System.Results;
 
 // Request implements IRequiresValidation
 public record CreateOrderRequest(string CustomerId, List<OrderItem> Items) : IRequiresValidation;
 
 // Validator for the request
-public sealed class CreateOrderRequestValidator : IRuleValidator<CreateOrderRequest>
+public sealed class CreateOrderRequestValidator : IValidator<CreateOrderRequest>
 {
     public async ValueTask<IReadOnlyCollection<ValidationResult>> ValidateAsync(
         CreateOrderRequest instance,
@@ -458,11 +459,14 @@ public sealed class CreateOrderRequestValidator : IRuleValidator<CreateOrderRequ
 
         return results;
     }
+
+    public IReadOnlyCollection<ValidationResult> Validate(CreateOrderRequest instance)
+        => ValidateAsync(instance).GetAwaiter().GetResult();
 }
 
 // Register validator
 builder.Services.AddXResultEndpointValidator();
-builder.Services.AddScoped<IRuleValidator<CreateOrderRequest>, CreateOrderRequestValidator>();
+builder.Services.AddScoped<IValidator<CreateOrderRequest>, CreateOrderRequestValidator>();
 
 // Endpoint with automatic validation
 app.MapPost("/api/orders", async (CreateOrderRequest request, IOrderService orderService) =>
@@ -549,7 +553,7 @@ app.MapPost("/api/orders", async (CreateOrderRequest request, IOrderService orde
 | Package | Description |
 |---------|-------------|
 | **System.Results** | Core `Result` and `Result<T>` types |
-| **System.Primitives.Validation** | `IRuleValidator` and validation infrastructure |
+| **System.Validation** | Specifications and validator abstractions |
 | **AspNetCore.Net** | Minimal API infrastructure and endpoint routing |
 | **AspNetCore.AsyncPaged** | Async paged enumerable HTTP streaming |
 
