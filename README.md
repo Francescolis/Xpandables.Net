@@ -4,8 +4,6 @@
 
 [![License](https://img.shields.io/badge/License-Apache%202.0-blue.svg)](https://opensource.org/licenses/Apache-2.0)
 [![.NET Version](https://img.shields.io/badge/.NET-10.0-purple.svg)](https://dotnet.microsoft.com/download)
-[![Build Status](https://img.shields.io/badge/build-passing-brightgreen.svg)](https://www.nuget.org/)
-[![NuGet](https://img.shields.io/badge/NuGet-preview-orange.svg)](https://www.nuget.org/)
 
 **A comprehensive, modular .NET library for building modern, scalable applications with clean architecture patterns**
 
@@ -35,14 +33,14 @@
 
 | Feature | Description | Package |
 |---------|-------------|---------|
-| ✅ **Operation Results** | Robust error handling with HTTP-aware result types | [System.Results](#systemresults) |
-| 🎁 **Optional Values** | Null-safe optional value handling (like Rust's Option) | [System.Optionals](#systemoptionals) |
-| 📡 **Mediator Pattern** | CQRS and request/response pipeline implementation | [System.Results.Tasks](#systemresultstasks) |
-| ✔️ **Validation** | Flexible validation framework with specifications | [System.Primitives.Validation](#systemvalidation) |
-| 💾 **Repository Pattern** | Generic repository with unit of work support | [System.Entities.Data](#systementitiesdata) |
-| 🌐 **REST Client** | Type-safe, attribute-based HTTP client | [System.Rests](#systemrests) |
-| 📝 **Event Sourcing** | Complete event sourcing and CQRS implementation | [System.Events](#systemevents) |
-| 🔄 **Async Paging** | Asynchronous enumerable extensions and pagination | [System.AsyncPaged](#systemasyncpaged) |
+| ✅ **Operation Results** | Robust error handling with HTTP-aware result types | [System.Results](./System.Results/README.md) |
+| 🎁 **Optional Values** | Null-safe optional value handling (like Rust's Option) | [System.Optionals](./System.Optionals/README.md) |
+| 📡 **Mediator Pattern** | CQRS and request/response pipeline implementation | [System.Results.Tasks](./System.Results.Tasks/README.md) |
+| ✔️ **Validation** | Flexible validation framework with specifications | [System.Validation](./System.Validation/README.md) |
+| 💾 **Repository Pattern** | Generic repository with unit of work support | [System.Entities.Data](./System.Entities.Data/README.md) |
+| 🌐 **REST Client** | Type-safe, attribute-based HTTP client | [System.Rests](./System.Rests/README.md) |
+| 📝 **Event Sourcing** | Complete event sourcing and CQRS implementation | [System.Events](./System.Events/README.md) |
+| 🔄 **Async Paging** | Asynchronous enumerable extensions and pagination | [System.AsyncPaged](./System.AsyncPaged/README.md) |
 
 ---
 
@@ -50,8 +48,8 @@
 
 ### Prerequisites
 
-- **.NET 10 SDK** or later
-- **Visual Studio 2022, 2026** or **JetBrains Rider** (recommended)
+- **.NET 10 SDK (Preview)** or later
+- **Visual Studio 2022 (latest preview)** or **JetBrains Rider** (recommended)
 - Basic understanding of C# and async/await patterns
 
 ### Installation
@@ -72,7 +70,7 @@ dotnet add package System.Results.Tasks
 dotnet add package System.Results.Pipelines
 
 # Validation framework
-dotnet add package System.Primitives.Validation
+dotnet add package System.Validation
 
 # Repository pattern with EF Core
 dotnet add package System.Entities.Data
@@ -85,8 +83,8 @@ dotnet add package System.Events
 dotnet add package System.Events.Data
 
 # Async paging
-dotnet add package System.Collections.AsyncPaged
-dotnet add package System.Linq.AsyncPaged
+dotnet add package System.AsyncPaged
+dotnet add package System.AsyncPaged.Linq
 
 # ASP.NET Core integration
 dotnet add package AspNetCore.Net
@@ -198,7 +196,7 @@ Each package has detailed documentation with examples and API references:
 - 🌐 [**System.Rests**](./System.Rests/README.md) - Type-safe REST client with attribute-based routing
 
 #### Async & Utilities
-- 🔄 [**System.Collections.AsyncPaged**](./System.AsyncPaged/README.md) - Async paged collections
+- 🔄 [**System.AsyncPaged**](./System.AsyncPaged/README.md) - Async paged collections
 - 🔄 [**System.Linq.AsyncPaged**](./System.AsyncPaged.Linq/README.md) - LINQ extensions for async paging
 - 📄 [**System.Text.Json.AsyncPaged**](./System.AsyncPaged.Json/README.md) - JSON serialization for paged data
 
@@ -226,8 +224,7 @@ Xpandables.Net follows clean architecture principles with clear separation of co
 ┌─────────────────────────────────────────┐
 │           Domain Layer                  │
 │ (System.Events, System.Optionals,       │
-│  System.Primitives, System.Primitives.  │
-│  Validation)                            │
+│  System.Primitives, System.Validation)  │
 └─────────────────────────────────────────┘
                   ↓
 ┌─────────────────────────────────────────┐
