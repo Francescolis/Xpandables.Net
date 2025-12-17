@@ -64,13 +64,6 @@ public static class IPipelineExtensions
             services.AddXPipelineDecorator(typeof(PipelinePostDecorator<>));
 
         /// <summary>
-        /// Adds the default pipeline request handler implementation to the service collection for dependency injection.
-        /// </summary>
-        /// <returns>The updated <see cref="IServiceCollection"/> instance with the pipeline request handler registered.</returns>
-        public IServiceCollection AddXPipelineRequestHandler()
-            => services.AddXPipelineRequestHandler(typeof(PipelineRequestHandler<>));
-
-        /// <summary>
         /// Registers the default pre-decorator for Pipeline into the service collection.
         /// </summary>
         /// <remarks>This method adds the generic <c>PipelinePreDecorator&lt;T&gt;</c> to the service

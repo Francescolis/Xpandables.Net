@@ -144,5 +144,12 @@ public static class ITaskExtensions
             where TMediator : class, IMediator =>
             services.AddScoped<IMediator, TMediator>()
             .AddXPipelineRequestHandler();
+
+        /// <summary>
+        /// Adds the default pipeline request handler implementation to the service collection for dependency injection.
+        /// </summary>
+        /// <returns>The updated <see cref="IServiceCollection"/> instance with the pipeline request handler registered.</returns>
+        public IServiceCollection AddXPipelineRequestHandler()
+            => services.AddXPipelineRequestHandler(typeof(PipelineRequestHandler<>));
     }
 }

@@ -14,10 +14,11 @@
  * limitations under the License.
  *
 ********************************************************************************/
+using System.Results.Pipelines;
 using System.Results.Requests;
 using System.Runtime.CompilerServices;
 
-namespace System.Results.Pipelines;
+namespace System.Results.Tasks;
 
 /// <summary>
 /// Represents a sealed class that implements the pipeline request handling mechanism for a given request type.
