@@ -43,9 +43,8 @@ public sealed class RestHeaderComposer<TRestRequest> : IRestRequestComposer<TRes
         if (((IRestHeader)context.Request).GetHeaderModelName() is string modelName)
         {
             string headerValue = string.Join(
-                ";",
-                headerSource
-                    .Select(x => $"{x.Key},{string.Join(x.Values, ',')}"));
+                ';',
+                headerSource.Select(entry => $"{entry.Key},{string.Join(',', entry.Values.ToString())}"));
 
             context.Message
                 .Headers

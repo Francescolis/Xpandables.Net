@@ -41,10 +41,11 @@ public sealed class RestQueryStringComposer<TRestRequest> : IRestRequestComposer
 
         IDictionary<string, string?>? queryString = ((IRestQueryString)context.Request).GetQueryString();
 
-        string path = context.Attribute.Path
-            ?? context.Message.RequestUri!.AbsoluteUri;
+        string basePath = context.Attribute.Path
+            ?? context.Message.RequestUri?.OriginalString
+            ?? "/";
 
-        string queryStringPath = path.AddQueryString(queryString);
+        string queryStringPath = basePath.AddQueryString(queryString);
 
         context.Message.RequestUri = new Uri(queryStringPath, UriKind.RelativeOrAbsolute);
     }
@@ -65,7 +66,6 @@ public static class HttpClientRequestQueryStringExtensions
     this string path,
     IDictionary<string, string?>? queryString)
     {
-        // From MS internal code
         ArgumentNullException.ThrowIfNull(path);
 
         if (queryString is null)
@@ -77,8 +77,6 @@ public static class HttpClientRequestQueryStringExtensions
         string uriToBeAppended = path;
         string anchorText = "";
 
-        // If there is an anchor, then the request string must be inserted
-        // before its first occurrence.
         if (anchorIndex != -1)
         {
             anchorText = path[anchorIndex..];

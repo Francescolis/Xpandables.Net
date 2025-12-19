@@ -38,7 +38,7 @@ public sealed class RestStringComposer<TRestRequest> : IRestRequestComposer<TRes
         ArgumentNullException.ThrowIfNull(context, nameof(context));
 
         if ((context.Attribute.Location & Location.Body) != Location.Body
-            && context.Attribute.BodyFormat != BodyFormat.String)
+            || context.Attribute.BodyFormat != BodyFormat.String)
         {
             return;
         }

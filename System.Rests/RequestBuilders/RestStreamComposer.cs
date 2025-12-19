@@ -33,24 +33,16 @@ public sealed class RestStreamComposer<TRestRequest> : IRestRequestComposer<TRes
         ArgumentNullException.ThrowIfNull(context, nameof(context));
 
         if ((context.Attribute.Location & Location.Body) != Location.Body
-            && context.Attribute.BodyFormat != BodyFormat.Stream)
+            || context.Attribute.BodyFormat != BodyFormat.Stream)
         {
             return;
         }
 
         StreamContent streamContent = ((IRestStream)context.Request).GetStreamContent();
 
-        if (context.Message.Content is MultipartFormDataContent multiPartcontent)
+        if (context.Message.Content is MultipartFormDataContent multipart)
         {
-            if (context.Request is IRestMultipart)
-            {
-                multiPartcontent.Add(streamContent);
-            }
-            else
-            {
-                multiPartcontent.Add(streamContent);
-                context.Message.Content = multiPartcontent;
-            }
+            multipart.Add(streamContent);
         }
         else
         {

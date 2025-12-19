@@ -15,6 +15,7 @@
  *
 ********************************************************************************/
 using System.Diagnostics.CodeAnalysis;
+using System.Globalization;
 using System.Net.Http.Headers;
 using System.Rests.Abstractions;
 
@@ -26,9 +27,6 @@ namespace System.Rests;
 /// Provides a builder for creating REST requests by composing multiple request composers and applying REST-specific
 /// attributes.
 /// </summary>
-/// <remarks>This class is typically used to construct HTTP requests for REST APIs by aggregating logic from
-/// multiple composers. It is sealed and not intended for inheritance. Thread safety depends on the thread safety of the
-/// provided composers and attribute provider.</remarks>
 /// <param name="attributeProvider">An object that supplies REST attribute metadata for the request type.</param>
 /// <param name="serviceProvider">The service provider used to resolve dependencies, such as request composers.</param>
 public sealed class RestRequestBuilder(
@@ -78,22 +76,33 @@ public sealed class RestRequestBuilder(
 
         message = FinalizeHttpRequestMessage(context);
 
-        return new ValueTask<RestRequest>(new RestRequest() { HttpRequestMessage = message });
+        return ValueTask.FromResult(new RestRequest { HttpRequestMessage = message });
     }
 
     private static HttpRequestMessage InitializeHttpRequestMessage(RestAttribute attribute)
     {
+        ArgumentNullException.ThrowIfNull(attribute);
+
+        string path = string.IsNullOrWhiteSpace(attribute.Path) ? "/" : attribute.Path;
+
+        if (!Uri.TryCreate(path, UriKind.RelativeOrAbsolute, out Uri? requestUri))
+        {
+            throw new InvalidOperationException($"The REST path '{path}' is not a valid URI.");
+        }
+
         HttpRequestMessage message = new()
         {
-            Method = new HttpMethod(attribute.Method.ToString()),
-            RequestUri = new Uri(attribute.Path, UriKind.Relative)
+            Method = ResolveHttpMethod(attribute.Method),
+            RequestUri = requestUri
         };
 
-        message.Headers.Accept
-            .Add(new MediaTypeWithQualityHeaderValue(attribute.Accept));
-        message.Headers.AcceptLanguage
-            .Add(new StringWithQualityHeaderValue(
-                Thread.CurrentThread.CurrentCulture.Name));
+        message.Headers.Accept.Add(new MediaTypeWithQualityHeaderValue(attribute.Accept));
+
+        string cultureName = CultureInfo.CurrentCulture.Name;
+        if (!string.IsNullOrWhiteSpace(cultureName))
+        {
+            message.Headers.AcceptLanguage.Add(new StringWithQualityHeaderValue(cultureName));
+        }
 
         return message;
     }
@@ -118,4 +127,19 @@ public sealed class RestRequestBuilder(
 
         return context.Message;
     }
+
+    private static HttpMethod ResolveHttpMethod(RestSettings.Method method) =>
+        method switch
+        {
+            RestSettings.Method.GET => HttpMethod.Get,
+            RestSettings.Method.POST => HttpMethod.Post,
+            RestSettings.Method.PUT => HttpMethod.Put,
+            RestSettings.Method.DELETE => HttpMethod.Delete,
+            RestSettings.Method.HEAD => HttpMethod.Head,
+            RestSettings.Method.PATCH => HttpMethod.Patch,
+            RestSettings.Method.OPTIONS => HttpMethod.Options,
+            RestSettings.Method.TRACE => HttpMethod.Trace,
+            RestSettings.Method.CONNECT => new HttpMethod(nameof(RestSettings.Method.CONNECT)),
+            _ => throw new ArgumentOutOfRangeException(nameof(method), method, "Unsupported HTTP method.")
+        };
 }

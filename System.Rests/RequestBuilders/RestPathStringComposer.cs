@@ -42,9 +42,13 @@ public sealed class RestPathStringComposer<TRestRequest> : IRestRequestComposer<
 
         if (pathString.Count > 0)
         {
-            string path = AddPathString(context.Attribute.Path ?? context.Message.RequestUri!.AbsoluteUri, pathString);
+            string basePath = context.Attribute.Path
+                ?? context.Message.RequestUri?.OriginalString
+                ?? "/";
 
-            context.Message.RequestUri = new Uri(path, UriKind.Relative);
+            string path = AddPathString(basePath, pathString);
+
+            context.Message.RequestUri = new Uri(path, UriKind.RelativeOrAbsolute);
         }
     }
 

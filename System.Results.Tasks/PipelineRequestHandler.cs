@@ -116,7 +116,9 @@ public sealed class PipelineRequestHandler<TRequest> :
 
             current = (ctx, ct) =>
             {
+#pragma warning disable IDE0039 // Use local function
                 RequestHandler nextHandler = cancellationToken => next(ctx, cancellationToken);
+#pragma warning restore IDE0039 // Use local function
                 return decorator.HandleAsync(ctx, nextHandler, ct);
             };
         }
