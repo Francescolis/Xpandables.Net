@@ -144,7 +144,6 @@ public readonly record struct Pagination
     /// </summary>
     /// <param name="continuationToken">An optional new continuation token for the next page.</param>
     /// <returns>A new <see cref="Pagination"/> instance representing the next page.</returns>
-    [MemberNotNullWhen(false, nameof(IsLastPage))]
     public Pagination NextPage(string? continuationToken = null) => this with
     {
         CurrentPage = CurrentPage + 1,
