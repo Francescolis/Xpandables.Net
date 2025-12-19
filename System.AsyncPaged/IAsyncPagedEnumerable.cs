@@ -73,7 +73,7 @@ public interface IAsyncPagedEnumerable
 public interface IAsyncPagedEnumerable<out T> : IAsyncEnumerable<T>, IAsyncPagedEnumerable
     where T : allows ref struct
 {
-        /// <summary>
+    /// <summary>
     /// Returns an enumerator that iterates asynchronously through the collection with pagination support.
     /// </summary>
     /// <param name="cancellationToken">A <see cref="CancellationToken"/> that may be used to cancel the asynchronous iteration.</param>
@@ -86,6 +86,7 @@ public interface IAsyncPagedEnumerable<out T> : IAsyncEnumerable<T>, IAsyncPaged
 
     /// <summary>
     /// Configures the strategy to be used for managing pagination.
+    /// If the source is an IAsyncEnumerable that cannot be iterated twice, this should be used with caution.
     /// </summary>
     /// <remarks>
     /// This method is pure; it returns a new enumerable view or the same instance with the updated configuration,
@@ -93,5 +94,5 @@ public interface IAsyncPagedEnumerable<out T> : IAsyncEnumerable<T>, IAsyncPaged
     /// </remarks>
     /// <param name="strategy">The <see cref="PaginationStrategy"/> to apply.</param>
     /// <returns>A configured enumerable instance.</returns>
-    IAsyncPagedEnumerable<T> WithStrategy(PaginationStrategy strategy);    
+    IAsyncPagedEnumerable<T> WithStrategy(PaginationStrategy strategy);
 }

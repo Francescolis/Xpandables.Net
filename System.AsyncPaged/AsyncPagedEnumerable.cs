@@ -103,6 +103,12 @@ public sealed class AsyncPagedEnumerable<T> : IAsyncPagedEnumerable<T>, IDisposa
         // Return a new instance with the updated strategy but sharing the same source definition.
         // Note: This creates a new view. If the source is an IAsyncEnumerable that cannot be iterated twice,
         // this should be used with caution. However, for IQueryable or List-based sources, it is safe.
+
+        if (_strategy == strategy)
+        {
+            return this;
+        }
+
         if (_source is not null)
         {
             return new AsyncPagedEnumerable<T>(_source, _paginationFactory, strategy);
