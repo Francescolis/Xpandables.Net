@@ -20,9 +20,13 @@ using System.Runtime.CompilerServices;
 namespace System.Collections.Generic;
 
 /// <summary>
-/// Provides an asynchronous enumerator for paged collections with pagination strategy support.
+/// Provides asynchronous, paged enumeration over a sequence of elements, supporting various pagination strategies.
 /// </summary>
-/// <typeparam name="T">The element type being enumerated.</typeparam>
+/// <remarks>Use this enumerator to iterate asynchronously over data sources that support pagination, such as APIs
+/// or databases. The pagination strategy determines how the enumerator advances through the data and updates pagination
+/// context. This type is typically used internally to implement paged data retrieval and is not intended for direct
+/// instantiation by application code.</remarks>
+/// <typeparam name="T">The type of elements to enumerate.</typeparam>
 public sealed class AsyncPagedEnumerator<T> : IAsyncPagedEnumerator<T>
 {
     private readonly IAsyncEnumerator<T>? _sourceEnumerator;
