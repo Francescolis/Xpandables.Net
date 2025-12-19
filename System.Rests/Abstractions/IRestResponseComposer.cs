@@ -14,8 +14,6 @@
  * limitations under the License.
  *
 ********************************************************************************/
-using System.ComponentModel;
-
 namespace System.Rests.Abstractions;
 
 /// <summary>
@@ -41,53 +39,4 @@ public interface IRestResponseComposer
     ValueTask<RestResponse> ComposeAsync
         (RestResponseContext context,
         CancellationToken cancellationToken = default);
-}
-
-/// <summary>
-/// Defines a contract for composing a REST response from a strongly typed context.
-/// </summary>
-/// <typeparam name="TResult">The type of the response data to be composed. Must not be null.</typeparam>
-public interface IRestResponseResultComposer<TResult> : IRestResponseComposer
-    where TResult : notnull
-{
-    /// <summary>
-    /// Asynchronously composes a REST response based on the specified response context.
-    /// </summary>
-    /// <param name="context">The context containing information required to generate the REST response. Cannot be null.</param>
-    /// <param name="cancellationToken">A cancellation token that can be used to cancel the asynchronous operation.</param>
-    /// <returns>A value task that represents the asynchronous operation. The result contains the composed REST response.</returns>
-    ValueTask<RestResponse<TResult>> ComposeAsync(
-        RestResponseContext<TResult> context,
-        CancellationToken cancellationToken = default);
-
-    [EditorBrowsable(EditorBrowsableState.Never)]
-    async ValueTask<RestResponse> IRestResponseComposer.ComposeAsync(
-        RestResponseContext context,
-        CancellationToken cancellationToken) =>
-        await ComposeAsync(RestResponseContext.Create<TResult>(context), cancellationToken).ConfigureAwait(false);
-}
-
-/// <summary>
-/// Defines a contract for asynchronously composing REST responses from a streaming context.
-/// </summary>
-/// <typeparam name="TResult">The type of the response data to be composed. Must not be null.</typeparam>
-public interface IRestResponseStreamComposer<TResult> : IRestResponseComposer
-    where TResult : notnull
-{
-    /// <summary>
-    /// Asynchronously composes a REST response based on the provided streaming context.
-    /// </summary>
-    /// <param name="context">The context containing the response data and metadata to be used for composing the REST response. Cannot be
-    /// null.</param>
-    /// <param name="cancellationToken">A cancellation token that can be used to cancel the asynchronous operation.</param>
-    /// <returns>A value task that represents the asynchronous operation. The result contains the composed REST response.</returns>
-    ValueTask<RestResponse<IAsyncEnumerable<TResult>>> ComposeAsync(
-        RestResponseStreamContext<TResult> context,
-        CancellationToken cancellationToken = default);
-
-    [EditorBrowsable(EditorBrowsableState.Never)]
-    async ValueTask<RestResponse> IRestResponseComposer.ComposeAsync(
-        RestResponseContext context,
-        CancellationToken cancellationToken) =>
-        await ComposeAsync(RestResponseContext.CreateStream<TResult>(context), cancellationToken).ConfigureAwait(false);
 }

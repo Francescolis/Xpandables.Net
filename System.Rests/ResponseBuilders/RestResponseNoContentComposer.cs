@@ -15,7 +15,6 @@
  *
 ********************************************************************************/
 using System.Collections;
-using System.Diagnostics.CodeAnalysis;
 using System.Rests.Abstractions;
 
 namespace System.Rests.ResponseBuilders;
@@ -35,25 +34,23 @@ public sealed class RestResponseNoContentComposer : IRestResponseComposer
     }
 
     /// <inheritdoc/>
-    [SuppressMessage("Reliability", "CA2000:Dispose objects before losing scope", Justification = "<Pending>")]
+    [Diagnostics.CodeAnalysis.SuppressMessage("Reliability", "CA2000:Dispose objects before losing scope", Justification = "<Pending>")]
     public ValueTask<RestResponse> ComposeAsync(
         RestResponseContext context, CancellationToken cancellationToken = default)
     {
         ArgumentNullException.ThrowIfNull(context);
 
-        HttpResponseMessage response = context.Message;
-
         if (!CanCompose(context))
             throw new InvalidOperationException(
                 $"{nameof(ComposeAsync)}: The response is not a success. " +
-                $"Status code: {response.StatusCode} ({response.ReasonPhrase}).");
+                $"Status code: {context.Message.StatusCode} ({context.Message.ReasonPhrase}).");
 
         return new(new RestResponse
         {
-            StatusCode = response.StatusCode,
-            ReasonPhrase = response.ReasonPhrase,
-            Headers = response.Headers.ToElementCollection(),
-            Version = response.Version
+            StatusCode = context.Message.StatusCode,
+            ReasonPhrase = context.Message.ReasonPhrase,
+            Headers = context.Message.Headers.ToElementCollection(),
+            Version = context.Message.Version
         });
     }
 }

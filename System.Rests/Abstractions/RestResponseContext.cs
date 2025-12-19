@@ -39,42 +39,25 @@ public class RestResponseContext
     public required JsonSerializerOptions SerializerOptions { get; init; }
 
     /// <summary>
-    /// Creates a new instance of <see cref="RestResponseContext{TResponse}"/> by copying request and response details
+    /// Creates a new instance of the generic RestResponseContext with the specified request type, copying relevant data
     /// from an existing context.
     /// </summary>
-    /// <typeparam name="TResponse">The type of the response object contained in the context. Must not be null.</typeparam>
-    /// <param name="context">The source <see cref="RestResponseContext"/> from which to copy request and response information. Cannot be
-    /// null.</param>
-    /// <returns>A new <see cref="RestResponseContext{TResponse}"/> instance initialized with the request, message, and
-    /// serializer options from the specified context.</returns>
-    public static RestResponseContext<TResponse> Create<TResponse>(RestResponseContext context)
-        where TResponse : notnull
+    /// <remarks>Use this method when you need to create a strongly-typed response context from an existing
+    /// context with a compatible request type. The method casts the request from the original context to the specified
+    /// type parameter.</remarks>
+    /// <typeparam name="TRequest">The type of the request to associate with the new context. Must implement IRestRequest and cannot be null.</typeparam>
+    /// <param name="context">The existing RestResponseContext instance from which to copy the request, message, and serializer options.
+    /// Cannot be null.</param>
+    /// <returns>A new RestResponseContext instance with the request cast to the specified type and other properties copied from
+    /// the provided context.</returns>
+    public static RestResponseContext<TRequest> Create<TRequest>(RestResponseContext context)
+        where TRequest : notnull, IRestRequest
     {
         ArgumentNullException.ThrowIfNull(context);
 
         return new()
         {
-            Request = context.Request,
-            Message = context.Message,
-            SerializerOptions = context.SerializerOptions
-        };
-    }
-
-    /// <summary>
-    /// Creates a new stream context for reading a REST response, using the specified response context and type
-    /// parameter.
-    /// </summary>
-    /// <typeparam name="TResponse">The type of the response object to be deserialized from the stream. Must not be null.</typeparam>
-    /// <param name="context">The response context containing the request, message, and serializer options to use for the stream. Cannot be
-    /// null.</param>
-    /// <returns>A new <see cref="RestResponseStreamContext{TResponse}"/> initialized with the provided context information.</returns>
-    public static RestResponseStreamContext<TResponse> CreateStream<TResponse>(RestResponseContext context)
-        where TResponse : notnull
-    {
-        ArgumentNullException.ThrowIfNull(context);
-        return new()
-        {
-            Request = context.Request,
+            Request = (TRequest)context.Request,
             Message = context.Message,
             SerializerOptions = context.SerializerOptions
         };
@@ -82,17 +65,13 @@ public class RestResponseContext
 }
 
 /// <summary>
-/// Provides contextual information for a REST response, including access to the originating request and the
-/// deserialized result data.
+/// Provides response context information for a REST operation, including strongly-typed access to the originating
+/// request.
 /// </summary>
-/// <typeparam name="TResponse">The type of the response data returned by the REST response.</typeparam>
-public class RestResponseContext<TResponse> : RestResponseContext
-    where TResponse : notnull;
-
-/// <summary>
-/// Provides context information for a REST response that includes a streamed payload of type <typeparamref
-/// name="TResponse"/>.
-/// </summary>
-/// <typeparam name="TResponse">The type of the response payload contained in the stream. Must not be null.</typeparam>
-public class RestResponseStreamContext<TResponse> : RestResponseContext
-    where TResponse : notnull;
+/// <remarks>Use this class to access both generic response context and the specific request that initiated the
+/// REST operation. This is useful when handling responses that require information about the original request, such as
+/// for logging, error handling, or correlation purposes.</remarks>
+/// <typeparam name="TRequest">The type of the REST request associated with the response. Must implement <see cref="IRestRequest"/> and cannot be
+/// null.</typeparam>
+public class RestResponseContext<TRequest> : RestResponseContext
+    where TRequest : notnull, IRestRequest;

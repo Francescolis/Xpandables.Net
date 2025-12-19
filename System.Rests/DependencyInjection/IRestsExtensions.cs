@@ -173,8 +173,9 @@ public static class IRestsExtensions
             services
                 .AddTransient<IRestResponseComposer, RestResponseFailureComposer>()
                 .AddTransient<IRestResponseComposer, RestResponseContentComposer>()
-                .AddTransient(typeof(IRestResponseResultComposer<>), typeof(RestResponseResultComposer<>))
-                .AddTransient(typeof(IRestResponseStreamComposer<>), typeof(RestResponseStreamComposer<>))
-                .AddTransient<IRestResponseComposer, RestResponseNoContentComposer>();
+                .AddTransient<IRestResponseComposer, RestResponseNoContentComposer>()
+                .AddTransient<IRestResponseComposer, RestResponseResultComposer>()
+                .AddTransient<IRestResponseComposer, RestResponseStreamComposer>()
+                .AddTransient<IRestResponseComposer, RestResponseStreamPagedComposer>();
     }
 }

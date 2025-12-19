@@ -24,9 +24,7 @@ namespace System.Rests.ResponseBuilders;
 /// <summary>
 /// Composes a result RestResponse asynchronously using the provided RestResponseContext.
 /// </summary>
-/// <typeparam name="TResult"> The type of the response payload.</typeparam>
-public sealed class RestResponseResultComposer<TResult> : IRestResponseResultComposer<TResult>
-    where TResult : notnull
+public sealed class RestResponseResultComposer : IRestResponseComposer
 {
     /// <inheritdoc/>
     public bool CanCompose(RestResponseContext context)
@@ -36,12 +34,12 @@ public sealed class RestResponseResultComposer<TResult> : IRestResponseResultCom
         return context.Message.IsSuccessStatusCode
             && context.Request.ResultType is not null
             && context.Message.Content is not null
-            && !context.Request.IsRequestStream;
+            && context.Request is IRestRequestResult;
     }
 
     /// <inheritdoc/>
-    public async ValueTask<RestResponse<TResult>> ComposeAsync(
-        RestResponseContext<TResult> context, CancellationToken cancellationToken = default)
+    public async ValueTask<RestResponse> ComposeAsync(
+        RestResponseContext context, CancellationToken cancellationToken = default)
     {
         ArgumentNullException.ThrowIfNull(context);
 
@@ -70,11 +68,13 @@ public sealed class RestResponseResultComposer<TResult> : IRestResponseResultCom
                 };
             }
 
-            JsonTypeInfo<TResult>? jsonTypeInfo = (JsonTypeInfo<TResult>?)options.GetTypeInfo(typeof(TResult))
-                ?? throw new InvalidOperationException(
-                    $"{nameof(ComposeAsync)}: The JsonTypeInfo for type {typeof(TResult)} could not be found.");
+            Type type = ((IRestRequestResult)context.Request).ResultType;
 
-            TResult? typedResult = JsonSerializer.Deserialize(stringContent, jsonTypeInfo);
+            JsonTypeInfo? jsonTypeInfo = (JsonTypeInfo?)options.GetTypeInfo(type)
+                ?? throw new InvalidOperationException(
+                    $"{nameof(ComposeAsync)}: The JsonTypeInfo for type {type.Name} could not be found.");
+
+            object? typedResult = JsonSerializer.Deserialize(stringContent, jsonTypeInfo);
 
             return new RestResponse
             {

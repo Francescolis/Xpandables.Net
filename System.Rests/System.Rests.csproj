@@ -90,6 +90,7 @@
 	</ItemGroup>
 
 	<ItemGroup>
+		<ProjectReference Include="..\System.AsyncPaged.Json\System.AsyncPaged.Json.csproj" />
 		<ProjectReference Include="..\System.Primitives\System.Primitives.csproj" />
 	</ItemGroup>
 

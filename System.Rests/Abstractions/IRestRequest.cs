@@ -42,20 +42,105 @@ public interface IRestRequest
     /// It indicates the type of the result.
     /// </summary>
     public Type? ResultType => default;
-
-    /// <summary>
-    /// Indicates whether the request is a stream.
-    /// </summary>
-    public bool IsRequestStream => false;
 }
 
 /// <summary>
-/// Defines a contract for REST requests that return a specific result type.
+/// Represents the result of a REST request operation.
 /// </summary>
-/// <typeparam name="TResult">Represents the class type of the result expected from the REST request.</typeparam>
-public interface IRestRequest<TResult> : IRestRequest
+/// <remarks>This interface extends <see cref="IRestRequest"/>, providing additional context or result information for REST request processing.</remarks>
+[SuppressMessage("Naming", "CA1711:Identifiers should not have incorrect suffix", Justification = "<Pending>")]
+public interface IRestRequestResult : IRestRequest
+{
+    /// <summary>
+    /// Gets the type of the result produced by the REST request.
+    /// </summary>
+    new Type ResultType { get; }
+
+    [NotNull]
+    [EditorBrowsable(EditorBrowsableState.Never)]
+    Type? IRestRequest.ResultType => ResultType;
+}
+
+/// <summary>
+/// Defines the result of a REST request that returns a strongly typed value.
+/// </summary>
+/// <typeparam name="TResult">The type of the result returned by the REST request. Must be a non-nullable type.</typeparam>
+public interface IRestRequestResult<TResult> : IRestRequestResult
     where TResult : notnull
-{   /// <summary>
+{
+    /// <summary>
+    /// Returns the default value of the ResultType, which can be null. 
+    /// It indicates the type of the result.
+    /// </summary>
+    public new Type ResultType => typeof(TResult);
+
+    [EditorBrowsable(EditorBrowsableState.Never)]
+    Type IRestRequestResult.ResultType => ResultType;
+}
+
+/// <summary>
+/// Represents a REST request that provides access to the request body as a stream.
+/// </summary>
+/// <remarks>This interface is intended for advanced scenarios where direct manipulation of the request body
+/// stream is required, such as uploading large files or streaming data.</remarks>
+[SuppressMessage("Naming", "CA1711:Identifiers should not have incorrect suffix", Justification = "<Pending>")]
+public interface IRestRequestStream : IRestRequest
+{
+    /// <summary>
+    /// Gets the type of the result produced by the REST request.
+    /// </summary>
+    new Type ResultType { get; }
+
+    [NotNull]
+    [EditorBrowsable(EditorBrowsableState.Never)]
+    Type? IRestRequest.ResultType => ResultType;
+}
+
+/// <summary>
+/// Represents a strongly typed REST request stream that produces results of a specified type.
+/// </summary>
+/// <typeparam name="TResult">The type of the result produced by the request stream. Must be a non-nullable type.</typeparam>
+[SuppressMessage("Naming", "CA1711:Identifiers should not have incorrect suffix", Justification = "<Pending>")]
+public interface IRestRequestStream<TResult> : IRestRequestStream
+    where TResult : notnull
+{
+    /// <summary>
+    /// Returns the default value of the ResultType, which can be null. 
+    /// It indicates the type of the result.
+    /// </summary>
+    public new Type ResultType => typeof(TResult);
+
+    [EditorBrowsable(EditorBrowsableState.Never)]
+    Type IRestRequestStream.ResultType => ResultType;
+}
+
+
+/// <summary>
+/// Represents a REST request that supports retrieving paged results as a stream.
+/// </summary>
+/// <remarks>This interface extends <see cref="IRestRequest"/> to provide support for paged streaming scenarios, such as iterating over large result sets
+/// that are returned in multiple pages from a REST API.</remarks>
+[SuppressMessage("Naming", "CA1711:Identifiers should not have incorrect suffix", Justification = "<Pending>")]
+public interface IRestRequestStreamPaged : IRestRequest
+{
+    /// <summary>
+    /// Gets the type of the result produced by the REST request.
+    /// </summary>
+    new Type ResultType { get; }
+
+    [NotNull]
+    [EditorBrowsable(EditorBrowsableState.Never)]
+    Type? IRestRequest.ResultType => ResultType;
+}
+
+/// <summary>
+/// Defines a strongly typed, paged streaming REST request that returns results of a specified type.
+/// </summary>
+/// <typeparam name="TResult">The type of the result returned by the request. Must not be null.</typeparam>
+public interface IRestRequestStreamPaged<TResult> : IRestRequestStreamPaged
+    where TResult : notnull
+{
+    /// <summary>
     /// Returns the default value of the ResultType, which can be null. 
     /// It indicates the type of the result.
     /// </summary>
@@ -63,22 +148,4 @@ public interface IRestRequest<TResult> : IRestRequest
 
     [EditorBrowsable(EditorBrowsableState.Never)]
     Type? IRestRequest.ResultType => ResultType;
-}
-
-/// <summary>
-/// Defines a contract for a request that streams data and returns an <see cref="IAsyncEnumerable{T}"/> of a specified type.
-/// </summary>
-/// <typeparam name="TResult">Specifies the type of result that must not be null.</typeparam>
-/// <remarks>A custom implementation of <see cref="IRestResponseStreamComposer{TResult}"/> can return <see cref="IAsyncEnumerable{T}"/>.</remarks>
-[SuppressMessage("Naming", "CA1711:Identifiers should not have incorrect suffix", Justification = "<Pending>")]
-public interface IRestRequestStream<TResult> : IRestRequest<TResult>
-    where TResult : notnull
-{
-    /// <summary>
-    /// Indicates whether the request stream is available.
-    /// </summary>
-    public new bool IsRequestStream => true;
-
-    [EditorBrowsable(EditorBrowsableState.Never)]
-    bool IRestRequest.IsRequestStream => IsRequestStream;
 }

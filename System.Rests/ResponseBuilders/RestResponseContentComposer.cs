@@ -33,7 +33,7 @@ public sealed class RestResponseContentComposer : IRestResponseComposer
         return context.Message.IsSuccessStatusCode
             && context.Request.ResultType is null
             && context.Message.Content is not null
-            && !context.Request.IsRequestStream;
+            && context.Request is not IRestRequestStream or IRestRequestStreamPaged or IRestRequestResult;
     }
 
     /// <inheritdoc/>

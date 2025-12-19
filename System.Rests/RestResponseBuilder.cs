@@ -17,26 +17,22 @@
 
 using System.Rests.Abstractions;
 
-using Microsoft.Extensions.DependencyInjection;
-
 namespace System.Rests;
 
 /// <summary>
 /// Provides a builder that constructs REST responses by delegating to one of multiple response composers based on the
 /// request context.
 /// </summary>
-/// <param name="serviceProvider">The service provider used to resolve the available response composers.</param>
+/// <param name="composers">The collection of response composers available for building responses.</param>
 /// <remarks>The builder selects the first composer that can handle the provided context. If no suitable composer
 /// is found, an exception is thrown. This class is sealed and cannot be inherited.</remarks>
-public sealed class RestResponseBuilder(IServiceProvider serviceProvider) : IRestResponseBuilder
+public sealed class RestResponseBuilder(IEnumerable<IRestResponseComposer> composers) : IRestResponseBuilder
 {
     /// <inheritdoc />
     public async ValueTask<RestResponse> BuildResponseAsync(
         RestResponseContext context, CancellationToken cancellationToken = default)
     {
         ArgumentNullException.ThrowIfNull(context);
-
-        var composers = serviceProvider.GetServices<IRestResponseComposer>();
 
         IRestResponseComposer composer =
             composers.FirstOrDefault(c => c.CanCompose(context))

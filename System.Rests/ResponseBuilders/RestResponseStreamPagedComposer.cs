@@ -24,10 +24,10 @@ using System.Text.Json.Serialization.Metadata;
 namespace System.Rests.ResponseBuilders;
 
 /// <summary>
-/// Composes a stream RestResponse asynchronously using the provided RestResponseContext.
+/// Composes a paged stream RestResponse asynchronously using the provided RestResponseContext.
 /// </summary>
-/// <remarks>This implementation returns an <see cref="IAsyncEnumerable{T}"/>.</remarks>
-public sealed class RestResponseStreamComposer : IRestResponseComposer
+/// <remarks>This implementation returns an <see cref="IAsyncPagedEnumerable{T}"/>.</remarks>
+public sealed class RestResponseStreamPagedComposer : IRestResponseComposer
 {
     /// <inheritdoc/>
     public bool CanCompose(RestResponseContext context)
@@ -36,7 +36,7 @@ public sealed class RestResponseStreamComposer : IRestResponseComposer
 
         return context.Message.IsSuccessStatusCode
         && context.Request.ResultType is not null
-        && context.Request is IRestRequestStream;
+        && context.Request is IRestRequestStreamPaged;
     }
 
     /// <inheritdoc/>
@@ -57,12 +57,12 @@ public sealed class RestResponseStreamComposer : IRestResponseComposer
         {
             await Task.Yield();
 
-            Type type = ((IRestRequestStream)context.Request).ResultType;
-            JsonTypeInfo? typeInfo = options.TypeInfoResolver?.GetTypeInfo(type, options)
+            Type type = ((IRestRequestStreamPaged)context.Request).ResultType;
+            JsonTypeInfo? typeInfo = (options.TypeInfoResolver?.GetTypeInfo(type, options))
                 ?? throw new InvalidOperationException(
                     $"{nameof(ComposeAsync)}: The JsonTypeInfo for type {type.Name} could not be resolved.");
 
-            var asyncResult = ReadFromJsonAsyncEnumerable(response.Content, typeInfo, cancellationToken);
+            var asyncPagedResult = ReadFromJsonAsyncPagedEnumerable(response.Content, typeInfo, cancellationToken);
 
             return new RestResponse
             {
@@ -70,7 +70,7 @@ public sealed class RestResponseStreamComposer : IRestResponseComposer
                 ReasonPhrase = response.ReasonPhrase,
                 Headers = response.Headers.ToElementCollection(),
                 Version = response.Version,
-                Result = asyncResult
+                Result = asyncPagedResult
             };
         }
         catch (Exception exception)
@@ -89,15 +89,16 @@ public sealed class RestResponseStreamComposer : IRestResponseComposer
 
     [UnconditionalSuppressMessage("Trimming", "IL2026:Members annotated with 'RequiresUnreferencedCodeAttribute' require dynamic access otherwise can break functionality when trimming application code", Justification = "<Pending>")]
     [UnconditionalSuppressMessage("AOT", "IL3050:Calling members annotated with 'RequiresDynamicCodeAttribute' may break functionality when AOT compiling.", Justification = "<Pending>")]
-    static object? ReadFromJsonAsyncEnumerable(HttpContent content, JsonTypeInfo jsonTypeInfo, CancellationToken cancellationToken)
+    static object? ReadFromJsonAsyncPagedEnumerable(HttpContent content, JsonTypeInfo jsonTypeInfo, CancellationToken cancellationToken)
     {
-        var method = typeof(HttpContentJsonExtensions)
-            .GetMethod(nameof(HttpContentJsonExtensions.ReadFromJsonAsAsyncEnumerable),
-            [typeof(HttpContent), typeof(JsonSerializerOptions), typeof(CancellationToken)])
+        var method = typeof(HttpContentExtensions)
+            .GetMethod(nameof(HttpContentExtensions.ReadFromJsonAsAsyncPagedEnumerable),
+            [typeof(HttpContent), typeof(JsonSerializerOptions), typeof(PaginationStrategy), typeof(CancellationToken)])
             ?? throw new InvalidOperationException(
-                $"{nameof(ReadFromJsonAsyncEnumerable)}: Could not find method {nameof(HttpContentJsonExtensions.ReadFromJsonAsAsyncEnumerable)}.");
+                $"{nameof(ReadFromJsonAsyncPagedEnumerable)}: Could not find method {nameof(HttpContentExtensions.ReadFromJsonAsAsyncPagedEnumerable)}.");
 
         var genericMethod = method.MakeGenericMethod(jsonTypeInfo.Type);
-        return genericMethod.Invoke(null, [content, jsonTypeInfo.Options, cancellationToken]);
+        var result = genericMethod.Invoke(null, [content, jsonTypeInfo.Options, PaginationStrategy.None, cancellationToken]);
+        return result;
     }
 }

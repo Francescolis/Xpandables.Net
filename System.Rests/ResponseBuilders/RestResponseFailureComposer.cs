@@ -28,7 +28,7 @@ public sealed class RestResponseFailureComposer : IRestResponseComposer
     public bool CanCompose(RestResponseContext context)
     {
         ArgumentNullException.ThrowIfNull(context);
-        return context.Message.IsSuccessStatusCode == false;
+        return !context.Message.IsSuccessStatusCode;
     }
 
     /// <inheritdoc/>
