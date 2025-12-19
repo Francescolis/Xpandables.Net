@@ -99,6 +99,7 @@ public static class IAsyncEnumerableExtensions
         /// Converts an <see cref="IQueryable{T}"/> to an <see cref="IAsyncPagedEnumerable{T}"/>.
         /// </summary>
         /// <param name="strategy">The pagination strategy to apply.</param>
+        /// <param name="cursorOptions">Optional cursor configuration used when generating continuation tokens.</param>
         /// <returns>An async paged enumerable.</returns>
         /// <remarks>
         /// This method automatically extracts Skip/Take operations from the query expression 
@@ -106,11 +107,13 @@ public static class IAsyncEnumerableExtensions
         /// For complex queries or non-database sources, consider using the overload with a total factory.
         /// </remarks>
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
-        public IAsyncPagedEnumerable<T> ToAsyncPagedEnumerable(PaginationStrategy strategy = PaginationStrategy.None)
+        public IAsyncPagedEnumerable<T> ToAsyncPagedEnumerable(
+            PaginationStrategy strategy = PaginationStrategy.None,
+            CursorOptions<T>? cursorOptions = null)
         {
             ArgumentNullException.ThrowIfNull(source);
 
-            return AsyncPagedEnumerable.Create(source, strategy: strategy);
+            return AsyncPagedEnumerable.Create(source, cursorOptions, strategy: strategy);
         }
 
         /// <summary>
@@ -118,6 +121,7 @@ public static class IAsyncEnumerableExtensions
         /// </summary>
         /// <param name="paginationFactory">Factory to compute the pagination metadata asynchronously.</param>
         /// <param name="strategy">The pagination strategy to apply.</param>
+        /// <param name="cursorOptions">Optional cursor configuration applied alongside the factory.</param>
         /// <returns>An async paged enumerable.</returns>
         /// <exception cref="ArgumentNullException">Thrown when <paramref name="paginationFactory"/> is null.</exception>
         /// <remarks>
@@ -127,12 +131,13 @@ public static class IAsyncEnumerableExtensions
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
         public IAsyncPagedEnumerable<T> ToAsyncPagedEnumerable(
             Func<CancellationToken, ValueTask<Pagination>> paginationFactory,
-            PaginationStrategy strategy = PaginationStrategy.None)
+            PaginationStrategy strategy = PaginationStrategy.None,
+            CursorOptions<T>? cursorOptions = null)
         {
             ArgumentNullException.ThrowIfNull(source);
             ArgumentNullException.ThrowIfNull(paginationFactory);
 
-            return AsyncPagedEnumerable.Create(source, paginationFactory, strategy);
+            return AsyncPagedEnumerable.Create(source, cursorOptions, paginationFactory, strategy);
         }
     }
 }

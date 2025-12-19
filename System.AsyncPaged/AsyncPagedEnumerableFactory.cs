@@ -57,6 +57,7 @@ public static class AsyncPagedEnumerable
     /// begins.</remarks>
     /// <typeparam name="T">The type of elements contained in the query and returned by the paged enumerable.</typeparam>
     /// <param name="query">The source query to enumerate asynchronously in pages. Cannot be null.</param>
+    /// <param name="cursorOptions">Optional cursor pagination configuration applied when deriving continuation tokens.</param>
     /// <param name="paginationFactory">An optional factory function that provides pagination parameters for each enumeration. If null, default
     /// pagination is used.</param>
     /// <param name="strategy">The pagination strategy to apply.</param>
@@ -64,9 +65,10 @@ public static class AsyncPagedEnumerable
     /// or default pagination.</returns>
     public static IAsyncPagedEnumerable<T> Create<T>(
         IQueryable<T> query,
+        CursorOptions<T>? cursorOptions = null,
         Func<CancellationToken, ValueTask<Pagination>>? paginationFactory = default,
         PaginationStrategy strategy = PaginationStrategy.None) =>
-        new AsyncPagedEnumerable<T>(query, paginationFactory, strategy);
+        new AsyncPagedEnumerable<T>(query, cursorOptions, paginationFactory, strategy);
 
     /// <summary>
     /// Creates a new asynchronous paged enumerable using the specified factory and pagination strategy.

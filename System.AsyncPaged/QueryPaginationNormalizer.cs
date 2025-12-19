@@ -14,7 +14,6 @@
  * limitations under the License.
  *
 ********************************************************************************/
-using System.Diagnostics;
 using System.Linq.Expressions;
 using System.Reflection;
 
@@ -36,10 +35,6 @@ public static class QueryPaginationNormalizer
 
     private static readonly MethodInfo TakeMethod = ((MethodCallExpression)
         ((Expression<Func<IQueryable<int>, IQueryable<int>>>)(q => q.Take(0))).Body)
-        .Method.GetGenericMethodDefinition();
-
-    private static readonly MethodInfo WhereMethod = ((MethodCallExpression)
-        ((Expression<Func<IQueryable<int>, IQueryable<int>>>)(q => q.Where(x => true))).Body)
         .Method.GetGenericMethodDefinition();
 
     /// <summary>
@@ -99,24 +94,6 @@ public static class QueryPaginationNormalizer
         return queryable.Provider.CreateQuery<T>(newExpression);
     }
 
-    /// <summary>
-    /// Extracts the token value from a Where clause that contains a comparison expression (e.g., Where(e => e.Id > token)).
-    /// </summary>
-    /// <remarks>This method analyzes the query expression tree to find a Where operation containing a binary comparison
-    /// (GreaterThan, GreaterThanOrEqual, LessThan, or LessThanOrEqual) and extracts the constant value being compared.
-    /// It's useful for cursor-based pagination scenarios where a token value is used to determine the starting point.</remarks>
-    /// <typeparam name="T">The type of the elements in the source queryable.</typeparam>
-    /// <param name="queryable">The LINQ queryable to analyze for Where operations with comparison tokens. Cannot be null.</param>
-    /// <returns>The token value extracted from the Where clause if found; otherwise, null.</returns>
-    public static object? ExtractWhereToken<T>(IQueryable<T> queryable)
-    {
-        ArgumentNullException.ThrowIfNull(queryable);
-
-        var visitor = new WhereTokenVisitor();
-        visitor.Visit(queryable.Expression);
-        return visitor.Token;
-    }
-
     private sealed class SkipTakeVisitor : ExpressionVisitor
     {
         public int? Skip { get; private set; }
@@ -156,76 +133,6 @@ public static class QueryPaginationNormalizer
                 _ => null
             };
 
-    }
-
-    private sealed class WhereTokenVisitor : ExpressionVisitor
-    {
-        public object? Token { get; private set; }
-
-        protected override Expression VisitMethodCall(MethodCallExpression node)
-        {
-            if (node.Method.IsGenericMethod)
-            {
-                var genericDef = node.Method.GetGenericMethodDefinition();
-
-                if (genericDef == WhereMethod && node.Arguments.Count >= 2)
-                {
-                    var predicate = node.Arguments[1];
-
-                    if (predicate is UnaryExpression { Operand: LambdaExpression lambda })
-                    {
-                        Token = ExtractTokenFromPredicate(lambda.Body) ?? Token;
-                    }
-                }
-            }
-
-            return base.VisitMethodCall(node);
-        }
-
-        private static object? ExtractTokenFromPredicate(Expression expression)
-        {
-            return expression switch
-            {
-                BinaryExpression
-                {
-                    NodeType: ExpressionType.GreaterThan or ExpressionType.GreaterThanOrEqual
-                              or ExpressionType.LessThan or ExpressionType.LessThanOrEqual
-                } binary => ExtractConstantValue(binary.Right) ?? ExtractConstantValue(binary.Left),
-                _ => null
-            };
-        }
-
-        private static object? ExtractConstantValue(Expression expression)
-        {
-            return expression switch
-            {
-                ConstantExpression { Value: var value } => value,
-                UnaryExpression
-                {
-                    NodeType: ExpressionType.Convert,
-                    Operand: ConstantExpression { Value: var convertValue }
-                } => convertValue,
-                MemberExpression memberExpr => EvaluateMemberExpression(memberExpr),
-                _ => null
-            };
-        }
-
-        [Diagnostics.CodeAnalysis.SuppressMessage("Design", "CA1031:Do not catch general exception types", Justification = "<Pending>")]
-        private static object? EvaluateMemberExpression(MemberExpression memberExpression)
-        {
-            try
-            {
-                var objectMember = Expression.Convert(memberExpression, typeof(object));
-                var getterLambda = Expression.Lambda<Func<object>>(objectMember);
-                var getter = getterLambda.Compile();
-                return getter();
-            }
-            catch (Exception ex)
-            {
-                Trace.TraceError("Failed to evaluate member expression: {0}", ex);
-                return null;
-            }
-        }
     }
 }
 

@@ -29,6 +29,7 @@ public sealed class AsyncPagedEnumerable<T> : IAsyncPagedEnumerable<T>, IDisposa
     private readonly IQueryable<T>? _queryable;
     private readonly Func<CancellationToken, ValueTask<Pagination>> _paginationFactory;
     private readonly PaginationStrategy _strategy;
+    private readonly CursorOptions<T>? _cursorOptions;
 
     // Lazy materialization
     private List<T>? _materializedItems;
@@ -65,6 +66,7 @@ public sealed class AsyncPagedEnumerable<T> : IAsyncPagedEnumerable<T>, IDisposa
         _paginationFactory = paginationFactory ?? AsyncEnumerablePaginationFactory(source);
         _pagination = Pagination.Empty;
         _strategy = strategy;
+        _cursorOptions = null;
     }
 
     /// <summary>
@@ -75,19 +77,22 @@ public sealed class AsyncPagedEnumerable<T> : IAsyncPagedEnumerable<T>, IDisposa
     /// the query expression or via a custom factory.
     /// </remarks>
     /// <param name="query">The queryable data source. Cannot be <see langword="null"/>.</param>
+    /// <param name="cursorOptions">Optional cursor metadata used to drive continuation token formatting.</param>
     /// <param name="paginationFactory">A factory function that creates <see cref="Pagination"/> metadata. 
     /// If null, pagination will be inferred from the query.</param>
     /// <param name="strategy">The pagination strategy to apply.</param>
     /// <exception cref="ArgumentNullException">Thrown when <paramref name="query"/> is null.</exception>
     internal AsyncPagedEnumerable(
         IQueryable<T> query,
+        CursorOptions<T>? cursorOptions = null,
         Func<CancellationToken, ValueTask<Pagination>>? paginationFactory = default,
         PaginationStrategy strategy = PaginationStrategy.None)
     {
         ArgumentNullException.ThrowIfNull(query);
 
         _queryable = query;
-        _paginationFactory = paginationFactory ?? QueryablePaginationFactory(query);
+        _cursorOptions = cursorOptions;
+        _paginationFactory = paginationFactory ?? QueryablePaginationFactory(query, cursorOptions);
         _pagination = Pagination.Empty;
         _strategy = strategy;
     }
@@ -105,7 +110,7 @@ public sealed class AsyncPagedEnumerable<T> : IAsyncPagedEnumerable<T>, IDisposa
 
         if (_queryable is not null)
         {
-            return new AsyncPagedEnumerable<T>(_queryable, _paginationFactory, strategy);
+            return new AsyncPagedEnumerable<T>(_queryable, _cursorOptions, _paginationFactory, strategy);
         }
 
         return this;
@@ -192,7 +197,9 @@ public sealed class AsyncPagedEnumerable<T> : IAsyncPagedEnumerable<T>, IDisposa
     /// <inheritdoc/>
     public void Dispose() => _materializationLock.Dispose();
 
-    private static Func<CancellationToken, ValueTask<Pagination>> QueryablePaginationFactory(IQueryable<T> queryable)
+    private static Func<CancellationToken, ValueTask<Pagination>> QueryablePaginationFactory(
+        IQueryable<T> queryable,
+        CursorOptions<T>? cursorOptions)
     {
         var (normalizedQuery, skip, take) = QueryPaginationNormalizer.Normalize(queryable);
         return async cancellationToken =>
@@ -207,8 +214,9 @@ public sealed class AsyncPagedEnumerable<T> : IAsyncPagedEnumerable<T>, IDisposa
             };
 
             int pageSize = take ?? 0;
-            string? continuationToken = QueryPaginationNormalizer.ExtractWhereToken(normalizedQuery) is { } value
-                ? $"cursor:{value}"
+            string? cursorToken = cursorOptions?.FormatAppliedToken();
+            string? continuationToken = !string.IsNullOrWhiteSpace(cursorToken)
+                ? $"cursor:{cursorToken}"
                 : (skip, take) switch
                 {
                     (not null and > 0, not null and > 0) => $"offset:{skip.Value + take.Value}",

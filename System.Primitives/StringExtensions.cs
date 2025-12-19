@@ -68,38 +68,234 @@ public static partial class StringExtensions
         /// <summary>
         /// Formats the current string using the specified culture and the provided arguments.
         /// </summary>
-        /// <remarks>This method uses the current string instance as the format string. The number and
-        /// order of format items in the string should match the number and order of objects in <paramref name="args"/>.
-        /// If an argument is missing, a formatting exception may be thrown.</remarks>
+        /// <remarks>If an argument is missing, a formatting exception may be thrown.</remarks>
         /// <param name="cultureInfo">The culture-specific formatting information to use when formatting the string. Cannot be null.</param>
-        /// <param name="args">An array of objects to format. Each object will be replaced in the string according to its corresponding
-        /// format item.</param>
+        /// <param name="arg0">The object to format and insert into the string. This object will replace the first format item in the string.</param>
         /// <returns>A formatted string that incorporates the specified arguments, using the provided culture for formatting.</returns>
         /// <exception cref="ArgumentNullException">Thrown when the string value or <paramref name="cultureInfo"/> is null.</exception>
         /// <exception cref="FormatException">Thrown when the format string is invalid or when an argument is missing.</exception>
-        public string StringFormat(CultureInfo cultureInfo, params object[] args)
+        public string StringFormat(CultureInfo cultureInfo, object? arg0)
         {
             ArgumentNullException.ThrowIfNull(value);
             ArgumentNullException.ThrowIfNull(cultureInfo);
 
-            return string.Format(cultureInfo, value, args);
+            return string.Format(cultureInfo, value, arg0);
         }
 
         /// <summary>
-        /// Formats the underlying string using the specified arguments, applying culture-invariant formatting.
+        /// Formats the current string using the specified culture-specific formatting information and two arguments.
         /// </summary>
-        /// <remarks>This method uses <see cref="CultureInfo.InvariantCulture"/> for formatting, ensuring
-        /// consistent results regardless of the current culture. If the number of format items in the string does not
-        /// match the number of arguments provided, a formatting exception may occur.</remarks>
-        /// <param name="args">An array of objects to format and insert into the string. Each object will replace a corresponding format
-        /// item in the string.</param>
-        /// <returns>A formatted string with each format item replaced by the corresponding value from <paramref name="args"/>.</returns>
-        /// <exception cref="ArgumentNullException">Thrown when the string value is null.</exception>
-        /// <exception cref="FormatException">Thrown when the format string is invalid or when an argument is missing.</exception>
-        public string StringFormat(params object[] args)
+        /// <param name="cultureInfo">An object that supplies culture-specific formatting information.</param>
+        /// <param name="arg0">The first object to format and insert into the string.</param>
+        /// <param name="arg1">The second object to format and insert into the string.</param>
+        /// <returns>A copy of the current string in which format items have been replaced by the string representations of the
+        /// corresponding arguments, formatted using the specified culture.</returns>
+        public string StringFormat(CultureInfo cultureInfo, object? arg0, object? arg1)
         {
             ArgumentNullException.ThrowIfNull(value);
-            return value.StringFormat(CultureInfo.InvariantCulture, args);
+            ArgumentNullException.ThrowIfNull(cultureInfo);
+
+            return string.Format(cultureInfo, value, arg0, arg1);
+        }
+
+        /// <summary>
+        /// Formats the composite format string using the specified culture-specific formatting information and three
+        /// arguments.
+        /// </summary>
+        /// <remarks>The format string is provided by the instance's value. If any argument is null, it is
+        /// replaced by an empty string in the result.</remarks>
+        /// <param name="cultureInfo">The culture-specific formatting information to use when formatting the string. Cannot be null.</param>
+        /// <param name="arg0">The first object to format.</param>
+        /// <param name="arg1">The second object to format.</param>
+        /// <param name="arg2">The third object to format.</param>
+        /// <returns>A string in which the format items have been replaced by the string representations of the corresponding
+        /// arguments, formatted using the specified culture.</returns>
+        public string StringFormat(CultureInfo cultureInfo, object? arg0, object? arg1, object? arg2)
+        {
+            ArgumentNullException.ThrowIfNull(value);
+            ArgumentNullException.ThrowIfNull(cultureInfo);
+
+            return string.Format(cultureInfo, value, arg0, arg1, arg2);
+        }
+
+        /// <summary>
+        /// Formats the composite format string using the specified culture-specific formatting information and up to
+        /// four arguments.
+        /// </summary>
+        /// <remarks>This method uses the composite formatting feature, where placeholders in the format
+        /// string are replaced by the string representations of the provided arguments. If an argument is null, its
+        /// corresponding format item is replaced with an empty string.</remarks>
+        /// <param name="cultureInfo">An object that supplies culture-specific formatting information for the result string. Cannot be null.</param>
+        /// <param name="arg0">The first object to format.</param>
+        /// <param name="arg1">The second object to format.</param>
+        /// <param name="arg2">The third object to format.</param>
+        /// <param name="arg3">The fourth object to format.</param>
+        /// <returns>A copy of the format string in which format items are replaced by the string representations of the
+        /// corresponding arguments, formatted using the specified culture.</returns>
+        public string StringFormat(CultureInfo cultureInfo, object? arg0, object? arg1, object? arg2, object? arg3)
+        {
+            ArgumentNullException.ThrowIfNull(value);
+            ArgumentNullException.ThrowIfNull(cultureInfo);
+
+            return string.Format(cultureInfo, value, arg0, arg1, arg2, arg3);
+        }
+
+        /// <summary>
+        /// Formats the composite format string using the specified culture-specific formatting information and five
+        /// format arguments.
+        /// </summary>
+        /// <remarks>The composite format string is provided by the instance and may contain indexed
+        /// placeholders such as {0} through {4}, which are replaced by the corresponding argument values. If an
+        /// argument is null, its corresponding format item is replaced by an empty string.</remarks>
+        /// <param name="cultureInfo">An object that supplies culture-specific formatting information for the result string. Cannot be null.</param>
+        /// <param name="arg0">The first object to format.</param>
+        /// <param name="arg1">The second object to format.</param>
+        /// <param name="arg2">The third object to format.</param>
+        /// <param name="arg3">The fourth object to format.</param>
+        /// <param name="arg4">The fifth object to format.</param>
+        /// <returns>A string in which the format items have been replaced by the string representations of the corresponding
+        /// arguments, formatted using the specified culture.</returns>
+        public string StringFormat(CultureInfo cultureInfo, object? arg0, object? arg1, object? arg2, object? arg3, object? arg4)
+        {
+            ArgumentNullException.ThrowIfNull(value);
+            ArgumentNullException.ThrowIfNull(cultureInfo);
+
+            return string.Format(cultureInfo, value, arg0, arg1, arg2, arg3, arg4);
+        }
+
+        /// <summary>
+        /// Formats the current string using the specified culture-specific formatting information and up to six format
+        /// arguments.
+        /// </summary>
+        /// <remarks>Format items in the string should be in the form {index}, where index corresponds to
+        /// the position of the argument. If an argument is null, its format item is replaced with an empty
+        /// string.</remarks>
+        /// <param name="cultureInfo">An object that supplies culture-specific formatting information for the operation. Cannot be null.</param>
+        /// <param name="arg0">The first object to format. Can be null.</param>
+        /// <param name="arg1">The second object to format. Can be null.</param>
+        /// <param name="arg2">The third object to format. Can be null.</param>
+        /// <param name="arg3">The fourth object to format. Can be null.</param>
+        /// <param name="arg4">The fifth object to format. Can be null.</param>
+        /// <param name="arg5">The sixth object to format. Can be null.</param>
+        /// <returns>A copy of the current string in which format items are replaced by the string representations of the
+        /// corresponding arguments, formatted using the specified culture.</returns>
+        public string StringFormat(CultureInfo cultureInfo, object? arg0, object? arg1, object? arg2, object? arg3, object? arg4, object? arg5)
+        {
+            ArgumentNullException.ThrowIfNull(value);
+            ArgumentNullException.ThrowIfNull(cultureInfo);
+
+            return string.Format(cultureInfo, value, arg0, arg1, arg2, arg3, arg4, arg5);
+        }
+
+        /// <summary>
+        /// Formats the current string instance using the specified argument and the invariant culture.
+        /// </summary>
+        /// <remarks>This method uses <see cref="CultureInfo.InvariantCulture"/> to format the argument.
+        /// Use this method when a culture-invariant result is required, such as for logging or serialization.</remarks>
+        /// <param name="arg0">The object to format and insert into the format string.</param>
+        /// <returns>A copy of the current string instance in which the format item has been replaced by the string
+        /// representation of <paramref name="arg0"/>.</returns>
+        public string StringFormat(object? arg0)
+        {
+            ArgumentNullException.ThrowIfNull(value);
+
+            return string.Format(CultureInfo.InvariantCulture, value, arg0);
+        }
+
+        /// <summary>
+        /// Formats a composite format string using the specified arguments and returns the result as a string.
+        /// </summary>
+        /// <remarks>This method uses the invariant culture to format the composite string, ensuring
+        /// consistent formatting regardless of the current culture settings.</remarks>
+        /// <param name="arg0">The first object to format and insert into the format string.</param>
+        /// <param name="arg1">The second object to format and insert into the format string.</param>
+        /// <returns>A string in which the format items have been replaced by the string representations of the corresponding
+        /// arguments, formatted using the invariant culture.</returns>
+        public string StringFormat(object? arg0, object? arg1)
+        {
+            ArgumentNullException.ThrowIfNull(value);
+
+            return string.Format(CultureInfo.InvariantCulture, value, arg0, arg1);
+        }
+
+        /// <summary>
+        /// Formats a composite format string using the specified arguments and the invariant culture.
+        /// </summary>
+        /// <remarks>This method uses the invariant culture to format the string, ensuring consistent
+        /// formatting regardless of the current culture settings. The composite format string is provided by the
+        /// instance and must not be null.</remarks>
+        /// <param name="arg0">The first object to format.</param>
+        /// <param name="arg1">The second object to format.</param>
+        /// <param name="arg2">The third object to format.</param>
+        /// <returns>A string in which the format items have been replaced by the string representations of the corresponding
+        /// arguments, formatted using the invariant culture.</returns>
+        public string StringFormat(object? arg0, object? arg1, object? arg2)
+        {
+            ArgumentNullException.ThrowIfNull(value);
+
+            return string.Format(CultureInfo.InvariantCulture, value, arg0, arg1, arg2);
+        }
+
+        /// <summary>
+        /// Formats the current string by replacing format items with the string representations of four specified
+        /// objects, using invariant culture formatting.
+        /// </summary>
+        /// <remarks>Format items in the string should be in the form {0}, {1}, {2}, and {3},
+        /// corresponding to the provided arguments. Formatting uses the invariant culture, which is culture-insensitive
+        /// and consistent across different locales.</remarks>
+        /// <param name="arg0">The first object to format and insert into the string.</param>
+        /// <param name="arg1">The second object to format and insert into the string.</param>
+        /// <param name="arg2">The third object to format and insert into the string.</param>
+        /// <param name="arg3">The fourth object to format and insert into the string.</param>
+        /// <returns>A copy of the current string in which format items are replaced by the string representations of the
+        /// corresponding arguments.</returns>
+        public string StringFormat(object? arg0, object? arg1, object? arg2, object? arg3)
+        {
+            ArgumentNullException.ThrowIfNull(value);
+
+            return string.Format(CultureInfo.InvariantCulture, value, arg0, arg1, arg2, arg3);
+        }
+
+        /// <summary>
+        /// Formats a composite format string by using the specified arguments and returns the formatted string.
+        /// </summary>
+        /// <remarks>The formatting uses the invariant culture. If any argument is null, it is replaced
+        /// with an empty string in the result. The composite format string and the number of arguments must match;
+        /// otherwise, a FormatException is thrown.</remarks>
+        /// <param name="arg0">The first object to format. Can be null, in which case an empty string is substituted.</param>
+        /// <param name="arg1">The second object to format. Can be null, in which case an empty string is substituted.</param>
+        /// <param name="arg2">The third object to format. Can be null, in which case an empty string is substituted.</param>
+        /// <param name="arg3">The fourth object to format. Can be null, in which case an empty string is substituted.</param>
+        /// <param name="arg4">The fifth object to format. Can be null, in which case an empty string is substituted.</param>
+        /// <returns>A string in which the format items in the composite format string are replaced by the string representations
+        /// of the corresponding arguments.</returns>
+        public string StringFormat(object? arg0, object? arg1, object? arg2, object? arg3, object? arg4)
+        {
+            ArgumentNullException.ThrowIfNull(value);
+
+            return string.Format(CultureInfo.InvariantCulture, value, arg0, arg1, arg2, arg3, arg4);
+        }
+
+        /// <summary>
+        /// Formats a composite format string by replacing each format item with the string representation of the
+        /// corresponding argument using invariant culture.
+        /// </summary>
+        /// <remarks>This method uses the invariant culture to format the composite string, ensuring
+        /// consistent formatting regardless of the current culture settings. If a format item in the string does not
+        /// have a corresponding argument, a FormatException is thrown.</remarks>
+        /// <param name="arg0">The first object to format. Can be null, in which case an empty string is substituted.</param>
+        /// <param name="arg1">The second object to format. Can be null, in which case an empty string is substituted.</param>
+        /// <param name="arg2">The third object to format. Can be null, in which case an empty string is substituted.</param>
+        /// <param name="arg3">The fourth object to format. Can be null, in which case an empty string is substituted.</param>
+        /// <param name="arg4">The fifth object to format. Can be null, in which case an empty string is substituted.</param>
+        /// <param name="arg5">The sixth object to format. Can be null, in which case an empty string is substituted.</param>
+        /// <returns>A copy of the format string in which format items are replaced by the string representation of the
+        /// corresponding arguments, formatted using invariant culture.</returns>
+        public string StringFormat(object? arg0, object? arg1, object? arg2, object? arg3, object? arg4, object? arg5)
+        {
+            ArgumentNullException.ThrowIfNull(value);
+
+            return string.Format(CultureInfo.InvariantCulture, value, arg0, arg1, arg2, arg3, arg4, arg5);
         }
 
         /// <summary>
