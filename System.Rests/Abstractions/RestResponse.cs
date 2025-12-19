@@ -34,7 +34,7 @@ namespace System.Rests.Abstractions;
 [SuppressMessage("Naming", "CA1707:Identifiers should not contain underscores", Justification = "<Pending>")]
 [SuppressMessage("Style", "IDE1006:Naming Styles", Justification = "<Pending>")]
 [EditorBrowsable(EditorBrowsableState.Never)]
-public abstract class _RestResponse : IDisposable
+public abstract class Response : IDisposable
 {
     /// <summary>
     /// Gets or sets a value indicating whether this instance is disposed.
@@ -138,7 +138,7 @@ public abstract class _RestResponse : IDisposable
 /// generic response type, use the provided conversion methods or implicit operator. This class provides properties to
 /// inspect the outcome of the REST operation, including success or failure status and any associated
 /// exception.</remarks>
-public sealed class RestResponse : _RestResponse
+public sealed class RestResponse : Response
 {
     /// <inheritdoc/>
     public sealed override bool IsGeneric => false;
@@ -214,7 +214,7 @@ public sealed class RestResponse : _RestResponse
 /// headers, exceptions, and other response details. This class is typically used in scenarios where deserialization of
 /// the response body to a specific type is required.</remarks>
 /// <typeparam name="TResult">The type of the result value returned by the REST response.</typeparam>
-public sealed class RestResponse<TResult> : _RestResponse
+public sealed class RestResponse<TResult> : Response
 {
     /// <inheritdoc/>
     public sealed override bool IsGeneric => true;
