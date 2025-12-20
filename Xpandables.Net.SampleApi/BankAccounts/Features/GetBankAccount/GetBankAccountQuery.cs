@@ -14,24 +14,20 @@
  * limitations under the License.
  *
 ********************************************************************************/
-using System.ComponentModel.DataAnnotations;
-
 using Microsoft.AspNetCore.Mvc;
 
-namespace Xpandables.Net.SampleApi.BankAccounts.Features.GetBankAccountOperation;
+namespace Xpandables.Net.SampleApi.BankAccounts.Features.GetBankAccount;
 
-public sealed record GetBankAccountOperationQuery : IStreamPagedRequest<GetBankAccountOperationResult>
+public sealed record GetBankAccountQuery : IStreamPagedRequest<GetBankAccountResult>
 {
-    [Required, FromRoute]
-    public required Guid AccountId { get; init; }
+    [FromQuery]
+    public Guid? AccountId { get; init; }
+    [FromQuery]
+    public int Count { get; init; } = 10;
 }
 
-
-public readonly record struct GetBankAccountOperationResult
+public readonly record struct GetBankAccountResult
 {
-    public required readonly Guid AccountId { get; init; }
-    public required readonly decimal Amount { get; init; }
-    public required readonly string Description { get; init; }
-    public required readonly DateTime OperationDate { get; init; }
-    public required readonly string OperationType { get; init; }
+    public readonly required string AccountId { get; init; }
+    public readonly required string AccountNumber { get; init; }
 }

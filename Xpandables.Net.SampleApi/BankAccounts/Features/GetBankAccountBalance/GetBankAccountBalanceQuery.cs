@@ -8,6 +8,7 @@ public sealed class GetBankAccountBalanceQuery : IRequest<GetBankAccountBalanceR
 {
     [Required, FromRoute]
     public required Guid AccountId { get; init; }
+
 }
 
 public readonly record struct GetBankAccountBalanceResult

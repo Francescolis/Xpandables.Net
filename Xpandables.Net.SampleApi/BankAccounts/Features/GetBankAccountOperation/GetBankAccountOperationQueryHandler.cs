@@ -20,7 +20,7 @@ using Xpandables.Net.SampleApi.BankAccounts.Accounts;
 namespace Xpandables.Net.SampleApi.BankAccounts.Features.GetBankAccountOperation;
 
 public sealed class GetBankAccountOperationQueryHandler(IEventStore eventStore) :
-    IStreamRequestHandler<GetBankAccountOperationQuery, GetBankAccountOperationResult>
+    IStreamPagedRequestHandler<GetBankAccountOperationQuery, GetBankAccountOperationResult>
 {
     public async Task<Result<IAsyncPagedEnumerable<GetBankAccountOperationResult>>> HandleAsync(
         GetBankAccountOperationQuery request,
