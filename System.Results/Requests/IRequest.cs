@@ -42,3 +42,13 @@ public interface IRequest<out TResult> : IRequest;
 /// observable data streams. Implementations may deliver results incrementally rather than all at once.</remarks>
 /// <typeparam name="TResult">The type of the elements returned by the stream produced by the request.</typeparam>
 public interface IStreamRequest<out TResult> : IRequest;
+
+/// <summary>
+/// Represents a request for retrieving paged results as a stream, where each page yields a result of the specified
+/// type.
+/// </summary>
+/// <remarks>Use this interface to define requests that support streaming paged data, enabling efficient retrieval
+/// of large result sets in manageable segments. Implementations may provide asynchronous or synchronous streaming
+/// capabilities depending on the underlying data source.</remarks>
+/// <typeparam name="TResult">The type of the result returned for each page in the stream.</typeparam>
+public interface IStreamPagedRequest<out TResult> : IRequest;

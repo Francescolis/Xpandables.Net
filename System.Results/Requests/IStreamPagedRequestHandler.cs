@@ -19,23 +19,23 @@ using System.ComponentModel;
 namespace System.Results.Requests;
 
 /// <summary>
-/// Defines a handler for processing stream requests asynchronously, producing a stream of responses.
+/// Defines a handler for processing stream requests asynchronously, producing a paged stream of responses.
 /// </summary>
 /// <remarks>This interface extends <see cref="IRequestHandler{TRequest}"/> to support handling requests that
 /// result in a stream of responses. Implementations should ensure that the stream is properly disposed of and that any
 /// necessary cleanup is performed.</remarks>
 /// <typeparam name="TRequest">The type of the request message.</typeparam>
 /// <typeparam name="TResponse">The type of the response message.</typeparam>
-public interface IStreamRequestHandler<in TRequest, TResponse> : IRequestHandler<TRequest>
-    where TRequest : class, IStreamRequest<TResponse>
+public interface IStreamPagedRequestHandler<in TRequest, TResponse> : IRequestHandler<TRequest>
+    where TRequest : class, IStreamPagedRequest<TResponse>
 {
     /// <summary>
-    /// Asynchronously handles the specified request and returns a stream of responses.
+    /// Asynchronously handles the specified request and returns a paged stream of responses.
     /// </summary>
     /// <param name="request">The request to be processed.</param>
     /// <param name="cancellationToken">A token to monitor for cancellation requests.</param>
-    /// <returns>A task that represents the asynchronous operation, containing a stream of responses.</returns>
-    new Task<Result<IAsyncEnumerable<TResponse>>> HandleAsync(
+    /// <returns>A task that represents the asynchronous operation, containing a paged stream of responses.</returns>
+    new Task<Result<IAsyncPagedEnumerable<TResponse>>> HandleAsync(
         TRequest request,
         CancellationToken cancellationToken = default);
 

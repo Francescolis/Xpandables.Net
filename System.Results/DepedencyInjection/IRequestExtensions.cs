@@ -103,7 +103,9 @@ public static class IRequestExtensions
                                 || i.GetGenericTypeDefinition() == typeof(IRequestContextHandler<,>)
                                 || i.GetGenericTypeDefinition() == typeof(IRequestPostHandler<>)
                                 || i.GetGenericTypeDefinition() == typeof(IStreamRequestHandler<,>)
+                                || i.GetGenericTypeDefinition() == typeof(IStreamPagedRequestHandler<,>)
                                 || i.GetGenericTypeDefinition() == typeof(IStreamRequestContextHandler<,>)
+                                || i.GetGenericTypeDefinition() == typeof(IStreamPagedRequestContextHandler<,>)
                                 || i.GetGenericTypeDefinition() == typeof(IRequestPreHandler<>)))))
                 .Select(type => new HandlerType(
                     type,
@@ -114,7 +116,9 @@ public static class IRequestExtensions
                                     || i.GetGenericTypeDefinition() == typeof(IRequestContextHandler<,>)
                                     || i.GetGenericTypeDefinition() == typeof(IRequestPostHandler<>)
                                     || i.GetGenericTypeDefinition() == typeof(IStreamRequestHandler<,>)
+                                    || i.GetGenericTypeDefinition() == typeof(IStreamPagedRequestHandler<,>)
                                     || i.GetGenericTypeDefinition() == typeof(IStreamRequestContextHandler<,>)
+                                    || i.GetGenericTypeDefinition() == typeof(IStreamPagedRequestContextHandler<,>)
                                     || i.GetGenericTypeDefinition() == typeof(IRequestPreHandler<>)))));
 
             foreach (HandlerType handlerType in handlerTypes)
