@@ -53,6 +53,34 @@ public static class PrimitivesExtensions
         }
 
         /// <summary>
+        /// Adds the specified cache type resolver implementation to the service collection as a singleton.
+        /// </summary>
+        /// <remarks>If an ICacheTypeResolver service is already registered, this method does not
+        /// overwrite the existing registration.</remarks>
+        /// <param name="cacheTypeResolver">The type that implements the ICacheTypeResolver interface. Must have a public constructor.</param>
+        /// <returns>The IServiceCollection instance for chaining additional configuration calls.</returns>
+        public IServiceCollection AddXCacheTypeResolver([DynamicallyAccessedMembers(DynamicallyAccessedMemberTypes.PublicConstructors)] Type cacheTypeResolver)
+        {
+            ArgumentNullException.ThrowIfNull(services);
+            services.TryAddSingleton(typeof(ICacheTypeResolver), cacheTypeResolver);
+            return services;
+        }
+
+        /// <summary>
+        /// Adds the default implementation of the ICacheTypeResolver service to the service collection.
+        /// </summary>
+        /// <remarks>This method registers CacheTypeResolver as a singleton service for the
+        /// ICacheTypeResolver interface if it has not already been registered. Call this method during application
+        /// startup to enable type resolution for caching scenarios.</remarks>
+        /// <returns>The IServiceCollection instance with the ICacheTypeResolver service registered.</returns>
+        public IServiceCollection AddXCacheTypeResolver()
+        {
+            ArgumentNullException.ThrowIfNull(services);
+            services.TryAddSingleton<ICacheTypeResolver, CacheTypeResolver>();
+            return services;
+        }
+
+        /// <summary>
         /// Adds the default cache type resolver to the service collection.
         /// </summary>
         /// <param name="assemblies">An optional array of assemblies to register for type resolution. If no assemblies are provided, all non-legacy
@@ -65,12 +93,8 @@ public static class PrimitivesExtensions
         public IServiceCollection AddXCacheTypeResolver(params Assembly[] assemblies)
         {
             ArgumentNullException.ThrowIfNull(services);
-#pragma warning disable CA2000 // Dispose objects before losing scope
-            var resolver = new CacheTypeResolver();
-#pragma warning restore CA2000 // Dispose objects before losing scope
-            resolver.RegisterAssemblies(assemblies);
-
-            services.TryAddSingleton<ICacheTypeResolver>(resolver);
+            services.AddXCacheTypeResolver();
+            CacheTypeResolver.RegisterAssemblies(assemblies);
             return services;
         }
     }

@@ -27,17 +27,25 @@ namespace System.Cache;
 /// application-specific assemblies. Type lookups are cached for 30 minutes to reduce repeated reflection overhead. This
 /// class is thread-safe and intended for use in scenarios where type resolution by name is required, such as
 /// deserialization or dynamic type loading.</remarks>
-/// <remarks>
-/// Initializes a new instance of the CacheTypeResolver class.
-/// </remarks>
-/// <param name="memoryCache">An optional memory cache instance to use for caching type lookups. If not provided, a new
-/// instance with default settings will be created.</param>
-public sealed class CacheTypeResolver(MemoryAwareCache<string, Type>? memoryCache = default) : Disposable, ICacheTypeResolver
+public sealed class CacheTypeResolver : Disposable, ICacheTypeResolver
 {
-    private readonly MemoryAwareCache<string, Type> _memoryCache = memoryCache ?? new(TimeSpan.Zero, TimeSpan.Zero);
-    private Assembly[] _assemblies = [];
+    private static MemoryAwareCache<string, Type> _memoryCache = new(TimeSpan.Zero, TimeSpan.Zero);
+    private static Assembly[] _assemblies = [];
     private static readonly string[] _legacyPrefixes =
         ["System.", "Microsoft.", "netstandard", "WindowsBase", "PresentationCore", "PresentationFramework", "Xpandables"];
+
+    /// <summary>
+    /// Initializes a new instance of the CacheTypeResolver class using the specified memory cache.
+    /// </summary>
+    /// <param name="memoryCache">An optional memory-aware cache to use for storing type mappings. 
+    /// If null, a default cache is used.</param>
+    public CacheTypeResolver(MemoryAwareCache<string, Type>? memoryCache = default)
+    {
+        if (memoryCache is not null)
+        {
+            _memoryCache = memoryCache;
+        }
+    }
 
     /// <summary>
     /// Registers the specified assemblies for type resolution. If no assemblies are provided, registers all assemblies
@@ -48,7 +56,7 @@ public sealed class CacheTypeResolver(MemoryAwareCache<string, Type>? memoryCach
     /// <param name="assemblies">An array of assemblies to register for type resolution. If the array is empty or not specified, all non-legacy
     /// assemblies in the current application domain are registered.</param>
     [RequiresUnreferencedCode("Uses reflection to load types from assemblies.")]
-    public void RegisterAssemblies(params Assembly[] assemblies)
+    public static void RegisterAssemblies(params Assembly[] assemblies)
     {
         RegisterAssemblies(_ => true, assemblies);
     }
@@ -66,7 +74,7 @@ public sealed class CacheTypeResolver(MemoryAwareCache<string, Type>? memoryCach
     /// <param name="assemblies">An array of assemblies from which types will be considered for registration. If no assemblies are specified, all
     /// currently loaded assemblies in the application domain are used.</param>
     [RequiresUnreferencedCode("Uses reflection to load types from assemblies.")]
-    public void RegisterAssemblies(Predicate<Type> predicate, params Assembly[] assemblies)
+    public static void RegisterAssemblies(Predicate<Type> predicate, params Assembly[] assemblies)
     {
         ArgumentNullException.ThrowIfNull(predicate);
 

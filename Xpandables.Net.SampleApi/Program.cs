@@ -1,3 +1,5 @@
+using System.Events.Data.Configurations;
+
 using Microsoft.AspNetCore.Http.Json;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore.Infrastructure;
@@ -6,7 +8,6 @@ using Microsoft.OpenApi;
 using Swashbuckle.AspNetCore.SwaggerUI;
 
 using Xpandables.Net.SampleApi.BankAccounts.Accounts;
-using Xpandables.Net.SampleApi.EventStorage;
 using Xpandables.Net.SampleApi.ReadStorage;
 
 var builder = WebApplication.CreateBuilder(args);
@@ -34,7 +35,7 @@ builder.Services.AddXEventStoreDataContext(options =>
         .EnableDetailedErrors()
         .EnableSensitiveDataLogging()
         .EnableServiceProviderCaching()
-        .ReplaceService<IModelCustomizer, EventStoreModelCustomizer>());
+        .ReplaceService<IModelCustomizer, EventStoreSqlServerModelCustomizer>());
 
 builder.Services.AddXOutboxStoreDataContext(options =>
     options
@@ -47,7 +48,7 @@ builder.Services.AddXOutboxStoreDataContext(options =>
         .EnableDetailedErrors()
         .EnableSensitiveDataLogging()
         .EnableServiceProviderCaching()
-        .ReplaceService<IModelCustomizer, OutboxStoreModelCustomizer>());
+        .ReplaceService<IModelCustomizer, OutboxStoreSqlServerModelCustomizer>());
 
 builder.Services.AddXDataContext<BankAccountDataContext>(options =>
     options

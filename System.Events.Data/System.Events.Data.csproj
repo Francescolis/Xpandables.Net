@@ -91,6 +91,7 @@
 	</ItemGroup>
 
 	<ItemGroup>
+	  <ProjectReference Include="..\System.Entities.Data\System.Entities.Data.csproj" />
 	  <ProjectReference Include="..\System.Events\System.Events.csproj" />
 	</ItemGroup>
 

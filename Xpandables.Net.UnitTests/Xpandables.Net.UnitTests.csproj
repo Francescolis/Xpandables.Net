@@ -13,6 +13,14 @@
 	</PropertyGroup>
 
 	<ItemGroup>
+	  <Content Include="appsettings.json">
+	    <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
+	    <ExcludeFromSingleFile>true</ExcludeFromSingleFile>
+	    <CopyToPublishDirectory>PreserveNewest</CopyToPublishDirectory>
+	  </Content>
+	</ItemGroup>
+
+	<ItemGroup>
 		<PackageReference Include="coverlet.collector" Version="6.0.4" />
 		<PackageReference Include="FluentAssertions" Version="8.8.0" />
 		<PackageReference Include="Microsoft.NET.Test.Sdk" Version="18.0.1" />
@@ -23,6 +31,7 @@
 			<IncludeAssets>runtime; build; native; contentfiles; analyzers; buildtransitive</IncludeAssets>
 		</PackageReference>
 		<PackageReference Include="Microsoft.EntityFrameworkCore.Sqlite" Version="10.0.1" />
+		<PackageReference Include="Microsoft.EntityFrameworkCore.SqlServer" Version="10.0.1" />
 	</ItemGroup>
 
 	<ItemGroup>
@@ -35,6 +44,8 @@
 	  <ProjectReference Include="..\System.AsyncPaged\System.AsyncPaged.csproj" />
 	  <ProjectReference Include="..\System.Primitives\System.Primitives.csproj" />
 	  <ProjectReference Include="..\System.Rests\System.Rests.csproj" />
+	  <ProjectReference Include="..\System.Events\System.Events.csproj" />
+	  <ProjectReference Include="..\System.Events.Data\System.Events.Data.csproj" />
 	</ItemGroup>
 
 	<ItemGroup>

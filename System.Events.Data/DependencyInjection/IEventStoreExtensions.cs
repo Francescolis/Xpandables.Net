@@ -15,6 +15,7 @@
  *
 ********************************************************************************/
 using System.Diagnostics.CodeAnalysis;
+using System.Entities.Data;
 using System.Events.Data;
 using System.Events.Domain;
 using System.Events.Integration;
@@ -52,7 +53,7 @@ public static class IEventStoreExtensions
             Action<DbContextOptionsBuilder>? optionsAction = null,
             ServiceLifetime contextLifetime = ServiceLifetime.Scoped,
             ServiceLifetime optionsLifetime = ServiceLifetime.Scoped)
-            where TDataContext : EventDataContext =>
+            where TDataContext : DataContext =>
             services.AddDbContext<TDataContext>(
                 optionsAction, contextLifetime, optionsLifetime);
 
@@ -103,8 +104,8 @@ public static class IEventStoreExtensions
         /// Adds the EventStore service to the specified <see cref="IServiceCollection"/>.
         /// </summary>
         /// <remarks>This method registers the EventStore service with the dependency injection container,  using
-        /// the specified data context type. The data context type must inherit from <see cref="EventDataContext"/>.</remarks>
-        /// <typeparam name="TEventStore">The type of the data context used by the event store. Must derive from <see cref="EventDataContext"/>.</typeparam>
+        /// the specified data context type. The data context type must inherit from <see cref="DataContext"/>.</remarks>
+        /// <typeparam name="TEventStore">The type of the data context used by the event store. Must derive from <see cref="DataContext"/>.</typeparam>
         /// <returns>The updated <see cref="IServiceCollection"/> instance.</returns>
         public IServiceCollection AddXEventStore<TEventStore>()
             where TEventStore : class, IEventStore

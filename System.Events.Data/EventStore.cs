@@ -58,8 +58,6 @@ public sealed class EventStore : IEventStore
         _snapshotConverter = converterFactory.GetEventConverter<ISnapshotEvent>();
     }
 
-
-
     ///<inheritdoc/>
     public async Task<AppendResult> AppendToStreamAsync(
         AppendRequest request,
