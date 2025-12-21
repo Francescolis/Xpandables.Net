@@ -17,7 +17,6 @@
 using System.Diagnostics.CodeAnalysis;
 using System.IO.Pipelines;
 using System.Linq.Expressions;
-using System.Net.Http.Json;
 using System.Reflection;
 using System.Runtime.CompilerServices;
 using System.Text.Json.Serialization;
@@ -393,7 +392,7 @@ public static class JsonSerializerExtensions
         JsonSerializerOptions? options = null,
         CancellationToken cancellationToken = default)
     {
-        var jsonTypeInfo = (JsonTypeInfo<T>)HttpContentExtensions.GetJsonTypeInfo(typeof(T), options);
+        var jsonTypeInfo = (JsonTypeInfo<T>)JsonSerializer.GetJsonTypeInfo(typeof(T), options);
         return SerializeAsyncPagedCoreGenericAsync(
             output,
             paged,
@@ -410,7 +409,7 @@ public static class JsonSerializerExtensions
         CancellationToken cancellationToken = default)
     {
         var method = SerializeAsyncPagedMethod.MakeGenericMethod(paged.GetArgumentType());
-        var jsonTypeInfo = HttpContentExtensions.GetJsonTypeInfo(paged.GetArgumentType(), options);
+        var jsonTypeInfo = JsonSerializer.GetJsonTypeInfo(paged.GetArgumentType(), options);
         var task = (Task)method.Invoke(null, [output, paged, jsonTypeInfo, cancellationToken])!;
         return task;
     }

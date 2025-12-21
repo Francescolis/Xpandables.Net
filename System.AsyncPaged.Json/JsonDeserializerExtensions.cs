@@ -17,7 +17,6 @@
 using System.Buffers;
 using System.Diagnostics.CodeAnalysis;
 using System.IO.Pipelines;
-using System.Net.Http.Json;
 using System.Runtime.CompilerServices;
 using System.Text.Json.Serialization.Metadata;
 
@@ -95,7 +94,7 @@ public static class JsonDeserializerExtensions
             ArgumentNullException.ThrowIfNull(utf8Json);
             ArgumentNullException.ThrowIfNull(options);
 
-            JsonTypeInfo<TValue> jsonTypeInfo = (JsonTypeInfo<TValue>)HttpContentExtensions.GetJsonTypeInfo(typeof(TValue), options);
+            JsonTypeInfo<TValue> jsonTypeInfo = (JsonTypeInfo<TValue>)JsonSerializer.GetJsonTypeInfo(typeof(TValue), options);
             return DeserializeAsyncPagedEnumerableCore(utf8Json, jsonTypeInfo, topLovelValues, strategy, cancellationToken);
         }
 
@@ -209,7 +208,7 @@ public static class JsonDeserializerExtensions
             ArgumentNullException.ThrowIfNull(utf8Json);
             ArgumentNullException.ThrowIfNull(options);
 
-            JsonTypeInfo<TValue> jsonTypeInfo = (JsonTypeInfo<TValue>)HttpContentExtensions.GetJsonTypeInfo(typeof(TValue), options);
+            JsonTypeInfo<TValue> jsonTypeInfo = (JsonTypeInfo<TValue>)JsonSerializer.GetJsonTypeInfo(typeof(TValue), options);
             return DeserializeAsyncPagedEnumerableCore(utf8Json, jsonTypeInfo, topLovelValues, strategy, cancellationToken);
         }
 

@@ -14,8 +14,10 @@
  * limitations under the License.
  *
 ********************************************************************************/
+using System.Diagnostics.CodeAnalysis;
 using System.Events.Domain;
 using System.Runtime.CompilerServices;
+using System.Text.Json.Serialization.Metadata;
 
 using Microsoft.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore.Storage;
@@ -59,6 +61,8 @@ public sealed class EventStore : IEventStore
     }
 
     ///<inheritdoc/>
+    [UnconditionalSuppressMessage("Trimming", "IL2026:Members annotated with 'RequiresUnreferencedCodeAttribute' require dynamic access otherwise can break functionality when trimming application code", Justification = "<Pending>")]
+    [UnconditionalSuppressMessage("AOT", "IL3050:Calling members annotated with 'RequiresDynamicCodeAttribute' may break functionality when AOT compiling.", Justification = "<Pending>")]
     public async Task<AppendResult> AppendToStreamAsync(
         AppendRequest request,
         CancellationToken cancellationToken = default)
@@ -90,7 +94,8 @@ public sealed class EventStore : IEventStore
                 .WithStreamVersion(next)
                 .WithStreamName(@event.StreamName);
 
-            var entity = (EntityDomainEvent)_domainConveter.ConvertEventToEntity(nextEvent, EventConverter.SerializerOptions);
+            JsonTypeInfo typeInfo = EventConverter.ResolveEventJsonTypeInfo(nextEvent.GetType(), EventConverter.SerializerOptions);
+            var entity = (EntityDomainEvent)_domainConveter.ConvertEventToEntity(nextEvent, typeInfo);
             entities.Add(entity);
         }
 
@@ -101,13 +106,16 @@ public sealed class EventStore : IEventStore
     }
 
     ///<inheritdoc/>
+    [UnconditionalSuppressMessage("Trimming", "IL2026:Members annotated with 'RequiresUnreferencedCodeAttribute' require dynamic access otherwise can break functionality when trimming application code", Justification = "<Pending>")]
+    [UnconditionalSuppressMessage("AOT", "IL3050:Calling members annotated with 'RequiresDynamicCodeAttribute' may break functionality when AOT compiling.", Justification = "<Pending>")]
     public async Task AppendSnapshotAsync(
         ISnapshotEvent snapshotEvent,
         CancellationToken cancellationToken = default)
     {
         ArgumentNullException.ThrowIfNull(snapshotEvent);
 
-        var entity = (EntitySnapshotEvent)_snapshotConverter.ConvertEventToEntity(snapshotEvent, EventConverter.SerializerOptions);
+        JsonTypeInfo typeInfo = EventConverter.ResolveEventJsonTypeInfo(snapshotEvent.GetType(), EventConverter.SerializerOptions);
+        var entity = (EntitySnapshotEvent)_snapshotConverter.ConvertEventToEntity(snapshotEvent, typeInfo);
 
         await _db.AddAsync(entity, cancellationToken).ConfigureAwait(false);
         // defer SaveChanges to FlushEventsAsync
@@ -147,6 +155,8 @@ public sealed class EventStore : IEventStore
     }
 
     ///<inheritdoc/>
+    [UnconditionalSuppressMessage("Trimming", "IL2026:Members annotated with 'RequiresUnreferencedCodeAttribute' require dynamic access otherwise can break functionality when trimming application code", Justification = "<Pending>")]
+    [UnconditionalSuppressMessage("AOT", "IL3050:Calling members annotated with 'RequiresDynamicCodeAttribute' may break functionality when AOT compiling.", Justification = "<Pending>")]
     public async Task<EnvelopeResult?> GetLatestSnapshotAsync(
         Guid ownerId,
         CancellationToken cancellationToken = default)
@@ -179,6 +189,8 @@ public sealed class EventStore : IEventStore
         await GetStreamVersionCoreAsync(streamId, cancellationToken).ConfigureAwait(false);
 
     ///<inheritdoc/>
+    [UnconditionalSuppressMessage("Trimming", "IL2026:Members annotated with 'RequiresUnreferencedCodeAttribute' require dynamic access otherwise can break functionality when trimming application code", Justification = "<Pending>")]
+    [UnconditionalSuppressMessage("AOT", "IL3050:Calling members annotated with 'RequiresDynamicCodeAttribute' may break functionality when AOT compiling.", Justification = "<Pending>")]
     public async IAsyncEnumerable<EnvelopeResult> ReadAllStreamsAsync(
         ReadAllStreamsRequest request,
         [EnumeratorCancellation] CancellationToken cancellationToken = default)
@@ -206,6 +218,8 @@ public sealed class EventStore : IEventStore
     }
 
     ///<inheritdoc/>
+    [UnconditionalSuppressMessage("Trimming", "IL2026:Members annotated with 'RequiresUnreferencedCodeAttribute' require dynamic access otherwise can break functionality when trimming application code", Justification = "<Pending>")]
+    [UnconditionalSuppressMessage("AOT", "IL3050:Calling members annotated with 'RequiresDynamicCodeAttribute' may break functionality when AOT compiling.", Justification = "<Pending>")]
     public async IAsyncEnumerable<EnvelopeResult> ReadStreamAsync(
         ReadStreamRequest request,
         [EnumeratorCancellation] CancellationToken cancellationToken = default)
@@ -362,6 +376,8 @@ public sealed class EventStore : IEventStore
             _subscriptionTask = RunSubscriptionAsync();
         }
 
+        [UnconditionalSuppressMessage("Trimming", "IL2026:Members annotated with 'RequiresUnreferencedCodeAttribute' require dynamic access otherwise can break functionality when trimming application code", Justification = "<Pending>")]
+        [UnconditionalSuppressMessage("AOT", "IL3050:Calling members annotated with 'RequiresDynamicCodeAttribute' may break functionality when AOT compiling.", Justification = "<Pending>")]
         private async Task RunSubscriptionAsync()
         {
             long lastProcessedVersion = -1;
@@ -435,6 +451,8 @@ public sealed class EventStore : IEventStore
             _subscriptionTask = RunSubscriptionAsync();
         }
 
+        [UnconditionalSuppressMessage("Trimming", "IL2026:Members annotated with 'RequiresUnreferencedCodeAttribute' require dynamic access otherwise can break functionality when trimming application code", Justification = "<Pending>")]
+        [UnconditionalSuppressMessage("AOT", "IL3050:Calling members annotated with 'RequiresDynamicCodeAttribute' may break functionality when AOT compiling.", Justification = "<Pending>")]
         private async Task RunSubscriptionAsync()
         {
             long lastProcessedSequence = 0;

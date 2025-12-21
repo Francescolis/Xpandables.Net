@@ -39,18 +39,18 @@ public sealed class EventServiceCollectionExtensionsTests
         using ServiceProvider provider = BuildServiceProvider(sqliteDirectory);
 
         // Act
-        //using IServiceScope scope = provider.CreateScope();
-        EventStoreDataContext eventDb = provider.GetRequiredService<EventStoreDataContext>();
-        OutboxStoreDataContext outboxDb = provider.GetRequiredService<OutboxStoreDataContext>();
+        using IServiceScope scope = provider.CreateScope();
+        EventStoreDataContext eventDb = scope.ServiceProvider.GetRequiredService<EventStoreDataContext>();
+        OutboxStoreDataContext outboxDb = scope.ServiceProvider.GetRequiredService<OutboxStoreDataContext>();
         eventDb.Database.EnsureCreated();
         outboxDb.Database.EnsureCreated();
 
         // Assert
-        var aggregateStore = provider.GetRequiredService<IAggregateStore<TestBankAccountAggregate>>();
+        var aggregateStore = scope.ServiceProvider.GetRequiredService<IAggregateStore<TestBankAccountAggregate>>();
         aggregateStore.Should().NotBeNull();
 
-        var publisher = provider.GetRequiredService<IEventPublisher>();
-        var subscriber = provider.GetRequiredService<IEventSubscriber>();
+        var publisher = scope.ServiceProvider.GetRequiredService<IEventPublisher>();
+        var subscriber = scope.ServiceProvider.GetRequiredService<IEventSubscriber>();
         publisher.Should().BeSameAs(subscriber);
 
         provider.GetServices<IEventHandler<MoneyDeposited>>().Should().ContainSingle();

@@ -24,7 +24,7 @@ public sealed class BankAccount : AggregateStateContext<BankAccountState>, IAggr
             InitialBalance = initialBalance
         };
 
-        bankAccount.PushEvent(@event);
+        bankAccount.AppendEvent(@event);
         return bankAccount;
     }
     private BankAccount() : base(new BankAccountStatePending())

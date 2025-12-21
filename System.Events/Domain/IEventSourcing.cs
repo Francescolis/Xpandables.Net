@@ -58,25 +58,25 @@ public interface IEventSourcing
     void LoadFromHistory(IDomainEvent domainEvent);
 
     /// <summary>
-    /// Publishes the specified domain event to the event stream.
+    /// Appends a domain event to the event stream.
     /// </summary>
-    /// <param name="domainEvent">The domain event to be published. Cannot be null.</param>
-    void PushEvent(IDomainEvent domainEvent);
+    /// <param name="domainEvent">The domain event to be appended. Cannot be null.</param>
+    void AppendEvent(IDomainEvent domainEvent);
 
     /// <summary>
-    /// Publishes a versioning domain event to the event stream.
+    /// Appends a versioning domain event to the event stream.
     /// </summary>
-    /// <param name="domainEvent">The domain event to be published. Cannot be null.</param>
-    void PushVersioningEvent(IDomainEvent domainEvent);
+    /// <param name="domainEvent">The domain event to be appended. Cannot be null.</param>
+    void AppendVersioningEvent(IDomainEvent domainEvent);
 
     /// <summary>
-    /// Pushes a versioning event to the event stream using the specified event factory.
+    /// Appends a versioning event to the event stream using the specified event factory.
     /// </summary>
     /// <remarks>The event factory is invoked with the next available version number for the event stream. Use
     /// this method to ensure that versioning is handled consistently when creating and pushing domain events.</remarks>
     /// <typeparam name="TEvent">The type of domain event to be created and pushed. Must implement IDomainEvent and cannot be null.</typeparam>
-    /// <param name="eventFactory">A function that takes the next version number as a parameter and returns an instance of the event to be pushed.
+    /// <param name="eventFactory">A function that takes the next version number as a parameter and returns an instance of the event to be appended.
     /// Cannot be null.</param>
-    void PushVersioningEvent<TEvent>(Func<long, TEvent> eventFactory)
+    void AppendVersioningEvent<TEvent>(Func<long, TEvent> eventFactory)
         where TEvent : notnull, IDomainEvent;
 }

@@ -85,4 +85,8 @@
 		</None>
 	</ItemGroup>
 
+	<ItemGroup>
+	  <ProjectReference Include="..\System.Primitives\System.Primitives.csproj" />
+	</ItemGroup>
+
 </Project>

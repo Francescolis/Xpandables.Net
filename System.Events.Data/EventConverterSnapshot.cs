@@ -15,8 +15,10 @@
  *
 ********************************************************************************/
 using System.Cache;
+using System.Diagnostics.CodeAnalysis;
 using System.Events.Domain;
 using System.Text.Json;
+using System.Text.Json.Serialization.Metadata;
 
 namespace System.Events.Data;
 
@@ -35,59 +37,79 @@ public sealed class EventConverterSnapshot(ICacheTypeResolver cacheTypeResolver)
         return EventType.IsAssignableFrom(type);
     }
 
-    /// <summary>
-    /// Converts the specified entity event instance to an event representation.
-    /// </summary>
-    /// <param name="entityInstance">The entity event instance to convert. Cannot be null.</param>
-    /// <param name="serializerOptions">The serializer options to use when converting the entity.</param>
-    /// <returns>An event representation of the specified entity event instance.</returns>
+    /// <inheritdoc/>
+    public sealed override IEntityEvent ConvertEventToEntity(IEvent eventInstance, JsonTypeInfo typeInfo)
+    {
+        ArgumentNullException.ThrowIfNull(eventInstance);
+        ArgumentNullException.ThrowIfNull(typeInfo);
+
+        return ConvertEventToEntityCore(eventInstance, () => SerializeEventToJsonDocument(eventInstance, typeInfo));
+    }
+
+
+    /// <inheritdoc/>
+    [RequiresUnreferencedCode("Serialization may require types that are trimmed.")]
+    [RequiresDynamicCode("Serialization may require types that are generated dynamically.")]
+    public sealed override IEntityEvent ConvertEventToEntity(IEvent eventInstance, JsonSerializerOptions? serializerOptions = default)
+    {
+        ArgumentNullException.ThrowIfNull(eventInstance);
+        return ConvertEventToEntityCore(eventInstance, () => SerializeEventToJsonDocument(eventInstance, serializerOptions));
+    }
+
+    /// <inheritdoc/>
+    public sealed override IEvent ConvertEntityToEvent(IEntityEvent entityInstance, JsonTypeInfo typeInfo)
+    {
+        ArgumentNullException.ThrowIfNull(entityInstance);
+        ArgumentNullException.ThrowIfNull(typeInfo);
+
+        return ConvertEntityToEventCore(() => DeserializeEntityToEvent(entityInstance, typeInfo));
+    }
+
+    /// <inheritdoc/>
+    [RequiresUnreferencedCode("Serialization may require types that are trimmed.")]
+    [RequiresDynamicCode("Serialization may require types that are generated dynamically.")]
     public sealed override IEvent ConvertEntityToEvent(IEntityEvent entityInstance, JsonSerializerOptions? serializerOptions = default)
     {
         ArgumentNullException.ThrowIfNull(entityInstance);
 
-        try
-        {
-            IEvent @event = DeserializeEntityToEvent(entityInstance, serializerOptions);
-
-            return (ISnapshotEvent)@event;
-        }
-        catch (Exception exception)
-            when (exception is not InvalidOperationException)
-        {
-            throw new InvalidOperationException(
-                $"Failed to convert the event entity to {EventType.Name}. " +
-                $"See inner exception for details.", exception);
-        }
+        return ConvertEntityToEventCore(() => DeserializeEntityToEvent(entityInstance, serializerOptions));
     }
 
-    /// <summary>
-    /// Converts the specified event instance to an entity event representation.
-    /// </summary>
-    /// <param name="eventInstance">The event instance to convert. Cannot be null.</param>
-    /// <param name="serializerOptions">JSON serializer options to use during conversion.</param>
-    /// <returns>An <see cref="IEntityEvent"/> that represents the converted event.</returns>
-
-    public sealed override IEntityEvent ConvertEventToEntity(IEvent eventInstance, JsonSerializerOptions? serializerOptions = default)
+    private static EntitySnapshotEvent ConvertEventToEntityCore(IEvent @event, Func<JsonDocument> documentFactory)
     {
-        ArgumentNullException.ThrowIfNull(eventInstance);
-
         try
         {
-            ISnapshotEvent snapshot = (ISnapshotEvent)eventInstance;
+            ISnapshotEvent snapshot = (ISnapshotEvent)@event;
 
             return new EntitySnapshotEvent
             {
                 KeyId = snapshot.EventId,
                 OwnerId = snapshot.OwnerId,
                 EventName = snapshot.GetEventName(),
-                EventData = SerializeEventToJsonDocument(snapshot, serializerOptions)
+                EventData = documentFactory()
             };
         }
         catch (Exception exception)
             when (exception is not InvalidOperationException)
         {
             throw new InvalidOperationException(
-                $"Failed to convert the event {eventInstance.GetType().Name} to entity. " +
+                $"Failed to convert the event {@event.GetType().Name} to entity. " +
+                $"See inner exception for details.", exception);
+        }
+    }
+
+    private static IEvent ConvertEntityToEventCore(Func<IEvent> eventFactory)
+    {
+        try
+        {
+            IEvent @event = eventFactory();
+            return (ISnapshotEvent)@event;
+        }
+        catch (Exception exception)
+            when (exception is not InvalidOperationException)
+        {
+            throw new InvalidOperationException(
+                $"Failed to convert the event entity. " +
                 $"See inner exception for details.", exception);
         }
     }

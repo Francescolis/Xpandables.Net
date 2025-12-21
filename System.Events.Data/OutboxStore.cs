@@ -14,6 +14,7 @@
  * limitations under the License.
  *
 ********************************************************************************/
+using System.Diagnostics.CodeAnalysis;
 using System.Events.Integration;
 
 using Microsoft.EntityFrameworkCore;
@@ -36,6 +37,8 @@ public sealed class OutboxStore(OutboxStoreDataContext context, IEventConverterF
         ?? throw new ArgumentNullException(nameof(context));
 
     /// <inheritdoc />
+    [UnconditionalSuppressMessage("Trimming", "IL2026:Members annotated with 'RequiresUnreferencedCodeAttribute' require dynamic access otherwise can break functionality when trimming application code", Justification = "<Pending>")]
+    [UnconditionalSuppressMessage("AOT", "IL3050:Calling members annotated with 'RequiresDynamicCodeAttribute' may break functionality when AOT compiling.", Justification = "<Pending>")]
     public async Task EnqueueAsync(
         CancellationToken cancellationToken,
         params IIntegrationEvent[] events)
@@ -58,6 +61,8 @@ public sealed class OutboxStore(OutboxStoreDataContext context, IEventConverterF
     }
 
     /// <inheritdoc />
+    [UnconditionalSuppressMessage("Trimming", "IL2026:Members annotated with 'RequiresUnreferencedCodeAttribute' require dynamic access otherwise can break functionality when trimming application code", Justification = "<Pending>")]
+    [UnconditionalSuppressMessage("AOT", "IL3050:Calling members annotated with 'RequiresDynamicCodeAttribute' may break functionality when AOT compiling.", Justification = "<Pending>")]
     public async Task<IReadOnlyList<IIntegrationEvent>> DequeueAsync(
         CancellationToken cancellationToken,
         int maxEvents = 10,

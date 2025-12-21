@@ -25,7 +25,7 @@ public sealed class BankAccountStateActive : BankAccountState
             Description = description
         };
 
-        Context.PushEvent(@event);
+        Context.AppendEvent(@event);
     }
 
     public override void Withdraw(decimal amount, string curreny, string description)
@@ -54,6 +54,6 @@ public sealed class BankAccountStateActive : BankAccountState
             Description = description
         };
 
-        Context.PushEvent(@event);
+        Context.AppendEvent(@event);
     }
 }

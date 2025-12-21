@@ -105,7 +105,7 @@ public static class HttpContentExtensions
         PaginationStrategy strategy,
         CancellationToken cancellationToken)
     {
-        var jsonTypeInfo = (JsonTypeInfo<TValue>)GetJsonTypeInfo(typeof(TValue), options);
+        var jsonTypeInfo = (JsonTypeInfo<TValue>)JsonSerializer.GetJsonTypeInfo(typeof(TValue), options);
         return ReadFromJsonAsAsyncPagedEnumerableCore(content, jsonTypeInfo, strategy, cancellationToken);
     }
 
@@ -160,19 +160,6 @@ public static class HttpContentExtensions
 
     private static Stream GetTranscodingStream(Stream contentStream, Encoding sourceEncoding) =>
         Encoding.CreateTranscodingStream(contentStream, innerStreamEncoding: sourceEncoding, outerStreamEncoding: Encoding.UTF8);
-
-    [RequiresUnreferencedCode("Calls System.Text.Json.JsonSerializerOptions.Web")]
-    [RequiresDynamicCode("Calls System.Text.Json.JsonSerializerOptions.Web")]
-    internal static JsonTypeInfo GetJsonTypeInfo(Type type, JsonSerializerOptions? options)
-    {
-        Debug.Assert(type is not null);
-
-        // Resolves JsonTypeInfo metadata using the appropriate JsonSerializerOptions configuration,
-        // following the semantics of the JsonSerializer reflection methods.
-        options ??= JsonSerializerOptions.Web;
-        options.MakeReadOnly(populateMissingResolver: true);
-        return options.GetTypeInfo(type);
-    }
 
     internal const string DefaultMediaType = "application/json; charset=utf-8";
 

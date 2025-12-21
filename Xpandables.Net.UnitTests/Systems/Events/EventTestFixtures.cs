@@ -33,7 +33,7 @@ internal sealed class TestBankAccountAggregate : Aggregate, IAggregateFactory<Te
             Amount = openingBalance
         };
 
-        PushEvent(@event);
+        AppendEvent(@event);
     }
 
     public void Deposit(decimal amount)
@@ -49,7 +49,7 @@ internal sealed class TestBankAccountAggregate : Aggregate, IAggregateFactory<Te
             Amount = amount
         };
 
-        PushEvent(@event);
+        AppendEvent(@event);
     }
 
     private void Apply(AccountOpened @event)
@@ -61,13 +61,13 @@ internal sealed class TestBankAccountAggregate : Aggregate, IAggregateFactory<Te
     private void Apply(MoneyDeposited @event) => Balance += @event.Amount;
 }
 
-internal sealed record AccountOpened : DomainEvent
+public sealed record AccountOpened : DomainEvent
 {
     public required string OwnerName { get; init; }
     public required decimal Amount { get; init; }
 }
 
-internal sealed record MoneyDeposited : DomainEvent
+public sealed record MoneyDeposited : DomainEvent
 {
     public required decimal Amount { get; init; }
 }

@@ -111,14 +111,14 @@ public abstract class Aggregate : IAggregate
     public void MarkEventsAsCommitted() => _uncommittedEvents.Clear();
 
     /// <inheritdoc />
-    public void PushEvent(IDomainEvent domainEvent)
+    public void AppendEvent(IDomainEvent domainEvent)
     {
         ArgumentNullException.ThrowIfNull(domainEvent);
-        PushVersioningEvent(domainEvent);
+        AppendVersioningEvent(domainEvent);
     }
 
     /// <inheritdoc />
-    public void PushVersioningEvent(IDomainEvent domainEvent)
+    public void AppendVersioningEvent(IDomainEvent domainEvent)
     {
         ArgumentNullException.ThrowIfNull(domainEvent);
 
@@ -147,7 +147,7 @@ public abstract class Aggregate : IAggregate
     }
 
     /// <inheritdoc />
-    public void PushVersioningEvent<TEvent>(Func<long, TEvent> eventFactory)
+    public void AppendVersioningEvent<TEvent>(Func<long, TEvent> eventFactory)
         where TEvent : notnull, IDomainEvent
     {
         ArgumentNullException.ThrowIfNull(eventFactory);

@@ -15,9 +15,11 @@
  *
 ********************************************************************************/
 using System.Collections.Frozen;
+using System.Diagnostics.CodeAnalysis;
 using System.Events.Domain;
 using System.Events.Integration;
 using System.Text.Json;
+using System.Text.Json.Serialization.Metadata;
 
 namespace System.Events.Data;
 
@@ -52,7 +54,17 @@ public sealed class EventConverterFactory(IEnumerable<IEventConverter> converter
         return GetEventConverter(eventType);
     }
 
+    /// <inheritdoc/>
+    public IEntityEvent ConvertEventToEntity(IEvent eventInstance, JsonTypeInfo typeInfo)
+    {
+        ArgumentNullException.ThrowIfNull(eventInstance);
+        IEventConverter converter = GetEventConverter(eventInstance.GetType());
+        return converter.ConvertEventToEntity(eventInstance, typeInfo);
+    }
+
     /// <inheritdoc />
+    [RequiresUnreferencedCode("Serialization may require types that are trimmed.")]
+    [RequiresDynamicCode("Serialization may require types that are generated dynamically.")]
     public IEntityEvent ConvertEventToEntity(IEvent eventInstance, JsonSerializerOptions? serializerOptions = default)
     {
         ArgumentNullException.ThrowIfNull(eventInstance);
@@ -60,7 +72,17 @@ public sealed class EventConverterFactory(IEnumerable<IEventConverter> converter
         return converter.ConvertEventToEntity(eventInstance, serializerOptions ?? options);
     }
 
+    /// <inheritdoc/>
+    public IEvent ConvertEntityToEvent(IEntityEvent entityInstance, JsonTypeInfo typeInfo)
+    {
+        ArgumentNullException.ThrowIfNull(entityInstance);
+        IEventConverter converter = GetEventConverter(entityInstance.GetType());
+        return converter.ConvertEntityToEvent(entityInstance, typeInfo);
+    }
+
     /// <inheritdoc />
+    [RequiresUnreferencedCode("Serialization may require types that are trimmed.")]
+    [RequiresDynamicCode("Serialization may require types that are generated dynamically.")]
     public IEvent ConvertEntityToEvent(IEntityEvent entityInstance, JsonSerializerOptions? serializerOptions = default)
     {
         ArgumentNullException.ThrowIfNull(entityInstance);
