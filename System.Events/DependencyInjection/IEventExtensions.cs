@@ -215,7 +215,10 @@ public static class IEventExtensions
         {
             services
                 .AddXEventPublisher<EventPublisherSubscriber>(lifetime)
-                .AddSingleton<IEventSubscriber>(sp => (EventPublisherSubscriber)sp.GetRequiredService<IEventPublisher>());
+                .Add(new ServiceDescriptor(
+                    typeof(IEventSubscriber),
+                    sp => (EventPublisherSubscriber)sp.GetRequiredService<IEventPublisher>(),
+                    lifetime));
 
             _ = registryMode switch
             {

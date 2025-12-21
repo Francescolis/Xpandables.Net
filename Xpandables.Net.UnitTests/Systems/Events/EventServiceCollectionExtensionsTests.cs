@@ -53,8 +53,8 @@ public sealed class EventServiceCollectionExtensionsTests
         var subscriber = scope.ServiceProvider.GetRequiredService<IEventSubscriber>();
         publisher.Should().BeSameAs(subscriber);
 
-        provider.GetServices<IEventHandler<MoneyDeposited>>().Should().ContainSingle();
-        provider.GetServices<IEventHandlerWrapper>().Should().NotBeEmpty();
+        scope.ServiceProvider.GetServices<IEventHandler<MoneyDeposited>>().Should().ContainSingle();
+        scope.ServiceProvider.GetServices<IEventHandlerWrapper>().Should().NotBeEmpty();
     }
 
     private static ServiceProvider BuildServiceProvider(SqliteDatabaseDirectory directory)
