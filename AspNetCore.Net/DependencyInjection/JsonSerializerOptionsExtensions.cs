@@ -25,7 +25,7 @@ namespace Microsoft.Extensions.DependencyInjection;
 /// <summary>
 /// Provides extension methods for registering services with an <see cref="IServiceCollection"/>.
 /// </summary>
-public static class LazyResolveExtensions
+public static class JsonSerializerOptionsExtensions
 {
     extension(IServiceCollection services)
     {
@@ -47,21 +47,6 @@ public static class LazyResolveExtensions
                 var options = provider.GetRequiredService<IOptions<JsonOptions>>().Value.SerializerOptions;
                 return options;
             });
-        }
-
-        /// <summary>
-        /// Registers support for resolving <see cref="Lazy{T}"/> dependencies using the <see cref="LazyResolved{T}"/> implementation in the service
-        /// collection.
-        /// </summary>
-        /// <remarks>Use this method to allow constructor injection of <see cref="Lazy{T}"/> in services registered with
-        /// the dependency injection container. Each <see cref="Lazy{T}"/> will resolve its value from the container when first
-        /// accessed.</remarks>
-        /// <returns>The IServiceCollection instance with <see cref="Lazy{T}"/> registration added. This enables <see cref="Lazy{T}"/> to be injected and
-        /// resolved by the dependency injection container.</returns>
-        public IServiceCollection AddXLazyResolved()
-        {
-            ArgumentNullException.ThrowIfNull(services);
-            return services.AddTransient(typeof(Lazy<>), typeof(LazyResolved<>));
         }
     }
 }

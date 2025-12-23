@@ -88,17 +88,17 @@ public static class IServiceExportWebExtensions
             assemblies = assemblies is { Length: > 0 } ? assemblies : [Assembly.GetCallingAssembly()];
 
             List<Type> types = [.. assemblies
-            .SelectMany(assembly => assembly.GetTypes())
-            .Where(type =>
-                type is
-                {
-                    IsAbstract: false,
-                    IsInterface: false,
-                    IsGenericType: false
-                }
-                && Array.Exists(type.GetInterfaces(),
-                    t => !t.IsGenericType
-                    && t == typeof(IUseService)))];
+                .SelectMany(assembly => assembly.GetTypes())
+                .Where(type =>
+                    type is
+                    {
+                        IsAbstract: false,
+                        IsInterface: false,
+                        IsGenericType: false
+                    }
+                    && Array.Exists(type.GetInterfaces(),
+                        t => !t.IsGenericType
+                        && t == typeof(IUseService)))];
 
             foreach (Type type in types)
             {

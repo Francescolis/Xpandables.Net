@@ -2,10 +2,10 @@
 
 #nullable disable
 
-namespace Xpandables.Net.SampleApi.Migrations;
+namespace Xpandables.Net.SampleApi.Migrations.BankAccountData;
 
 /// <inheritdoc />
-public partial class AddReadStorage : Migration
+public partial class AddBankAccount : Migration
 {
     /// <inheritdoc />
     protected override void Up(MigrationBuilder migrationBuilder)

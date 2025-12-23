@@ -95,6 +95,8 @@ builder.Services.Configure<JsonOptions>(options =>
     options.SerializerOptions.WriteIndented = true;
 });
 
+builder.Services.AddXJsonSerializerOptions();
+
 builder.Services.AddSwaggerGen(options =>
 {
     options.SwaggerDoc(builder.Configuration["SwaggerOptions:Version"], new OpenApiInfo()

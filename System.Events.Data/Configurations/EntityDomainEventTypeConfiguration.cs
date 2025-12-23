@@ -32,7 +32,7 @@ public sealed class EntityDomainEventTypeConfiguration : EntityEventTypeConfigur
     public sealed override void Configure(EntityTypeBuilder<EntityDomainEvent> builder)
     {
         base.Configure(builder);
-        builder.ToTable("DomainEvents");
+        builder.ToTable("DomainEvents", "Events");
 
         builder.Property(e => e.StreamId).IsRequired();
         builder.Property(e => e.StreamVersion).IsRequired();

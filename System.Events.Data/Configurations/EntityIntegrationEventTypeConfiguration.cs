@@ -31,7 +31,7 @@ public sealed class EntityIntegrationEventTypeConfiguration : EntityEventTypeCon
     public sealed override void Configure(EntityTypeBuilder<EntityIntegrationEvent> builder)
     {
         base.Configure(builder);
-        builder.ToTable("IntegrationEvents");
+        builder.ToTable("IntegrationEvents", "Events");
 
         builder.Property(e => e.ClaimId).IsRequired(false);
         builder.Property(e => e.AttemptCount).HasDefaultValue(0);
