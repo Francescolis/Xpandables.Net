@@ -70,6 +70,7 @@ builder.Services
     .AddXMediatorWithEventSourcingPipelines()
     .AddXRequestHandlers()
     .AddXEventHandlers()
+    .AddXEventConverterContext()
     .AddXValidator()
     .AddXEventPublisher()
     .AddXAggregateStore()
