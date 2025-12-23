@@ -25,20 +25,23 @@ namespace System.Events.Data;
 /// <summary>
 /// Provides an implementation of an outbox pattern for managing integration events.
 /// </summary>
-/// <remarks>The <see cref="OutboxStore"/> class is designed to facilitate reliable event processing
+/// <remarks>The <see cref="OutboxStore{TEntityIntegrationEvent}"/> class is designed to facilitate reliable event processing
 /// by implementing the outbox pattern. It ensures that integration events are stored, claimed, and processed in a
 /// consistent and fault-tolerant manner. This class supports operations such as enqueuing events, claiming pending
 /// events for processing, marking events as completed, and handling event failures.</remarks>
-/// <param name="context">The data context used for accessing the outbox store.</param>
+/// <param name="outboxStoreDataContextFactory">The data context used for accessing the outbox store.</param>
 /// <param name="converterFactory">The factory used to obtain event converters.</param>
-public sealed class OutboxStore(OutboxStoreDataContext context, IEventConverterFactory converterFactory) : IOutboxStore
+public sealed class OutboxStore<[DynamicallyAccessedMembers(EntityEvent.DynamicallyAccessedMemberTypes)] TEntityIntegrationEvent>(
+    IOutboxStoreDataContextFactory outboxStoreDataContextFactory,
+    IEventConverterFactory converterFactory) : IOutboxStore
+    where TEntityIntegrationEvent : class, IEntityEventIntegration
 {
-    private readonly OutboxStoreDataContext _db = context
-        ?? throw new ArgumentNullException(nameof(context));
+    private readonly EventDataContext _db = outboxStoreDataContextFactory.Create();
+    private readonly IEventConverterFactory _converterFactory = converterFactory;
+    private readonly IEventConverter<TEntityIntegrationEvent, IIntegrationEvent> _converter = converterFactory
+        .GetIntegrationEventConverter<TEntityIntegrationEvent>();
 
     /// <inheritdoc />
-    [UnconditionalSuppressMessage("Trimming", "IL2026:Members annotated with 'RequiresUnreferencedCodeAttribute' require dynamic access otherwise can break functionality when trimming application code", Justification = "<Pending>")]
-    [UnconditionalSuppressMessage("AOT", "IL3050:Calling members annotated with 'RequiresDynamicCodeAttribute' may break functionality when AOT compiling.", Justification = "<Pending>")]
     public async Task EnqueueAsync(
         CancellationToken cancellationToken,
         params IIntegrationEvent[] events)
@@ -46,23 +49,20 @@ public sealed class OutboxStore(OutboxStoreDataContext context, IEventConverterF
         ArgumentNullException.ThrowIfNull(events);
         ArgumentOutOfRangeException.ThrowIfEqual(events.Length, 0);
 
-        var converter = converterFactory.GetEventConverter<IIntegrationEvent>();
-        var list = new List<IEntityEventIntegration>(events.Length);
+        var list = new List<TEntityIntegrationEvent>(events.Length);
 
         foreach (var @event in events)
         {
-            var entity = (EntityIntegrationEvent)converter.ConvertEventToEntity(@event, EventConverter.SerializerOptions);
+            var entity = _converter.ConvertEventToEntity(@event, _converterFactory.ConverterContext);
             entity.SetStatus(EventStatus.PENDING);
             list.Add(entity);
         }
 
         await _db.AddRangeAsync(list, cancellationToken).ConfigureAwait(false);
-        // defer SaveChanges to Unit of Work
+        // defer SaveChanges to Event Store or Unit of Work
     }
 
     /// <inheritdoc />
-    [UnconditionalSuppressMessage("Trimming", "IL2026:Members annotated with 'RequiresUnreferencedCodeAttribute' require dynamic access otherwise can break functionality when trimming application code", Justification = "<Pending>")]
-    [UnconditionalSuppressMessage("AOT", "IL3050:Calling members annotated with 'RequiresDynamicCodeAttribute' may break functionality when AOT compiling.", Justification = "<Pending>")]
     public async Task<IReadOnlyList<IIntegrationEvent>> DequeueAsync(
         CancellationToken cancellationToken,
         int maxEvents = 10,
@@ -73,7 +73,7 @@ public sealed class OutboxStore(OutboxStoreDataContext context, IEventConverterF
         var now = DateTime.UtcNow;
         var lease = visibilityTimeout ?? TimeSpan.FromMinutes(5);
         var claimId = Guid.NewGuid();
-        var set = _db.Set<EntityIntegrationEvent>();
+        var set = _db.Set<TEntityIntegrationEvent>();
 
         var candidateIds = await set
             .Where(e =>
@@ -107,11 +107,10 @@ public sealed class OutboxStore(OutboxStoreDataContext context, IEventConverterF
             .ToListAsync(cancellationToken)
             .ConfigureAwait(false);
 
-        var converter = converterFactory.GetEventConverter<IIntegrationEvent>();
         var list = new List<IIntegrationEvent>(claimed.Count);
         foreach (var entity in claimed)
         {
-            if (converter.ConvertEntityToEvent(entity, EventConverter.SerializerOptions) is IIntegrationEvent ie)
+            if (_converter.ConvertEntityToEvent(entity, _converterFactory.ConverterContext) is IIntegrationEvent ie)
             {
                 list.Add(ie);
             }
@@ -129,7 +128,7 @@ public sealed class OutboxStore(OutboxStoreDataContext context, IEventConverterF
         ArgumentOutOfRangeException.ThrowIfEqual(eventIds.Length, 0);
 
         var now = DateTime.UtcNow;
-        await _db.Set<EntityIntegrationEvent>()
+        await _db.Set<TEntityIntegrationEvent>()
             .Where(e => eventIds.Contains(e.KeyId))
             .ExecuteUpdateAsync(updater => updater
                 .SetProperty(e => e.Status, EventStatus.PUBLISHED)
@@ -161,7 +160,7 @@ public sealed class OutboxStore(OutboxStoreDataContext context, IEventConverterF
              {
                  foreach (var failure in failures)
                  {
-                     await _db.Set<EntityIntegrationEvent>()
+                     await _db.Set<TEntityIntegrationEvent>()
                          .Where(e => e.KeyId == failure.EventId)
                          .ExecuteUpdateAsync(updater => updater
                              .SetProperty(e => e.Status, EventStatus.ONERROR)

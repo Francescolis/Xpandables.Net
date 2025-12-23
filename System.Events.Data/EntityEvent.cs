@@ -15,6 +15,7 @@
  *
 ********************************************************************************/
 using System.ComponentModel.DataAnnotations;
+using System.Diagnostics.CodeAnalysis;
 using System.Text.Json;
 
 namespace System.Events.Data;
@@ -93,4 +94,13 @@ public abstract class EntityEvent : IEntityEvent
             EventData?.Dispose();
         }
     }
+
+    internal const DynamicallyAccessedMemberTypes DynamicallyAccessedMemberTypes =
+         System.Diagnostics.CodeAnalysis.DynamicallyAccessedMemberTypes.PublicConstructors
+         | System.Diagnostics.CodeAnalysis.DynamicallyAccessedMemberTypes.NonPublicConstructors
+         | System.Diagnostics.CodeAnalysis.DynamicallyAccessedMemberTypes.PublicProperties
+         | System.Diagnostics.CodeAnalysis.DynamicallyAccessedMemberTypes.PublicFields
+         | System.Diagnostics.CodeAnalysis.DynamicallyAccessedMemberTypes.NonPublicProperties
+         | System.Diagnostics.CodeAnalysis.DynamicallyAccessedMemberTypes.NonPublicFields
+         | System.Diagnostics.CodeAnalysis.DynamicallyAccessedMemberTypes.Interfaces;
 }

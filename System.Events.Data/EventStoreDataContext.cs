@@ -15,7 +15,6 @@
  *
 ********************************************************************************/
 using System.Diagnostics.CodeAnalysis;
-using System.Entities.Data;
 using System.Events.Data.Configurations;
 
 using Microsoft.EntityFrameworkCore;
@@ -31,7 +30,7 @@ namespace System.Events.Data;
 /// <param name="options">The options to be used by a <see cref="DbContext" />.</param>
 [RequiresUnreferencedCode("This context may be used with unreferenced code.")]
 [RequiresDynamicCode("This context may be used with dynamic code.")]
-public sealed class EventStoreDataContext(DbContextOptions<EventStoreDataContext> options) : DataContext(options)
+public sealed class EventStoreDataContext(DbContextOptions<EventStoreDataContext> options) : EventDataContext(options)
 {
     /// <summary>
     /// Gets or sets the DbSet for EventEntityDomain.

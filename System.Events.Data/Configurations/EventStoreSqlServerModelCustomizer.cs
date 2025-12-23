@@ -16,8 +16,8 @@
 ********************************************************************************/
 namespace System.Events.Data.Configurations;
 
-using System.Entities.Data.Converters;
 using System.Events.Data;
+using System.Text.Json;
 
 using Microsoft.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore.Infrastructure;
@@ -38,7 +38,7 @@ using Microsoft.EntityFrameworkCore.Infrastructure;
 /// </code>
 /// </summary>
 /// <remarks>This customizer configures the EntitySnapshotEvent and EntityDomainEvent types to use a JSON document
-/// value converter for their EventData properties. This ensures that event data is stored and retrieved as JSON in SQL
+/// value converter for their EventData properties. This ensures that <see cref="JsonDocument"/> event data is stored and retrieved as JSON in SQL
 /// Server. Use this customizer when working with event sourcing patterns that require serialization of event
 /// payloads.</remarks>
 /// <param name="dependencies">The set of dependencies required for model customization operations.</param>
@@ -51,11 +51,11 @@ public sealed class EventStoreSqlServerModelCustomizer(ModelCustomizerDependenci
 
         modelBuilder.Entity<EntitySnapshotEvent>()
             .Property(e => e.EventData)
-            .HasConversion<JsonDocumentValueConverter>();
+            .HasEventJsonDocumentConversion();
 
         modelBuilder.Entity<EntityDomainEvent>()
             .Property(e => e.EventData)
-            .HasConversion<JsonDocumentValueConverter>();
+            .HasEventJsonDocumentConversion();
 
         base.Customize(modelBuilder, context);
     }

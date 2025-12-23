@@ -15,9 +15,8 @@
  *
 ********************************************************************************/
 
-using System.Diagnostics.CodeAnalysis;
-using System.Text.Json;
-using System.Text.Json.Serialization.Metadata;
+using System.Events.Domain;
+using System.Events.Integration;
 
 namespace System.Events.Data;
 
@@ -27,56 +26,41 @@ namespace System.Events.Data;
 public interface IEventConverterFactory
 {
     /// <summary>
-    /// Gets the event converter for the specified event type.
+    /// Gets the context used for event conversion operations.
     /// </summary>
-    /// <param name="eventType">The type of the event to get the converter for. Cannot be null.</param>
-    /// <returns>An <see cref="IEventConverter"/> that can convert the specified event type.</returns>
-    /// <exception cref="KeyNotFoundException">Thrown when no converter is found for the specified event type.</exception>
-    IEventConverter GetEventConverter(Type eventType);
+    /// <remarks>The event converter context provides access to services and information required during event
+    /// conversion. This property is typically used by components that need to customize or extend event conversion
+    /// behavior.</remarks>
+    IEventConverterContext ConverterContext { get; }
 
     /// <summary>
-    /// Retrieves an event converter instance for the specified event type.
+    /// Gets an event converter that transforms domain-specific entity events of the specified type to generic domain
+    /// events.
     /// </summary>
-    /// <typeparam name="TEvent">The type of event for which to obtain a converter. Must implement <see cref="IEvent"/>.</typeparam>
-    /// <returns>An <see cref="IEventConverter"/> instance capable of converting events of type <typeparamref name="TEvent"/>.</returns>
-    /// <exception cref="KeyNotFoundException">Thrown when no converter is found for the specified event type.</exception>
-    IEventConverter GetEventConverter<TEvent>()
-        where TEvent : IEvent;
+    /// <typeparam name="TEntityEventDomain">The type of the domain-specific entity event. Must implement <see cref="IEntityEventDomain"/>.</typeparam>
+    /// <returns>An <see cref="IEventConverter{TEntityEventDomain, IDomainEvent}"/> instance that converts events of type
+    /// <typeparamref name="TEntityEventDomain"/> to <see cref="IDomainEvent"/>.</returns>
+    /// <exception cref="InvalidOperationException">Thrown if a suitable event converter cannot be found for the specified domain event entity type.</exception>
+    IEventConverter<TEntityEventDomain, IDomainEvent> GetDomainEventConverter<TEntityEventDomain>()
+        where TEntityEventDomain : class, IEntityEventDomain;
 
     /// <summary>
-    /// Converts the specified event instance to an entity event using the provided JSON type information.
+    /// Gets an event converter that transforms integration events of the specified entity event integration type to a
+    /// standard integration event format.
     /// </summary>
-    /// <param name="eventInstance">The event instance to convert. Cannot be null.</param>
-    /// <param name="typeInfo">The JSON type information used to guide the conversion process. Cannot be null.</param>
-    /// <returns>An entity event representing the converted event instance.</returns>
-    IEntityEvent ConvertEventToEntity(IEvent eventInstance, JsonTypeInfo typeInfo);
+    /// <typeparam name="TEntityEventIntegration">The type of the entity event integration to convert. Must implement IEntityEventIntegration.</typeparam>
+    /// <returns>An event converter that converts events of type TEntityEventIntegration to IIntegrationEvent.</returns>
+    /// <exception cref="InvalidOperationException">Thrown if a suitable event converter cannot be found for the specified integration event entity type.</exception>
+    IEventConverter<TEntityEventIntegration, IIntegrationEvent> GetIntegrationEventConverter<TEntityEventIntegration>()
+        where TEntityEventIntegration : class, IEntityEventIntegration;
 
     /// <summary>
-    /// Converts the specified event to an entity event representation.
+    /// Gets an event converter that transforms snapshot event entities of the specified type to the standard snapshot
+    /// event interface.
     /// </summary>
-    /// <param name="eventInstance">The event to convert. Cannot be null.</param>
-    /// <param name="serializerOptions">The serializer options to use when converting the event.</param>
-    /// <returns>An <see cref="IEntityEvent"/> that represents the converted event.</returns>
-    [RequiresUnreferencedCode("Serialization may require types that are trimmed.")]
-    [RequiresDynamicCode("Serialization may require types that are generated dynamically.")]
-    IEntityEvent ConvertEventToEntity(IEvent eventInstance, JsonSerializerOptions? serializerOptions = default);
-
-    /// <summary>
-    /// Converts the specified entity event instance to an event representation using the provided JSON type
-    /// information.
-    /// </summary>
-    /// <param name="entityInstance">The entity event instance to convert. Cannot be null.</param>
-    /// <param name="typeInfo">The JSON type metadata used to guide the conversion process. Cannot be null.</param>
-    /// <returns>An event object representing the converted entity event. The returned object implements the IEvent interface.</returns>
-    IEvent ConvertEntityToEvent(IEntityEvent entityInstance, JsonTypeInfo typeInfo);
-
-    /// <summary>
-    /// Converts the specified entity event to an event representation.
-    /// </summary>
-    /// <param name="entityInstance">The entity event to convert. Cannot be null.</param>
-    /// <param name="serializerOptions">The serializer options to use when serializing the entity event.</param>
-    /// <returns>An event representation of the specified entity event.</returns>
-    [RequiresUnreferencedCode("Serialization may require types that are trimmed.")]
-    [RequiresDynamicCode("Serialization may require types that are generated dynamically.")]
-    IEvent ConvertEntityToEvent(IEntityEvent entityInstance, JsonSerializerOptions? serializerOptions = default);
+    /// <typeparam name="TEntityEventSnapshot">The type of the snapshot event entity to convert. Must implement IEntityEventSnapshot and be a reference type.</typeparam>
+    /// <returns>An event converter that converts instances of the specified snapshot event entity type to ISnapshotEvent.</returns>
+    /// <exception cref="InvalidOperationException">Thrown if a suitable event converter cannot be found for the specified snapshot event entity type.</exception>
+    IEventConverter<TEntityEventSnapshot, ISnapshotEvent> GetSnapshotEventConverter<TEntityEventSnapshot>()
+        where TEntityEventSnapshot : class, IEntityEventSnapshot;
 }

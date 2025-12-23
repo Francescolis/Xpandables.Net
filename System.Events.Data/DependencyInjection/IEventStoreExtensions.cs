@@ -15,7 +15,6 @@
  *
 ********************************************************************************/
 using System.Diagnostics.CodeAnalysis;
-using System.Entities.Data;
 using System.Events.Data;
 using System.Events.Domain;
 using System.Events.Integration;
@@ -53,7 +52,7 @@ public static class IEventStoreExtensions
             Action<DbContextOptionsBuilder>? optionsAction = null,
             ServiceLifetime contextLifetime = ServiceLifetime.Scoped,
             ServiceLifetime optionsLifetime = ServiceLifetime.Scoped)
-            where TDataContext : DataContext =>
+            where TDataContext : EventDataContext =>
             services.AddDbContext<TDataContext>(
                 optionsAction, contextLifetime, optionsLifetime);
 
@@ -88,31 +87,118 @@ public static class IEventStoreExtensions
         }
 
         /// <summary>
-        /// Adds the default implementation of the EventStore to the specified service collection.
+        /// Adds a scoped implementation of the specified event store data context factory to the service collection.
         /// </summary>
-        /// <remarks>This method registers the default implementation of <see cref="EventStore"/> with the
-        /// dependency injection container. It is a convenience method for adding the EventStore with a predefined event
-        /// type.</remarks>
-        /// <returns>The updated <see cref="IServiceCollection"/> instance.</returns>
-        public IServiceCollection AddXEventStore()
+        /// <remarks>This method registers the specified factory type as the implementation for
+        /// IEventStoreDataContextFactory using scoped lifetime. Subsequent requests for IEventStoreDataContextFactory
+        /// will resolve to the registered factory type.</remarks>
+        /// <typeparam name="TEventStoreDataContextFactory">The type of the event store data context factory to register. Must implement IEventStoreDataContextFactory
+        /// and have a public constructor.</typeparam>
+        /// <returns>The IServiceCollection instance with the event store data context factory registered.</returns>
+        public IServiceCollection AddXEventStoreDataContextFactory<[DynamicallyAccessedMembers(DynamicallyAccessedMemberTypes.PublicConstructors)] TEventStoreDataContextFactory>()
+            where TEventStoreDataContextFactory : class, IEventStoreDataContextFactory
         {
             ArgumentNullException.ThrowIfNull(services);
-            return services.AddXEventStore<EventStore>();
+            services.TryAddScoped<IEventStoreDataContextFactory, TEventStoreDataContextFactory>();
+            return services;
         }
 
         /// <summary>
-        /// Adds the EventStore service to the specified <see cref="IServiceCollection"/>.
+        /// Adds the default implementation of IEventStoreDataContextFactory to the service collection with scoped
+        /// lifetime. 
         /// </summary>
-        /// <remarks>This method registers the EventStore service with the dependency injection container,  using
-        /// the specified data context type. The data context type must inherit from <see cref="DataContext"/>.</remarks>
-        /// <typeparam name="TEventStore">The type of the data context used by the event store. Must derive from <see cref="DataContext"/>.</typeparam>
-        /// <returns>The updated <see cref="IServiceCollection"/> instance.</returns>
-        public IServiceCollection AddXEventStore<TEventStore>()
+        /// <remarks>Call this method to enable dependency injection for event store data context
+        /// factories in your application. This method should be called once during service configuration.</remarks>
+        /// <returns>The IServiceCollection instance with the IEventStoreDataContextFactory service registered.</returns>
+        public IServiceCollection AddXEventStoreDataContextFactory()
+        {
+            ArgumentNullException.ThrowIfNull(services);
+            services.TryAddScoped<IEventStoreDataContextFactory, EventStoreDataContextFactory>();
+            return services;
+        }
+
+        /// <summary>
+        /// Adds the specified implementation of the IOutboxStoreDataContextFactory interface to the service collection
+        /// with scoped lifetime.
+        /// </summary>
+        /// <remarks>If an IOutboxStoreDataContextFactory service has not already been registered, this
+        /// method registers TOutboxStoreDataContextFactory as its implementation. This method is intended for use with
+        /// dependency injection in ASP.NET Core applications.</remarks>
+        /// <typeparam name="TOutboxStoreDataContextFactory">The type that implements IOutboxStoreDataContextFactory to register. Must have a public constructor.</typeparam>
+        /// <returns>The IServiceCollection instance for chaining further configuration.</returns>
+        public IServiceCollection AddXOutboxStoreDataContextFactory<[DynamicallyAccessedMembers(DynamicallyAccessedMemberTypes.PublicConstructors)] TOutboxStoreDataContextFactory>()
+            where TOutboxStoreDataContextFactory : class, IOutboxStoreDataContextFactory
+        {
+            ArgumentNullException.ThrowIfNull(services);
+            services.TryAddScoped<IOutboxStoreDataContextFactory, TOutboxStoreDataContextFactory>();
+            return services;
+        }
+
+        /// <summary>
+        /// Adds the default implementation of the IOutboxStoreDataContextFactory to the service collection with scoped
+        /// lifetime.
+        /// </summary>
+        /// <remarks>Call this method to enable dependency injection for outbox store data context
+        /// factories in your application. This method registers OutboxStoreDataContextFactory as the implementation for
+        /// IOutboxStoreDataContextFactory if it has not already been registered.</remarks>
+        /// <returns>The IServiceCollection instance with the IOutboxStoreDataContextFactory service registered.</returns>
+        public IServiceCollection AddXOutboxStoreDataContextFactory()
+        {
+            ArgumentNullException.ThrowIfNull(services);
+            services.TryAddScoped<IOutboxStoreDataContextFactory, OutboxStoreDataContextFactory>();
+            return services;
+        }
+
+        /// <summary>
+        /// Adds an EventStore implementation for the specified domain event and snapshot event types to the service
+        /// collection.
+        /// </summary>
+        /// <typeparam name="TEntityDomainEvent">The type representing the domain event. Must implement the IEntityEventDomain interface and have a public
+        /// constructor.</typeparam>
+        /// <typeparam name="TEntitySnapShotEvent">The type representing the snapshot event. Must implement the IEntityEventSnapshot interface and have a
+        /// public constructor.</typeparam>
+        /// <returns>The IServiceCollection instance with the XEventStore service registered. This enables further configuration
+        /// of the service collection.</returns>
+        public IServiceCollection AddXEventStoreOfType<[DynamicallyAccessedMembers(EntityEvent.DynamicallyAccessedMemberTypes)] TEntityDomainEvent, [DynamicallyAccessedMembers(EntityEvent.DynamicallyAccessedMemberTypes)] TEntitySnapShotEvent>()
+            where TEntityDomainEvent : class, IEntityEventDomain
+            where TEntitySnapShotEvent : class, IEntityEventSnapshot
+        {
+            ArgumentNullException.ThrowIfNull(services);
+            return services.AddXEventStore<EventStore<TEntityDomainEvent, TEntitySnapShotEvent>>();
+        }
+
+        /// <summary>
+        /// Adds the specified event store implementation to the service collection with a scoped lifetime.
+        /// </summary>
+        /// <remarks>This method registers the specified event store type as the implementation for
+        /// IEventStore. If an IEventStore service is already registered, this method does not overwrite the existing
+        /// registration.</remarks>
+        /// <typeparam name="TEventStore">The type of the event store to register. Must implement the IEventStore interface and have a public
+        /// constructor.</typeparam>
+        /// <returns>The IServiceCollection instance for chaining additional service configuration.</returns>
+        public IServiceCollection AddXEventStore<[DynamicallyAccessedMembers(DynamicallyAccessedMemberTypes.PublicConstructors)] TEventStore>()
             where TEventStore : class, IEventStore
         {
             ArgumentNullException.ThrowIfNull(services);
-            services.TryAddScoped<IEventStore, EventStore>();
+            services.TryAddScoped<IEventStore, TEventStore>();
             return services;
+        }
+
+        /// <summary>
+        /// Adds the default XEventStore services for handling entity domain and snapshot events to the current service
+        /// collection.
+        /// </summary>
+        /// <remarks>This method registers the XEventStore infrastructure using the default event types
+        /// <see cref="EntityDomainEvent"/> and <see cref="EntitySnapshotEvent"/>. Call this method during application
+        /// startup to enable event sourcing features for entities.</remarks>
+        /// <returns>The <see cref="IServiceCollection"/> instance with XEventStore services registered. This enables further
+        /// configuration of the service collection.</returns>
+        public IServiceCollection AddXEventStore()
+        {
+            ArgumentNullException.ThrowIfNull(services);
+            return services
+                .AddXEventStoreDataContextFactory()
+                .AddXEventStoreOfType<EntityDomainEvent, EntitySnapshotEvent>();
         }
 
         /// <summary>
@@ -127,21 +213,37 @@ public static class IEventStoreExtensions
             where TOutboxStore : class, IOutboxStore
         {
             ArgumentNullException.ThrowIfNull(services);
-            services.AddScoped<IOutboxStore, TOutboxStore>();
+            services.TryAddScoped<IOutboxStore, TOutboxStore>();
             return services;
         }
 
         /// <summary>
         /// Adds the default implementation of <see cref="IOutboxStore"/> to the service collection.
         /// </summary>
-        /// <remarks>This method registers the <see cref="OutboxStore"/> implementation of <see
+        /// <remarks>This method registers the <see cref="OutboxStore{TEntityIntegrationEvent}"/> implementation of <see
         /// cref="IOutboxStore"/>  with a scoped lifetime. It is intended to be used in applications that require outbox
         /// pattern support.</remarks>
         /// <returns>The updated <see cref="IServiceCollection"/> instance.</returns>
+        public IServiceCollection AddXOutboxStoreOfType<[DynamicallyAccessedMembers(EntityEvent.DynamicallyAccessedMemberTypes)] TEntityEventIntegration>()
+            where TEntityEventIntegration : class, IEntityEventIntegration
+        {
+            ArgumentNullException.ThrowIfNull(services);
+            return services.AddXOutboxStore<OutboxStore<TEntityEventIntegration>>();
+        }
+
+        /// <summary>
+        /// Adds the default XOutbox store for handling integration events to the service collection.
+        /// </summary>
+        /// <remarks>This method registers the XOutbox store using the default event type, <see
+        /// cref="EntityIntegrationEvent"/>. Call this method during application startup to enable outbox pattern
+        /// support for integration events.</remarks>
+        /// <returns>The <see cref="IServiceCollection"/> instance with the XOutbox store services registered.</returns>
         public IServiceCollection AddXOutboxStore()
         {
             ArgumentNullException.ThrowIfNull(services);
-            return services.AddXOutboxStore<OutboxStore>();
+            return services
+                .AddXOutboxStoreDataContextFactory()
+                .AddXOutboxStoreOfType<EntityIntegrationEvent>();
         }
     }
 }

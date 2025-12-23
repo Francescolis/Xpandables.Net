@@ -15,7 +15,6 @@
  *
 ********************************************************************************/
 using System.Cache;
-using System.Diagnostics.CodeAnalysis;
 using System.Events.Domain;
 using System.Text.Json;
 using System.Text.Json.Serialization.Metadata;
@@ -23,96 +22,65 @@ using System.Text.Json.Serialization.Metadata;
 namespace System.Events.Data;
 
 /// <summary>
-/// Converts event entities to domain events and vice versa.
+/// Converts between <see cref="IDomainEvent"/> and <see cref="EntityDomainEvent"/>.
 /// </summary>
-public sealed class EventConverterDomain(ICacheTypeResolver cacheTypeResolver) : EventConverter(cacheTypeResolver)
+/// <param name="typeResolver">The type resolver to use for resolving event types. Cannot be null.</param>
+public sealed class EventConverterDomain(ICacheTypeResolver typeResolver) : IEventConverter<EntityDomainEvent, IDomainEvent>
 {
-    /// <inheritdoc />
-    public override Type EventType => typeof(IDomainEvent);
-
-    /// <inheritdoc />
-    public override bool CanConvert(Type type)
-    {
-        ArgumentNullException.ThrowIfNull(type);
-        return EventType.IsAssignableFrom(type);
-    }
+    private readonly ICacheTypeResolver _typeResolver = typeResolver ?? throw new ArgumentNullException(nameof(typeResolver));
 
     /// <inheritdoc/>
-    public sealed override IEntityEvent ConvertEventToEntity(IEvent eventInstance, JsonTypeInfo typeInfo)
+    public EntityDomainEvent ConvertEventToEntity(IDomainEvent @event, IEventConverterContext context)
     {
-        ArgumentNullException.ThrowIfNull(eventInstance);
-        ArgumentNullException.ThrowIfNull(typeInfo);
+        ArgumentNullException.ThrowIfNull(@event);
+        ArgumentNullException.ThrowIfNull(context);
 
-        return ConvertEventToEntityCore(eventInstance, () => SerializeEventToJsonDocument(eventInstance, typeInfo));
-    }
-
-
-    /// <inheritdoc/>
-    [RequiresUnreferencedCode("Serialization may require types that are trimmed.")]
-    [RequiresDynamicCode("Serialization may require types that are generated dynamically.")]
-    public sealed override IEntityEvent ConvertEventToEntity(IEvent eventInstance, JsonSerializerOptions? serializerOptions = default)
-    {
-        ArgumentNullException.ThrowIfNull(eventInstance);
-        return ConvertEventToEntityCore(eventInstance, () => SerializeEventToJsonDocument(eventInstance, serializerOptions));
-    }
-
-    /// <inheritdoc/>
-    public sealed override IEvent ConvertEntityToEvent(IEntityEvent entityInstance, JsonTypeInfo typeInfo)
-    {
-        ArgumentNullException.ThrowIfNull(entityInstance);
-        ArgumentNullException.ThrowIfNull(typeInfo);
-
-        return ConvertEntityToEventCore(() => DeserializeEntityToEvent(entityInstance, typeInfo));
-    }
-
-    /// <inheritdoc/>
-    [RequiresUnreferencedCode("Serialization may require types that are trimmed.")]
-    [RequiresDynamicCode("Serialization may require types that are generated dynamically.")]
-    public sealed override IEvent ConvertEntityToEvent(IEntityEvent entityInstance, JsonSerializerOptions? serializerOptions = default)
-    {
-        ArgumentNullException.ThrowIfNull(entityInstance);
-
-        return ConvertEntityToEventCore(() => DeserializeEntityToEvent(entityInstance, serializerOptions));
-    }
-
-    private static EntityDomainEvent ConvertEventToEntityCore(IEvent @event, Func<JsonDocument> documentFactory)
-    {
         try
         {
-            IDomainEvent domainEvent = (IDomainEvent)@event;
+            JsonTypeInfo typeInfo = context.ResolveJsonTypeInfo(@event.GetType());
+            JsonDocument data = JsonSerializer.SerializeToDocument(@event, typeInfo);
 
             return new EntityDomainEvent
             {
-                KeyId = domainEvent.EventId,
-                StreamId = domainEvent.StreamId,
-                StreamName = domainEvent.StreamName,
-                EventName = domainEvent.GetEventName(),
-                StreamVersion = domainEvent.StreamVersion,
-                EventData = documentFactory()
+                KeyId = @event.EventId,
+                StreamId = @event.StreamId,
+                StreamName = @event.StreamName,
+                StreamVersion = @event.StreamVersion,
+                EventName = @event.GetEventName(),
+                EventData = data
             };
         }
-        catch (Exception exception)
-            when (exception is not InvalidOperationException)
+        catch (Exception exception) when (exception is not InvalidOperationException)
         {
             throw new InvalidOperationException(
                 $"Failed to convert the event {@event.GetType().Name} to entity. " +
-                $"See inner exception for details.", exception);
+                "See inner exception for details.",
+                exception);
         }
     }
 
-    private static IEvent ConvertEntityToEventCore(Func<IEvent> eventFactory)
+    /// <inheritdoc/>
+    public IDomainEvent ConvertEntityToEvent(EntityDomainEvent entity, IEventConverterContext context)
     {
+        ArgumentNullException.ThrowIfNull(entity);
+        ArgumentNullException.ThrowIfNull(context);
+
         try
         {
-            IEvent @event = eventFactory();
+            Type targetType = _typeResolver.Resolve(entity.EventName);
+            JsonTypeInfo typeInfo = context.ResolveJsonTypeInfo(targetType);
+
+            object? @event = entity.EventData.Deserialize(typeInfo)
+                ?? throw new InvalidOperationException(
+                    $"Failed to deserialize the event data to {typeInfo.Type.Name}.");
+
             return (IDomainEvent)@event;
         }
-        catch (Exception exception)
-            when (exception is not InvalidOperationException)
+        catch (Exception exception) when (exception is not InvalidOperationException)
         {
             throw new InvalidOperationException(
-                $"Failed to convert the event entity. " +
-                $"See inner exception for details.", exception);
+                "Failed to convert the event entity. See inner exception for details.",
+                exception);
         }
     }
 }

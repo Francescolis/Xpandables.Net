@@ -15,91 +15,88 @@
  *
 ********************************************************************************/
 using System.Collections.Frozen;
-using System.Diagnostics.CodeAnalysis;
 using System.Events.Domain;
 using System.Events.Integration;
-using System.Text.Json;
-using System.Text.Json.Serialization.Metadata;
 
 namespace System.Events.Data;
 
 /// <summary>
-/// Provides a factory for retrieving event converters based on event type.
+/// Factory that returns the appropriate converter for a given entity event type.
 /// </summary>
-/// <remarks>This factory enables dynamic selection of an appropriate event converter for a given event type. All
-/// converters supplied must implement the IEventConverter interface. The factory is immutable after construction and is
-/// thread-safe for concurrent use.</remarks>
-/// <param name="converters">A collection of event converters to be used by the factory. Cannot be null.</param>
-/// <param name="options">The JSON serializer options to use when converting events. Cannot be null.</param>
-public sealed class EventConverterFactory(IEnumerable<IEventConverter> converters, JsonSerializerOptions options) : IEventConverterFactory
+public sealed class EventConverterFactory : IEventConverterFactory
 {
-    private readonly FrozenDictionary<Type, IEventConverter> _convertersSet = converters.ToFrozenDictionary(conv => conv.EventType, conv => conv);
+    private readonly FrozenDictionary<Type, object> _converters;
 
-    /// <inheritdoc />
-    public IEventConverter GetEventConverter(Type eventType)
+    /// <inheritdoc/>
+    public IEventConverterContext ConverterContext { get; }
+
+    /// <summary>
+    /// Initializes a new instance of the EventConverterFactory class with the specified event converters.
+    /// </summary>
+    /// <param name="converterContext">The context for event conversion. Cannot be null.</param>
+    /// <param name="domainConverter">The event converter used to convert EntityDomainEvent instances to IDomainEvent instances. Cannot be null.</param>
+    /// <param name="integrationConverter">The event converter used to convert EntityIntegrationEvent instances to IIntegrationEvent instances. Cannot be
+    /// null.</param>
+    /// <param name="snapshotConverter">The event converter used to convert EntitySnapshotEvent instances to ISnapshotEvent instances. Cannot be null.</param>
+    public EventConverterFactory(
+        IEventConverterContext converterContext,
+        IEventConverter<EntityDomainEvent, IDomainEvent> domainConverter,
+        IEventConverter<EntityIntegrationEvent, IIntegrationEvent> integrationConverter,
+        IEventConverter<EntitySnapshotEvent, ISnapshotEvent> snapshotConverter)
     {
-        ArgumentNullException.ThrowIfNull(eventType);
-        Type eventSourceType = GetEventSourceType(eventType);
+        ArgumentNullException.ThrowIfNull(domainConverter);
+        ArgumentNullException.ThrowIfNull(integrationConverter);
+        ArgumentNullException.ThrowIfNull(snapshotConverter);
 
-        EventConverter.SerializerOptions = options;
+        ConverterContext = converterContext ?? throw new ArgumentNullException(nameof(converterContext));
 
-        return _convertersSet[eventSourceType];
-    }
-
-    /// <inheritdoc />
-    public IEventConverter GetEventConverter<TEvent>()
-        where TEvent : IEvent
-    {
-        Type eventType = typeof(TEvent);
-        return GetEventConverter(eventType);
+        _converters = new Dictionary<Type, object>
+        {
+            [typeof(EntityDomainEvent)] = domainConverter,
+            [typeof(EntityIntegrationEvent)] = integrationConverter,
+            [typeof(EntitySnapshotEvent)] = snapshotConverter
+        }.ToFrozenDictionary();
     }
 
     /// <inheritdoc/>
-    public IEntityEvent ConvertEventToEntity(IEvent eventInstance, JsonTypeInfo typeInfo)
+    public IEventConverter<TEntityEventDomain, IDomainEvent> GetDomainEventConverter<TEntityEventDomain>()
+        where TEntityEventDomain : class, IEntityEventDomain
     {
-        ArgumentNullException.ThrowIfNull(eventInstance);
-        IEventConverter converter = GetEventConverter(eventInstance.GetType());
-        return converter.ConvertEventToEntity(eventInstance, typeInfo);
-    }
-
-    /// <inheritdoc />
-    [RequiresUnreferencedCode("Serialization may require types that are trimmed.")]
-    [RequiresDynamicCode("Serialization may require types that are generated dynamically.")]
-    public IEntityEvent ConvertEventToEntity(IEvent eventInstance, JsonSerializerOptions? serializerOptions = default)
-    {
-        ArgumentNullException.ThrowIfNull(eventInstance);
-        IEventConverter converter = GetEventConverter(eventInstance.GetType());
-        return converter.ConvertEventToEntity(eventInstance, serializerOptions ?? options);
-    }
-
-    /// <inheritdoc/>
-    public IEvent ConvertEntityToEvent(IEntityEvent entityInstance, JsonTypeInfo typeInfo)
-    {
-        ArgumentNullException.ThrowIfNull(entityInstance);
-        IEventConverter converter = GetEventConverter(entityInstance.GetType());
-        return converter.ConvertEntityToEvent(entityInstance, typeInfo);
-    }
-
-    /// <inheritdoc />
-    [RequiresUnreferencedCode("Serialization may require types that are trimmed.")]
-    [RequiresDynamicCode("Serialization may require types that are generated dynamically.")]
-    public IEvent ConvertEntityToEvent(IEntityEvent entityInstance, JsonSerializerOptions? serializerOptions = default)
-    {
-        ArgumentNullException.ThrowIfNull(entityInstance);
-        IEventConverter converter = GetEventConverter(entityInstance.GetType());
-        return converter.ConvertEntityToEvent(entityInstance, serializerOptions ?? options);
-    }
-
-    private static Type GetEventSourceType(Type type)
-    {
-        if (typeof(IDomainEvent).IsAssignableFrom(type))
-            return typeof(IDomainEvent);
-        if (typeof(ISnapshotEvent).IsAssignableFrom(type))
-            return typeof(ISnapshotEvent);
-        if (typeof(IIntegrationEvent).IsAssignableFrom(type))
-            return typeof(IIntegrationEvent);
+        if (_converters.TryGetValue(typeof(TEntityEventDomain), out object? converter) &&
+            converter is IEventConverter<TEntityEventDomain, IDomainEvent> typed)
+        {
+            return typed;
+        }
 
         throw new InvalidOperationException(
-            $"The event type '{type.Name}' is not supported by any converter.");
+            $"No converter registered for entity event type '{typeof(TEntityEventDomain).Name}'.");
+    }
+
+    /// <inheritdoc/>
+    public IEventConverter<TEntityIntegrationEvent, IIntegrationEvent> GetIntegrationEventConverter<TEntityIntegrationEvent>()
+        where TEntityIntegrationEvent : class, IEntityEventIntegration
+    {
+        if (_converters.TryGetValue(typeof(TEntityIntegrationEvent), out object? converter) &&
+            converter is IEventConverter<TEntityIntegrationEvent, IIntegrationEvent> typed)
+        {
+            return typed;
+        }
+
+        throw new InvalidOperationException(
+            $"No converter registered for entity event type '{typeof(TEntityIntegrationEvent).Name}'.");
+    }
+
+    /// <inheritdoc/>
+    public IEventConverter<TEntitySnapshotEvent, ISnapshotEvent> GetSnapshotEventConverter<TEntitySnapshotEvent>()
+        where TEntitySnapshotEvent : class, IEntityEventSnapshot
+    {
+        if (_converters.TryGetValue(typeof(TEntitySnapshotEvent), out object? converter) &&
+            converter is IEventConverter<TEntitySnapshotEvent, ISnapshotEvent> typed)
+        {
+            return typed;
+        }
+
+        throw new InvalidOperationException(
+            $"No converter registered for entity event type '{typeof(TEntitySnapshotEvent).Name}'.");
     }
 }

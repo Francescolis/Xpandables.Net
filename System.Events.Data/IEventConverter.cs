@@ -15,67 +15,37 @@
  *
 ********************************************************************************/
 using System.Diagnostics.CodeAnalysis;
-using System.Text.Json;
-using System.Text.Json.Serialization.Metadata;
 
 namespace System.Events.Data;
 
 /// <summary>
-/// Defines methods for converting between domain event objects and their corresponding entity representations for
-/// persistence or transport purposes.
+/// Defines methods for converting between domain events and their corresponding entity event representations.
 /// </summary>
-/// <remarks>Implementations of this interface enable serialization and deserialization of events to and from a
-/// format suitable for storage or transmission, such as a database entity or a message payload. This abstraction allows
-/// event handling infrastructure to work with different event types and storage mechanisms in a consistent
-/// manner.</remarks>
-public interface IEventConverter
+/// <remarks>Implementations of this interface enable translation between domain-level events and
+/// persistence-layer entity events, facilitating event sourcing and serialization scenarios. The interface supports
+/// both strongly-typed and generic conversion methods, allowing for flexible integration with various event storage and
+/// processing systems.</remarks>
+/// <typeparam name="TEntityEvent">The type of the entity event that implements IEntityEvent. Must be a reference type.</typeparam>
+/// <typeparam name="TEvent">The type of the domain event that implements IEvent.</typeparam>
+public interface IEventConverter<TEntityEvent, TEvent>
+    where TEntityEvent : class, IEntityEvent
+    where TEvent : IEvent
 {
     /// <summary>
-    /// Gets the type of the event associated with this instance.
+    /// Converts the specified event to its corresponding entity representation.
     /// </summary>
-    Type EventType { get; }
+    /// <param name="event">The event to convert. Cannot be null.</param>
+    /// <param name="context">The context that provides additional information required for the conversion process. Cannot be null.</param>
+    /// <returns>An entity representation of the specified event.</returns>
+    [SuppressMessage("Naming", "CA1716:Identifiers should not match keywords", Justification = "<Pending>")]
+    TEntityEvent ConvertEventToEntity(TEvent @event, IEventConverterContext context);
 
     /// <summary>
-    /// Determines whether the specified type can be converted by this converter.
+    /// Converts the specified entity event to an event of type TEvent.
     /// </summary>
-    /// <param name="type">The type to evaluate for conversion support. Cannot be null.</param>
-    /// <returns>true if the specified type can be converted; otherwise, false.</returns>
-    bool CanConvert(Type type);
-
-    /// <summary>
-    /// Converts the specified event instance to an entity event using the provided JSON type information.
-    /// </summary>
-    /// <param name="eventInstance">The event instance to convert. Cannot be null.</param>
-    /// <param name="typeInfo">The JSON type metadata used to guide the conversion process. Cannot be null.</param>
-    /// <returns>An <see cref="IEntityEvent"/> representing the converted event.</returns>
-    IEntityEvent ConvertEventToEntity(IEvent eventInstance, JsonTypeInfo typeInfo);
-
-    /// <summary>
-    /// Converts the specified event instance to an entity event using the provided serializer options.
-    /// </summary>
-    /// <param name="eventInstance">The event to convert. Cannot be null.</param>
-    /// <param name="serializerOptions">The serializer options to use when converting the event.</param>
-    /// <returns>An <see cref="IEntityEvent"/> that represents the converted event.</returns>
-    [RequiresUnreferencedCode("Serialization may require types that are trimmed.")]
-    [RequiresDynamicCode("Serialization may require types that are generated dynamically.")]
-    IEntityEvent ConvertEventToEntity(IEvent eventInstance, JsonSerializerOptions? serializerOptions = default);
-
-    /// <summary>
-    /// Converts the specified entity event instance to an event representation using the provided JSON type
-    /// information.
-    /// </summary>
-    /// <param name="entityInstance">The entity event instance to convert. Cannot be null.</param>
-    /// <param name="typeInfo">The JSON type metadata used to guide the conversion process. Cannot be null.</param>
-    /// <returns>An event object representing the converted entity event. The returned object implements the IEvent interface.</returns>
-    IEvent ConvertEntityToEvent(IEntityEvent entityInstance, JsonTypeInfo typeInfo);
-
-    /// <summary>
-    /// Converts the specified entity event to an event representation using the provided serializer options.
-    /// </summary>
-    /// <param name="entityInstance">The entity event to convert. Cannot be null.</param>
-    /// <param name="serializerOptions">The serializer options to use when serializing the entity event.</param>
-    /// <returns>An event representation of the specified entity event.</returns>
-    [RequiresUnreferencedCode("Deserialization may require types that are trimmed.")]
-    [RequiresDynamicCode("Deserialization may require types that are generated dynamically.")]
-    IEvent ConvertEntityToEvent(IEntityEvent entityInstance, JsonSerializerOptions? serializerOptions = default);
+    /// <param name="event">The entity event to convert. Cannot be null.</param>
+    /// <param name="context">The context that provides additional information required for the conversion. Cannot be null.</param>
+    /// <returns>An event of type TEvent that represents the converted entity event.</returns>
+    [SuppressMessage("Naming", "CA1716:Identifiers should not match keywords", Justification = "<Pending>")]
+    TEvent ConvertEntityToEvent(TEntityEvent @event, IEventConverterContext context);
 }

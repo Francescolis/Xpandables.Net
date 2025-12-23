@@ -17,7 +17,6 @@
 using System.Diagnostics.CodeAnalysis;
 using System.Events.Domain;
 using System.Runtime.CompilerServices;
-using System.Text.Json.Serialization.Metadata;
 
 using Microsoft.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore.Storage;
@@ -32,37 +31,43 @@ namespace System.Events.Data;
 /// system. It is designed to work with a specific data context, allowing integration with various storage backends that
 /// support the DataContext abstraction. All operations are asynchronous and support cancellation via CancellationToken.
 /// This class is not thread-safe; concurrent usage should be managed externally if required.</remarks>
-public sealed class EventStore : IEventStore
+public sealed class EventStore<[DynamicallyAccessedMembers(EntityEvent.DynamicallyAccessedMemberTypes)] TEntityEventDomain,
+    [DynamicallyAccessedMembers(EntityEvent.DynamicallyAccessedMemberTypes)] TEntityEventSnapshot> : IEventStore
+    where TEntityEventDomain : class, IEntityEventDomain
+    where TEntityEventSnapshot : class, IEntityEventSnapshot
 {
-    private readonly EventStoreDataContext _db;
-    private readonly OutboxStoreDataContext _outbox;
-    private readonly IEventConverter _domainConveter;
-    private readonly IEventConverter _snapshotConverter;
+    private readonly EventDataContext _db;
+    private readonly EventDataContext _outbox;
+    private readonly IEventConverterFactory _converterFactory;
+    private readonly IEventConverter<TEntityEventDomain, IDomainEvent> _domainConveter;
+    private readonly IEventConverter<TEntityEventSnapshot, ISnapshotEvent> _snapshotConverter;
 
     /// <summary>
-    /// Initializes a new instance of the EventStore class using the specified data contexts and event converter
+    /// Initializes a new instance of the EventStore class with the specified data context factories and event converter
     /// factory.
     /// </summary>
-    /// <param name="context">The data context used for storing and retrieving domain events.</param>
-    /// <param name="outbox">The data context used for managing outbox events for integration purposes.</param>
-    /// <param name="converterFactory">The factory used to obtain event converters for domain, integration, and snapshot events. Cannot be null.</param>
-    /// <exception cref="ArgumentNullException">Thrown if <paramref name="context"/>, <paramref name="outbox"/>, or <paramref name="converterFactory"/> is null.</exception>
+    /// <param name="eventStoreDataContextFactory">The factory used to create data contexts for accessing the event store database. Cannot be null.</param>
+    /// <param name="outboxStoreDataContextFactory">The factory used to create data contexts for accessing the outbox store. Cannot be null.</param>
+    /// <param name="converterFactory">The factory used to obtain event converters for domain and snapshot events. Cannot be null.</param>
+    /// <exception cref="ArgumentNullException">Thrown if converterFactory is null.</exception>
     public EventStore(
-        EventStoreDataContext context,
-        OutboxStoreDataContext outbox,
+        IEventStoreDataContextFactory eventStoreDataContextFactory,
+        IOutboxStoreDataContextFactory outboxStoreDataContextFactory,
         IEventConverterFactory converterFactory)
     {
-        _db = context ?? throw new ArgumentNullException(nameof(context));
-        _outbox = outbox ?? throw new ArgumentNullException(nameof(outbox));
-        _ = converterFactory ?? throw new ArgumentNullException(nameof(converterFactory));
+        ArgumentNullException.ThrowIfNull(eventStoreDataContextFactory);
+        ArgumentNullException.ThrowIfNull(outboxStoreDataContextFactory);
+        ArgumentNullException.ThrowIfNull(converterFactory);
 
-        _domainConveter = converterFactory.GetEventConverter<IDomainEvent>();
-        _snapshotConverter = converterFactory.GetEventConverter<ISnapshotEvent>();
+        _db = eventStoreDataContextFactory.Create();
+        _outbox = outboxStoreDataContextFactory.Create();
+
+        _converterFactory = converterFactory;
+        _domainConveter = converterFactory.GetDomainEventConverter<TEntityEventDomain>();
+        _snapshotConverter = converterFactory.GetSnapshotEventConverter<TEntityEventSnapshot>();
     }
 
     ///<inheritdoc/>
-    [UnconditionalSuppressMessage("Trimming", "IL2026:Members annotated with 'RequiresUnreferencedCodeAttribute' require dynamic access otherwise can break functionality when trimming application code", Justification = "<Pending>")]
-    [UnconditionalSuppressMessage("AOT", "IL3050:Calling members annotated with 'RequiresDynamicCodeAttribute' may break functionality when AOT compiling.", Justification = "<Pending>")]
     public async Task<AppendResult> AppendToStreamAsync(
         AppendRequest request,
         CancellationToken cancellationToken = default)
@@ -82,7 +87,7 @@ public sealed class EventStore : IEventStore
                 $"Expected version {request.ExpectedVersion} but found {current}.");
         }
 
-        var entities = new List<EntityDomainEvent>(capacity: batch.Length);
+        var entities = new List<TEntityEventDomain>(capacity: batch.Length);
         long next = request.ExpectedVersion.GetValueOrDefault();
 
         foreach (var @event in batch)
@@ -94,28 +99,25 @@ public sealed class EventStore : IEventStore
                 .WithStreamVersion(next)
                 .WithStreamName(@event.StreamName);
 
-            JsonTypeInfo typeInfo = EventConverter.ResolveEventJsonTypeInfo(nextEvent.GetType(), EventConverter.SerializerOptions);
-            var entity = (EntityDomainEvent)_domainConveter.ConvertEventToEntity(nextEvent, typeInfo);
+            var entity = _domainConveter.ConvertEventToEntity(nextEvent, _converterFactory.ConverterContext);
             entities.Add(entity);
         }
 
-        await _db.AddRangeAsync(entities, cancellationToken).ConfigureAwait(false);
+        await _db.Set<TEntityEventDomain>().AddRangeAsync(entities, cancellationToken).ConfigureAwait(false);
 
         Guid[] guids = [.. entities.ConvertAll(e => e.StreamId)];
         return AppendResult.Create(guids, next, request.ExpectedVersion.GetValueOrDefault());
+        // defer SaveChanges to FlushEventsAsync
     }
 
     ///<inheritdoc/>
-    [UnconditionalSuppressMessage("Trimming", "IL2026:Members annotated with 'RequiresUnreferencedCodeAttribute' require dynamic access otherwise can break functionality when trimming application code", Justification = "<Pending>")]
-    [UnconditionalSuppressMessage("AOT", "IL3050:Calling members annotated with 'RequiresDynamicCodeAttribute' may break functionality when AOT compiling.", Justification = "<Pending>")]
     public async Task AppendSnapshotAsync(
         ISnapshotEvent snapshotEvent,
         CancellationToken cancellationToken = default)
     {
         ArgumentNullException.ThrowIfNull(snapshotEvent);
 
-        JsonTypeInfo typeInfo = EventConverter.ResolveEventJsonTypeInfo(snapshotEvent.GetType(), EventConverter.SerializerOptions);
-        var entity = (EntitySnapshotEvent)_snapshotConverter.ConvertEventToEntity(snapshotEvent, typeInfo);
+        var entity = _snapshotConverter.ConvertEventToEntity(snapshotEvent, _converterFactory.ConverterContext);
 
         await _db.AddAsync(entity, cancellationToken).ConfigureAwait(false);
         // defer SaveChanges to FlushEventsAsync
@@ -126,7 +128,7 @@ public sealed class EventStore : IEventStore
         DeleteStreamRequest request,
         CancellationToken cancellationToken = default)
     {
-        var events = await _db.Set<EntityDomainEvent>()
+        var events = await _db.Set<TEntityEventDomain>()
             .Where(e => e.StreamId == request.StreamId)
             .ToListAsync(cancellationToken)
             .ConfigureAwait(false);
@@ -155,13 +157,11 @@ public sealed class EventStore : IEventStore
     }
 
     ///<inheritdoc/>
-    [UnconditionalSuppressMessage("Trimming", "IL2026:Members annotated with 'RequiresUnreferencedCodeAttribute' require dynamic access otherwise can break functionality when trimming application code", Justification = "<Pending>")]
-    [UnconditionalSuppressMessage("AOT", "IL3050:Calling members annotated with 'RequiresDynamicCodeAttribute' may break functionality when AOT compiling.", Justification = "<Pending>")]
     public async Task<EnvelopeResult?> GetLatestSnapshotAsync(
         Guid ownerId,
         CancellationToken cancellationToken = default)
     {
-        var last = await _db.Set<EntitySnapshotEvent>()
+        var last = await _db.Set<TEntityEventSnapshot>()
             .AsNoTracking()
             .Where(e => e.OwnerId == ownerId)
             .OrderByDescending(e => e.Sequence)
@@ -173,7 +173,7 @@ public sealed class EventStore : IEventStore
 
         return new EnvelopeResult
         {
-            Event = _snapshotConverter.ConvertEntityToEvent(last),
+            Event = _snapshotConverter.ConvertEntityToEvent(last, _converterFactory.ConverterContext),
             EventId = last.KeyId,
             EventName = last.EventName,
             GlobalPosition = last.Sequence,
@@ -189,13 +189,11 @@ public sealed class EventStore : IEventStore
         await GetStreamVersionCoreAsync(streamId, cancellationToken).ConfigureAwait(false);
 
     ///<inheritdoc/>
-    [UnconditionalSuppressMessage("Trimming", "IL2026:Members annotated with 'RequiresUnreferencedCodeAttribute' require dynamic access otherwise can break functionality when trimming application code", Justification = "<Pending>")]
-    [UnconditionalSuppressMessage("AOT", "IL3050:Calling members annotated with 'RequiresDynamicCodeAttribute' may break functionality when AOT compiling.", Justification = "<Pending>")]
     public async IAsyncEnumerable<EnvelopeResult> ReadAllStreamsAsync(
         ReadAllStreamsRequest request,
         [EnumeratorCancellation] CancellationToken cancellationToken = default)
     {
-        var query = _db.Set<EntityDomainEvent>()
+        var query = _db.Set<TEntityEventDomain>()
             .AsNoTracking()
             .Where(e => e.Sequence > request.FromPosition)
             .OrderBy(e => e.Sequence)
@@ -205,7 +203,7 @@ public sealed class EventStore : IEventStore
         {
             yield return new EnvelopeResult
             {
-                Event = _domainConveter.ConvertEntityToEvent(entity),
+                Event = _domainConveter.ConvertEntityToEvent(entity, _converterFactory.ConverterContext),
                 EventId = entity.KeyId,
                 EventName = entity.EventName,
                 GlobalPosition = entity.Sequence,
@@ -218,13 +216,11 @@ public sealed class EventStore : IEventStore
     }
 
     ///<inheritdoc/>
-    [UnconditionalSuppressMessage("Trimming", "IL2026:Members annotated with 'RequiresUnreferencedCodeAttribute' require dynamic access otherwise can break functionality when trimming application code", Justification = "<Pending>")]
-    [UnconditionalSuppressMessage("AOT", "IL3050:Calling members annotated with 'RequiresDynamicCodeAttribute' may break functionality when AOT compiling.", Justification = "<Pending>")]
     public async IAsyncEnumerable<EnvelopeResult> ReadStreamAsync(
         ReadStreamRequest request,
         [EnumeratorCancellation] CancellationToken cancellationToken = default)
     {
-        var query = _db.Set<EntityDomainEvent>()
+        var query = _db.Set<TEntityEventDomain>()
             .AsNoTracking()
             .Where(e => e.StreamId == request.StreamId && e.StreamVersion > request.FromVersion) // exclusive lower bound
             .OrderBy(e => e.StreamVersion)
@@ -234,7 +230,7 @@ public sealed class EventStore : IEventStore
         {
             yield return new EnvelopeResult
             {
-                Event = _domainConveter.ConvertEntityToEvent(entity),
+                Event = _domainConveter.ConvertEntityToEvent(entity, _converterFactory.ConverterContext),
                 EventId = entity.KeyId,
                 EventName = entity.EventName,
                 GlobalPosition = entity.Sequence,
@@ -249,7 +245,7 @@ public sealed class EventStore : IEventStore
     ///<inheritdoc/>
     public async Task<bool> StreamExistsAsync(Guid streamId, CancellationToken cancellationToken = default)
     {
-        return await _db.Set<EntityDomainEvent>()
+        return await _db.Set<TEntityEventDomain>()
             .AsNoTracking()
             .AnyAsync(e => e.StreamId == streamId, cancellationToken)
             .ConfigureAwait(false);
@@ -272,7 +268,7 @@ public sealed class EventStore : IEventStore
 
         // Remove all events from this stream that are before the specified version
         // TruncateBeforeVersion means: remove all events with StreamVersion < TruncateBeforeVersion
-        var events = await _db.Set<EntityDomainEvent>()
+        var events = await _db.Set<TEntityEventDomain>()
             .Where(e => e.StreamId == request.StreamId && e.StreamVersion < request.TruncateBeforeVersion)
             .ToListAsync(cancellationToken)
             .ConfigureAwait(false);
@@ -290,7 +286,7 @@ public sealed class EventStore : IEventStore
         SubscribeToStreamRequest request,
         CancellationToken cancellationToken = default)
     {
-        return new StreamSubscription(_db, request, _domainConveter, cancellationToken);
+        return new StreamSubscription(_db, request, _converterFactory, _domainConveter, cancellationToken);
     }
 
     ///<inheritdoc/>
@@ -298,7 +294,7 @@ public sealed class EventStore : IEventStore
         SubscribeToAllStreamsRequest request,
         CancellationToken cancellationToken = default)
     {
-        return new AllStreamsSubscription(_db, request, _domainConveter, cancellationToken);
+        return new AllStreamsSubscription(_db, request, _domainConveter, _converterFactory, cancellationToken);
     }
 
     ///<inheritdoc/>
@@ -343,7 +339,7 @@ public sealed class EventStore : IEventStore
     private async Task<long> GetStreamVersionCoreAsync(
         Guid streamId, CancellationToken cancellationToken)
     {
-        var last = await _db.Set<EntityDomainEvent>()
+        var last = await _db.Set<TEntityEventDomain>()
             .AsNoTracking()
             .Where(e => e.StreamId == streamId)
             .OrderByDescending(e => e.StreamVersion)
@@ -357,27 +353,28 @@ public sealed class EventStore : IEventStore
     // Subscription implementation for a single stream
     private sealed class StreamSubscription : IAsyncDisposable
     {
-        private readonly EventStoreDataContext _context;
+        private readonly EventDataContext _context;
         private readonly SubscribeToStreamRequest _request;
-        private readonly IEventConverter _domainConverter;
+        private readonly IEventConverterFactory _converterFactory;
+        private readonly IEventConverter<TEntityEventDomain, IDomainEvent> _domainConverter;
         private readonly CancellationTokenSource _cts;
         private readonly Task _subscriptionTask;
 
         public StreamSubscription(
-            EventStoreDataContext context,
+            EventDataContext context,
             SubscribeToStreamRequest request,
-            IEventConverter domainConverter,
+            IEventConverterFactory converterFactory,
+            IEventConverter<TEntityEventDomain, IDomainEvent> domainConverter,
             CancellationToken cancellationToken)
         {
             _context = context;
             _request = request;
+            _converterFactory = converterFactory;
             _domainConverter = domainConverter;
             _cts = CancellationTokenSource.CreateLinkedTokenSource(cancellationToken);
             _subscriptionTask = RunSubscriptionAsync();
         }
 
-        [UnconditionalSuppressMessage("Trimming", "IL2026:Members annotated with 'RequiresUnreferencedCodeAttribute' require dynamic access otherwise can break functionality when trimming application code", Justification = "<Pending>")]
-        [UnconditionalSuppressMessage("AOT", "IL3050:Calling members annotated with 'RequiresDynamicCodeAttribute' may break functionality when AOT compiling.", Justification = "<Pending>")]
         private async Task RunSubscriptionAsync()
         {
             long lastProcessedVersion = -1;
@@ -386,7 +383,7 @@ public sealed class EventStore : IEventStore
             {
                 while (!_cts.Token.IsCancellationRequested)
                 {
-                    var events = await _context.Set<EntityDomainEvent>()
+                    var events = await _context.Set<TEntityEventDomain>()
                         .AsNoTracking()
                         .Where(e => e.StreamId == _request.StreamId && e.StreamVersion > lastProcessedVersion)
                         .OrderBy(e => e.StreamVersion)
@@ -396,7 +393,7 @@ public sealed class EventStore : IEventStore
 
                     foreach (var entity in events)
                     {
-                        var domainEvent = (IDomainEvent)_domainConverter.ConvertEntityToEvent(entity);
+                        var domainEvent = _domainConverter.ConvertEntityToEvent(entity, _converterFactory.ConverterContext);
                         await _request.OnEvent(domainEvent).ConfigureAwait(false);
                         lastProcessedVersion = entity.StreamVersion;
                     }
@@ -432,27 +429,28 @@ public sealed class EventStore : IEventStore
     // Subscription implementation for all streams
     private sealed class AllStreamsSubscription : IAsyncDisposable
     {
-        private readonly EventStoreDataContext _context;
+        private readonly EventDataContext _context;
         private readonly SubscribeToAllStreamsRequest _request;
-        private readonly IEventConverter _domainConverter;
+        private readonly IEventConverter<TEntityEventDomain, IDomainEvent> _domainConverter;
+        private readonly IEventConverterFactory _converterFactory;
         private readonly CancellationTokenSource _cts;
         private readonly Task _subscriptionTask;
 
         public AllStreamsSubscription(
-            EventStoreDataContext context,
+            EventDataContext context,
             SubscribeToAllStreamsRequest request,
-            IEventConverter domainConverter,
+            IEventConverter<TEntityEventDomain, IDomainEvent> domainConverter,
+            IEventConverterFactory converterFactory,
             CancellationToken cancellationToken)
         {
             _context = context;
             _request = request;
             _domainConverter = domainConverter;
+            _converterFactory = converterFactory;
             _cts = CancellationTokenSource.CreateLinkedTokenSource(cancellationToken);
             _subscriptionTask = RunSubscriptionAsync();
         }
 
-        [UnconditionalSuppressMessage("Trimming", "IL2026:Members annotated with 'RequiresUnreferencedCodeAttribute' require dynamic access otherwise can break functionality when trimming application code", Justification = "<Pending>")]
-        [UnconditionalSuppressMessage("AOT", "IL3050:Calling members annotated with 'RequiresDynamicCodeAttribute' may break functionality when AOT compiling.", Justification = "<Pending>")]
         private async Task RunSubscriptionAsync()
         {
             long lastProcessedSequence = 0;
@@ -461,7 +459,7 @@ public sealed class EventStore : IEventStore
             {
                 while (!_cts.Token.IsCancellationRequested)
                 {
-                    var events = await _context.Set<EntityDomainEvent>()
+                    var events = await _context.Set<TEntityEventDomain>()
                         .AsNoTracking()
                         .Where(e => e.Sequence > lastProcessedSequence)
                         .OrderBy(e => e.Sequence)
@@ -471,7 +469,7 @@ public sealed class EventStore : IEventStore
 
                     foreach (var entity in events)
                     {
-                        var domainEvent = (IDomainEvent)_domainConverter.ConvertEntityToEvent(entity);
+                        var domainEvent = _domainConverter.ConvertEntityToEvent(entity, _converterFactory.ConverterContext);
                         await _request.OnEvent(domainEvent).ConfigureAwait(false);
                         lastProcessedSequence = entity.Sequence;
                     }

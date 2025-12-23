@@ -16,6 +16,8 @@
 ********************************************************************************/
 using System.Diagnostics.CodeAnalysis;
 using System.Events.Data;
+using System.Events.Domain;
+using System.Events.Integration;
 
 using Microsoft.Extensions.DependencyInjection.Extensions;
 
@@ -53,16 +55,16 @@ public static class IEventExtensions
         }
 
         /// <summary>
-        /// Adds the default XEvent converter factory to the service collection.
+        /// Adds the default Event converter factory to the service collection.
         /// </summary>
-        /// <remarks>Use this method to enable XEvent conversion capabilities in the application's
-        /// dependency injection container. This is typically required for components that process or convert XEvent
+        /// <remarks>Use this method to enable Event conversion capabilities in the application's
+        /// dependency injection container. This is typically required for components that process or convert Event
         /// data.</remarks>
-        /// <returns>The updated service collection with the XEvent converter factory registered.</returns>
+        /// <returns>The updated service collection with the Event converter factory registered.</returns>
         public IServiceCollection AddXEventConverterFactory() =>
             services.AddXEventConverterFactory<EventConverterFactory>()
-                .AddSingleton<IEventConverter, EventConverterDomain>()
-                .AddSingleton<IEventConverter, EventConverterIntegration>()
-                .AddSingleton<IEventConverter, EventConverterSnapshot>();
+                .AddSingleton<IEventConverter<EntityDomainEvent, IDomainEvent>, EventConverterDomain>()
+                .AddSingleton<IEventConverter<EntityIntegrationEvent, IIntegrationEvent>, EventConverterIntegration>()
+                .AddSingleton<IEventConverter<EntitySnapshotEvent, ISnapshotEvent>, EventConverterSnapshot>();
     }
 }

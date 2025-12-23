@@ -16,8 +16,8 @@
 ********************************************************************************/
 namespace System.Events.Data.Configurations;
 
-using System.Entities.Data.Converters;
 using System.Events.Data;
+using System.Text.Json;
 
 using Microsoft.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore.Infrastructure;
@@ -38,7 +38,7 @@ using Microsoft.EntityFrameworkCore.Infrastructure;
 /// </code>
 /// </summary>
 /// <remarks>This customizer configures the EntityIntegrationEvent entity to use a JSON value converter for the
-/// EventData property, ensuring proper serialization and storage in SQL Server. It should be used in scenarios where
+/// <see cref="JsonDocument"/> EventData property, ensuring proper serialization and storage in SQL Server. It should be used in scenarios where
 /// outbox pattern support for integration events is required in a SQL Server-backed context.</remarks>
 /// <param name="dependencies">The set of dependencies required for model customization operations.</param>
 public class OutboxStoreSqlServerModelCustomizer(ModelCustomizerDependencies dependencies) : ModelCustomizer(dependencies)
@@ -50,7 +50,7 @@ public class OutboxStoreSqlServerModelCustomizer(ModelCustomizerDependencies dep
 
         modelBuilder.Entity<EntityIntegrationEvent>()
             .Property(e => e.EventData)
-            .HasConversion<JsonDocumentValueConverter>();
+            .HasEventJsonDocumentConversion();
 
         base.Customize(modelBuilder, context);
     }
