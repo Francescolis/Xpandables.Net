@@ -26,12 +26,6 @@ public sealed class EventStoreSqlServerIntegrationTests
         var eventDb = scope.ServiceProvider.GetRequiredService<EventStoreDataContext>();
         var outboxDb = scope.ServiceProvider.GetRequiredService<OutboxStoreDataContext>();
         var readStoreDb = scope.ServiceProvider.GetRequiredService<ReadStoreProbeContext>();
-        await eventDb.Database.EnsureDeletedAsync();
-        await outboxDb.Database.EnsureDeletedAsync();
-        await eventDb.Database.EnsureCreatedAsync();
-        await outboxDb.Database.EnsureCreatedAsync();
-        await readStoreDb.Database.EnsureDeletedAsync();
-        await readStoreDb.Database.EnsureCreatedAsync();
 
         var aggregateStore = scope.ServiceProvider.GetRequiredService<IAggregateStore<TestBankAccountAggregate>>();
         var pendingBuffer = scope.ServiceProvider.GetRequiredService<IPendingDomainEventsBuffer>();
@@ -78,25 +72,18 @@ public sealed class EventStoreSqlServerIntegrationTests
         services.AddXCacheTypeResolver(typeof(TestBankAccountAggregate).Assembly, typeof(AccountOpened).Assembly);
         services.AddXEventConverterFactory();
         services.AddXEventStoreDataContext(options =>
-            options.UseSqlServer(configuration.GetConnectionString(database.EventStoreConnectionString), sql =>
-        {
-            sql.EnableRetryOnFailure();
-            sql.MigrationsHistoryTable("__EventStoreMigrations");
-        }).ReplaceService<IModelCustomizer, EventStoreSqlServerModelCustomizer>());
+            options.UseSqlServer(configuration.GetConnectionString(database.EventStoreConnectionString))
+            .ReplaceService<IModelCustomizer, EventStoreSqlServerModelCustomizer>());
         services.AddXOutboxStoreDataContext(options =>
-            options.UseSqlServer(configuration.GetConnectionString(database.EventStoreConnectionString), sql =>
-        {
-            sql.EnableRetryOnFailure();
-            sql.MigrationsHistoryTable("__OutboxStoreMigrations");
-        }).ReplaceService<IModelCustomizer, OutboxStoreSqlServerModelCustomizer>());
+            options.UseSqlServer(configuration.GetConnectionString(database.EventStoreConnectionString))
+            .ReplaceService<IModelCustomizer, OutboxStoreSqlServerModelCustomizer>());
         services.AddDbContext<ReadStoreProbeContext>(options =>
-            options.UseSqlServer(configuration.GetConnectionString(database.ReadStoreConnectionString), sql =>
-        {
-            sql.EnableRetryOnFailure();
-            sql.MigrationsHistoryTable("__ReadStoreMigrations");
-        }));
+            options.UseSqlServer(configuration.GetConnectionString(database.ReadStoreConnectionString)));
         services.AddXEventStore();
         services.AddXOutboxStore();
+        services.AddXJsonSerializerOptions();
+        services.AddXEventConverterFactory();
+        services.AddXEventConverterContext();
         services.AddScoped<IPendingDomainEventsBuffer, PendingDomainEventsBuffer>();
         services.AddXAggregateStore<TestBankAccountAggregate>();
 

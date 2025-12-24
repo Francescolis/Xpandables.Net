@@ -32,7 +32,7 @@ namespace Xpandables.Net.UnitTests.Systems.Events;
 public sealed class EventServiceCollectionExtensionsTests
 {
     [Fact]
-    public void ServiceCollectionExtensions_RegisterEventInfrastructure()
+    public async Task ServiceCollectionExtensions_RegisterEventInfrastructure()
     {
         // Arrange
         using var sqliteDirectory = new SqliteDatabaseDirectory();
@@ -42,8 +42,8 @@ public sealed class EventServiceCollectionExtensionsTests
         using IServiceScope scope = provider.CreateScope();
         EventStoreDataContext eventDb = scope.ServiceProvider.GetRequiredService<EventStoreDataContext>();
         OutboxStoreDataContext outboxDb = scope.ServiceProvider.GetRequiredService<OutboxStoreDataContext>();
-        eventDb.Database.EnsureCreated();
-        outboxDb.Database.EnsureCreated();
+        eventDb.Database.Migrate();
+        outboxDb.Database.Migrate();
 
         // Assert
         var aggregateStore = scope.ServiceProvider.GetRequiredService<IAggregateStore<TestBankAccountAggregate>>();
@@ -64,6 +64,7 @@ public sealed class EventServiceCollectionExtensionsTests
         services.AddSingleton(new JsonSerializerOptions(JsonSerializerDefaults.Web));
         services.AddXCacheTypeResolver(typeof(TestBankAccountAggregate).Assembly);
         services.AddXEventConverterFactory();
+        services.AddXEventConverterContext();
         services.AddXEventStoreDataContext(options =>
             options.UseSqlite(directory.EventStoreConnectionString)
                     .ReplaceService<IModelCustomizer, EventStoreSqlServerModelCustomizer>());
