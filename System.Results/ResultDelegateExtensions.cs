@@ -49,7 +49,21 @@ public static class ResultDelegateExtensions
     /// failure.</returns>
     public static Result<TResult> Try<TResult>(this Func<TResult> func)
     {
-        return Try(func);
+        ArgumentNullException.ThrowIfNull(func);
+
+        try
+        {
+            return Result.Success(func());
+        }
+        catch (ResultException executionException)
+        {
+            return executionException.Result;
+        }
+        catch (Exception exception)
+            when (exception is not ResultException)
+        {
+            return exception.ToResult<TResult>();
+        }
     }
 
     /// <summary>

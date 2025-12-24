@@ -47,6 +47,9 @@ public class EventDataContext : DbContext
         // This is useful for scenarios where no specific options are provided.
     }
 
+    private static readonly EventHandler<EntityTrackedEventArgs> TrackedHandler = (_, e) => OnEntityTracked(e);
+    private static readonly EventHandler<EntityStateChangedEventArgs> StateChangedHandler = (_, e) => OnEntityStateChanged(e);
+
     /// <summary>  
     /// Initializes a new instance of the <see cref="EventDataContext"/> class 
     /// using the specified options.  
@@ -57,8 +60,20 @@ public class EventDataContext : DbContext
     [RequiresUnreferencedCode("The context may be trimmed.")]
     protected EventDataContext(DbContextOptions options) : base(options)
     {
-        ChangeTracker.Tracked += static (sender, e) => OnEntityTracked(e);
-        ChangeTracker.StateChanged += static (sender, e) => OnEntityStateChanged(e);
+        ChangeTracker.Tracked += TrackedHandler;
+        ChangeTracker.StateChanged += StateChangedHandler;
+    }
+
+    /// <summary>
+    /// Releases the resources used by the current instance of <see cref="EventDataContext"/>
+    /// and unsubscribes from the tracked and state changed events to prevent memory leaks.
+    /// </summary>
+    public override void Dispose()
+    {
+        ChangeTracker.Tracked -= TrackedHandler;
+        ChangeTracker.StateChanged -= StateChangedHandler;
+        base.Dispose();
+        GC.SuppressFinalize(this);
     }
 
     private static void OnEntityTracked(EntityTrackedEventArgs e)
@@ -81,20 +96,5 @@ public class EventDataContext : DbContext
             deletedEntity.DeletedOn = DateTime.UtcNow;
             deletedEntity.Status = EntityStatus.DELETED;
         }
-    }
-
-    /// <summary>
-    /// Releases the resources used by the current instance of <see cref="EventDataContext"/>
-    /// and unsubscribes from the tracked and state changed events to prevent memory leaks.
-    /// </summary>
-    public override void Dispose()
-    {
-        // Unsubscribe from events to prevent memory leaks
-        ChangeTracker.Tracked -= static (sender, e) => OnEntityTracked(e);
-        ChangeTracker.StateChanged -= static (sender, e) => OnEntityStateChanged(e);
-
-        base.Dispose();
-
-        GC.SuppressFinalize(this);
     }
 }
