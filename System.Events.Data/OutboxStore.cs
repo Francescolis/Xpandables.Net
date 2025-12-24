@@ -25,6 +25,7 @@ namespace System.Events.Data;
 /// <summary>
 /// Provides an implementation of an outbox pattern for managing integration events.
 /// </summary>
+/// <typeparam name="TEntityIntegrationEvent">The type of the entity integration event.</typeparam>
 /// <remarks>The <see cref="OutboxStore{TEntityIntegrationEvent}"/> class is designed to facilitate reliable event processing
 /// by implementing the outbox pattern. It ensures that integration events are stored, claimed, and processed in a
 /// consistent and fault-tolerant manner. This class supports operations such as enqueuing events, claiming pending
@@ -59,7 +60,7 @@ public sealed class OutboxStore<[DynamicallyAccessedMembers(EntityEvent.Dynamica
         }
 
         await _db.AddRangeAsync(list, cancellationToken).ConfigureAwait(false);
-        // defer SaveChanges to Event Store or Unit of Work
+        // defer SaveChanges to Event Store flush
     }
 
     /// <inheritdoc />
