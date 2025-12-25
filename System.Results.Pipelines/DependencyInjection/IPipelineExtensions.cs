@@ -152,15 +152,17 @@ public static class IPipelineExtensions
             ArgumentNullException.ThrowIfNull(type);
             ArgumentNullException.ThrowIfNull(services);
 
-            if (!type.GetInterfaces().Any(i =>
-                    i.IsGenericType &&
-                    i.GetGenericTypeDefinition() == typeof(IPipelineRequestHandler<>)))
+            var handlerInterface = type.GetInterfaces().FirstOrDefault(i =>
+                i.IsGenericType &&
+                i.GetGenericTypeDefinition() == typeof(IPipelineRequestHandler<>));
+
+            if (handlerInterface is null)
             {
                 throw new InvalidOperationException(
                     $"{type.Name} does not implement IPipelineRequestHandler<,> interface.");
             }
 
-            return services.AddTransient(typeof(IPipelineRequestHandler<>), type);
+            return services.AddTransient(handlerInterface, type);
         }
     }
 }

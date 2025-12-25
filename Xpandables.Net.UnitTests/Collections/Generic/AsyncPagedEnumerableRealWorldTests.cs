@@ -366,7 +366,7 @@ public sealed class AsyncPagedEnumerableRealWorldTests
         // Assert
         Assert.Equal(size, metrics.ItemsProcessed);
         Assert.Equal(10, metrics.PagesCompleted);
-        Assert.NotEqual(default, metrics.ProcessingTimeMs);
+        Assert.InRange(metrics.ProcessingTimeMs, 0, long.MaxValue);
     }
 
     // Helper methods

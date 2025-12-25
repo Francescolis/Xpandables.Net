@@ -45,13 +45,12 @@ public sealed class PipelineExtensionsTests
 
         // Act
         services.AddXPipelineRequestHandler(typeof(TestHandler));
+        using var provider = services.BuildServiceProvider();
+        var handler1 = provider.GetRequiredService<IPipelineRequestHandler<TestRequest>>();
+        var handler2 = provider.GetRequiredService<IPipelineRequestHandler<TestRequest>>();
 
         // Assert
-        ServiceDescriptor descriptor = Assert.Single(
-            services.Where(descriptor => descriptor.ServiceType == typeof(IPipelineRequestHandler<>)
-                && descriptor.ImplementationType == typeof(TestHandler)));
-
-        Assert.Equal(ServiceLifetime.Transient, descriptor.Lifetime);
+        Assert.NotSame(handler1, handler2);
     }
 
     private sealed class TestRequest : IRequest;
