@@ -168,6 +168,58 @@ public static class IEventExtensions
             services.AddXHostedScheduler<HostedScheduler>();
 
         /// <summary>
+        /// Registers the specified event bus implementation and related services with the dependency injection
+        /// container.
+        /// </summary>
+        /// <remarks>This method adds the specified event bus as a singleton service for IEventBus and
+        /// registers EventBusPublisher as a scoped service for IEventPublisher. Call this method during application
+        /// startup to enable event bus functionality.</remarks>
+        /// <typeparam name="TEventBus">The type of the event bus to register. Must implement the IEventBus interface and have a public constructor.</typeparam>
+        /// <returns>The IServiceCollection instance for chaining additional service registrations.</returns>
+        public IServiceCollection AddXEventBus<[DynamicallyAccessedMembers(DynamicallyAccessedMemberTypes.PublicConstructors)] TEventBus>()
+             where TEventBus : class, IEventBus
+        {
+            ArgumentNullException.ThrowIfNull(services);
+
+            services.TryAddSingleton<IEventBus, TEventBus>();
+            services.TryAddScoped<IEventPublisher, EventBusPublisher>();
+
+            return services;
+        }
+
+        /// <summary>
+        /// Registers a composite <see cref="IEventPublisher"/> that invokes all currently registered publishers.
+        /// <code>
+        /// In-process subscribers + external bus
+        ///     services.AddXEventPublisher();     // in-process handler dispatch (EventPublisherSubscriber)
+        ///     services.AddXEventBus&lt;MyBus&gt;();    // external bus publisher (EventBusPublisher)
+        ///     services.AddXCompositeEventPublisher();
+        /// </code>
+        /// </summary>
+        /// <remarks>
+        /// This is intended for scenarios where the same event must be published to multiple targets
+        /// (e.g. in-process subscribers + external bus).
+        /// </remarks>
+        public IServiceCollection AddXCompositeEventPublisher()
+        {
+            ArgumentNullException.ThrowIfNull(services);
+
+            services.TryAddEnumerable(ServiceDescriptor.Scoped<IEventPublisher, EventPublisherSubscriber>());
+            services.TryAddEnumerable(ServiceDescriptor.Scoped<IEventPublisher, EventBusPublisher>());
+
+            services.Replace(ServiceDescriptor.Scoped<IEventPublisher>(sp =>
+            {
+                var publishers = sp.GetServices<IEventPublisher>()
+                    .Where(static p => p is not CompositeEventPublisher)
+                    .ToArray();
+
+                return new CompositeEventPublisher(publishers);
+            }));
+
+            return services;
+        }
+
+        /// <summary>
         /// Registers the specified publisher type as the scoped implementation of <see cref="IEventPublisher"/> in the
         /// dependency injection container.
         /// </summary>
@@ -179,8 +231,8 @@ public static class IEventExtensions
         /// <param name="lifetime">The service lifetime for the publisher registration. Defaults to <see cref="ServiceLifetime.Singleton"/>.</param>
         /// <returns>The <see cref="IServiceCollection"/> instance with the publisher registration added.</returns>
         public IServiceCollection AddXEventPublisher<[DynamicallyAccessedMembers(DynamicallyAccessedMemberTypes.PublicConstructors)] TEventPublisher>(
-            ServiceLifetime lifetime = ServiceLifetime.Scoped)
-            where TEventPublisher : class, IEventPublisher
+                ServiceLifetime lifetime = ServiceLifetime.Scoped)
+                where TEventPublisher : class, IEventPublisher
         {
             services.TryAdd(
                 new ServiceDescriptor(
