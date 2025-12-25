@@ -525,6 +525,77 @@ public class OrderIntegrationService(IOutboxStore outboxStore)
 }
 ```
 
+### Publish Integration Events to an External Bus
+
+The outbox pattern ensures integration events are stored transactionally. To actually publish these events to an external
+message broker, register an `IEventBus` implementation and use `AddXEventBus<TEventBus>()`.
+
+The built-in scheduler will dequeue pending outbox events and publish them via `IEventPublisher`. When `AddXEventBus` is
+registered, the publisher implementation used for `IIntegrationEvent` is `EventBusPublisher`.
+
+```csharp
+using System.Events;
+using System.Events.Integration;
+using Microsoft.Extensions.DependencyInjection;
+
+var builder = WebApplication.CreateBuilder(args);
+
+// In-process publish/subscribe (optional)
+builder.Services.AddXEventPublisher(EventRegistryMode.Static);
+builder.Services.AddXEventHandlers(typeof(Program).Assembly);
+
+// External bus publishing for integration events
+builder.Services.AddXEventBus<MyEventBus>();
+
+// Background outbox processing
+builder.Services.AddXHostedScheduler();
+```
+
+Example `IEventBus` implementation (pseudo-code):
+
+```csharp
+using System.Events;
+using System.Events.Integration;
+
+public sealed class MyEventBus : IEventBus
+{
+    public Task PublishAsync(IIntegrationEvent @event, CancellationToken cancellationToken = default)
+    {
+        // Serialize + publish to RabbitMQ/Kafka/Azure Service Bus/etc.
+        // Use @event.GetEventName() as a message type and @event.EventId for idempotency.
+        return Task.CompletedTask;
+    }
+}
+```
+
+### Publish to In-Process Handlers and External Bus (Composite Publisher)
+
+If you want to publish the same event both:
+
+- to in-process handlers (for local side effects, read models, etc.)
+- and to an external bus (for cross-service communication)
+
+register the composite publisher:
+
+```csharp
+using Microsoft.Extensions.DependencyInjection;
+
+var builder = WebApplication.CreateBuilder(args);
+
+builder.Services.AddXEventPublisher(EventRegistryMode.Static);
+builder.Services.AddXEventHandlers(typeof(Program).Assembly);
+
+builder.Services.AddXEventBus<MyEventBus>();
+
+// Make IEventPublisher fan-out to all registered publishers
+builder.Services.AddXCompositeEventPublisher();
+
+builder.Services.AddXHostedScheduler();
+```
+
+With this setup, the hosted scheduler processes the outbox and calls `IEventPublisher.PublishAsync(@event)`.
+The composite publisher will execute both the in-process dispatch and bus publish.
+
 ---
 
 ## ⏰ Background Scheduler
@@ -578,6 +649,8 @@ public sealed class OutboxProcessorScheduler : IScheduler
 |--------|-------------|
 | `AddXEventPublisher()` | Registers event publisher with handler registry |
 | `AddXEventPublisher<T>()` | Registers custom event publisher |
+| `AddXEventBus<T>()` | Registers an external bus (`IEventBus`) and a publisher for integration events |
+| `AddXCompositeEventPublisher()` | Registers a composite publisher (in-process + external bus fan-out) |
 | `AddXEventHandler<TEvent, THandler>()` | Registers specific event handler |
 | `AddXEventHandlers(assemblies)` | Auto-discovers and registers all handlers |
 | `AddXEventSubscriber()` | Registers event subscriber |
