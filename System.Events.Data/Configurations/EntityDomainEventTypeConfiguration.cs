@@ -37,6 +37,8 @@ public sealed class EntityDomainEventTypeConfiguration : EntityEventTypeConfigur
         builder.Property(e => e.StreamId).IsRequired();
         builder.Property(e => e.StreamVersion).IsRequired();
         builder.Property(e => e.StreamName).IsRequired();
+        builder.Property(e => e.CausationId);
+        builder.Property(e => e.CorrelationId);
 
         builder.HasIndex(e => new { e.StreamId, e.StreamVersion })
                .IsUnique()

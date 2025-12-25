@@ -58,4 +58,14 @@ public readonly record struct EnvelopeResult
     /// Gets the version of the stream, or <see langword="null"/> if the version is not available.
     /// </summary>
     public readonly long? StreamVersion { get; init; }
+    /// <summary>
+    /// Gets the identifier of the event that caused this event (for causation tracking).
+    /// </summary>
+    /// <remarks>Null if this event was not caused by another event.</remarks>
+    public readonly Guid? CausationId { get; init; }
+    /// <summary>
+    /// Gets the correlation identifier for tracking related events across streams.
+    /// </summary>
+    /// <remarks>Null if this event is not part of a correlated flow.</remarks>
+    public readonly Guid? CorrelationId { get; init; }
 }

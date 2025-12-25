@@ -46,6 +46,8 @@ public sealed class EventConverterDomain(ICacheTypeResolver typeResolver) : IEve
                 StreamId = @event.StreamId,
                 StreamName = @event.StreamName,
                 StreamVersion = @event.StreamVersion,
+                CorrelationId = @event.CorrelationId,
+                CausationId = @event.CausationId,
                 EventName = @event.GetEventName(),
                 EventData = data
             };

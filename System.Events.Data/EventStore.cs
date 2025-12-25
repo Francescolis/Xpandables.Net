@@ -210,7 +210,9 @@ public sealed class EventStore<[DynamicallyAccessedMembers(EntityEvent.Dynamical
                 OccurredOn = entity.CreatedOn,
                 StreamId = entity.StreamId,
                 StreamName = entity.StreamName,
-                StreamVersion = entity.StreamVersion
+                StreamVersion = entity.StreamVersion,
+                CausationId = entity.CausationId,
+                CorrelationId = entity.CorrelationId
             };
         }
     }
@@ -237,7 +239,9 @@ public sealed class EventStore<[DynamicallyAccessedMembers(EntityEvent.Dynamical
                 OccurredOn = entity.CreatedOn,
                 StreamId = entity.StreamId,
                 StreamName = entity.StreamName,
-                StreamVersion = entity.StreamVersion
+                StreamVersion = entity.StreamVersion,
+                CausationId = entity.CausationId,
+                CorrelationId = entity.CorrelationId
             };
         }
     }
