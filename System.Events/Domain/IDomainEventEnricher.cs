@@ -23,7 +23,7 @@ namespace System.Events.Domain;
 /// <remarks>Implementations of this interface can be used to augment domain events with data such as correlation
 /// identifiers, timestamps, or other information required by downstream consumers. Enrichment is typically performed
 /// before events are dispatched to handlers or external systems.</remarks>
-public interface IEventEnricher
+public interface IDomainEventEnricher
 {
     /// <summary>
     /// Enriches the specified domain event with additional metadata or context information.

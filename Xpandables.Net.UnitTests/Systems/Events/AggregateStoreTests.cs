@@ -14,6 +14,7 @@
  * limitations under the License.
  *
 ********************************************************************************/
+using System.Events;
 using System.Events.Aggregates;
 using System.Events.Domain;
 

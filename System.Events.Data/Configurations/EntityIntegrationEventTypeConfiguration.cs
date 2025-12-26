@@ -37,6 +37,8 @@ public sealed class EntityIntegrationEventTypeConfiguration : EntityEventTypeCon
         builder.Property(e => e.AttemptCount).HasDefaultValue(0);
         builder.Property(e => e.NextAttemptOn).IsRequired(false);
         builder.Property(e => e.ErrorMessage).IsRequired(false);
+        builder.Property(e => e.CausationId);
+        builder.Property(e => e.CorrelationId);
 
         builder.Property(e => e.UpdatedOn)
                .IsConcurrencyToken();

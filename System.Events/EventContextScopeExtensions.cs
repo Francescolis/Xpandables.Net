@@ -14,7 +14,7 @@
  * limitations under the License.
  *
 ********************************************************************************/
-namespace System.Events.Domain;
+namespace System.Events;
 
 /// <summary>
 /// Provides extension methods for managing event context scopes using an event context accessor.

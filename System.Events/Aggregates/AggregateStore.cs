@@ -34,11 +34,11 @@ namespace System.Events.Aggregates;
 public sealed class AggregateStore<TAggregate>(
     IEventStore eventStore,
     IPendingDomainEventsBuffer domainEvents,
-    IEventEnricher eventEnricher) : IAggregateStore<TAggregate>
+    IDomainEventEnricher eventEnricher) : IAggregateStore<TAggregate>
     where TAggregate : class, IAggregate, IAggregateFactory<TAggregate>
 {
     private readonly IEventStore _eventStore = eventStore;
-    private readonly IEventEnricher _eventEnricher = eventEnricher;
+    private readonly IDomainEventEnricher _eventEnricher = eventEnricher;
 
     /// <inheritdoc />
     public async Task<TAggregate> LoadAsync(

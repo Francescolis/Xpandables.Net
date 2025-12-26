@@ -44,6 +44,8 @@ public sealed class EventConverterIntegration(ICacheTypeResolver typeResolver) :
             {
                 KeyId = @event.EventId,
                 EventName = @event.GetEventName(),
+                CorrelationId = @event.CorrelationId,
+                CausationId = @event.CausationId,
                 EventData = data
             };
         }

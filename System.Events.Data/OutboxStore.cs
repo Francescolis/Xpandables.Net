@@ -32,13 +32,16 @@ namespace System.Events.Data;
 /// events for processing, marking events as completed, and handling event failures.</remarks>
 /// <param name="outboxStoreDataContextFactory">The data context used for accessing the outbox store.</param>
 /// <param name="converterFactory">The factory used to obtain event converters.</param>
+/// <param name="eventEnricher">The enricher used to enrich integration events before processing.</param>
 public sealed class OutboxStore<[DynamicallyAccessedMembers(EntityEvent.DynamicallyAccessedMemberTypes)] TEntityIntegrationEvent>(
     IOutboxStoreDataContextFactory outboxStoreDataContextFactory,
-    IEventConverterFactory converterFactory) : IOutboxStore
+    IEventConverterFactory converterFactory,
+    IIntegrationEventEnricher eventEnricher) : IOutboxStore
     where TEntityIntegrationEvent : class, IEntityEventIntegration
 {
     private readonly EventDataContext _db = outboxStoreDataContextFactory.Create();
     private readonly IEventConverterFactory _converterFactory = converterFactory;
+    private readonly IIntegrationEventEnricher _eventEnricher = eventEnricher;
     private readonly IEventConverter<TEntityIntegrationEvent, IIntegrationEvent> _converter = converterFactory
         .GetIntegrationEventConverter<TEntityIntegrationEvent>();
 
@@ -51,8 +54,9 @@ public sealed class OutboxStore<[DynamicallyAccessedMembers(EntityEvent.Dynamica
         ArgumentOutOfRangeException.ThrowIfEqual(events.Length, 0);
 
         var list = new List<TEntityIntegrationEvent>(events.Length);
+        var enriched = events.Select(_eventEnricher.Enrich).ToArray();
 
-        foreach (var @event in events)
+        foreach (var @event in enriched)
         {
             var entity = _converter.ConvertEventToEntity(@event, _converterFactory.ConverterContext);
             entity.SetStatus(EventStatus.PENDING);

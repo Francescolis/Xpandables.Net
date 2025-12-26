@@ -57,7 +57,7 @@ public static class IEventExtensions
         ///     // any aggregates saved in this logical call-path get enriched automatically
         /// </code>
         /// </summary>
-        /// <remarks>This method registers implementations for event context access and enrichment,
+        /// <remarks>This method registers implementations for event context access and you need to register the enrichment,
         /// enabling event handlers to access contextual information during event processing. Call this method during
         /// application startup to ensure event context features are available throughout the application's
         /// lifetime.</remarks>
@@ -68,9 +68,70 @@ public static class IEventExtensions
 
             services.TryAddSingleton<AsyncLocalEventContextAccessor>();
             services.TryAddSingleton<IEventContextAccessor>(sp => sp.GetRequiredService<AsyncLocalEventContextAccessor>());
-            services.TryAddScoped<IEventEnricher, DefaultDomainEventEnricher>();
 
             return services;
+        }
+
+        /// <summary>
+        /// Adds a scoped domain event enricher of the specified type to the service collection.
+        /// </summary>
+        /// <remarks>If an IDomainEventEnricher service has not already been registered, this method
+        /// registers the specified type as a scoped service. This enables dependency injection of the domain event
+        /// enricher throughout the application.</remarks>
+        /// <typeparam name="TDomainEventEnricher">The type of the domain event enricher to register. Must implement the IDomainEventEnricher interface and
+        /// have a public constructor.</typeparam>
+        /// <returns>The same IServiceCollection instance so that additional calls can be chained.</returns>
+        public IServiceCollection AddXDomainEventEnricher<[DynamicallyAccessedMembers(DynamicallyAccessedMemberTypes.PublicConstructors)] TDomainEventEnricher>()
+            where TDomainEventEnricher : class, IDomainEventEnricher
+        {
+            ArgumentNullException.ThrowIfNull(services);
+            services.TryAddScoped<IDomainEventEnricher, TDomainEventEnricher>();
+            return services;
+        }
+
+        /// <summary>
+        /// Adds the specified integration event enricher type to the service collection for dependency injection.
+        /// </summary>
+        /// <remarks>This method registers the specified integration event enricher as a scoped service.
+        /// Subsequent calls to resolve IIntegrationEventEnricher will return an instance of the specified type. Use
+        /// this method to enable custom enrichment of integration events within the application's dependency injection
+        /// pipeline.</remarks>
+        /// <typeparam name="TIntegrationEventEnricher">The type of the integration event enricher to register. Must implement the IIntegrationEventEnricher
+        /// interface and have a public constructor.</typeparam>
+        /// <returns>The IServiceCollection instance with the integration event enricher registered.</returns>
+        public IServiceCollection AddXIntegrationEventEnricher<[DynamicallyAccessedMembers(DynamicallyAccessedMemberTypes.PublicConstructors)] TIntegrationEventEnricher>()
+            where TIntegrationEventEnricher : class, IIntegrationEventEnricher
+        {
+            ArgumentNullException.ThrowIfNull(services);
+            services.TryAddScoped<IIntegrationEventEnricher, TIntegrationEventEnricher>();
+            return services;
+        }
+
+        /// <summary>
+        /// Adds the default integration event enricher to the service collection for use with X integration events.
+        /// </summary>
+        /// <remarks>This method registers <see cref="DefaultIntegrationEventEnricher"/> as the
+        /// implementation for integration event enrichment. Call this method during application startup to enable
+        /// enrichment of X integration events. This method is intended to be used as part of the dependency injection
+        /// setup.</remarks>
+        /// <returns>The <see cref="IServiceCollection"/> instance with the default integration event enricher registered.</returns>
+        public IServiceCollection AddXIntegrationEventEnricher()
+        {
+            ArgumentNullException.ThrowIfNull(services);
+            return services.AddXIntegrationEventEnricher<DefaultIntegrationEventEnricher>();
+        }
+
+        /// <summary>
+        /// Adds the default domain event enricher to the service collection for use with cross-domain event processing.
+        /// </summary>
+        /// <remarks>This method registers <see cref="DefaultDomainEventEnricher"/> as the implementation
+        /// for domain event enrichment. Call this method during application startup to enable domain event enrichment
+        /// features.</remarks>
+        /// <returns>The <see cref="IServiceCollection"/> instance with the default domain event enricher registered.</returns>
+        public IServiceCollection AddXDomainEventEnricher()
+        {
+            ArgumentNullException.ThrowIfNull(services);
+            return services.AddXDomainEventEnricher<DefaultDomainEventEnricher>();
         }
 
         /// <summary>

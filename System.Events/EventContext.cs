@@ -16,7 +16,7 @@
 ********************************************************************************/
 using System.Runtime.InteropServices;
 
-namespace System.Events.Domain;
+namespace System.Events;
 
 /// <summary>
 /// Provides contextual information for an event or operation, including correlation and causation identifiers used for

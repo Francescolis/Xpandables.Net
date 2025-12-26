@@ -14,7 +14,7 @@
  * limitations under the License.
  *
 ********************************************************************************/
-namespace System.Events.Domain;
+namespace System.Events;
 
 /// <summary>
 /// Provides access to the current event context for the logical execution flow using asynchronous local storage.

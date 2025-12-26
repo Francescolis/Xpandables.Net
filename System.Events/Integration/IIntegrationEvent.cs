@@ -24,7 +24,37 @@ namespace System.Events.Integration;
 /// <remarks>Integration events are typically used to communicate changes or actions across service boundaries in
 /// distributed systems, such as in event-driven or microservices architectures. Implementations should ensure that
 /// integration events are serializable and suitable for transport over messaging infrastructure.</remarks>
-public interface IIntegrationEvent : IEvent;
+public interface IIntegrationEvent : IEvent
+{
+    /// <summary>
+    /// Gets the identifier that represents the originating cause of the operation, if available.
+    /// </summary>
+    /// <remarks>The causation identifier is typically used to track the flow of related operations or
+    /// messages, enabling correlation across distributed systems or asynchronous workflows. This value may be null if
+    /// no causation information is present.</remarks>
+    Guid? CausationId { get; init; }
+
+    /// <summary>
+    /// Gets the correlation identifier used to associate related operations or requests.
+    /// </summary>
+    /// <remarks>The correlation identifier can be used for tracking and diagnostic purposes across
+    /// distributed systems or asynchronous workflows. If not set, the value is <see langword="null"/>.</remarks>
+    Guid? CorrelationId { get; init; }
+
+    /// <summary>
+    /// Sets the causation identifier of the event.
+    /// </summary>
+    /// <param name="causationId">The causation identifier to set.</param>
+    /// <returns>The integration event with the specified causation identifier.</returns>
+    IIntegrationEvent WithCausation(Guid causationId);
+
+    /// <summary>
+    /// Sets the correlation identifier of the event.
+    /// </summary>
+    /// <param name="correlationId">The correlation identifier to set.</param>
+    /// <returns>The integration event with the specified correlation identifier.</returns>
+    IIntegrationEvent WithCorrelation(Guid correlationId);
+}
 
 /// <summary>
 /// Defines a contract for integration events that encapsulate a domain event of a specified type.
@@ -42,7 +72,23 @@ public interface IIntegrationEvent<TDomainEvent> : IIntegrationEvent
 /// </summary>
 /// <remarks>Integration events are used to communicate significant changes or actions between different systems
 /// or microservices. Derive from this type to define events that should be handled by external subscribers.</remarks>
-public abstract record IntegrationEvent : EventBase, IIntegrationEvent;
+public abstract record IntegrationEvent : EventBase, IIntegrationEvent
+{
+    /// <inheritdoc/>
+    public Guid? CorrelationId { get; init; }
+
+    /// <inheritdoc/>
+    public Guid? CausationId { get; init; }
+
+    /// <inheritdoc />
+    public virtual IIntegrationEvent WithCausation(Guid causationId) =>
+        this with { CausationId = causationId };
+
+    /// <inheritdoc />
+    public virtual IIntegrationEvent WithCorrelation(Guid correlationId) =>
+        this with { CorrelationId = correlationId };
+
+}
 
 /// <summary>
 /// Represents the base integration event that encapsulates a domain event of the specified type for use in distributed
