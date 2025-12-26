@@ -28,6 +28,9 @@
   <Project Path="AspNetCore.Composition/AspNetCore.Composition.csproj" Id="cf382ec2-1c92-44c7-acaa-daac2417613d">
     <Platform Project="x64" />
   </Project>
+  <Project Path="AspNetCore.Events/AspNetCore.Events.csproj" Id="0f15ff92-69d8-4a03-a491-c59d4e378aa7">
+    <Platform Project="x64" />
+  </Project>
   <Project Path="AspNetCore.Net/AspNetCore.Net.csproj" Id="a820677a-3901-4f62-a6a0-decd0a485702">
     <Platform Project="x64" />
   </Project>
