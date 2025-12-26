@@ -1,30 +1,34 @@
-﻿# 🗄️ System.Events.Data
+﻿# System.Events.Data
 
-[![NuGet](https://img.shields.io/badge/NuGet-preview-orange.svg)](https://www.nuget.org/)
+[![NuGet](https://img.shields.io/badge/NuGet-10.x-blue.svg)](https://www.nuget.org/packages/System.Events.Data)
 [![.NET](https://img.shields.io/badge/.NET-10.0-purple.svg)](https://dotnet.microsoft.com/)
 
-> **Event Store with EF Core** - Entity Framework Core implementation of event sourcing with EventStoreDataContext, OutboxStoreDataContext, event converters, and stream management.
+> EF Core persistence for event sourcing: event store + snapshot store + transactional outbox.
 
 ---
 
-## 📋 Overview
+## Overview
 
-`System.Events.Data` provides complete EF Core-based implementations for event sourcing patterns including event store, outbox pattern, snapshot support, and stream subscriptions. It enables persisting domain events, integration events, and aggregate snapshots using Entity Framework Core.
+`System.Events.Data` provides EF Core implementations for the abstractions in `System.Events`:
 
-### ✨ Key Features
+- `EventStoreDataContext` (domain events + snapshots)
+- `OutboxStoreDataContext` (integration events)
+- `EventStore` (`IEventStore`) append/read/stream management
+- `OutboxStore` (`IOutboxStore`) enqueue/dequeue/complete/fail
 
-- 💾 **EventStoreDataContext** - EF Core DbContext for domain events and snapshots
-- 📤 **OutboxStoreDataContext** - EF Core DbContext for integration events (outbox pattern)
-- 📝 **EventStore** - Full IEventStore implementation with append, read, and stream operations
-- 📨 **OutboxStore** - Reliable integration event publishing with transactional outbox
-- 🔄 **Event Converters** - Convert between domain events and entity representations
-- 📸 **Snapshot Support** - Store and retrieve aggregate snapshots for performance
-- 📡 **Stream Subscriptions** - Subscribe to event streams with polling
-- 🔒 **Transactional Flush** - Atomic commit of events and outbox together
+Targeted for **.NET 10** and intended to be used together with SQL Server (or other EF Core providers).
+
+### Key features
+
+- **Event store tables** for domain events and snapshots
+- **Outbox table** for integration events and reliable delivery
+- **Event converters** for translating between stored entities and runtime events
+- **Stream operations**: read/append, stream existence/version, subscriptions
+- **Transactional flush**: commit event store + outbox consistently (via the store APIs)
 
 ---
 
-## 📥 Installation
+## Installation
 
 ```bash
 dotnet add package System.Events.Data
@@ -35,7 +39,7 @@ dotnet add package Microsoft.EntityFrameworkCore.SqlServer
 
 ## 🚀 Quick Start
 
-### Service Registration
+### Service registration
 
 ```csharp
 using Microsoft.Extensions.DependencyInjection;
@@ -43,60 +47,63 @@ using Microsoft.EntityFrameworkCore;
 
 var builder = WebApplication.CreateBuilder(args);
 
-// Register Event Store DataContext
+// Event store (domain events + snapshots)
 builder.Services.AddXEventStoreDataContext(options =>
     options.UseSqlServer(
-        builder.Configuration.GetConnectionString("EventStore"),
+        builder.Configuration.GetConnectionString("EventStoreDb"),
         sql => sql.MigrationsHistoryTable("__EventStoreMigrations")));
 
-// Register Outbox Store DataContext
+// Outbox store (integration events)
 builder.Services.AddXOutboxStoreDataContext(options =>
     options.UseSqlServer(
-        builder.Configuration.GetConnectionString("EventStore"),
+        builder.Configuration.GetConnectionString("EventStoreDb"),
         sql => sql.MigrationsHistoryTable("__OutboxStoreMigrations")));
 
-// Register Event Store and Outbox Store
+// Stores + converters
 builder.Services.AddXEventStore();
 builder.Services.AddXOutboxStore();
 builder.Services.AddXEventConverterFactory();
+
+// Optional but recommended for correlation/causation enrichment
+builder.Services.AddXEventContext();
 ```
 
-### Using the Event Store
+### Using the event store
 
 ```csharp
 using System.Events.Data;
 using System.Events.Domain;
 
-public class OrderService
+public sealed class OrderService
 {
     private readonly IEventStore _eventStore;
 
     public OrderService(IEventStore eventStore)
         => _eventStore = eventStore;
 
-    public async Task CreateOrderAsync(Guid orderId, string customerId)
+    public async Task CreateOrderAsync(Guid orderId, string customerId, CancellationToken ct)
     {
         var events = new IDomainEvent[]
         {
-            new OrderCreatedEvent { OrderId = orderId, CustomerId = customerId },
-            new OrderItemAddedEvent { OrderId = orderId, ProductId = "PROD-1", Quantity = 2 }
+            new OrderCreatedEvent { StreamId = orderId, CustomerId = customerId },
+            new OrderItemAddedEvent { StreamId = orderId, ProductId = "PROD-1", Quantity = 2 }
         };
 
         var request = new AppendRequest
         {
             StreamId = orderId,
             Events = events,
-            ExpectedVersion = null // No optimistic concurrency for new stream
+            ExpectedVersion = null // no optimistic concurrency for new stream
         };
 
-        AppendResult result = await _eventStore.AppendToStreamAsync(request);
+        AppendResult result = await _eventStore.AppendToStreamAsync(request, ct);
         Console.WriteLine($"Appended to version {result.NextExpectedVersion}");
 
-        // Flush events to database
-        await _eventStore.FlushEventsAsync();
+        // Persist batched changes
+        await _eventStore.FlushEventsAsync(ct);
     }
 
-    public async Task<Order> GetOrderAsync(Guid orderId)
+    public async Task<Order> GetOrderAsync(Guid orderId, CancellationToken ct)
     {
         var order = new Order();
 
@@ -107,7 +114,7 @@ public class OrderService
             MaxCount = 1000
         };
 
-        await foreach (var envelope in _eventStore.ReadStreamAsync(request))
+        await foreach (var envelope in _eventStore.ReadStreamAsync(request, ct))
         {
             order.Apply(envelope.Event);
         }
@@ -119,9 +126,9 @@ public class OrderService
 
 ---
 
-## 🧩 Core Components
+## Core components
 
-### EventStoreDataContext
+### `EventStoreDataContext`
 
 The EF Core DbContext for storing domain events and snapshots:
 
@@ -150,7 +157,7 @@ public class MyService
 }
 ```
 
-### OutboxStoreDataContext
+### `OutboxStoreDataContext`
 
 The EF Core DbContext for the outbox pattern (integration events):
 
@@ -160,7 +167,7 @@ using System.Events.Data;
 // The context stores integration events for reliable publishing
 // Events are marked as processed after successful delivery
 
-public class IntegrationEventPublisher
+public sealed class IntegrationEventPublisher
 {
     private readonly OutboxStoreDataContext _outbox;
     private readonly IEventConverter _converter;
@@ -174,16 +181,23 @@ public class IntegrationEventPublisher
         foreach (var entity in pending)
         {
             var @event = _converter.ConvertEntityToEvent(entity);
-            await PublishToMessageBusAsync(@event);
+            await PublishToMessageBusAsync(@event, cancellationToken);
             entity.SetStatus(EventStatus.PROCESSED);
         }
 
         await _outbox.SaveChangesAsync(cancellationToken);
     }
+
+    private static Task PublishToMessageBusAsync(IIntegrationEvent @event, CancellationToken ct)
+    {
+        // Publish to your broker (Azure Service Bus, Kafka, etc.)
+        // Consider using @event.EventId for idempotency and @event.CorrelationId for tracing.
+        return Task.CompletedTask;
+    }
 }
 ```
 
-### Event Converters
+### Event converters
 
 Convert between domain objects and entity representations:
 
@@ -216,7 +230,7 @@ public class EventProcessor
 
 ---
 
-## 📡 Stream Operations
+## Stream operations
 
 ### Append Events
 
@@ -432,14 +446,14 @@ Stores integration events for outbox pattern:
 
 ---
 
-## ✅ Best Practices
+## Best practices
 
-1. **Always call FlushEventsAsync** - Events are batched; call flush to persist
+1. **Always call `FlushEventsAsync`** - events are batched in the unit-of-work
 2. **Use ExpectedVersion** - Enable optimistic concurrency for aggregates
 3. **Take snapshots periodically** - Improve rebuild performance for long streams
 4. **Subscribe for projections** - Use subscriptions for read model updates
 5. **Truncate old events** - Clean up after taking snapshots
-6. **Use transactions** - FlushEventsAsync commits events and outbox atomically
+6. **Keep correlation IDs** - flow `EventContext` in your app to keep causation/correlation consistent
 
 ---
 

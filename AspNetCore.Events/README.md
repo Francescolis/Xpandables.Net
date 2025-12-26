@@ -1,74 +1,77 @@
-﻿# 🌐 AspNetCore.Net
+﻿# AspNetCore.Events
 
-[![NuGet](https://img.shields.io/badge/NuGet-10.0.0-blue.svg)](https://www.nuget.org/packages/AspNetCore.Net)
+[![NuGet](https://img.shields.io/badge/NuGet-10.x-blue.svg)](https://www.nuget.org/packages/AspNetCore.Events)
 [![.NET](https://img.shields.io/badge/.NET-10.0-purple.svg)](https://dotnet.microsoft.com/)
 [![License](https://img.shields.io/badge/License-Apache%202.0-green.svg)](LICENSE)
 
-> Minimal API routing, metadata, and JSON helpers for organized ASP.NET Core applications.
+> ASP.NET Core middleware and DI helpers to establish `System.Events.EventContext` per HTTP request.
 
 ---
 
-## 📋 Overview
+## Overview
 
-`AspNetCore.Net` keeps minimal APIs tidy by giving you a small set of primitives: modular endpoint modules, a route builder that applies cross-cutting conventions, consistent OpenAPI metadata helpers, and easy access to the configured `JsonSerializerOptions`. Everything is designed for .NET 10, trimming, and AOT-friendly builds.
+`AspNetCore.Events` is the HTTP entry-point for correlation/causation propagation when using `System.Events`.
 
-### ✨ Key Features
+It provides:
 
-- 🛣️ **Modular endpoint modules** — Implement sealed `IMinimalEndpointRoute` classes and register them with `AddXMinimalEndpointRoutes(...)` for automatic discovery.
-- ⚙️ **Cross-cutting configuration** — `AddXMinimalSupport` exposes `MinimalSupportOptions` so you can attach conventions (authorization, OpenAPI, CORS, etc.) to endpoints, optionally filtered by a predicate.
-- 🧭 **Routing helpers** — `MinimalRouteBuilder` wraps `IEndpointRouteBuilder` with `MapGet/MapPost/MapPut/MapDelete/MapPatch/MapMethods/MapGroup` that automatically apply your configured filters.
-- 🎯 **Metadata helpers** — `Accepts<T>()` and `ProducesXXX()` helpers standardize status codes and content types for consistent OpenAPI docs.
-- 📝 **JSON helpers** — `AddXJsonSerializerOptions()` registers the configured `JsonSerializerOptions` as a singleton; `HttpContext` helpers surface serializer options, content type, and encoding per request.
+- `EventContextMiddleware` (`IMiddleware`) that reads correlation headers and establishes an `EventContext` scope
+- `AddXEventContextMiddleware()` to register the middleware in DI
+- `UseXEventContextMiddleware()` to add it to the request pipeline
+- `EventContextOptions` to configure header names
+
+Targeted for **.NET 10** and designed to work well with minimal APIs.
+
+### Key features
+
+- **Per-request scope** for `System.Events.EventContext`
+- **Header propagation** for correlation (and optional causation)
+- **Response echo** of correlation id for client-side troubleshooting
+- **Options-based customization** (`EventContextOptions`)
 
 ---
 
 ## 📦 Installation
 
 ```bash
-dotnet add package AspNetCore.Net
+dotnet add package AspNetCore.Events
 ```
 
 Or via NuGet Package Manager:
 
 ```powershell
-Install-Package AspNetCore.Net
+Install-Package AspNetCore.Events
 ```
 
 ---
 
-## 🚀 Quick Start
+## Quick start
 
-### Service Registration
+### Service registration
 
 ```csharp
 using Microsoft.Extensions.DependencyInjection;
 
 var builder = WebApplication.CreateBuilder(args);
 
-// Configure how endpoints are decorated
-builder.Services.AddXMinimalSupport(options =>
+// Required: registers IEventContextAccessor (from System.Events)
+builder.Services.AddXEventContext();
+
+// Registers EventContextMiddleware (IMiddleware)
+builder.Services.AddXEventContextMiddleware();
+
+// Optional: configure header names
+builder.Services.Configure<EventContextOptions>(options =>
 {
-    // Apply conventions only to /api endpoints
-    options.EndpointPredicate = endpoint =>
-        endpoint.RoutePattern.RawText?.StartsWith("/api") ?? false;
-
-    // Attach cross-cutting conventions
-    options.ConfigureEndpoint = endpoint =>
-    {
-        endpoint.RequireAuthorization();
-        endpoint.WithOpenApi();
-    };
+    options.CorrelationIdHeaderName = "X-Correlation-Id";
+    options.CausationIdHeaderName = "X-Causation-Id";
 });
-
-// Auto-discover sealed IMinimalEndpointRoute modules in the entry assembly
-builder.Services.AddXMinimalEndpointRoutes(typeof(Program).Assembly);
-
-// Expose the configured JsonSerializerOptions for DI consumers
-builder.Services.AddXJsonSerializerOptions();
 
 var app = builder.Build();
 
 app.UseHttpsRedirection();
+
+// Establish per-request EventContext scope
+app.UseXEventContextMiddleware();
 
 // Wire up all discovered minimal endpoint routes
 app.UseXMinimalEndpointRoutes();
@@ -78,56 +81,46 @@ app.Run();
 
 ---
 
-## 🛣️ Modular Endpoint Routing
+## How it works
 
-### Define Endpoint Routes
+### Incoming request
 
-Create sealed modules that implement `IMinimalEndpointRoute`. Each module receives a `MinimalRouteBuilder`, so every mapped endpoint automatically inherits your configured filters and metadata helpers.
+For each request the middleware:
+
+1. reads `X-Correlation-Id` (or generates a new `Guid`)
+2. reads `X-Causation-Id` (optional)
+3. sets `IEventContextAccessor.Current` for the lifetime of the request using `BeginScope`
+4. echoes `X-Correlation-Id` into the response headers
+
+### Using the context in endpoints
 
 ```csharp
-using Microsoft.AspNetCore.Routing;
+using System.Events;
 
-public sealed class OrdersEndpoints : IMinimalEndpointRoute
+var app = WebApplication.CreateBuilder(args).Build();
+
+app.MapPost("/api/orders", (
+    CreateOrderRequest request,
+    IEventContextAccessor context,
+    CancellationToken ct) =>
 {
-    public void AddRoutes(MinimalRouteBuilder app)
+    // correlation id is always present (generated if missing)
+    var correlationId = context.Current.CorrelationId;
+
+    // causation id is typically set by upstream caller (optional)
+    var causationId = context.Current.CausationId;
+
+    return Results.Accepted($"/api/orders/{Guid.CreateVersion7()}", new
     {
-        var group = app.MapGroup("/api/orders").WithTags("Orders");
+        correlationId,
+        causationId,
+        request.CustomerId
+    });
+});
 
-        group.MapGet("/", GetOrders)
-            .Produces200OK<IEnumerable<OrderSummary>>()
-            .Produces500InternalServerError();
+app.Run();
 
-        group.MapGet("/{id:guid}", GetOrderById)
-            .Produces200OK<OrderDetails>()
-            .Produces404NotFound();
-
-        group.MapPost("/", CreateOrder)
-            .Accepts<CreateOrderRequest>()
-            .Produces201Created<OrderDetails>()
-            .Produces400BadRequest();
-    }
-
-    private static async Task<IResult> GetOrders(IOrdersService service, CancellationToken ct)
-    {
-        var orders = await service.ListAsync(ct);
-        return Results.Ok(orders);
-    }
-
-    private static async Task<IResult> GetOrderById(Guid id, IOrdersService service, CancellationToken ct)
-    {
-        var order = await service.GetAsync(id, ct);
-        return order is null ? Results.NotFound() : Results.Ok(order);
-    }
-
-    private static async Task<IResult> CreateOrder(
-        CreateOrderRequest request,
-        IOrdersService service,
-        CancellationToken ct)
-    {
-        var created = await service.CreateAsync(request, ct);
-        return Results.Created($"/api/orders/{created.Id}", created);
-    }
-}
+public sealed record CreateOrderRequest(string CustomerId);
 ```
 
 ### Register and Use
@@ -147,195 +140,46 @@ app.Run();
 
 ---
 
-## 🎯 Route Metadata Extensions
+## Configuration
 
-Fluent helpers add OpenAPI-friendly metadata without repeating status codes or content types.
-
-```csharp
-public void AddRoutes(MinimalRouteBuilder app)
-{
-    app.MapGet("/api/users", GetUsers)
-        .Produces200OK<IEnumerable<User>>()
-        .Produces500InternalServerError();
-
-    app.MapPost("/api/users", CreateUser)
-        .Accepts<CreateUserRequest>()
-        .Produces201Created<User>()
-        .Produces400BadRequest();
-
-    app.MapMethods("/api/users/{id}/activate", ["PATCH"], ActivateUser)
-        .Produces200OK()
-        .Produces405MethodNotAllowed();
-}
-```
-
-### Available Metadata Extensions
-
-| Extension | Status Code | Content Type |
-|-----------|-------------|--------------|
-| `Produces200OK()` | 200 | `application/json` |
-| `Produces200OK<T>()` | 200 | `application/json` |
-| `Produces201Created<T>()` | 201 | `application/json` |
-| `Produces400BadRequest()` | 400 | `application/problem+json` |
-| `Produces401Unauthorized()` | 401 | `application/problem+json` |
-| `Produces404NotFound()` | 404 | `application/problem+json` |
-| `Produces405MethodNotAllowed()` | 405 | `application/problem+json` |
-| `Produces409Conflict()` | 409 | `application/problem+json` |
-| `Produces500InternalServerError()` | 500 | `application/problem+json` |
-| `Accepts<T>()` | — | `application/json` |
-
----
-
-## ⚙️ Minimal Support Options
-
-Control which endpoints receive cross-cutting conventions and how they are configured.
+Configure header names by binding/setting `EventContextOptions`.
 
 ```csharp
-builder.Services.AddXMinimalSupport(options =>
-{
-    // Only apply conventions to API endpoints
-    options.EndpointPredicate = endpoint => endpoint.RoutePattern.RawText?.StartsWith("/api") ?? false;
+using Microsoft.AspNetCore;
 
-    // Add conventions to matching endpoints
-    options.ConfigureEndpoint = builder =>
-    {
-        builder.RequireAuthorization();
-        builder.WithOpenApi();
-    };
+builder.Services.Configure<EventContextOptions>(options =>
+{
+    options.CorrelationIdHeaderName = "X-Correlation-Id";
+    options.CausationIdHeaderName = "X-Causation-Id";
 });
 ```
 
-**Options**
+---
 
-| Property | Type | Description |
-|----------|------|-------------|
-| `EndpointPredicate` | `Func<RouteEndpoint, bool>?` | Filter which endpoints receive configuration. |
-| `ConfigureEndpoint` | `Action<IEndpointConventionBuilder>?` | Apply conventions/metadata to matching endpoints. |
+## Real-world usage
+
+### Propagate correlation across services
+
+- API Gateway (or client) sends `X-Correlation-Id`.
+- Service A writes domain events and enqueues an integration event.
+- Service B receives the integration event and forwards the same correlation id when calling other services.
+
+This gives you a stable identifier to stitch together logs/traces.
 
 ---
 
-## 📝 JSON Serializer Options
-
-Expose your app's configured `JsonSerializerOptions` to any service via DI.
-
-```csharp
-// Program.cs
-builder.Services.AddXJsonSerializerOptions();
-
-// Service using the shared options
-public sealed class ExportService(JsonSerializerOptions jsonOptions)
-{
-    public string ToJson<T>(T value) => JsonSerializer.Serialize(value, jsonOptions);
-}
-```
-
-### HttpContext helpers
-
-Retrieve request-scoped serialization settings and content negotiation details.
-
-```csharp
-app.MapGet("/api/profile", (HttpContext ctx) =>
-{
-    var options = ctx.GetJsonSerializerOptionsOrDefault();
-    var contentType = ctx.GetContentType("application/json");
-    var encoding = ctx.GetEncoding();
-
-    return Results.Ok(new
-    {
-        SerializerIndented = options.WriteIndented,
-        ContentType = contentType,
-        Encoding = encoding.WebName
-    });
-});
-```
-
-Helpers include `GetJsonSerializerOptions()`, `GetMvcJsonSerializerOptions()`, `GetJsonSerializerOptionsOrDefault()`, `GetMvcJsonSerializerOptionsOrDefault()`, `GetContentType()`, `GetContentType(string defaultContentType)`, and `GetEncoding()`.
-
----
-
-## 🏗️ Complete Example
-
-```csharp
-using Microsoft.AspNetCore.Builder;
-using Microsoft.AspNetCore.Routing;
-using Microsoft.Extensions.DependencyInjection;
-
-var builder = WebApplication.CreateBuilder(args);
-
-// Apply OpenAPI + auth only to API endpoints
-builder.Services.AddXMinimalSupport(options =>
-{
-    options.EndpointPredicate = endpoint => endpoint.RoutePattern.RawText?.StartsWith("/api") ?? false;
-    options.ConfigureEndpoint = b =>
-    {
-        b.RequireAuthorization();
-        b.WithOpenApi();
-    };
-});
-
-builder.Services.AddXMinimalEndpointRoutes(typeof(Program).Assembly);
-builder.Services.AddXJsonSerializerOptions();
-
-var app = builder.Build();
-
-app.UseHttpsRedirection();
-app.MapGet("/health", () => Results.Ok(new { status = "ok" }))
-    .Produces200OK()
-    .WithTags("Health");
-
-app.UseXMinimalEndpointRoutes();
-
-app.Run();
-
-// Example endpoint module
-public sealed class CustomersEndpoints : IMinimalEndpointRoute
-{
-    public void AddRoutes(MinimalRouteBuilder app)
-    {
-        var group = app.MapGroup("/api/customers").WithTags("Customers");
-
-        group.MapGet("/", GetCustomers)
-            .Produces200OK<IEnumerable<CustomerSummary>>();
-
-        group.MapGet("/{id:guid}", GetCustomer)
-            .Produces200OK<CustomerDetails>()
-            .Produces404NotFound();
-    }
-
-    private static IResult GetCustomers(ICustomerStore store) =>
-        Results.Ok(store.List());
-
-    private static IResult GetCustomer(Guid id, ICustomerStore store) =>
-        store.TryGet(id, out var customer)
-            ? Results.Ok(customer)
-            : Results.NotFound();
-}
-```
-
----
-
-## ✅ Best Practices
-
-- Use sealed `IMinimalEndpointRoute` modules to keep endpoints cohesive and discoverable.
-- Apply `AddXMinimalSupport` to centralize conventions (auth, OpenAPI, CORS) instead of repeating per endpoint.
-- Use `Accepts<T>()` and `ProducesXXX()` helpers to keep OpenAPI metadata consistent.
-- Call `AddXJsonSerializerOptions()` once so services share the same serializer settings configured by ASP.NET Core.
-- Prefer `MapGroup` to scope tags and prefixes for related endpoints.
-
----
-
-## 📚 Related Packages
+## Related packages
 
 | Package | Description |
 |---------|-------------|
-| **AspNetCore.Results** | Result pattern integration for HTTP responses |
-| **AspNetCore.AsyncPaged** | Async paged enumerable HTTP streaming |
-| **System.Composition** | MEF composition utilities |
+| **System.Events** | Event sourcing primitives and `EventContext` |
+| **System.Events.Data** | EF Core persistence for event store + outbox |
 
 ---
 
-## 📄 License
+## License
 
+Apache License 2.0 - Copyright © Kamersoft 2025
 Apache License 2.0 - Copyright © Kamersoft 2025
 
 Contributions welcome at [Xpandables.Net on GitHub](https://github.com/Francescolis/Xpandables.Net).# 🌐 AspNetCore.Net

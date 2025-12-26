@@ -10,9 +10,17 @@
 
 ## 📋 Overview
 
-`System.Events` provides a complete event sourcing and domain-driven design (DDD) infrastructure. The library includes aggregate base classes with event replay, event store abstractions, domain and integration events, outbox pattern for reliable messaging, and a publish/subscribe system with handler registration.
+`System.Events` is the core package for building event-sourced, event-driven applications.
 
-Built for .NET 10 with C# 14 extension members, this package enables building robust event-sourced applications with proper event versioning, causation/correlation tracking, and optimistic concurrency.
+It provides:
+
+- aggregate base types (`Aggregate`) with uncommitted event queues
+- domain events (`IDomainEvent` / `DomainEvent`) and integration events (`IIntegrationEvent` / `IntegrationEvent`)
+- publisher/subscriber abstractions (`IEventPublisher`, `IEventHandler<T>`) with registry modes
+- outbox/scheduler contracts (persistence lives in `System.Events.Data`)
+- **correlation/causation propagation** via `EventContext`, `IEventContextAccessor`, and scope management (`BeginScope`)
+
+Built for **.NET 10** and **C# 14**.
 
 ### ✨ Key Features
 
@@ -42,14 +50,14 @@ Install-Package System.Events
 
 ## 🚀 Quick Start
 
-### Register Services
+### Register services
 
 ```csharp
 using Microsoft.Extensions.DependencyInjection;
 
 var builder = WebApplication.CreateBuilder(args);
 
-// Register event publisher with handler registry
+// Event publisher with handler registry
 builder.Services.AddXEventPublisher(EventRegistryMode.Static);
 
 // Register event handlers from assemblies
@@ -58,7 +66,7 @@ builder.Services.AddXEventHandlers(typeof(Program).Assembly);
 // Register aggregate store
 builder.Services.AddXAggregateStore<OrderAggregate>();
 
-// Register hosted scheduler for background event processing
+// Hosted scheduler for background event processing (for outbox processing)
 builder.Services.AddXHostedScheduler();
 
 var app = builder.Build();
@@ -69,7 +77,7 @@ app.Run();
 
 ## 🏗️ Aggregates & Event Sourcing
 
-### Define an Aggregate
+### Define an aggregate
 
 ```csharp
 using System.Events.Aggregates;
@@ -173,7 +181,7 @@ public enum OrderStatus { Draft, Confirmed, Shipped, Cancelled }
 public record OrderItem(Guid ProductId, string ProductName, decimal Price, int Quantity);
 ```
 
-### Define Domain Events
+### Define domain events
 
 ```csharp
 using System.Events.Domain;
@@ -199,7 +207,7 @@ public record OrderCancelled : DomainEvent
 }
 ```
 
-### Use Aggregate Store
+### Use aggregate store
 
 ```csharp
 using System.Events.Aggregates;
@@ -420,7 +428,7 @@ public class OrderProcessor(IEventPublisher eventPublisher)
 }
 ```
 
-### Registry Modes
+### Registry modes
 
 ```csharp
 // Default: Per-request handler resolution
@@ -525,7 +533,7 @@ public class OrderIntegrationService(IOutboxStore outboxStore)
 }
 ```
 
-### Publish Integration Events to an External Bus
+### Publish integration events to an external bus
 
 The outbox pattern ensures integration events are stored transactionally. To actually publish these events to an external
 message broker, register an `IEventBus` implementation and use `AddXEventBus<TEventBus>()`.
@@ -568,7 +576,7 @@ public sealed class MyEventBus : IEventBus
 }
 ```
 
-### Publish to In-Process Handlers and External Bus (Composite Publisher)
+### Publish to in-process handlers and external bus (composite publisher)
 
 If you want to publish the same event both:
 
@@ -651,6 +659,41 @@ public sealed class OutboxProcessorScheduler : IScheduler
 | `AddXEventPublisher<T>()` | Registers custom event publisher |
 | `AddXEventBus<T>()` | Registers an external bus (`IEventBus`) and a publisher for integration events |
 | `AddXCompositeEventPublisher()` | Registers a composite publisher (in-process + external bus fan-out) |
+| `AddXEventContext()` | Registers `IEventContextAccessor` backed by `AsyncLocal` |
+
+---
+
+## Correlation & causation with `EventContext`
+
+`EventContext` is an ambient container (stored via `AsyncLocal`) used to propagate and enrich correlation/causation IDs.
+
+Typical usage:
+
+- **HTTP**: use `AspNetCore.Events` middleware to read `X-Correlation-Id`/`X-Causation-Id` and establish a scope.
+- **Background processing**: create a scope manually around unit-of-work execution.
+
+```csharp
+using System.Events;
+
+public sealed class PaymentJob(IEventContextAccessor accessor)
+{
+    public async Task ExecuteAsync(CancellationToken ct)
+    {
+        var correlationId = Guid.CreateVersion7();
+
+        using var _ = accessor.BeginScope(new EventContext
+        {
+            CorrelationId = correlationId,
+            CausationId = null
+        });
+
+        // Any domain/integration events created while inside the scope can be enriched
+        // with CorrelationId/CausationId by the configured enrichers.
+
+        await Task.Delay(50, ct);
+    }
+}
+```
 | `AddXEventHandler<TEvent, THandler>()` | Registers specific event handler |
 | `AddXEventHandlers(assemblies)` | Auto-discovers and registers all handlers |
 | `AddXEventSubscriber()` | Registers event subscriber |
@@ -686,7 +729,7 @@ public sealed class OutboxProcessorScheduler : IScheduler
 | Package | Description |
 |---------|-------------|
 | **System.Events.Data** | EF Core implementation of event store and outbox |
-| **System.Entities** | Entity abstractions and repository pattern |
+| **AspNetCore.Events** | ASP.NET Core middleware + DI helpers for `EventContext` |
 | **System.Results** | Result pattern for operation outcomes |
 
 ---
