@@ -42,6 +42,38 @@ public static class IEventExtensions
     extension(IServiceCollection services)
     {
         /// <summary>
+        /// Adds services required for event context propagation and enrichment to the dependency injection container.
+        /// <code>
+        /// If you want to set correlation/causation for a scope
+        /// 
+        ///     var accessor = app.Services.GetRequiredService&lt;IEventContextAccessor&gt;();
+        ///
+        ///     using var _ = accessor.BeginScope(new EventContext
+        ///     {
+        ///         CorrelationId = Guid.CreateVersion7(),
+        ///         CausationId = Guid.CreateVersion7()
+        ///     });
+        ///
+        ///     // any aggregates saved in this logical call-path get enriched automatically
+        /// </code>
+        /// </summary>
+        /// <remarks>This method registers implementations for event context access and enrichment,
+        /// enabling event handlers to access contextual information during event processing. Call this method during
+        /// application startup to ensure event context features are available throughout the application's
+        /// lifetime.</remarks>
+        /// <returns>The <see cref="IServiceCollection"/> instance with event context services registered.</returns>
+        public IServiceCollection AddXEventContext()
+        {
+            ArgumentNullException.ThrowIfNull(services);
+
+            services.TryAddSingleton<AsyncLocalEventContextAccessor>();
+            services.TryAddSingleton<IEventContextAccessor>(sp => sp.GetRequiredService<AsyncLocalEventContextAccessor>());
+            services.TryAddScoped<IEventEnricher, DefaultDomainEventEnricher>();
+
+            return services;
+        }
+
+        /// <summary>
         /// Registers an <see cref="AggregateStore{TAggregate}"/> for the specified aggregate type in the dependency injection container.
         /// </summary>
         /// <remarks>Use this method to enable dependency injection of IAggregateStore for the specified

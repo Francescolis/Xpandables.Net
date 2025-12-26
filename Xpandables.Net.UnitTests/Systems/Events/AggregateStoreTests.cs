@@ -16,7 +16,7 @@
 ********************************************************************************/
 using System.Events.Aggregates;
 using System.Events.Domain;
-using System.Linq;
+
 using FluentAssertions;
 
 namespace Xpandables.Net.UnitTests.Systems.Events;
@@ -47,7 +47,7 @@ public sealed class AggregateStoreTests
 
         var eventStore = new FakeEventStore(history);
         var buffer = new PendingDomainEventsBuffer();
-        var sut = new AggregateStore<TestBankAccountAggregate>(eventStore, buffer);
+        var sut = new AggregateStore<TestBankAccountAggregate>(eventStore, buffer, new DefaultDomainEventEnricher(new AsyncLocalEventContextAccessor()));
 
         // Act
         TestBankAccountAggregate aggregate = await sut.LoadAsync(accountId);
@@ -66,7 +66,7 @@ public sealed class AggregateStoreTests
         Guid accountId = Guid.NewGuid();
         var eventStore = new FakeEventStore();
         var buffer = new PendingDomainEventsBuffer();
-        var sut = new AggregateStore<TestBankAccountAggregate>(eventStore, buffer);
+        var sut = new AggregateStore<TestBankAccountAggregate>(eventStore, buffer, new DefaultDomainEventEnricher(new AsyncLocalEventContextAccessor()));
         TestBankAccountAggregate aggregate = TestBankAccountAggregate.Initialize();
 
         aggregate.Open(accountId, "Ada", 100m);

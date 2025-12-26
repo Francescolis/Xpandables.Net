@@ -30,12 +30,15 @@ namespace System.Events.Aggregates;
 /// constructor.</typeparam>
 /// <param name="eventStore">The event store used to persist and retrieve aggregate events.</param>
 /// <param name="domainEvents">The collection used to track and dispatch pending domain events after aggregates are saved.</param>
+/// <param name="eventEnricher">The event enricher used to augment domain events with additional data.</param>
 public sealed class AggregateStore<TAggregate>(
     IEventStore eventStore,
-    IPendingDomainEventsBuffer domainEvents) : IAggregateStore<TAggregate>
+    IPendingDomainEventsBuffer domainEvents,
+    IEventEnricher eventEnricher) : IAggregateStore<TAggregate>
     where TAggregate : class, IAggregate, IAggregateFactory<TAggregate>
 {
     private readonly IEventStore _eventStore = eventStore;
+    private readonly IEventEnricher _eventEnricher = eventEnricher;
 
     /// <inheritdoc />
     public async Task<TAggregate> LoadAsync(
@@ -82,6 +85,8 @@ public sealed class AggregateStore<TAggregate>(
         var pending = aggregate.DequeueUncommittedEvents();
         if (pending.Count == 0) return;
 
+        var enriched = pending.Select(_eventEnricher.Enrich).ToArray();
+
         // The aggregate.StreamVersion has already been advanced by pending.Count.
         // expectedVersion must reflect the persisted version before those events.
         var expectedVersion = aggregate.StreamVersion - pending.Count;
@@ -89,12 +94,12 @@ public sealed class AggregateStore<TAggregate>(
         AppendRequest request = new()
         {
             StreamId = aggregate.StreamId,
-            Events = pending,
+            Events = enriched,
             ExpectedVersion = expectedVersion
         };
 
         await _eventStore.AppendToStreamAsync(request, cancellationToken).ConfigureAwait(false);
 
-        domainEvents.AddRange(pending, aggregate.MarkEventsAsCommitted);
+        domainEvents.AddRange(enriched, aggregate.MarkEventsAsCommitted);
     }
 }
