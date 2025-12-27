@@ -14,8 +14,6 @@
  * limitations under the License.
  *
 ********************************************************************************/
-using System.Diagnostics.CodeAnalysis;
-
 namespace System.ComponentModel.DataAnnotations;
 
 /// <summary>
@@ -32,7 +30,6 @@ public interface IValidator
     /// <param name="instance">The object to validate. Cannot be null.</param>
     /// <returns>A read-only collection of <see cref="ValidationResult"/> objects that describe any validation errors. The
     /// collection is empty if the instance is valid.</returns>
-    [RequiresUnreferencedCode("Validation may require types that are trimmed.")]
     IReadOnlyCollection<ValidationResult> Validate(object instance);
 
     /// <summary>
@@ -45,7 +42,6 @@ public interface IValidator
     /// <returns>A value task that represents the asynchronous validation operation. The result contains a read-only collection
     /// of <see cref="ValidationResult"/> objects describing any validation errors. The collection is empty if the
     /// object is valid.</returns>
-    [RequiresUnreferencedCode("Validation may require types that are trimmed.")]
     public ValueTask<IReadOnlyCollection<ValidationResult>> ValidateAsync(object instance)
     {
         IReadOnlyCollection<ValidationResult> result = Validate(instance);
@@ -70,10 +66,8 @@ public interface IValidator<in TArgument> : IValidator
     /// <param name="instance">The object to validate. Cannot be null.</param>
     /// <returns>A read-only collection of <see cref="ValidationResult"/> objects that describe any validation errors. The
     /// collection is empty if the instance is valid.</returns>
-    [RequiresUnreferencedCode("Validation may require types that are trimmed.")]
     IReadOnlyCollection<ValidationResult> Validate(TArgument instance);
 
-    [RequiresUnreferencedCode("Validation may require types that are trimmed.")]
     [EditorBrowsable(EditorBrowsableState.Never)]
     IReadOnlyCollection<ValidationResult> IValidator.Validate(object instance) =>
         Validate((TArgument)instance);
@@ -85,10 +79,8 @@ public interface IValidator<in TArgument> : IValidator
     /// <returns>A task that represents the asynchronous validation operation. The task result contains a read-only collection of
     /// <see cref="ValidationResult"/> objects describing any validation errors. The collection is empty if the argument
     /// is valid.</returns>
-    [RequiresUnreferencedCode("Validation may require types that are trimmed.")]
     ValueTask<IReadOnlyCollection<ValidationResult>> ValidateAsync(TArgument instance);
 
-    [RequiresUnreferencedCode("Validation may require types that are trimmed.")]
     [EditorBrowsable(EditorBrowsableState.Never)]
     ValueTask<IReadOnlyCollection<ValidationResult>> IValidator.ValidateAsync(object instance) =>
         ValidateAsync((TArgument)instance);

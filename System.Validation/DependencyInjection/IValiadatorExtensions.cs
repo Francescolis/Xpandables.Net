@@ -39,16 +39,14 @@ public static class IValiadatorExtensions
     extension(IServiceCollection services)
     {
         /// <summary>
-        /// Adds Validator services to the current <see cref="IServiceCollection"/> for dependency injection.
+        /// Adds CompositeValidator services to the current <see cref="IServiceCollection"/> for dependency injection.
         /// </summary>
-        /// <remarks>This method registers the generic <see cref="IValidator{T}"/> and <see
-        /// cref="ICompositeValidator{TArgument}"/> services with a transient lifetime. Call this method during application
+        /// <remarks>This method registers the generic <see cref="ICompositeValidator{TArgument}"/> services with a transient lifetime. Call this method during application
         /// startup to enable XValidator-based validation throughout the application.</remarks>
         /// <returns>The <see cref="IServiceCollection"/> instance with Validator services registered. This enables chaining of
         /// further service configuration calls.</returns>
-        public IServiceCollection AddXValidator()
+        public IServiceCollection AddXCompositeValidator()
         {
-            services.TryAdd(new ServiceDescriptor(typeof(IValidator<>), typeof(DefaultValidator<>), ServiceLifetime.Transient));
             services.TryAdd(new ServiceDescriptor(typeof(ICompositeValidator<>), typeof(CompositeValidator<>), ServiceLifetime.Transient));
             return services;
         }

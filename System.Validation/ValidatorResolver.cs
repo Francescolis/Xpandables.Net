@@ -38,7 +38,7 @@ public sealed class ValidatorResolver<TArgument> : IValidatorResolver
     public IValidator? Resolve(IServiceProvider serviceProvider)
     {
         var validators = serviceProvider.GetServices<IValidator<TArgument>>().ToList();
-        Type builtInValidatorType = typeof(DefaultValidator<TArgument>);
+        Type builtInValidatorType = typeof(Validator<TArgument>);
         if (validators.Count > 1)
         {
             // Remove the built-in validator if a specific validator is registered.

@@ -14,8 +14,6 @@
  * limitations under the License.
  *
 ********************************************************************************/
-using System.Diagnostics.CodeAnalysis;
-
 namespace System.ComponentModel.DataAnnotations;
 
 /// <summary>
@@ -27,14 +25,13 @@ namespace System.ComponentModel.DataAnnotations;
 /// <typeparam name="TArgument">The type of the object to validate. Must be a reference type that implements <see cref="IRequiresValidation"/>.</typeparam>
 /// <param name="validators">The collection of validators to apply to the argument instance. Cannot be null.</param>
 public sealed class CompositeValidator<TArgument>(IEnumerable<IValidator<TArgument>> validators) :
-    DefaultValidator<TArgument>, ICompositeValidator<TArgument>
+    Validator<TArgument>, ICompositeValidator<TArgument>
     where TArgument : class, IRequiresValidation
 {
     private readonly IEnumerable<IValidator<TArgument>> _validators = validators
         ?? throw new ArgumentNullException(nameof(validators));
 
     /// <inheritdoc/>
-    [RequiresUnreferencedCode("Validation may require types that are trimmed.")]
     public override IReadOnlyCollection<ValidationResult> Validate(TArgument instance)
     {
         List<ValidationResult> validationResults = [];
@@ -51,7 +48,6 @@ public sealed class CompositeValidator<TArgument>(IEnumerable<IValidator<TArgume
     }
 
     /// <inheritdoc/>
-    [RequiresUnreferencedCode("Validation may require types that are trimmed.")]
     public override async ValueTask<IReadOnlyCollection<ValidationResult>> ValidateAsync(TArgument instance)
     {
         List<ValidationResult> validationResults = [];

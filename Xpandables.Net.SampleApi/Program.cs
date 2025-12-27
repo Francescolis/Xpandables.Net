@@ -71,7 +71,7 @@ builder.Services
     .AddXRequestHandlers()
     .AddXEventHandlers()
     .AddXEventConverterContext()
-    .AddXValidator()
+    .AddXCompositeValidator()
     .AddXEventPublisher()
     .AddXAggregateStore()
     .AddXEventStore()
