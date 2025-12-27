@@ -14,7 +14,6 @@
  * limitations under the License.
  *
 ********************************************************************************/
-
 using Xpandables.Net.SampleApi.ReadStorage;
 
 namespace Xpandables.Net.SampleApi.BankAccounts.Features.GetBankAccount;

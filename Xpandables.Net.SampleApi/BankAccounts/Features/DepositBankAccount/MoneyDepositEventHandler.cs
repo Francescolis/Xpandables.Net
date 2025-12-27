@@ -14,7 +14,6 @@
  * limitations under the License.
  *
 ********************************************************************************/
-using System.Events;
 using System.Events.Integration;
 
 using Xpandables.Net.SampleApi.BankAccounts.Accounts;

@@ -16,7 +16,6 @@
 ********************************************************************************/
 
 using System.ComponentModel.DataAnnotations;
-using System.Diagnostics.CodeAnalysis;
 using System.Results.Requests;
 
 namespace System.Results.Pipelines;
@@ -36,7 +35,6 @@ public sealed class PipelineValidationDecorator<TRequest>(ICompositeValidator<TR
     where TRequest : class, IRequest, IRequiresValidation
 {
     /// <inheritdoc/>
-    [UnconditionalSuppressMessage("Trimming", "IL2026:Members annotated with 'RequiresUnreferencedCodeAttribute' require dynamic access otherwise can break functionality when trimming application code", Justification = "<Pending>")]
     public async Task<Result> HandleAsync(
         RequestContext<TRequest> context,
         RequestHandler nextHandler,

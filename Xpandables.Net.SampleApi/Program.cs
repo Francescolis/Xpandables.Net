@@ -82,6 +82,11 @@ builder.Services
     .AddXScheduler()
     .AddXHostedScheduler()
     .AddXResultMiddleware()
+    .AddXEventContextAccessor()
+    .AddXDomainEventEnricher()
+    .AddXIntegrationEventEnricher()
+    .AddXOutboxStoreDataContextFactory()
+    .AddXEventStoreDataContextFactory()
     .AddXMinimalSupport(options =>
         options.ConfigureEndpoint = builder =>
             builder

@@ -21,6 +21,19 @@ using System.Runtime.CompilerServices;
 namespace System.Results.Tasks;
 
 /// <summary>
+/// 
+/// </summary>
+/// <typeparam name="TRequest"></typeparam>
+public sealed class CustomPipelineRequestHandler<TRequest> :
+    IPipelineRequestHandler<TRequest>
+    where TRequest : class, IRequest
+{
+    /// <inheritdoc/>
+    public Task<Result> HandleAsync(TRequest request, CancellationToken cancellationToken = default) =>
+        Task.FromResult<Result>(Result.Success());
+}
+
+/// <summary>
 /// Represents a sealed class that implements the pipeline request handling mechanism for a given request type.
 /// This handler uses a series of decorators, applied in reverse order, to process the request and execute the operation.
 /// </summary>

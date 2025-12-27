@@ -26,11 +26,11 @@ using Microsoft.EntityFrameworkCore.Storage.ValueConversion;
 
 #nullable disable
 
-namespace Xpandables.Net.SampleApi.Migrations.EventStoreData
+namespace Xpandables.Net.SampleApi.Migrations.OutboxStoreData
 {
-    [DbContext(typeof(EventStoreDataContext))]
-    [Migration("20251223211335_AddDomainEvents")]
-    partial class AddDomainEvents
+    [DbContext(typeof(OutboxStoreDataContext))]
+    [Migration("20251227004952_AddIntegrationEvents")]
+    partial class AddIntegrationEvents
     {
         /// <inheritdoc />
         protected override void BuildTargetModel(ModelBuilder modelBuilder)
@@ -43,10 +43,24 @@ namespace Xpandables.Net.SampleApi.Migrations.EventStoreData
 
             SqlServerModelBuilderExtensions.UseIdentityColumns(modelBuilder);
 
-            modelBuilder.Entity("System.Events.Data.EntityDomainEvent", b =>
+            modelBuilder.Entity("System.Events.Data.EntityIntegrationEvent", b =>
                 {
                     b.Property<Guid>("KeyId")
                         .ValueGeneratedOnAdd()
+                        .HasColumnType("uniqueidentifier");
+
+                    b.Property<int>("AttemptCount")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("int")
+                        .HasDefaultValue(0);
+
+                    b.Property<Guid?>("CausationId")
+                        .HasColumnType("uniqueidentifier");
+
+                    b.Property<Guid?>("ClaimId")
+                        .HasColumnType("uniqueidentifier");
+
+                    b.Property<Guid?>("CorrelationId")
                         .HasColumnType("uniqueidentifier");
 
                     b.Property<DateTime>("CreatedOn")
@@ -54,6 +68,9 @@ namespace Xpandables.Net.SampleApi.Migrations.EventStoreData
 
                     b.Property<DateTime?>("DeletedOn")
                         .HasColumnType("datetime2");
+
+                    b.Property<string>("ErrorMessage")
+                        .HasColumnType("nvarchar(max)");
 
                     b.Property<string>("EventData")
                         .IsRequired()
@@ -64,71 +81,8 @@ namespace Xpandables.Net.SampleApi.Migrations.EventStoreData
                         .HasMaxLength(255)
                         .HasColumnType("nvarchar(255)");
 
-                    b.Property<long>("Sequence")
-                        .ValueGeneratedOnAdd()
-                        .HasColumnType("bigint");
-
-                    SqlServerPropertyBuilderExtensions.UseIdentityColumn(b.Property<long>("Sequence"));
-
-                    b.Property<string>("Status")
-                        .IsRequired()
-                        .HasMaxLength(255)
-                        .HasColumnType("nvarchar(255)");
-
-                    b.Property<Guid>("StreamId")
-                        .HasColumnType("uniqueidentifier");
-
-                    b.Property<string>("StreamName")
-                        .IsRequired()
-                        .HasColumnType("nvarchar(450)");
-
-                    b.Property<long>("StreamVersion")
-                        .HasColumnType("bigint");
-
-                    b.Property<DateTime?>("UpdatedOn")
-                        .IsConcurrencyToken()
+                    b.Property<DateTime?>("NextAttemptOn")
                         .HasColumnType("datetime2");
-
-                    b.HasKey("KeyId");
-
-                    b.HasIndex("Sequence");
-
-                    b.HasIndex("StreamId")
-                        .HasDatabaseName("IX_DomainEvent_StreamId");
-
-                    b.HasIndex("StreamName")
-                        .HasDatabaseName("IX_DomainEvent_StreamName");
-
-                    b.HasIndex("StreamId", "StreamVersion")
-                        .IsUnique()
-                        .HasDatabaseName("IX_DomainEvent_StreamId_StreamVersion_Unique");
-
-                    b.ToTable("DomainEvents", "Events");
-                });
-
-            modelBuilder.Entity("System.Events.Data.EntitySnapshotEvent", b =>
-                {
-                    b.Property<Guid>("KeyId")
-                        .ValueGeneratedOnAdd()
-                        .HasColumnType("uniqueidentifier");
-
-                    b.Property<DateTime>("CreatedOn")
-                        .HasColumnType("datetime2");
-
-                    b.Property<DateTime?>("DeletedOn")
-                        .HasColumnType("datetime2");
-
-                    b.Property<string>("EventData")
-                        .IsRequired()
-                        .HasColumnType("nvarchar(max)");
-
-                    b.Property<string>("EventName")
-                        .IsRequired()
-                        .HasMaxLength(255)
-                        .HasColumnType("nvarchar(255)");
-
-                    b.Property<Guid>("OwnerId")
-                        .HasColumnType("uniqueidentifier");
 
                     b.Property<long>("Sequence")
                         .ValueGeneratedOnAdd()
@@ -147,16 +101,21 @@ namespace Xpandables.Net.SampleApi.Migrations.EventStoreData
 
                     b.HasKey("KeyId");
 
-                    b.HasIndex("OwnerId")
-                        .HasDatabaseName("IX_SnapshotEvent_OwnerId");
+                    b.HasIndex("ClaimId")
+                        .HasDatabaseName("IX_IntegrationEvent_ClaimId");
 
                     b.HasIndex("Sequence");
 
-                    b.HasIndex("OwnerId", "Sequence")
-                        .IsUnique()
-                        .HasDatabaseName("IX_SnapshotEvent_OwnerId_Sequence_Unique");
+                    b.HasIndex("Status", "NextAttemptOn")
+                        .HasDatabaseName("IX_IntegrationEvent_Status_NextAttemptOn");
 
-                    b.ToTable("SnapshotEvents", "Events");
+                    b.HasIndex("Status", "AttemptCount", "NextAttemptOn")
+                        .HasDatabaseName("IX_IntegrationEvent_Retry");
+
+                    b.HasIndex("Status", "NextAttemptOn", "Sequence")
+                        .HasDatabaseName("IX_IntegrationEvent_Processing");
+
+                    b.ToTable("IntegrationEvents", "Events");
                 });
 #pragma warning restore 612, 618
         }

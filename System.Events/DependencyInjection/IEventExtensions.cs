@@ -62,7 +62,7 @@ public static class IEventExtensions
         /// application startup to ensure event context features are available throughout the application's
         /// lifetime.</remarks>
         /// <returns>The <see cref="IServiceCollection"/> instance with event context services registered.</returns>
-        public IServiceCollection AddXEventContext()
+        public IServiceCollection AddXEventContextAccessor()
         {
             ArgumentNullException.ThrowIfNull(services);
 

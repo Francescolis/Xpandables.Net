@@ -150,6 +150,8 @@ public static class ITaskExtensions
         /// </summary>
         /// <returns>The updated <see cref="IServiceCollection"/> instance with the pipeline request handler registered.</returns>
         public IServiceCollection AddXPipelineRequestHandler()
-            => services.AddXPipelineRequestHandler(typeof(PipelineRequestHandler<>));
+        {
+            return services.AddXPipelineRequestHandler(typeof(PipelineRequestHandler<>));
+        }
     }
 }
