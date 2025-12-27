@@ -16,7 +16,6 @@
 ********************************************************************************/
 using System.Collections.Immutable;
 using System.ComponentModel.DataAnnotations;
-using System.Diagnostics.CodeAnalysis;
 using System.Results;
 
 using Microsoft.AspNetCore.Http;
@@ -60,7 +59,6 @@ public sealed class ResultEndpointValidator(IValidatorProvider validatorProvider
         return await nextDelegate(context).ConfigureAwait(false);
     }
 
-    [UnconditionalSuppressMessage("Trimming", "IL2026:Members annotated with 'RequiresUnreferencedCodeAttribute' require dynamic access otherwise can break functionality when trimming application code", Justification = "<Pending>")]
     static async Task<Result> ApplyValidationAsync(ImmutableHashSet<ValidatorDescriptor> validators)
     {
         FailureResultBuilder failureBuilder = Result.BadRequest();
