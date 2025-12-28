@@ -17,6 +17,7 @@
 using System.Diagnostics.CodeAnalysis;
 
 using Microsoft.AspNetCore.Http;
+using Microsoft.Extensions.DependencyInjection.Extensions;
 
 #pragma warning disable IDE0130 // Namespace does not match folder structure
 namespace Microsoft.Extensions.DependencyInjection;
@@ -33,6 +34,25 @@ public static class IValidatorExtensions
 {
     extension(IServiceCollection services)
     {
+        /// <summary>
+        /// Adds and configures a custom implementation of the problem details service for use with Result in the
+        /// application's dependency injection container.
+        /// </summary>
+        /// <remarks>This method replaces the default <see cref="IProblemDetailsService"/> with a custom
+        /// implementation that integrates with Result. Call this method during application startup to ensure that
+        /// problem details responses are handled consistently with Result conventions.</remarks>
+        /// <returns>The <see cref="IServiceCollection"/> instance with the problem details services configured. This enables
+        /// method chaining.</returns>
+        public IServiceCollection AddXResultProblemDetails()
+        {
+            return services
+                .AddProblemDetails()
+                .Replace(new ServiceDescriptor(
+                    typeof(IProblemDetailsService),
+                    typeof(ResultProblemDetailsService),
+                    ServiceLifetime.Singleton));
+        }
+
         /// <summary>
         /// Adds the default endpoint validator for minimal result endpoints to the service collection.
         /// </summary>

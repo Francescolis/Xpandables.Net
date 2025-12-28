@@ -86,11 +86,14 @@ builder.Services
     .AddXIntegrationEventEnricher()
     .AddXOutboxStoreDataContextFactory()
     .AddXEventStoreDataContextFactory()
+    .AddXResultProblemDetails()
     .AddXMinimalSupport(options =>
         options.ConfigureEndpoint = builder =>
             builder
                 .WithXAsyncPagedFilter()
                 .WithXResultSupport());
+
+builder.Services.AddValidation();
 
 builder.Services.Configure<JsonOptions>(options =>
 {
@@ -142,5 +145,6 @@ using (var scope = app.Services.CreateScope())
 app.UseXEventContextMiddleware();
 app.UseXResultMiddleware();
 app.UseXMinimalEndpointRoutes();
+
 
 await app.RunAsync();
