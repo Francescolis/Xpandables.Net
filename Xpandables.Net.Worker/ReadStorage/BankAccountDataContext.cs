@@ -14,25 +14,13 @@
  * limitations under the License.
  *
 ********************************************************************************/
-using System.Events;
+using System.Entities.Data;
 
 using Microsoft.EntityFrameworkCore;
 
-using Xpandables.Net.SampleApi.CrossEvents;
+namespace Xpandables.Net.Worker.ReadStorage;
 
-namespace Xpandables.Net.SampleApi.ReadStorage;
-
-public sealed class MoneyDepositWithdrawIntegrationEventHandler(BankAccountDataContext context) :
-    IEventHandler<MoneyDepositWithdrawIntegrationEvent>
+public sealed class BankAccountDataContext(DbContextOptions<BankAccountDataContext> options) : DataContext(options)
 {
-    public async Task HandleAsync(MoneyDepositWithdrawIntegrationEvent eventInstance, CancellationToken cancellationToken = default)
-    {
-        await context.BankAccounts
-            .Where(b => b.KeyId == eventInstance.BankAccountId)
-            .ExecuteUpdateAsync(
-                b => b
-                    .SetProperty(b => b.Balance, b => b.Balance + eventInstance.Amount)
-                    .SetProperty(b => b.UpdatedOn, DateTime.UtcNow),
-                cancellationToken);
-    }
+    public DbSet<BankAccountEntity> BankAccounts { get; set; } = default!;
 }

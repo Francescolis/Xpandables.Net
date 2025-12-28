@@ -47,6 +47,7 @@ public readonly record struct ElementEntry
     /// <summary>
     /// Gets a value indicating whether the current instance contains no key and no values.
     /// </summary>
+    [JsonIgnore]
     public readonly bool IsEmpty => string.IsNullOrEmpty(Key) && Values.Count == 0;
 
     /// <summary>

@@ -16,9 +16,9 @@
 ********************************************************************************/
 using System.Events;
 
-using Xpandables.Net.SampleApi.CrossEvents;
+using Xpandables.Net.Worker.CrossEvents;
 
-namespace Xpandables.Net.SampleApi.ReadStorage;
+namespace Xpandables.Net.Worker.ReadStorage;
 
 public sealed class BankAccountCreatedIntegrationEventHandler(BankAccountDataContext context) : IEventHandler<BankAccountCreateIntegrationEvent>
 {

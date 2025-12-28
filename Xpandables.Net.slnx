@@ -11,6 +11,9 @@
     <Project Path="Xpandables.Net.SampleApi/Xpandables.Net.SampleApi.csproj" Id="829a0c40-2dec-4ab0-9b14-5979b806c738">
       <Platform Project="x64" />
     </Project>
+    <Project Path="Xpandables.Net.Worker/Xpandables.Net.Worker.csproj" Id="46c14268-e658-4664-a665-f5caa564c255">
+      <Platform Project="x64" />
+    </Project>
   </Folder>
   <Folder Name="/Solution Items/">
     <File Path=".editorconfig" />

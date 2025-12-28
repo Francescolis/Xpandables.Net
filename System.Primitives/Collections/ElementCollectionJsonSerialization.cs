@@ -38,11 +38,6 @@ public sealed class ElementCollectionJsonConverterFactory : JsonConverterFactory
         ArgumentNullException.ThrowIfNull(typeToConvert);
         ArgumentNullException.ThrowIfNull(options);
 
-        //if (options.TypeInfoResolverChain.FirstOrDefault(resolver => resolver is ElementCollectionContext) is null)
-        //{
-        //    options.TypeInfoResolverChain.Add(ElementCollectionContext.Default);
-        //}
-
         return new ElementCollectionJsonConverter();
     }
 }
@@ -74,7 +69,6 @@ public sealed class ElementCollectionJsonConverter : JsonConverter<ElementCollec
 
             if (reader.TokenType == JsonTokenType.StartObject)
             {
-                // Use the ElementEntry converter to deserialize individual entries
                 var entry = (ElementEntry)JsonSerializer.Deserialize(ref reader, typeof(ElementEntry), ElementEntryContext.Default)!;
                 entries.Add(entry);
             }

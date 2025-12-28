@@ -50,6 +50,7 @@ public readonly record struct ElementCollection : IEnumerable<ElementEntry>, IRe
     /// <summary>
     /// Gets a value indicating whether this collection is empty.
     /// </summary>
+    [JsonIgnore]
     public bool IsEmpty => Count == 0;
 
     /// <summary>  

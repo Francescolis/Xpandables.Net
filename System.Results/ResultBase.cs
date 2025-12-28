@@ -87,6 +87,7 @@ public abstract record _Result
     /// <summary>
     /// Represents an exception associated with the operation result, if any.
     /// </summary>
+    [JsonIgnore]
     public Exception? Exception { get; protected internal init; }
 
     /// <summary>

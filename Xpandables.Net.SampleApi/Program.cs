@@ -100,8 +100,6 @@ builder.Services.Configure<JsonOptions>(options =>
     options.SerializerOptions.WriteIndented = true;
 });
 
-builder.Services.AddXJsonSerializerOptions();
-
 builder.Services.AddSwaggerGen(options =>
 {
     options.SwaggerDoc(builder.Configuration["SwaggerOptions:Version"], new OpenApiInfo()
@@ -139,10 +137,8 @@ using (var scope = app.Services.CreateScope())
 {
     var eventDb = scope.ServiceProvider.GetRequiredService<EventStoreDataContext>();
     var outboxDb = scope.ServiceProvider.GetRequiredService<OutboxStoreDataContext>();
-    var readDb = scope.ServiceProvider.GetRequiredService<BankAccountDataContext>();
     await eventDb.Database.MigrateAsync().ConfigureAwait(false);
     await outboxDb.Database.MigrateAsync().ConfigureAwait(false);
-    await readDb.Database.MigrateAsync().ConfigureAwait(false);
 }
 
 app.UseXResultMiddleware();

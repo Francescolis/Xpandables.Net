@@ -1,0 +1,29 @@
+﻿<Project Sdk="Microsoft.NET.Sdk.Worker">
+
+	<PropertyGroup>
+		<TargetFramework>net10.0</TargetFramework>
+		<Nullable>enable</Nullable>
+		<ImplicitUsings>enable</ImplicitUsings>
+		<InvariantGlobalization>true</InvariantGlobalization>
+		<UserSecretsId>dotnet-Xpandables.Net.Worker-b9223dc2-d5b8-4a70-841b-0c678415767a</UserSecretsId>
+		<DockerDefaultTargetOS>Windows</DockerDefaultTargetOS>
+		<Platforms>x64</Platforms>
+		<InvariantGlobalization>false</InvariantGlobalization>
+	</PropertyGroup>
+
+	<ItemGroup>
+		<PackageReference Include="Microsoft.EntityFrameworkCore.Tools" Version="10.0.1">
+			<PrivateAssets>all</PrivateAssets>
+			<IncludeAssets>runtime; build; native; contentfiles; analyzers; buildtransitive</IncludeAssets>
+		</PackageReference>
+		<PackageReference Include="Microsoft.EntityFrameworkCore.SqlServer" Version="10.0.1" />
+		<PackageReference Include="Microsoft.Extensions.Hosting" Version="10.0.1" />
+		<PackageReference Include="Microsoft.VisualStudio.Azure.Containers.Tools.Targets" Version="1.23.0" />
+	</ItemGroup>
+
+	<ItemGroup>
+		<ProjectReference Include="..\AspNetCore.Net\AspNetCore.Net.csproj" />
+		<ProjectReference Include="..\System.Entities.Data\System.Entities.Data.csproj" />
+		<ProjectReference Include="..\System.Events.Data\System.Events.Data.csproj" />
+	</ItemGroup>
+</Project>
