@@ -79,10 +79,9 @@ builder.Services
     .AddMemoryCache()
     .AddXEventConverterFactory()
     .AddXCacheTypeResolver([typeof(BankAccount).Assembly])
-    .AddXScheduler()
-    .AddXHostedScheduler()
     .AddXResultMiddleware()
     .AddXEventContextAccessor()
+    .AddXEventContextMiddleware()
     .AddXDomainEventEnricher()
     .AddXIntegrationEventEnricher()
     .AddXOutboxStoreDataContextFactory()
@@ -117,7 +116,6 @@ builder.Services.AddSwaggerGen(options =>
 
 var app = builder.Build();
 
-//app.UseMiddleware<ResultMiddleware>();
 app.UseHttpsRedirection();
 app.UseSwagger()
     .UseSwaggerUI(options =>
@@ -141,6 +139,7 @@ using (var scope = app.Services.CreateScope())
     await outboxDb.Database.MigrateAsync().ConfigureAwait(false);
 }
 
+app.UseXEventContextMiddleware();
 app.UseXResultMiddleware();
 app.UseXMinimalEndpointRoutes();
 

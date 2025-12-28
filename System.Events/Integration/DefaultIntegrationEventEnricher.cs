@@ -57,8 +57,8 @@ public sealed class DefaultIntegrationEventEnricher(IEventContextAccessor access
             return @event;
         }
 
-        if (correlationId.HasValue) @event.WithCorrelation(correlationId.Value);
-        if (causationId.HasValue) @event.WithCausation(causationId.Value);
+        if (correlationId.HasValue) @event = (TIntegrationEvent)@event.WithCorrelation(correlationId.Value);
+        if (causationId.HasValue) @event = (TIntegrationEvent)@event.WithCausation(causationId.Value);
 
         return @event;
     }
