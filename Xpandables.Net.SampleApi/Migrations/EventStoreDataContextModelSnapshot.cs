@@ -46,11 +46,11 @@ namespace Xpandables.Net.SampleApi.Migrations
                         .ValueGeneratedOnAdd()
                         .HasColumnType("uniqueidentifier");
 
-                    b.Property<Guid?>("CausationId")
-                        .HasColumnType("uniqueidentifier");
+                    b.Property<string>("CausationId")
+                        .HasColumnType("nvarchar(64)");
 
-                    b.Property<Guid?>("CorrelationId")
-                        .HasColumnType("uniqueidentifier");
+                    b.Property<string>("CorrelationId")
+                        .HasColumnType("nvarchar(64)");
 
                     b.Property<DateTime>("CreatedOn")
                         .HasColumnType("datetime2");
@@ -114,6 +114,12 @@ namespace Xpandables.Net.SampleApi.Migrations
                     b.Property<Guid>("KeyId")
                         .ValueGeneratedOnAdd()
                         .HasColumnType("uniqueidentifier");
+
+                    b.Property<string>("CausationId")
+                        .HasColumnType("nvarchar(64)");
+
+                    b.Property<string>("CorrelationId")
+                        .HasColumnType("nvarchar(64)");
 
                     b.Property<DateTime>("CreatedOn")
                         .HasColumnType("datetime2");
