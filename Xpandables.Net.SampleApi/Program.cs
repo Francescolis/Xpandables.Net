@@ -90,7 +90,7 @@ builder.Services
     .AddXMinimalSupport(options =>
         options.ConfigureEndpoint = builder =>
             builder
-                .WithXAsyncPagedFilter()
+                .WithXAsyncPagedFilterSupport()
                 .WithXResultSupport());
 
 builder.Services.AddValidation();

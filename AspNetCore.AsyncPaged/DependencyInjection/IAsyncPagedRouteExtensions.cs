@@ -58,7 +58,7 @@ public static class IAsyncPagedRouteExtensions
         /// This is typically used when implementing APIs that return large datasets in pages. The filter must be
         /// compatible with the builder's endpoint configuration.</remarks>
         /// <returns>The builder instance with the asynchronous paged filter applied.</returns>
-        public TBuilder WithXAsyncPagedFilter() =>
+        public TBuilder WithXAsyncPagedFilterSupport() =>
             builder.AddEndpointFilter<TBuilder, AsyncPagedEnpointFilter>();
     }
 }
