@@ -41,10 +41,10 @@ public abstract class EntityEvent : IEntityEvent
     public string Status { get; set; } = EventStatus.ACTIVE;
 
     /// <inheritdoc/>
-    public Guid? CausationId { get; init; }
+    public string? CausationId { get; init; }
 
     /// <inheritdoc/>
-    public Guid? CorrelationId { get; init; }
+    public string? CorrelationId { get; init; }
 
     /// <inheritdoc />
     public DateTime CreatedOn { get; set; } = DateTime.UtcNow;

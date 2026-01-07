@@ -34,8 +34,8 @@ public sealed class EntitySnapShotEventTypeConfiguration : EntityEventTypeConfig
         builder.ToTable("SnapshotEvents");
 
         builder.Property(e => e.OwnerId).IsRequired();
-        builder.Property(e => e.CausationId);
-        builder.Property(e => e.CorrelationId);
+        builder.Property(e => e.CausationId).HasMaxLength(64);
+        builder.Property(e => e.CorrelationId).HasMaxLength(64);
 
         builder.HasIndex(e => e.OwnerId)
                .HasDatabaseName("IX_SnapshotEvent_OwnerId");

@@ -38,12 +38,12 @@ public sealed class DefaultDomainEventEnricher(IEventContextAccessor accessor) :
 
         if (@event.CorrelationId is null && context.CorrelationId is not null)
         {
-            @event = (TDomainEvent)@event.WithCorrelation(context.CorrelationId.Value);
+            @event = (TDomainEvent)@event.WithCorrelation(context.CorrelationId);
         }
 
         if (@event.CausationId is null && context.CausationId is not null)
         {
-            @event = (TDomainEvent)@event.WithCausation(context.CausationId.Value);
+            @event = (TDomainEvent)@event.WithCausation(context.CausationId);
         }
 
         return @event;

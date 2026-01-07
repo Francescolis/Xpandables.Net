@@ -34,7 +34,7 @@ public readonly record struct EventContext
     /// </summary>
     /// <remarks>Use this property to track or relate operations across system boundaries for diagnostics or
     /// logging purposes. The value is typically propagated between services to enable end-to-end tracing.</remarks>
-    public Guid? CorrelationId { get; init; }
+    public string? CorrelationId { get; init; }
 
     /// <summary>
     /// Gets the identifier that represents the cause of the current operation or event, if available.
@@ -42,5 +42,5 @@ public readonly record struct EventContext
     /// <remarks>Use this property to track the origin or triggering action of an operation, such as for
     /// distributed tracing or correlation in event-driven systems. The value is typically propagated across service
     /// boundaries to maintain context.</remarks>
-    public Guid? CausationId { get; init; }
+    public string? CausationId { get; init; }
 }

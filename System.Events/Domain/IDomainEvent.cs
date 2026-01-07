@@ -77,14 +77,14 @@ public interface IDomainEvent : IEvent
     /// </summary>
     /// <param name="causationId">The causation identifier to set.</param>
     /// <returns>The event domain with the specified causation identifier.</returns>
-    IDomainEvent WithCausation(Guid causationId);
+    IDomainEvent WithCausation(string causationId);
 
     /// <summary>
     /// Sets the correlation identifier of the event.
     /// </summary>
     /// <param name="correlationId">The correlation identifier to set.</param>
     /// <returns>The event domain with the specified correlation identifier.</returns>
-    IDomainEvent WithCorrelation(Guid correlationId);
+    IDomainEvent WithCorrelation(string correlationId);
 
     /// <summary>
     /// Adds metadata to the event.
@@ -128,11 +128,11 @@ public abstract record DomainEvent : EventBase, IDomainEvent
         this with { StreamName = streamName };
 
     /// <inheritdoc />
-    public virtual IDomainEvent WithCausation(Guid causationId) =>
+    public virtual IDomainEvent WithCausation(string causationId) =>
         this with { CausationId = causationId };
 
     /// <inheritdoc />
-    public virtual IDomainEvent WithCorrelation(Guid correlationId) =>
+    public virtual IDomainEvent WithCorrelation(string correlationId) =>
         this with { CorrelationId = correlationId };
 
     /// <inheritdoc />

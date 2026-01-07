@@ -42,13 +42,13 @@ public interface IEntityEvent : IDisposable
     /// Gets the identifier of the event that caused this event (for causation tracking).
     /// </summary>
     /// <remarks>Null if this event was not caused by another event.</remarks>
-    Guid? CausationId { get; init; }
+    string? CausationId { get; init; }
 
     /// <summary>
     /// Gets the correlation identifier for tracking related events across streams.
     /// </summary>
     /// <remarks>Null if this event is not part of a correlated flow.</remarks>
-    Guid? CorrelationId { get; init; }
+    string? CorrelationId { get; init; }
 
     /// <summary>  
     /// Gets the creation date of the underlying instance.  

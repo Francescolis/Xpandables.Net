@@ -31,14 +31,14 @@ public interface IIntegrationEvent : IEvent
     /// </summary>
     /// <param name="causationId">The causation identifier to set.</param>
     /// <returns>The integration event with the specified causation identifier.</returns>
-    IIntegrationEvent WithCausation(Guid causationId);
+    IIntegrationEvent WithCausation(string causationId);
 
     /// <summary>
     /// Sets the correlation identifier of the event.
     /// </summary>
     /// <param name="correlationId">The correlation identifier to set.</param>
     /// <returns>The integration event with the specified correlation identifier.</returns>
-    IIntegrationEvent WithCorrelation(Guid correlationId);
+    IIntegrationEvent WithCorrelation(string correlationId);
 }
 
 /// <summary>
@@ -60,11 +60,11 @@ public interface IIntegrationEvent<TDomainEvent> : IIntegrationEvent
 public abstract record IntegrationEvent : EventBase, IIntegrationEvent
 {
     /// <inheritdoc />
-    public virtual IIntegrationEvent WithCausation(Guid causationId) =>
+    public virtual IIntegrationEvent WithCausation(string causationId) =>
         this with { CausationId = causationId };
 
     /// <inheritdoc />
-    public virtual IIntegrationEvent WithCorrelation(Guid correlationId) =>
+    public virtual IIntegrationEvent WithCorrelation(string correlationId) =>
         this with { CorrelationId = correlationId };
 
 }

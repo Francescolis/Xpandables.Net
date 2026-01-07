@@ -27,9 +27,9 @@ public sealed record EventContextOptions
 {
     /// <summary>
     /// Gets the name of the HTTP header used to transmit the correlation ID for request tracing.
-    /// The default value is "X-Correlation-Id".
+    /// The default value is "traceparent".
     /// </summary>
-    public string CorrelationIdHeaderName { get; init; } = "X-Correlation-Id";
+    public string CorrelationIdHeaderName { get; init; } = "traceparent";
 
     /// <summary>
     /// Gets the name of the HTTP header used to carry the causation identifier for distributed tracing or correlation

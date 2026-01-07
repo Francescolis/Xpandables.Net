@@ -14,6 +14,7 @@
  * limitations under the License.
  *
 ********************************************************************************/
+using System.Diagnostics;
 using System.Events;
 
 using Microsoft.AspNetCore.Http;
@@ -22,13 +23,15 @@ using Microsoft.Extensions.Options;
 namespace Microsoft.AspNetCore;
 
 /// <summary>
-/// Middleware that establishes an event context for each HTTP request, providing correlation and causation identifiers
-/// for distributed tracing and event tracking.
+/// Middleware that manages the event context for each HTTP request, setting correlation and causation identifiers for
+/// distributed tracing and event tracking.
 /// </summary>
-/// <remarks>This middleware reads the correlation and causation identifiers from the incoming request headers, or
-/// generates a new correlation identifier if one is not provided. The identifiers are made available via the event
-/// context accessor for the duration of the request, and the correlation identifier is added to the response headers.
-/// Use this middleware to enable end-to-end tracing and event correlation across distributed systems.</remarks>
+/// <remarks>EventContextMiddleware reads correlation and causation IDs from incoming HTTP headers or the current
+/// activity, and makes them available via IEventContextAccessor for the duration of the request. It also ensures the
+/// correlation ID is included in the response headers if present. This middleware is typically used to enable
+/// end-to-end tracing and event correlation across distributed systems. Thread safety is ensured for per-request
+/// context. Register this middleware early in the pipeline to ensure downstream components have access to the event
+/// context.</remarks>
 public sealed class EventContextMiddleware : Disposable, IMiddleware
 {
     private readonly IDisposable? _disposable;
@@ -39,8 +42,8 @@ public sealed class EventContextMiddleware : Disposable, IMiddleware
     /// Initializes a new instance of the EventContextMiddleware class with the specified event context accessor and
     /// options.
     /// </summary>
-    /// <remarks>The middleware subscribes to changes in the provided options monitor and updates its
-    /// configuration dynamically when options change.</remarks>
+    /// <remarks>The middleware subscribes to changes in the provided options and updates its configuration
+    /// automatically when options are changed at runtime.</remarks>
     /// <param name="contextAccessor">The accessor used to retrieve and manage the current event context.</param>
     /// <param name="options">The options monitor that provides configuration settings for event context behavior. The current value is used
     /// at construction, and updates are applied automatically when options change.</param>
@@ -60,18 +63,24 @@ public sealed class EventContextMiddleware : Disposable, IMiddleware
         ArgumentNullException.ThrowIfNull(context);
         ArgumentNullException.ThrowIfNull(next);
 
-        var correlationId = ReadGuidHeader(context, _options.CorrelationIdHeaderName) ?? Guid.NewGuid();
-        var causationId = ReadGuidHeader(context, _options.CausationIdHeaderName);
+        var correlationValue =
+            ReadHeaderValue(context, _options.CorrelationIdHeaderName) ??
+            GetTraceParentFromActivity(Activity.Current);
+
+        var causationValue = ReadHeaderValue(context, _options.CausationIdHeaderName);
 
         var eventContext = new EventContext
         {
-            CorrelationId = correlationId,
-            CausationId = causationId
+            CorrelationId = correlationValue,
+            CausationId = causationValue
         };
 
         using var _ = _contextAccessor.BeginScope(eventContext);
 
-        context.Response.Headers[_options.CorrelationIdHeaderName] = correlationId.ToString("D");
+        if (!string.IsNullOrWhiteSpace(correlationValue))
+        {
+            context.Response.Headers[_options.CorrelationIdHeaderName] = correlationValue;
+        }
 
         await next(context).ConfigureAwait(false);
     }
@@ -87,7 +96,7 @@ public sealed class EventContextMiddleware : Disposable, IMiddleware
         base.Dispose(disposing);
     }
 
-    private static Guid? ReadGuidHeader(HttpContext httpContext, string headerName)
+    private static string? ReadHeaderValue(HttpContext httpContext, string headerName)
     {
         if (!httpContext.Request.Headers.TryGetValue(headerName, out var values))
         {
@@ -95,11 +104,18 @@ public sealed class EventContextMiddleware : Disposable, IMiddleware
         }
 
         var value = values.Count > 0 ? values[0] : null;
-        if (string.IsNullOrWhiteSpace(value))
+        return string.IsNullOrWhiteSpace(value) ? null : value;
+    }
+
+    private static string? GetTraceParentFromActivity(Activity? activity)
+    {
+        if (activity is null)
         {
             return null;
         }
 
-        return Guid.TryParse(value, out var guid) ? guid : null;
+        // Keep aligned with W3C: activity.Id is the W3C "traceparent" when IdFormat is W3C.
+        var id = activity.Id;
+        return string.IsNullOrWhiteSpace(id) ? null : id;
     }
 }
