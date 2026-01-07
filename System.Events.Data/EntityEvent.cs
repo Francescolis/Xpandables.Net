@@ -40,6 +40,12 @@ public abstract class EntityEvent : IEntityEvent
     [EventStatusValidation(allowCustomStatuses: true)]
     public string Status { get; set; } = EventStatus.ACTIVE;
 
+    /// <inheritdoc/>
+    public Guid? CausationId { get; init; }
+
+    /// <inheritdoc/>
+    public Guid? CorrelationId { get; init; }
+
     /// <inheritdoc />
     public DateTime CreatedOn { get; set; } = DateTime.UtcNow;
 

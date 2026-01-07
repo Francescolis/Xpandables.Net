@@ -32,6 +32,18 @@ public interface IEvent
     Guid EventId { get; init; }
 
     /// <summary>
+    /// Gets the identifier of the event that caused this event (for causation tracking).
+    /// </summary>
+    /// <remarks>Null if this event was not caused by another event.</remarks>
+    Guid? CausationId { get; init; }
+
+    /// <summary>
+    /// Gets the correlation identifier for tracking related events across streams.
+    /// </summary>
+    /// <remarks>Null if this event is not part of a correlated flow.</remarks>
+    Guid? CorrelationId { get; init; }
+
+    /// <summary>
     /// Gets the name of the event type represented by this instance.
     /// </summary>
     /// <remarks>This method returns the name of the class as the event name. Override this method in derived
@@ -53,4 +65,10 @@ public abstract record EventBase : IEvent
     /// <inheritdoc/>
     /// <remarks>It's based on the <see cref="Guid.CreateVersion7()"/>.</remarks>
     public Guid EventId { get; init; } = Guid.CreateVersion7();
+
+    /// <inheritdoc />
+    public Guid? CausationId { get; init; }
+
+    /// <inheritdoc />
+    public Guid? CorrelationId { get; init; }
 }

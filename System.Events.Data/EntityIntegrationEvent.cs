@@ -37,10 +37,4 @@ public sealed class EntityIntegrationEvent : EntityEvent, IEntityEventIntegratio
 
     /// <inheritdoc/>
     public Guid? ClaimId { get; init; }
-
-    /// <inheritdoc/>
-    public Guid? CausationId { get; init; }
-
-    /// <inheritdoc/>
-    public Guid? CorrelationId { get; init; }
 }

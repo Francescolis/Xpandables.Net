@@ -45,7 +45,9 @@ public sealed class EventConverterSnapshot(ICacheTypeResolver typeResolver) : IE
                 KeyId = @event.EventId,
                 OwnerId = @event.OwnerId,
                 EventName = @event.GetEventName(),
-                EventData = data
+                EventData = data,
+                CausationId = @event.CausationId,
+                CorrelationId = @event.CorrelationId
             };
         }
         catch (Exception exception) when (exception is not InvalidOperationException)

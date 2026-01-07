@@ -46,18 +46,6 @@ public interface IDomainEvent : IEvent
     long StreamVersion { get; init; }
 
     /// <summary>
-    /// Gets the identifier of the event that caused this event (for causation tracking).
-    /// </summary>
-    /// <remarks>Null if this event was not caused by another event.</remarks>
-    Guid? CausationId { get; init; }
-
-    /// <summary>
-    /// Gets the correlation identifier for tracking related events across streams.
-    /// </summary>
-    /// <remarks>Null if this event is not part of a correlated flow.</remarks>
-    Guid? CorrelationId { get; init; }
-
-    /// <summary>
     /// Gets metadata associated with the event as a JSON-serializable dictionary.
     /// </summary>
     /// <remarks>Values should be JSON-serializable primitives types (string, number, bool, null).</remarks>
@@ -121,12 +109,6 @@ public abstract record DomainEvent : EventBase, IDomainEvent
 
     /// <inheritdoc/>
     public long StreamVersion { get; init; }
-
-    /// <inheritdoc />
-    public Guid? CausationId { get; init; }
-
-    /// <inheritdoc />
-    public Guid? CorrelationId { get; init; }
 
     /// <inheritdoc />
     [JsonConverter(typeof(DomainEventMetaDataJsonStringConverter))]

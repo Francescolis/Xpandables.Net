@@ -27,21 +27,6 @@ namespace System.Events.Integration;
 public interface IIntegrationEvent : IEvent
 {
     /// <summary>
-    /// Gets the identifier that represents the originating cause of the operation, if available.
-    /// </summary>
-    /// <remarks>The causation identifier is typically used to track the flow of related operations or
-    /// messages, enabling correlation across distributed systems or asynchronous workflows. This value may be null if
-    /// no causation information is present.</remarks>
-    Guid? CausationId { get; init; }
-
-    /// <summary>
-    /// Gets the correlation identifier used to associate related operations or requests.
-    /// </summary>
-    /// <remarks>The correlation identifier can be used for tracking and diagnostic purposes across
-    /// distributed systems or asynchronous workflows. If not set, the value is <see langword="null"/>.</remarks>
-    Guid? CorrelationId { get; init; }
-
-    /// <summary>
     /// Sets the causation identifier of the event.
     /// </summary>
     /// <param name="causationId">The causation identifier to set.</param>
@@ -74,12 +59,6 @@ public interface IIntegrationEvent<TDomainEvent> : IIntegrationEvent
 /// or microservices. Derive from this type to define events that should be handled by external subscribers.</remarks>
 public abstract record IntegrationEvent : EventBase, IIntegrationEvent
 {
-    /// <inheritdoc/>
-    public Guid? CorrelationId { get; init; }
-
-    /// <inheritdoc/>
-    public Guid? CausationId { get; init; }
-
     /// <inheritdoc />
     public virtual IIntegrationEvent WithCausation(Guid causationId) =>
         this with { CausationId = causationId };

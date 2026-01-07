@@ -30,10 +30,4 @@ public sealed class EntityDomainEvent : EntityEvent, IEntityEventDomain
 
     /// <inheritdoc />
     public required string StreamName { get; init; }
-
-    /// <inheritdoc/>
-    public Guid? CausationId { get; init; }
-
-    /// <inheritdoc/>
-    public Guid? CorrelationId { get; init; }
 }
