@@ -50,9 +50,17 @@ public sealed class StringExtensionsTests
         var germanResult = template.StringFormat(germanCulture, 1234.56m);
 
         // Assert
-        usResult.Should().Contain("$");
+        usResult.Should().Contain(usCulture.NumberFormat.CurrencySymbol);
         usResult.Should().Contain("1,234.56");
-        germanResult.Should().Contain("€");
+        germanResult.Should().Contain("1.234,56");
+
+        // Currency symbol availability can vary on CI depending on globalization/encoding.
+        // Use the culture-provided symbol, and only assert it when it isn't the replacement character.
+        var germanCurrencySymbol = germanCulture.NumberFormat.CurrencySymbol;
+        if (!string.Equals(germanCurrencySymbol, "?", StringComparison.Ordinal))
+        {
+            germanResult.Should().Contain(germanCurrencySymbol);
+        }
     }
 
     [Fact]

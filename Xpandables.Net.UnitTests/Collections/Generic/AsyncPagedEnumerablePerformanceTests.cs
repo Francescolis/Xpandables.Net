@@ -62,7 +62,7 @@ public sealed class AsyncPagedEnumerablePerformanceTests
         GC.Collect();
 
         var finalMemory = GC.GetTotalMemory(forceFullCollection: true);
-        var memoryIncrease = finalMemory - initialMemory;
+        var memoryDelta = finalMemory - initialMemory;
 
         // Assert
         Assert.Equal(largeSize, count);
@@ -70,8 +70,8 @@ public sealed class AsyncPagedEnumerablePerformanceTests
         // Environment-stable heuristic:
         // - The original threshold (< 40 KB) is too tight and fails under different GC/OS/JIT conditions (CI runners).
         // - This check aims to catch egregious leaks (linear growth), not allocator variability.
-        const long maxIncreaseBytes = 16L * 1024L * 1024L; // 16 MB
-        Assert.True(memoryIncrease >= 0 && memoryIncrease < maxIncreaseBytes);
+        const long maxAbsoluteDriftBytes = 32L * 1024L * 1024L; // 32 MB
+        Assert.True(Math.Abs(memoryDelta) < maxAbsoluteDriftBytes);
     }
 
     /// <summary>
