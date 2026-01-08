@@ -49,7 +49,8 @@ public sealed class SuccessResultBuilder :
             StatusCode = StatusCode,
             Location = Location,
             Headers = Headers,
-            Exception = Exception
+            Exception = Exception,
+            Value = Value
         };
 
     /// <summary>

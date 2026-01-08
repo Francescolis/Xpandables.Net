@@ -152,13 +152,27 @@ public static class IPipelineExtensions
             ArgumentNullException.ThrowIfNull(type);
             ArgumentNullException.ThrowIfNull(services);
 
-            _ = type.GetInterfaces().FirstOrDefault(i =>
+            var handlerInterface = type.GetInterfaces().FirstOrDefault(i =>
                 i.IsGenericType &&
-                i.GetGenericTypeDefinition() == typeof(IPipelineRequestHandler<>))
-                ?? throw new InvalidOperationException(
-                    $"{type.Name} does not implement IPipelineRequestHandler<> interface.");
+                i.GetGenericTypeDefinition() == typeof(IPipelineRequestHandler<>));
 
-            return services.AddTransient(typeof(IPipelineRequestHandler<>), type);
+            if (handlerInterface is null)
+            {
+                throw new InvalidOperationException(
+                    $"{type.Name} does not implement IPipelineRequestHandler<> interface.");
+            }
+
+            // If `type` is open generic (or implements handler as open generic), register open generic service.
+            if (type.ContainsGenericParameters || handlerInterface.ContainsGenericParameters)
+            {
+                return services.AddTransient(typeof(IPipelineRequestHandler<>), type);
+            }
+
+            // Closed implementation: register specifically for the closed TRequest (IPipelineRequestHandler<TRequest>).
+            var requestType = handlerInterface.GenericTypeArguments[0];
+            var serviceType = typeof(IPipelineRequestHandler<>).MakeGenericType(requestType);
+
+            return services.AddTransient(serviceType, type);
         }
     }
 }
