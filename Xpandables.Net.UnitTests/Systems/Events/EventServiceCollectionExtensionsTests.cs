@@ -62,7 +62,7 @@ public sealed class EventServiceCollectionExtensionsTests
         var services = new ServiceCollection();
         services.AddLogging();
         services.AddSingleton(new JsonSerializerOptions(JsonSerializerDefaults.Web));
-        services.AddXCacheTypeResolver(typeof(TestBankAccountAggregate).Assembly);
+        services.AddXCacheTypeResolver([typeof(TestBankAccountAggregate).Assembly]);
         services.AddXEventConverterFactory();
         services.AddXEventConverterContext();
         services.AddXIntegrationEventEnricher();
@@ -79,7 +79,7 @@ public sealed class EventServiceCollectionExtensionsTests
         services.AddSingleton<IPendingDomainEventsBuffer, PendingDomainEventsBuffer>();
         services.AddXAggregateStore<TestBankAccountAggregate>();
         services.AddXEventPublisher(EventRegistryMode.Dynamic);
-        services.AddXEventHandlers(typeof(TestMoneyDepositedHandler).Assembly);
+        services.AddXEventHandlers([typeof(TestMoneyDepositedHandler).Assembly]);
 
         return services.BuildServiceProvider(new ServiceProviderOptions
         {

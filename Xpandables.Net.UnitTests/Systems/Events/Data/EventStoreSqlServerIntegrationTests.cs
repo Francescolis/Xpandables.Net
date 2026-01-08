@@ -69,7 +69,7 @@ public sealed class EventStoreSqlServerIntegrationTests
         IConfiguration configuration = StaticConfiguration.Configuration;
         services.AddLogging();
         services.AddSingleton(new JsonSerializerOptions(JsonSerializerDefaults.Web));
-        services.AddXCacheTypeResolver(typeof(TestBankAccountAggregate).Assembly, typeof(AccountOpened).Assembly);
+        services.AddXCacheTypeResolver([typeof(TestBankAccountAggregate).Assembly, typeof(AccountOpened).Assembly]);
         services.AddXEventConverterFactory();
         services.AddXEventStoreDataContext(options =>
             options.UseSqlServer(configuration.GetConnectionString(database.EventStoreConnectionString))
