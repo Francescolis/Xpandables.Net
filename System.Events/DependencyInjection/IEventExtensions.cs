@@ -50,8 +50,8 @@ public static class IEventExtensions
         ///
         ///     using var _ = accessor.BeginScope(new EventContext
         ///     {
-        ///         CorrelationId = Guid.CreateVersion7(),
-        ///         CausationId = Guid.CreateVersion7()
+        ///         CorrelationId = Guid.CreateVersion7().ToString("N"),
+        ///         CausationId = Guid.CreateVersion7().ToString("N")
         ///     });
         ///
         ///     // any aggregates saved in this logical call-path get enriched automatically
