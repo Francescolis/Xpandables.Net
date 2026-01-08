@@ -31,6 +31,8 @@ Built for **.NET 10** and **C# 14**.
 - 📤 **`IOutboxStore`** — Transactional outbox pattern for reliable event delivery
 - 📢 **`IEventPublisher`** — Publish/subscribe with multiple registry modes (Static, Dynamic, Composite)
 - ⏰ **`IScheduler`** — Background scheduler for processing pending events
+- 🌐 **W3C Compatible IDs** — `CorrelationId` and `CausationId` are `string?` for W3C trace context support
+- 🔍 **GUID Parsing Helpers** — `TryGetCausationGuidId()` and `TryGetCorrelationGuidId()` for GUID conversion
 
 ---
 
@@ -667,9 +669,28 @@ public sealed class OutboxProcessorScheduler : IScheduler
 
 `EventContext` is an ambient container (stored via `AsyncLocal`) used to propagate and enrich correlation/causation IDs.
 
+**Correlation** and **causation** identifiers are now `string?` to support:
+- **W3C Trace Context** (`traceparent` header, e.g., `"00-4bf92f3577b34da6a3ce929d0e0e4736-00f067aa0ba902b7-01"`)
+- **GUID strings** (e.g., `"550e8400-e29b-41d4-a716-446655440000"`)
+- **Custom identifiers** (ULID, Snowflake, Kafka offset, etc.)
+
+For backward compatibility, use the helper methods:
+```csharp
+// Parse correlation/causation as GUID if possible
+if (@event.TryGetCorrelationGuidId(out var correlationGuid))
+{
+    // Use correlationGuid
+}
+
+if (@event.TryGetCausationGuidId(out var causationGuid))
+{
+    // Use causationGuid
+}
+```
+
 Typical usage:
 
-- **HTTP**: use `AspNetCore.Events` middleware to read `X-Correlation-Id`/`X-Causation-Id` and establish a scope.
+- **HTTP**: use `AspNetCore.Events` middleware to read `traceparent`/`X-Causation-Id` and establish a scope.
 - **Background processing**: create a scope manually around unit-of-work execution.
 
 ```csharp
@@ -679,7 +700,8 @@ public sealed class PaymentJob(IEventContextAccessor accessor)
 {
     public async Task ExecuteAsync(CancellationToken ct)
     {
-        var correlationId = Guid.CreateVersion7();
+        // Use W3C-compatible trace ID or GUID string
+        var correlationId = Guid.CreateVersion7().ToString("N");
 
         using var _ = accessor.BeginScope(new EventContext
         {

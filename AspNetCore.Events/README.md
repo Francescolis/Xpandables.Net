@@ -24,9 +24,11 @@ Targeted for **.NET 10** and designed to work well with minimal APIs.
 ### Key features
 
 - **Per-request scope** for `System.Events.EventContext`
+- **W3C Trace Context support** — Uses `traceparent` header by default for correlation
 - **Header propagation** for correlation (and optional causation)
 - **Response echo** of correlation id for client-side troubleshooting
 - **Options-based customization** (`EventContextOptions`)
+- **String-based IDs** — `CorrelationId` and `CausationId` are now `string?` for maximum interoperability
 
 ---
 
@@ -60,8 +62,10 @@ builder.Services.AddXEventContext();
 builder.Services.AddXEventContextMiddleware();
 
 // Optional: configure header names
+// Default CorrelationIdHeaderName is "traceparent" (W3C Trace Context)
 builder.Services.Configure<EventContextOptions>(options =>
 {
+    // Override to use custom header instead of traceparent
     options.CorrelationIdHeaderName = "X-Correlation-Id";
     options.CausationIdHeaderName = "X-Causation-Id";
 });
@@ -87,10 +91,12 @@ app.Run();
 
 For each request the middleware:
 
-1. reads `X-Correlation-Id` (or generates a new `Guid`)
-2. reads `X-Causation-Id` (optional)
+1. reads `traceparent` header (W3C Trace Context format) or falls back to `Activity.Current.Id`, or generates a new correlation ID if neither exists
+2. reads `X-Causation-Id` (optional, or configured header)
 3. sets `IEventContextAccessor.Current` for the lifetime of the request using `BeginScope`
-4. echoes `X-Correlation-Id` into the response headers
+4. echoes the correlation ID into the response headers (default: `traceparent`)
+
+The correlation ID is stored as a `string` to support W3C trace IDs (e.g., `00-4bf92f3577b34da6a3ce929d0e0e4736-00f067aa0ba902b7-01`), GUIDs, or custom identifiers.
 
 ### Using the context in endpoints
 
@@ -149,7 +155,8 @@ using Microsoft.AspNetCore;
 
 builder.Services.Configure<EventContextOptions>(options =>
 {
-    options.CorrelationIdHeaderName = "X-Correlation-Id";
+    // Default is "traceparent" for W3C compatibility
+    options.CorrelationIdHeaderName = "traceparent";
     options.CausationIdHeaderName = "X-Causation-Id";
 });
 ```

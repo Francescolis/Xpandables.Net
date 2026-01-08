@@ -191,7 +191,9 @@ public sealed class IntegrationEventPublisher
     private static Task PublishToMessageBusAsync(IIntegrationEvent @event, CancellationToken ct)
     {
         // Publish to your broker (Azure Service Bus, Kafka, etc.)
-        // Consider using @event.EventId for idempotency and @event.CorrelationId for tracing.
+        // @event.EventId for idempotency
+        // @event.CorrelationId (W3C trace ID) for distributed tracing
+        // @event.CausationId for event causation tracking
         return Task.CompletedTask;
     }
 }
@@ -416,6 +418,8 @@ Stores domain events with stream information:
 | Sequence | long | Global sequence number |
 | EventName | string | Event type name |
 | EventData | string | Serialized event data (JSON) |
+| CausationId | string? | String-based causation identifier (supports W3C, GUID, custom formats) |
+| CorrelationId | string? | String-based correlation identifier (supports W3C trace IDs, GUIDs) |
 | CreatedOn | DateTime | When the event occurred |
 | Status | EventStatus | ACTIVE, DELETED, etc. |
 
@@ -430,6 +434,8 @@ Stores aggregate snapshots:
 | Sequence | long | Snapshot sequence number |
 | EventName | string | Snapshot type name |
 | EventData | string | Serialized snapshot data |
+| CausationId | string? | String-based causation identifier |
+| CorrelationId | string? | String-based correlation identifier |
 | CreatedOn | DateTime | When the snapshot was created |
 
 ### EntityIntegrationEvent
@@ -441,6 +447,8 @@ Stores integration events for outbox pattern:
 | KeyId | Guid | Unique event identifier |
 | EventName | string | Event type name |
 | EventData | string | Serialized event data |
+| CausationId | string? | String-based causation identifier |
+| CorrelationId | string? | String-based correlation identifier (W3C trace ID, GUID, etc.) |
 | Status | EventStatus | PENDING, PROCESSED, FAILED |
 | CreatedOn | DateTime | When the event was created |
 
@@ -454,6 +462,7 @@ Stores integration events for outbox pattern:
 4. **Subscribe for projections** - Use subscriptions for read model updates
 5. **Truncate old events** - Clean up after taking snapshots
 6. **Keep correlation IDs** - flow `EventContext` in your app to keep causation/correlation consistent
+7. **Use W3C trace IDs** - leverage `traceparent` for distributed tracing interoperability
 
 ---
 
