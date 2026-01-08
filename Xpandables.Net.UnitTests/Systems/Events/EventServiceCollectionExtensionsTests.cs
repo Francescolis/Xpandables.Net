@@ -65,6 +65,9 @@ public sealed class EventServiceCollectionExtensionsTests
         services.AddXCacheTypeResolver(typeof(TestBankAccountAggregate).Assembly);
         services.AddXEventConverterFactory();
         services.AddXEventConverterContext();
+        services.AddXIntegrationEventEnricher();
+        services.AddXDomainEventEnricher();
+        services.AddXEventContextAccessor();
         services.AddXEventStoreDataContext(options =>
             options.UseSqlite(directory.EventStoreConnectionString)
                     .ReplaceService<IModelCustomizer, EventStoreSqlServerModelCustomizer>());
