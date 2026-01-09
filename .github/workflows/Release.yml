@@ -132,12 +132,17 @@ jobs:
           script: |
             const version = "${{ steps.version.outputs.version }}";
             const tagName = `v${version}`;
-            const { data } = await github.repos.generateReleaseNotes({
-              owner: context.repo.owner,
-              repo: context.repo.repo,
-              tag_name: tagName
-            });
-            return data.body;
+            const response = await github.request(
+              'POST /repos/{owner}/{repo}/releases/generate-notes',
+              {
+                owner: context.repo.owner,
+                repo: context.repo.repo,
+                tag_name: tagName
+              }
+            );
+      
+            return response.data.body;
+
 
       - name: Update CHANGELOG.md
         run: |
