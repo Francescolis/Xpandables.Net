@@ -6,14 +6,14 @@
 		<Nullable>enable</Nullable>
 		<Platforms>x64</Platforms>
 		<LangVersion>latest</LangVersion>
-		<Title>System.Events</Title>
+		<Title>Xpandables.Events</Title>
 		<Description>Events implementation.</Description>
 		<Company>Kamersoft</Company>
 		<Authors>Francescolis</Authors>
 
-		<AssemblyName>System.Events</AssemblyName>
+		<AssemblyName>Xpandables.Events</AssemblyName>
 		<RootNamespace>System.Events</RootNamespace>
-		<PackageId>System.Events</PackageId>
+		<PackageId>Xpandables.Events</PackageId>
 		<PackageProjectUrl>https://github.com/Francescolis/Xpandables.Net</PackageProjectUrl>
 		<RepositoryUrl>https://github.com/Francescolis/Xpandables.Net</RepositoryUrl>
 		<RepositoryType>git</RepositoryType>

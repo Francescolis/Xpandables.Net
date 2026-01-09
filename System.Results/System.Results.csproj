@@ -6,14 +6,14 @@
 	  <Nullable>enable</Nullable>
 	  <Platforms>x64</Platforms>
 	  <LangVersion>latest</LangVersion>
-	  <Title>System.Results</Title>
+	  <Title>Xpandables.Results</Title>
 	  <Description>Result pattern implementation.</Description>
 	  <Company>Kamersoft</Company>
 	  <Authors>Francescolis</Authors>
 
-	  <AssemblyName>System.Results</AssemblyName>
+	  <AssemblyName>Xpandables.Results</AssemblyName>
 	  <RootNamespace>System.Results</RootNamespace>
-	  <PackageId>System.Results</PackageId>
+	  <PackageId>Xpandables.Results</PackageId>
 	  <PackageProjectUrl>https://github.com/Francescolis/Xpandables.Net</PackageProjectUrl>
 	  <RepositoryUrl>https://github.com/Francescolis/Xpandables.Net</RepositoryUrl>
 	  <RepositoryType>git</RepositoryType>

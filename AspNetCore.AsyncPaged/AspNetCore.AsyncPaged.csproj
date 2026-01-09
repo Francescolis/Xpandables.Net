@@ -6,9 +6,9 @@
 		<Nullable>enable</Nullable>
 		<Platforms>x64</Platforms>
 
-		<AssemblyName>AspNetCore.AsyncPaged</AssemblyName>
+		<AssemblyName>Xpandables.AspNetCore.AsyncPaged</AssemblyName>
 		<RootNamespace>Microsoft.AspNetCore</RootNamespace>
-		<PackageId>AspNetCore.AsyncPaged</PackageId>
+		<PackageId>Xpandables.AspNetCore.AsyncPaged</PackageId>
 		<PackageProjectUrl>https://github.com/Francescolis/Xpandables.Net</PackageProjectUrl>
 		<RepositoryUrl>https://github.com/Francescolis/Xpandables.Net</RepositoryUrl>
 		<RepositoryType>git</RepositoryType>

@@ -6,14 +6,14 @@
 		<Nullable>enable</Nullable>
 		<Platforms>x64</Platforms>
 		<LangVersion>latest</LangVersion>
-		<Title>AspNetCore.Net</Title>
+		<Title>Xpandables.AspNetCore.Net</Title>
 		<Description>AspNetCore implementation.</Description>
 		<Company>Kamersoft</Company>
 		<Authors>Francescolis</Authors>
 
-		<AssemblyName>AspNetCore.Net</AssemblyName>
+		<AssemblyName>Xpandables.AspNetCore.Net</AssemblyName>
 		<RootNamespace>Microsoft.AspNetCore</RootNamespace>
-		<PackageId>AspNetCore.Net</PackageId>
+		<PackageId>Xpandables.AspNetCore.Net</PackageId>
 		<PackageProjectUrl>https://github.com/Francescolis/Xpandables.Net</PackageProjectUrl>
 		<RepositoryUrl>https://github.com/Francescolis/Xpandables.Net</RepositoryUrl>
 		<RepositoryType>git</RepositoryType>

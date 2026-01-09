@@ -6,14 +6,14 @@
 	  <Nullable>enable</Nullable>
 	  <Platforms>x64</Platforms>
 	  <LangVersion>latest</LangVersion>
-	  <Title>System.AsyncPaged.Json</Title>
+	  <Title>Xpandables.AsyncPaged.Json</Title>
 	  <Description>IAsyncPagedEnumerable Json Serialization.</Description>
 	  <Company>Kamersoft</Company>
 	  <Authors>Francescolis</Authors>
 
-	  <AssemblyName>System.AsyncPaged.Json</AssemblyName>
+	  <AssemblyName>Xpandables.AsyncPaged.Json</AssemblyName>
 	  <RootNamespace>System.Text.Json</RootNamespace>
-	  <PackageId>System.AsyncPaged.Json</PackageId>
+	  <PackageId>Xpandables.AsyncPaged.Json</PackageId>
 	  <PackageProjectUrl>https://github.com/Francescolis/Xpandables.Net</PackageProjectUrl>
 	  <RepositoryUrl>https://github.com/Francescolis/Xpandables.Net</RepositoryUrl>
 	  <RepositoryType>git</RepositoryType>

@@ -6,14 +6,14 @@
 		<Nullable>enable</Nullable>
 		<Platforms>x64</Platforms>
 		<LangVersion>latest</LangVersion>
-		<Title>System.Rests</Title>
+		<Title>Xpandables.Rests</Title>
 		<Description>Http Rest Implementation.</Description>
 		<Company>Kamersoft</Company>
 		<Authors>Francescolis</Authors>
 
-		<AssemblyName>System.Rests</AssemblyName>
+		<AssemblyName>Xpandables.Rests</AssemblyName>
 		<RootNamespace>System.Rests</RootNamespace>
-		<PackageId>System.Rests</PackageId>
+		<PackageId>Xpandables.Rests</PackageId>
 		<PackageProjectUrl>https://github.com/Francescolis/Xpandables.Net</PackageProjectUrl>
 		<RepositoryUrl>https://github.com/Francescolis/Xpandables.Net</RepositoryUrl>
 		<RepositoryType>git</RepositoryType>

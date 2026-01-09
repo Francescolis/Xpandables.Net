@@ -6,14 +6,14 @@
 		<Nullable>enable</Nullable>
 		<Platforms>x64</Platforms>
 		<LangVersion>latest</LangVersion>
-		<Title>System.Optionals</Title>
+		<Title>Xpandables.Optionals</Title>
 		<Description>Optional pattern.</Description>
 		<Company>Kamersoft</Company>
 		<Authors>Francescolis</Authors>
 
-		<AssemblyName>System.Optionals</AssemblyName>
+		<AssemblyName>Xpandables.Optionals</AssemblyName>
 		<RootNamespace>System.Optionals</RootNamespace>
-		<PackageId>System.Optionals</PackageId>
+		<PackageId>Xpandables.Optionals</PackageId>
 		<PackageProjectUrl>https://github.com/Francescolis/Xpandables.Net</PackageProjectUrl>
 		<RepositoryUrl>https://github.com/Francescolis/Xpandables.Net</RepositoryUrl>
 		<RepositoryType>git</RepositoryType>

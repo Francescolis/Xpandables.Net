@@ -6,14 +6,14 @@
 		<Nullable>enable</Nullable>
 		<Platforms>x64</Platforms>
 		<LangVersion>latest</LangVersion>
-		<Title>System.Validation</Title>
+		<Title>Xpandables.Validation</Title>
 		<Description>Validation classes.</Description>
 		<Company>Kamersoft</Company>
 		<Authors>Francescolis</Authors>
 
-		<AssemblyName>System.Validation</AssemblyName>
+		<AssemblyName>Xpandables.Validation</AssemblyName>
 		<RootNamespace>System.ComponentModel.DataAnnotations</RootNamespace>
-		<PackageId>System.Validation</PackageId>
+		<PackageId>Xpandables.Validation</PackageId>
 		<PackageProjectUrl>https://github.com/Francescolis/Xpandables.Net</PackageProjectUrl>
 		<RepositoryUrl>https://github.com/Francescolis/Xpandables.Net</RepositoryUrl>
 		<RepositoryType>git</RepositoryType>

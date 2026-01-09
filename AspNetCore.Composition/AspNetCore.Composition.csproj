@@ -6,14 +6,14 @@
 		<Nullable>enable</Nullable>
 		<Platforms>x64</Platforms>
 		<LangVersion>latest</LangVersion>
-		<Title>AspNetCore.Composition</Title>
+		<Title>Xpandables.AspNetCore.Composition</Title>
 		<Description>AspNetCore Composition implementation.</Description>
 		<Company>Kamersoft</Company>
 		<Authors>Francescolis</Authors>
 
-		<AssemblyName>AspNetCore.Composition</AssemblyName>
+		<AssemblyName>Xpandables.AspNetCore.Composition</AssemblyName>
 		<RootNamespace>Microsoft.AspNetCore</RootNamespace>
-		<PackageId>AspNetCore.Composition</PackageId>
+		<PackageId>Xpandables.AspNetCore.Composition</PackageId>
 		<PackageProjectUrl>https://github.com/Francescolis/Xpandables.Net</PackageProjectUrl>
 		<RepositoryUrl>https://github.com/Francescolis/Xpandables.Net</RepositoryUrl>
 		<RepositoryType>git</RepositoryType>

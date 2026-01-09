@@ -6,14 +6,14 @@
 		<Nullable>enable</Nullable>
 		<Platforms>x64</Platforms>
 		<LangVersion>latest</LangVersion>
-		<Title>System.Results.Pipelines</Title>
+		<Title>Xpandables.Results.Pipelines</Title>
 		<Description>Pipeline pattern implementation.</Description>
 		<Company>Kamersoft</Company>
 		<Authors>Francescolis</Authors>
 
-		<AssemblyName>System.Results.Pipelines</AssemblyName>
+		<AssemblyName>Xpandables.Results.Pipelines</AssemblyName>
 		<RootNamespace>System.Results.Pipelines</RootNamespace>
-		<PackageId>System.Results.Pipelines</PackageId>
+		<PackageId>Xpandables.Results.Pipelines</PackageId>
 		<PackageProjectUrl>https://github.com/Francescolis/Xpandables.Net</PackageProjectUrl>
 		<RepositoryUrl>https://github.com/Francescolis/Xpandables.Net</RepositoryUrl>
 		<RepositoryType>git</RepositoryType>

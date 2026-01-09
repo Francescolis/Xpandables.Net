@@ -6,14 +6,14 @@
 		<Nullable>enable</Nullable>
 		<Platforms>x64</Platforms>
 		<LangVersion>latest</LangVersion>
-		<Title>System.Events.Data</Title>
+		<Title>Xpandables.Events.Data</Title>
 		<Description>Events EntityFramework implementation.</Description>
 		<Company>Kamersoft</Company>
 		<Authors>Francescolis</Authors>
 
-		<AssemblyName>System.Events.Data</AssemblyName>
+		<AssemblyName>Xpandables.Events.Data</AssemblyName>
 		<RootNamespace>System.Events.Data</RootNamespace>
-		<PackageId>System.Events.Data</PackageId>
+		<PackageId>Xpandables.Events.Data</PackageId>
 		<PackageProjectUrl>https://github.com/Francescolis/Xpandables.Net</PackageProjectUrl>
 		<RepositoryUrl>https://github.com/Francescolis/Xpandables.Net</RepositoryUrl>
 		<RepositoryType>git</RepositoryType>

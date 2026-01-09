@@ -6,14 +6,14 @@
 		<Nullable>enable</Nullable>
 		<Platforms>x64</Platforms>
 		<LangVersion>latest</LangVersion>
-		<Title>System.Primitives</Title>
+		<Title>Xpandables.Primitives</Title>
 		<Description>Primitives classes.</Description>
 		<Company>Kamersoft</Company>
 		<Authors>Francescolis</Authors>
 
-		<AssemblyName>System.Primitives</AssemblyName>
+		<AssemblyName>Xpandables.Primitives</AssemblyName>
 		<RootNamespace>System</RootNamespace>
-		<PackageId>System.Primitives</PackageId>
+		<PackageId>Xpandables.Primitives</PackageId>
 		<PackageProjectUrl>https://github.com/Francescolis/Xpandables.Net</PackageProjectUrl>
 		<RepositoryUrl>https://github.com/Francescolis/Xpandables.Net</RepositoryUrl>
 		<RepositoryType>git</RepositoryType>

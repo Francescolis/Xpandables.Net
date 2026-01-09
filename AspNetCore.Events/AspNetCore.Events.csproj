@@ -5,9 +5,9 @@
 		<ImplicitUsings>enable</ImplicitUsings>
 		<Nullable>enable</Nullable>
 		<Platforms>x64</Platforms>
-		<AssemblyName>AspNetCore.Events</AssemblyName>
+		<AssemblyName>Xpandables.AspNetCore.Events</AssemblyName>
 		<RootNamespace>Microsoft.AspNetCore</RootNamespace>
-		<PackageId>AspNetCore.Events</PackageId>
+		<PackageId>Xpandables.AspNetCore.Events</PackageId>
 		<PackageProjectUrl>https://github.com/Francescolis/Xpandables.Net</PackageProjectUrl>
 		<RepositoryUrl>https://github.com/Francescolis/Xpandables.Net</RepositoryUrl>
 		<RepositoryType>git</RepositoryType>

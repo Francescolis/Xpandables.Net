@@ -6,9 +6,9 @@
 		<Nullable>enable</Nullable>
 		<Platforms>x64</Platforms>
 
-		<AssemblyName>AspNetCore.Results</AssemblyName>
+		<AssemblyName>Xpandables.AspNetCore.Results</AssemblyName>
 		<RootNamespace>Microsoft.AspNetCore</RootNamespace>
-		<PackageId>AspNetCore.Results</PackageId>
+		<PackageId>Xpandables.AspNetCore.Results</PackageId>
 		<PackageProjectUrl>https://github.com/Francescolis/Xpandables.Net</PackageProjectUrl>
 		<RepositoryUrl>https://github.com/Francescolis/Xpandables.Net</RepositoryUrl>
 		<RepositoryType>git</RepositoryType>
