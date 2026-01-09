@@ -1,0 +1,260 @@
+name: Semantic Release
+
+permissions:
+  contents: write
+  pull-requests: read
+
+on:
+  push:
+    branches:
+      - main
+      - 'release/*'
+  workflow_dispatch:
+    inputs:
+      override_version:
+        description: "Override version (SemVer: 1.2.3 or 1.2.3-beta.1). Leave empty for auto."
+        required: false
+        type: string
+      dry_run:
+        description: "Dry run (no commit, tag, release, or publish)"
+        required: false
+        default: "false"
+        type: choice
+        options: [ "false", "true" ]
+
+jobs:
+  release:
+    runs-on: ubuntu-latest
+
+    env:
+      DRY_RUN: ${{ github.event.inputs.dry_run || 'false' }}
+      OVERRIDE_VERSION: ${{ github.event.inputs.override_version }}
+
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+
+      - name: Setup .NET
+        uses: actions/setup-dotnet@v4
+        with:
+          dotnet-version: 10.0.x
+
+      - name: Find last tag
+        id: last_tag
+        run: |
+          tag=$(git describe --tags --abbrev=0 2>/dev/null || echo "0.0.0")
+          echo "last_tag=$tag" >> "$GITHUB_OUTPUT"
+
+      - name: Calculate next version from commits
+        id: version
+        run: |
+          last_tag="${{ steps.last_tag.outputs.last_tag }}"
+
+          if [ -n "${OVERRIDE_VERSION}" ]; then
+            echo "Using override version: ${OVERRIDE_VERSION}"
+            echo "version=${OVERRIDE_VERSION}" >> "$GITHUB_OUTPUT"
+            exit 0
+          fi
+
+          echo "Last tag: $last_tag"
+
+          base="${last_tag#v}"
+          major=$(echo "$base" | cut -d. -f1)
+          minor=$(echo "$base" | cut -d. -f2)
+          patch=$(echo "$base" | cut -d. -f3)
+
+          release_type="patch"
+          range="$last_tag..HEAD"
+          [ "$last_tag" = "0.0.0" ] && range="HEAD"
+
+          echo "Analyzing commits in range: $range"
+          log=$(git log --format=%B $range)
+
+          if echo "$log" | grep -qE "BREAKING CHANGE|feat!|fix!"; then
+            release_type="major"
+          elif echo "$log" | grep -qE "^feat(\(|:)|^feat!"; then
+            release_type="minor"
+          fi
+
+          echo "Determined release type: $release_type"
+
+          if [ "$release_type" = "major" ]; then
+            major=$((major + 1))
+            minor=0
+            patch=0
+          elif [ "$release_type" = "minor" ]; then
+            minor=$((minor + 1))
+            patch=0
+          else
+            patch=$((patch + 1))
+          fi
+
+          new_version="$major.$minor.$patch"
+          echo "Next version: $new_version"
+
+          echo "version=$new_version" >> "$GITHUB_OUTPUT"
+
+      - name: Validate SemVer
+        run: |
+          VERSION="${{ steps.version.outputs.version }}"
+          if [[ ! "$VERSION" =~ ^[0-9]+\.[0-9]+\.[0-9]+(-[A-Za-z0-9.-]+)?$ ]]; then
+            echo "Invalid SemVer: $VERSION"
+            exit 1
+          fi
+          echo "Using version: $VERSION"
+
+      - name: Update version in selected csproj files
+        run: |
+          VERSION="${{ steps.version.outputs.version }}"
+          echo "Updating System* and AspNetCore* projects to $VERSION"
+
+          FILES=$(find . -maxdepth 8 -type f \( -name "System*.csproj" -o -name "AspNetCore*.csproj" \))
+
+          if [ -z "$FILES" ]; then
+            echo "No matching csproj files found"
+            exit 1
+          fi
+
+          for FILE in $FILES; do
+            echo "Updating $FILE"
+            sed -i "s#<Version>.*</Version>#<Version>$VERSION</Version>#" "$FILE" || true
+            sed -i "s#<PackageVersion>.*</PackageVersion>#<PackageVersion>$VERSION</PackageVersion>#" "$FILE" || true
+          done
+
+      - name: Build
+        run: dotnet build --configuration Release
+
+      - name: Pack NuGet packages
+        run: dotnet pack --configuration Release -o ./artifacts
+
+      - name: Generate release notes
+        id: notes
+        uses: actions/github-script@v7
+        with:
+          script: |
+            const version = "${{ steps.version.outputs.version }}";
+            const tagName = `v${version}`;
+            const response = await github.request(
+              'POST /repos/{owner}/{repo}/releases/generate-notes',
+              {
+                owner: context.repo.owner,
+                repo: context.repo.repo,
+                tag_name: tagName
+              }
+            );
+      
+            return response.data.body;
+
+      - name: Update CHANGELOG.md from README
+        run: |
+          VERSION="${{ steps.version.outputs.version }}"
+          DATE=$(date -u +%Y-%m-%d)
+      
+          echo "Updating CHANGELOG.md for v$VERSION using full README.md"
+      
+          if [ ! -f README.md ]; then
+            echo "❌ README.md not found"
+            exit 1
+          fi
+      
+          tmp=CHANGELOG.tmp
+      
+          {
+            echo "## v$VERSION - $DATE"
+            echo
+            cat README.md
+            echo
+            if [ -f CHANGELOG.md ]; then
+              cat CHANGELOG.md
+            fi
+          } > "$tmp"
+      
+          mv "$tmp" CHANGELOG.md
+
+      - name: Commit version bump and changelog
+        if: env.DRY_RUN == 'false'
+        run: |
+          VERSION="${{ steps.version.outputs.version }}"
+          git config user.name "github-actions"
+          git config user.email "github-actions@github.com"
+          git add .
+          git commit -m "chore: release v$VERSION" || echo "No changes to commit"
+          git tag "v$VERSION"
+          git push origin HEAD --tags
+
+      - name: Create GitHub Release
+        if: env.DRY_RUN == 'false'
+        id: create_release
+        uses: actions/create-release@v1
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+        with:
+          tag_name: "v${{ steps.version.outputs.version }}"
+          release_name: "v${{ steps.version.outputs.version }}"
+          body: ${{ steps.notes.outputs.result }}
+          draft: false
+          prerelease: ${{ contains(steps.version.outputs.version, '-') }}
+
+      - name: Publish to NuGet.org
+        if: env.DRY_RUN == 'false'
+        run: |
+          dotnet nuget push "./artifacts/*.nupkg" \
+            --api-key "${{ secrets.NUGET_API_KEY }}" \
+            --source "https://api.nuget.org/v3/index.json" \
+            --skip-duplicate
+
+      - name: Publish to GitHub Packages
+        if: env.DRY_RUN == 'false'
+        run: |
+          OWNER="${GITHUB_REPOSITORY%/*}"
+          dotnet nuget push "./artifacts/*.nupkg" \
+            --api-key "${{ secrets.GH_PACKAGES_TOKEN }}" \
+            --source "https://nuget.pkg.github.com/$OWNER/index.json" \
+            --skip-duplicate
+
+      - name: Upload artifacts to GitHub Release
+        if: env.DRY_RUN == 'false'
+        uses: actions/upload-release-asset@v1
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+        with:
+          upload_url: ${{ steps.create_release.outputs.upload_url }}
+          asset_path: ./artifacts
+          asset_name: nuget-packages.zip
+          asset_content_type: application/zip
+
+      - name: Notify downstream repositories (repository_dispatch)
+        if: env.DRY_RUN == 'false'
+        uses: actions/github-script@v7
+        env:
+          VERSION: ${{ steps.version.outputs.version }}
+          DOWNSTREAM_REPOS: ${{ secrets.DOWNSTREAM_REPOS }}
+        with:
+          script: |
+            const version = process.env.VERSION;
+            const downstream = (process.env.DOWNSTREAM_REPOS || "")
+              .split(",")
+              .map(s => s.trim())
+              .filter(Boolean);
+
+            if (!downstream.length) {
+              core.info("No downstream repositories configured.");
+              return;
+            }
+
+            for (const repoSpec of downstream) {
+              const [owner, repo] = repoSpec.split("/");
+              core.info(`Sending repository_dispatch to ${owner}/${repo}`);
+              await github.repos.createDispatchEvent({
+                owner,
+                repo,
+                event_type: "upstream-release",
+                client_payload: {
+                  source_repo: context.repo.repo,
+                  source_owner: context.repo.owner,
+                  version: version
+                }
+              });
+            }
