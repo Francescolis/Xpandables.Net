@@ -147,27 +147,35 @@ jobs:
       
             return response.data.body;
 
-
-      - name: Update CHANGELOG.md
+      - name: Update CHANGELOG.md from README Key Features
         run: |
           VERSION="${{ steps.version.outputs.version }}"
-          NOTES="${{ steps.notes.outputs.result }}"
           DATE=$(date -u +%Y-%m-%d)
-
-          echo "Updating CHANGELOG.md for v$VERSION"
-
+      
+          echo "Updating CHANGELOG.md for v$VERSION using README Key Features"
+      
+          # Extract Key Features section from README.md
+          FEATURES=$(awk '/^## Key Features/{flag=1; next} /^## /{flag=0} flag' README.md)
+      
+          if [ -z "$FEATURES" ]; then
+            echo "❌ Could not extract Key Features from README.md"
+            exit 1
+          fi
+      
           tmp=CHANGELOG.tmp
-
+      
           {
             echo "## v$VERSION - $DATE"
             echo
-            echo "$NOTES"
+            echo "### Key Features"
+            echo
+            echo "$FEATURES"
             echo
             if [ -f CHANGELOG.md ]; then
               cat CHANGELOG.md
             fi
           } > "$tmp"
-
+      
           mv "$tmp" CHANGELOG.md
 
       - name: Commit version bump and changelog
