@@ -32,7 +32,7 @@ public sealed class CreateBankAccountCommand :
     [Required, EmailAddress]
     public required string Email { get; init; }
 
-    [Range(0, double.MaxValue)]
+    [Range(0, 10000)]
     public decimal InitialBalance { get; init; }
 }
 
