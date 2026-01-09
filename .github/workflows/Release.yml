@@ -147,18 +147,15 @@ jobs:
       
             return response.data.body;
 
-      - name: Update CHANGELOG.md from README Key Features
+      - name: Update CHANGELOG.md from README
         run: |
           VERSION="${{ steps.version.outputs.version }}"
           DATE=$(date -u +%Y-%m-%d)
       
-          echo "Updating CHANGELOG.md for v$VERSION using README Key Features"
+          echo "Updating CHANGELOG.md for v$VERSION using full README.md"
       
-          # Extract Key Features section from README.md
-          FEATURES=$(awk '/^## Key Features/{flag=1; next} /^## /{flag=0} flag' README.md)
-      
-          if [ -z "$FEATURES" ]; then
-            echo "❌ Could not extract Key Features from README.md"
+          if [ ! -f README.md ]; then
+            echo "❌ README.md not found"
             exit 1
           fi
       
@@ -167,9 +164,7 @@ jobs:
           {
             echo "## v$VERSION - $DATE"
             echo
-            echo "### Key Features"
-            echo
-            echo "$FEATURES"
+            cat README.md
             echo
             if [ -f CHANGELOG.md ]; then
               cat CHANGELOG.md
