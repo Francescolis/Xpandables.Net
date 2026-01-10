@@ -1,6 +1,6 @@
 ﻿# 🌐 System.Rests
 
-[![NuGet](https://img.shields.io/badge/NuGet-preview-orange.svg)](https://www.nuget.org/)
+[![NuGet](https://img.shields.io/badge/NuGet-10.0.0-blue.svg)](https://www.nuget.org/packages/System.Rests)
 [![.NET](https://img.shields.io/badge/.NET-10.0-purple.svg)](https://dotnet.microsoft.com/)
 
 > **REST Client** - Type-safe, attribute-based HTTP client with automatic serialization, request composition, and response handling.

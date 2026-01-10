@@ -1,14 +1,14 @@
-﻿# AspNetCore.Events
+﻿# 🌍 AspNetCore.Events
 
 [![NuGet](https://img.shields.io/badge/NuGet-10.x-blue.svg)](https://www.nuget.org/packages/AspNetCore.Events)
 [![.NET](https://img.shields.io/badge/.NET-10.0-purple.svg)](https://dotnet.microsoft.com/)
 [![License](https://img.shields.io/badge/License-Apache%202.0-green.svg)](LICENSE)
 
-> ASP.NET Core middleware and DI helpers to establish `System.Events.EventContext` per HTTP request.
+> **ASP.NET Core Event Context Middleware** — Establish `System.Events.EventContext` per HTTP request with correlation/causation propagation.
 
 ---
 
-## Overview
+## 📋 Overview
 
 `AspNetCore.Events` is the HTTP entry-point for correlation/causation propagation when using `System.Events`.
 
@@ -21,7 +21,7 @@ It provides:
 
 Targeted for **.NET 10** and designed to work well with minimal APIs.
 
-### Key features
+### ✨ Key Features
 
 - **Per-request scope** for `System.Events.EventContext`
 - **W3C Trace Context support** — Uses `traceparent` header by default for correlation
@@ -46,7 +46,7 @@ Install-Package AspNetCore.Events
 
 ---
 
-## Quick start
+## 🚀 Quick Start
 
 ### Service registration
 
@@ -85,7 +85,7 @@ app.Run();
 
 ---
 
-## How it works
+## 🧠 How It Works
 
 ### Incoming request
 
@@ -146,7 +146,7 @@ app.Run();
 
 ---
 
-## Configuration
+## ⚙️ Configuration
 
 Configure header names by binding/setting `EventContextOptions`.
 
@@ -163,7 +163,7 @@ builder.Services.Configure<EventContextOptions>(options =>
 
 ---
 
-## Real-world usage
+## 🌍 Real-World Usage
 
 ### Propagate correlation across services
 
@@ -175,7 +175,7 @@ This gives you a stable identifier to stitch together logs/traces.
 
 ---
 
-## Related packages
+## 📚 Related Packages
 
 | Package | Description |
 |---------|-------------|
@@ -184,7 +184,7 @@ This gives you a stable identifier to stitch together logs/traces.
 
 ---
 
-## License
+## 📄 License
 
 Apache License 2.0 - Copyright © Kamersoft 2025
 Apache License 2.0 - Copyright © Kamersoft 2025

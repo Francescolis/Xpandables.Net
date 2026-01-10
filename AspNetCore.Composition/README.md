@@ -229,7 +229,38 @@ public sealed class ObservabilityModule : IUseService
 
 Apache License 2.0 - Copyright © Kamersoft 2025
 
-Contributions welcome at [Xpandables.Net on GitHub](https://github.com/Francescolis/Xpandables.Net).# 🌐 AspNetCore.Net
+Contributions welcome at [Xpandables.Net on GitHub](https://github.com/Francescolis/Xpandables.Net).
+## 🌐 AspNetCore.Net
+
+[![NuGet](https://img.shields.io/badge/NuGet-10.0.0-blue.svg)](https://www.nuget.org/packages/AspNetCore.Net)
+[![.NET](https://img.shields.io/badge/.NET-10.0-purple.svg)](https://dotnet.microsoft.com/)
+[![License](https://img.shields.io/badge/License-Apache%202.0-green.svg)](LICENSE)
+
+> **ASP.NET Core Minimal API Infrastructure** — Modular endpoint routing, lazy service resolution, JSON configuration, and MEF-based service exports for building clean, organized minimal APIs.
+
+---
+
+## 📋 Overview
+
+`AspNetCore.Net` provides infrastructure components for building well-organized ASP.NET Core minimal APIs. The library offers modular endpoint routing via `IMinimalEndpointRoute`, lazy dependency injection support, JSON serializer configuration helpers, and MEF (Managed Extensibility Framework) integration for plugin-based service registration.
+
+Built for .NET 10 with C# 14 extension members, this package promotes separation of concerns and clean architecture in minimal API applications.
+
+### ✨ Key Features
+
+- 🛣️ **`IMinimalEndpointRoute`** — Interface for modular minimal API endpoint registration with service and middleware hooks
+- 🔧 **`MinimalRouteBuilder`** — Wrapper around `IEndpointRouteBuilder` with automatic filter application
+- ⏳ **Lazy Resolution** — `Lazy<T>` dependency injection support via `AddXLazyResolved()`
+- 📝 **JSON Configuration** — Register `JsonSerializerOptions` as a singleton with `AddXJsonSerializerOptions()`
+- 🎯 **Route Metadata** — Fluent API for endpoint metadata (`Produces200OK`, `Produces400BadRequest`, etc.)
+- 🔌 **MEF Integration** — `IUseServiceExport` for plugin-based middleware configuration
+- ⚙️ **Minimal Support Options** — Conditional endpoint filtering and configuration
+
+---
+
+## 📦 Installation
+
+```
 
 [![NuGet](https://img.shields.io/badge/NuGet-10.0.0-blue.svg)](https://www.nuget.org/packages/AspNetCore.Net)
 [![.NET](https://img.shields.io/badge/.NET-10.0-purple.svg)](https://dotnet.microsoft.com/)

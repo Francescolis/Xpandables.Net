@@ -1,9 +1,9 @@
 ﻿# ✅ System.Results
 
-[![NuGet](https://img.shields.io/badge/NuGet-preview-orange.svg)](https://www.nuget.org/)
+[![NuGet](https://img.shields.io/badge/NuGet-10.0.0-blue.svg)](https://www.nuget.org/packages/System.Results)
 [![.NET](https://img.shields.io/badge/.NET-10.0-purple.svg)](https://dotnet.microsoft.com/)
 
-> **Operation Results & Request Handling** - Railway-oriented programming with HTTP-aware result types, request/handler pattern (CQRS), and pipeline infrastructure.
+> **Operation Results & Request Contracts** - Railway-oriented programming with HTTP-aware result types and CQRS request/handler contracts.
 
 ---
 

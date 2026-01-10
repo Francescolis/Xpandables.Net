@@ -1,27 +1,31 @@
 ﻿# ✅ System.Validation
 
-[![NuGet](https://img.shields.io/badge/NuGet-preview-orange.svg)](https://www.nuget.org/)
+[![NuGet](https://img.shields.io/badge/NuGet-10.0.0-blue.svg)](https://www.nuget.org/packages/System.Validation)
 [![.NET](https://img.shields.io/badge/.NET-10.0-purple.svg)](https://dotnet.microsoft.com/)
 
-> **Validation & Specifications** - Specification pattern for business rules, rule validators, and reusable validation logic with LINQ integration.
+> **Validation & Specifications** - Specification pattern + rule validators with DI helpers for reusable, composable validation.
 
 ---
 
 ## 🎯 Overview
 
-`System.Validation` provides the Specification pattern for encapsulating business rules and validation logic. It includes composable specifications with LINQ support, rule validators, and integration with request pipelines for automatic validation.
+`System.Validation` provides the Specification pattern for encapsulating business rules and a small validation framework for validating objects using strongly-typed validators.
+
+It is designed to be used standalone (pure in-process validation) or together with `System.Results` and `System.Results.Pipelines` for automatic request validation in CQRS pipelines.
 
 ### ✨ Key Features
 
 - 📋 **ISpecification<T>** - Specification pattern with expression-based criteria
 - 🔗 **Combinators** - And, Or, Not, All, Any for composing specifications
-- ✅ **IValidator<T> & DefaultValidator<T>** - Strongly-typed validation with synchronous and async helpers
+- ✅ **IValidator<T>** - Strongly-typed validation with sync + async validation
+- 🧰 **RuleValidator<T>** - Base type for building validators with rules/specs
+- 🧩 **CompositeValidator<T>** - Aggregate multiple validators for the same type
 - 🧩 **CompositeValidator<T>** - Aggregate multiple validators for the same argument type
 - 🏭 **Specification Factory Methods** - Equal, NotEqual, Contains, GreaterThan, LessThan, etc.
 - 🔍 **LINQ Integration** - Use specifications in Where clauses and repositories
 - 🧠 **ValidatorFactory / ValidatorProvider / ValidatorResolver** - Resolve validators dynamically through DI
 - 🧱 **AddXValidator / AddXValidators** - Register built-in and custom validators from assemblies
-- 🚀 **IRequiresValidation** - Marker interface for automatic pipeline validation
+- 🚀 **IRequiresValidation** - Marker interface consumed by `System.Results.Pipelines`
 
 ---
 

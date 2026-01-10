@@ -1,6 +1,6 @@
 ﻿# 🔗 System.Results.Pipelines
 
-[![NuGet](https://img.shields.io/badge/NuGet-preview-orange.svg)](https://www.nuget.org/)
+[![NuGet](https://img.shields.io/badge/NuGet-10.0.0-blue.svg)](https://www.nuget.org/packages/System.Results.Pipelines)
 [![.NET](https://img.shields.io/badge/.NET-10.0-purple.svg)](https://dotnet.microsoft.com/)
 
 > **Pipeline Decorators** - Pre-built pipeline decorators for validation, transactions, domain events, exception handling, and other cross-cutting concerns in CQRS request pipelines.
@@ -13,10 +13,10 @@
 
 ### ✨ Key Features
 
-- ✅ **PipelineValidationDecorator** - Automatic request validation with IRequiresValidation
-- 🔄 **PipelineUnitOfWorkDecorator** - Unit of Work pattern with automatic SaveChanges
-- 📡 **PipelineDomainEventsDecorator** - Publish domain events after handler execution
-- 📮 **PipelineIntegrationOutboxDecorator** - Outbox pattern for reliable event publishing
+- ✅ **PipelineValidationDecorator** - Automatic request validation for `IRequiresValidation`
+- 🔄 **PipelineUnitOfWorkDecorator** - Unit of Work integration for `IRequiresUnitOfWork`
+- 📡 **PipelineDomainEventsDecorator** - Publish domain events for `IRequiresDomainEvents`
+- 📮 **PipelineIntegrationOutboxDecorator** - Outbox publishing for `IRequiresIntegrationOutbox`
 - 📝 **PipelinePreDecorator** - Execute logic before the main handler
 - 📝 **PipelinePostDecorator** - Execute logic after the main handler
 - ⚠️ **PipelineExceptionDecorator** - Centralized exception handling

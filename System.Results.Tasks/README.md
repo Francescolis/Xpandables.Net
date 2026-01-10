@@ -1,15 +1,15 @@
 ﻿# 📡 System.Results.Tasks
 
-[![NuGet](https://img.shields.io/badge/NuGet-preview-orange.svg)](https://www.nuget.org/)
+[![NuGet](https://img.shields.io/badge/NuGet-10.0.0-blue.svg)](https://www.nuget.org/packages/System.Results.Tasks)
 [![.NET](https://img.shields.io/badge/.NET-10.0-purple.svg)](https://dotnet.microsoft.com/)
 
-> **Mediator Implementation** - CQRS mediator for dispatching requests to handlers with built-in pipeline support.
+> **Mediator & Handler Dispatch** - CQRS mediator for dispatching requests to handlers with optional pipeline decorators.
 
 ---
 
 ## 📋 Overview
 
-`System.Results.Tasks` provides the `IMediator` interface and `Mediator` implementation for dispatching requests to their corresponding handlers. It serves as the central dispatcher in CQRS architectures, decoupling request senders from handlers.
+`System.Results.Tasks` provides the `IMediator` interface and `Mediator` implementation used to dispatch `IRequest` instances to their registered handlers. It is the runtime dispatcher typically used with `System.Results` request/handler contracts and `System.Results.Pipelines` decorators.
 
 ### ✨ Key Features
 
@@ -18,7 +18,7 @@
 - 🔄 **Request Dispatch** - Automatic routing to appropriate handlers
 - 🔌 **DI Integration** - Seamless dependency injection support
 - ⚡ **Async First** - Fully asynchronous request handling
-- 🔗 **Pipeline Support** - Works with IPipelineRequestHandler decorators
+- 🔗 **Pipeline Support** - Works with `IPipelineRequestHandler` decorators
 
 ---
 

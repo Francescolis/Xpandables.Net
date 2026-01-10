@@ -1,13 +1,13 @@
-﻿# System.Events.Data
+﻿# 🗄️ System.Events.Data
 
 [![NuGet](https://img.shields.io/badge/NuGet-10.x-blue.svg)](https://www.nuget.org/packages/System.Events.Data)
 [![.NET](https://img.shields.io/badge/.NET-10.0-purple.svg)](https://dotnet.microsoft.com/)
 
-> EF Core persistence for event sourcing: event store + snapshot store + transactional outbox.
+> **EF Core Persistence for Event Sourcing** — Event store + snapshot store + transactional outbox for `System.Events`.
 
 ---
 
-## Overview
+## 📋 Overview
 
 `System.Events.Data` provides EF Core implementations for the abstractions in `System.Events`:
 
@@ -18,7 +18,7 @@
 
 Targeted for **.NET 10** and intended to be used together with SQL Server (or other EF Core providers).
 
-### Key features
+### ✨ Key Features
 
 - **Event store tables** for domain events and snapshots
 - **Outbox table** for integration events and reliable delivery
@@ -28,7 +28,7 @@ Targeted for **.NET 10** and intended to be used together with SQL Server (or ot
 
 ---
 
-## Installation
+## 📦 Installation
 
 ```bash
 dotnet add package System.Events.Data
