@@ -14,8 +14,8 @@
 		<AssemblyName>Xpandables.Primitives</AssemblyName>
 		<RootNamespace>System</RootNamespace>
 		<PackageId>Xpandables.Primitives</PackageId>
-		<PackageProjectUrl>https://github.com/Francescolis/Xpandables.Net</PackageProjectUrl>
-		<RepositoryUrl>https://github.com/Francescolis/Xpandables.Net</RepositoryUrl>
+		<PackageProjectUrl>https://github.com/Francescolis/Xpandables.Net/tree/master/System.Primitives</PackageProjectUrl>
+		<RepositoryUrl>https://github.com/Francescolis/Xpandables.Net/tree/master/System.Primitives</RepositoryUrl>
 		<RepositoryType>git</RepositoryType>
 		<PublishRepositoryUrl>true</PublishRepositoryUrl>
 
