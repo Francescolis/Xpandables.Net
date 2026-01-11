@@ -1,93 +1,90 @@
 ﻿<Project Sdk="Microsoft.NET.Sdk">
 
-  <PropertyGroup>
-	  <TargetFramework>net10.0</TargetFramework>
-	  <ImplicitUsings>enable</ImplicitUsings>
-	  <Nullable>enable</Nullable>
-	  <Platforms>x64</Platforms>
-	  <LangVersion>latest</LangVersion>
-	  <Title>Xpandables.Results</Title>
-	  <Description>Result pattern implementation.</Description>
-	  <Company>Kamersoft</Company>
-	  <Authors>Francescolis</Authors>
+	<PropertyGroup>
+		<TargetFramework>net10.0</TargetFramework>
+		<ImplicitUsings>enable</ImplicitUsings>
+		<Nullable>enable</Nullable>
+		<Platforms>x64</Platforms>
+		<LangVersion>latest</LangVersion>
+		<Title>Xpandables.Results</Title>
+		<Description>Result pattern implementation.</Description>
+		<Company>Kamersoft</Company>
+		<Authors>Francescolis</Authors>
 
-	  <AssemblyName>Xpandables.Results</AssemblyName>
-	  <RootNamespace>System.Results</RootNamespace>
-	  <PackageId>Xpandables.Results</PackageId>
-	  <PackageProjectUrl>https://github.com/Francescolis/Xpandables.Net</PackageProjectUrl>
-	  <RepositoryUrl>https://github.com/Francescolis/Xpandables.Net</RepositoryUrl>
-	  <RepositoryType>git</RepositoryType>
-	  <PublishRepositoryUrl>true</PublishRepositoryUrl>
+		<AssemblyName>Xpandables.Results</AssemblyName>
+		<RootNamespace>System.Results</RootNamespace>
+		<PackageId>Xpandables.Results</PackageId>
+		<PackageProjectUrl>https://github.com/Francescolis/Xpandables.Net</PackageProjectUrl>
+		<RepositoryUrl>https://github.com/Francescolis/Xpandables.Net</RepositoryUrl>
+		<RepositoryType>git</RepositoryType>
+		<PublishRepositoryUrl>true</PublishRepositoryUrl>
 
-	  <GenerateDocumentationFile>True</GenerateDocumentationFile>
-	  <GeneratePackageOnBuild>true</GeneratePackageOnBuild>
-	  <IncludeSymbols>true</IncludeSymbols>
-	  <SymbolPackageFormat>snupkg</SymbolPackageFormat>
-	  <IncludeSource>true</IncludeSource>
-	  <EmbedUntrackedSources>true</EmbedUntrackedSources>
-	  <SignAssembly>True</SignAssembly>
-	  <AssemblyOriginatorKeyFile>Xpandables.Net.snk</AssemblyOriginatorKeyFile>
-	  <PackageIcon>Xpandables.Net.png</PackageIcon>
-	  <ApplicationIcon>Xpandables.Net.ico</ApplicationIcon>
-	  <PackageReadmeFile>README.md</PackageReadmeFile>
-	  <PackageTags>Result, IResultBuilder</PackageTags>
-	  <NeutralLanguage>en-US</NeutralLanguage>
-	  <PackageLicenseExpression>Apache-2.0</PackageLicenseExpression>
-	  <PackageRequireLicenseAcceptance>true</PackageRequireLicenseAcceptance>
+		<GenerateDocumentationFile>True</GenerateDocumentationFile>
+		<GeneratePackageOnBuild>true</GeneratePackageOnBuild>
+		<IncludeSymbols>true</IncludeSymbols>
+		<SymbolPackageFormat>snupkg</SymbolPackageFormat>
+		<IncludeSource>true</IncludeSource>
+		<EmbedUntrackedSources>true</EmbedUntrackedSources>
+		<SignAssembly>True</SignAssembly>
+		<AssemblyOriginatorKeyFile>Xpandables.Net.snk</AssemblyOriginatorKeyFile>
+		<PackageIcon>Xpandables.Net.png</PackageIcon>
+		<ApplicationIcon>Xpandables.Net.ico</ApplicationIcon>
+		<PackageReadmeFile>README.md</PackageReadmeFile>
+		<PackageTags>Result, IResultBuilder</PackageTags>
+		<NeutralLanguage>en-US</NeutralLanguage>
+		<PackageLicenseExpression>Apache-2.0</PackageLicenseExpression>
+		<PackageRequireLicenseAcceptance>true</PackageRequireLicenseAcceptance>
 
-	  <Deterministic>true</Deterministic>
-	  <ContinuousIntegrationBuild>true</ContinuousIntegrationBuild>
-	  <DebugType>portable</DebugType>
+		<Deterministic>true</Deterministic>
+		<ContinuousIntegrationBuild>true</ContinuousIntegrationBuild>
+		<DebugType>portable</DebugType>
 
-	  <Version>10.0.1</Version>
-	  <AssemblyVersion>10.0.1.0</AssemblyVersion>
-	  <FileVersion>10.0.1.0</FileVersion>
-	  <PackageVersion>10.0.1</PackageVersion>
+		<Version>10.0.1</Version>
+		<AssemblyVersion>10.0.1.0</AssemblyVersion>
+		<FileVersion>10.0.1.0</FileVersion>
+		<PackageVersion>10.0.1</PackageVersion>
 
-	  <EnforceCodeStyleInBuild>True</EnforceCodeStyleInBuild>
-	  <AnalysisLevel>latest</AnalysisLevel>
-	  <EnableNETAnalyzers>true</EnableNETAnalyzers>
-	  <RunAnalyzersDuringLiveAnalysis>true</RunAnalyzersDuringLiveAnalysis>
-	  <AnalysisMode>All</AnalysisMode>
-	  <EnablePackageValidation>false</EnablePackageValidation>
-	  <EnableUnsafeBinaryFormatterSerialization>false</EnableUnsafeBinaryFormatterSerialization>
-	  <WarningLevel>9999</WarningLevel>
-	  <Copyright>Copyright © Kamersoft 2025</Copyright>
-	  <PackageOutputPath>..\..\Nugets</PackageOutputPath>
-  </PropertyGroup>
+		<EnforceCodeStyleInBuild>True</EnforceCodeStyleInBuild>
+		<AnalysisLevel>latest</AnalysisLevel>
+		<EnableNETAnalyzers>true</EnableNETAnalyzers>
+		<RunAnalyzersDuringLiveAnalysis>true</RunAnalyzersDuringLiveAnalysis>
+		<AnalysisMode>All</AnalysisMode>
+		<EnablePackageValidation>false</EnablePackageValidation>
+		<EnableUnsafeBinaryFormatterSerialization>false</EnableUnsafeBinaryFormatterSerialization>
+		<WarningLevel>9999</WarningLevel>
+		<Copyright>Copyright © Kamersoft 2025</Copyright>
+		<PackageOutputPath>..\..\Nugets</PackageOutputPath>
+	</PropertyGroup>
 
-  <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">
-	  <CheckForOverflowUnderflow>true</CheckForOverflowUnderflow>
-	  <TreatWarningsAsErrors>true</TreatWarningsAsErrors>
-	  <NoWarn>1701;1702;CA1034;</NoWarn>
-	  <IsAotCompatible>True</IsAotCompatible>
-  </PropertyGroup>
+	<PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">
+		<CheckForOverflowUnderflow>true</CheckForOverflowUnderflow>
+		<TreatWarningsAsErrors>true</TreatWarningsAsErrors>
+		<NoWarn>1701;1702;CA1034;</NoWarn>
+		<IsAotCompatible>True</IsAotCompatible>
+	</PropertyGroup>
 
-  <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Release|x64'">
-	  <CheckForOverflowUnderflow>true</CheckForOverflowUnderflow>
-	  <TreatWarningsAsErrors>true</TreatWarningsAsErrors>
-	  <NoWarn>1701;1702;CA1034;</NoWarn>
-	  <IsAotCompatible>True</IsAotCompatible>
-  </PropertyGroup>
-
-  <ItemGroup>
-	  <Content Include="Xpandables.Net.ico" />
-  </ItemGroup>
+	<PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Release|x64'">
+		<CheckForOverflowUnderflow>true</CheckForOverflowUnderflow>
+		<TreatWarningsAsErrors>true</TreatWarningsAsErrors>
+		<NoWarn>1701;1702;CA1034;</NoWarn>
+		<IsAotCompatible>True</IsAotCompatible>
+	</PropertyGroup>
 
 	<ItemGroup>
-		<None Include="..\README.md" Link="README.md">
-			<PackagePath>\</PackagePath>
-			<Pack>True</Pack>
-		</None>
+		<Content Include="Xpandables.Net.ico" />
+	</ItemGroup>
+
+	<ItemGroup>
+		<None Include="README.md" Pack="true" PackagePath="" />
 		<None Include="..\Xpandables.Net.png" Link="Xpandables.Net.png">
 			<PackagePath>\</PackagePath>
 			<Pack>True</Pack>
 		</None>
 	</ItemGroup>
 
-  <ItemGroup>
-    <ProjectReference Include="..\System.AsyncPaged\System.AsyncPaged.csproj" />
-    <ProjectReference Include="..\System.Primitives\System.Primitives.csproj" />
-  </ItemGroup>
+	<ItemGroup>
+		<ProjectReference Include="..\System.AsyncPaged\System.AsyncPaged.csproj" />
+		<ProjectReference Include="..\System.Primitives\System.Primitives.csproj" />
+	</ItemGroup>
 
 </Project>

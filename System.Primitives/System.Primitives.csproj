@@ -14,8 +14,8 @@
 		<AssemblyName>Xpandables.Primitives</AssemblyName>
 		<RootNamespace>System</RootNamespace>
 		<PackageId>Xpandables.Primitives</PackageId>
-		<PackageProjectUrl>https://github.com/Francescolis/Xpandables.Net/tree/master/System.Primitives</PackageProjectUrl>
-		<RepositoryUrl>https://github.com/Francescolis/Xpandables.Net/tree/master/System.Primitives</RepositoryUrl>
+		<PackageProjectUrl>https://github.com/Francescolis/Xpandables.Net</PackageProjectUrl>
+		<RepositoryUrl>https://github.com/Francescolis/Xpandables.Net</RepositoryUrl>
 		<RepositoryType>git</RepositoryType>
 		<PublishRepositoryUrl>true</PublishRepositoryUrl>
 
@@ -75,10 +75,7 @@
 	</ItemGroup>
 
 	<ItemGroup>
-		<None Include="..\README.md" Link="README.md">
-			<PackagePath>\</PackagePath>
-			<Pack>True</Pack>
-		</None>
+		<None Include="README.md" Pack="true" PackagePath="" />
 		<None Include="..\Xpandables.Net.png" Link="Xpandables.Net.png">
 			<PackagePath>\</PackagePath>
 			<Pack>True</Pack>
