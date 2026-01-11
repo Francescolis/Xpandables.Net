@@ -125,7 +125,7 @@ public sealed class GetUserHandler : IRequestHandler<GetUserQuery, User>
             .FindByIdAsync(request.UserId, cancellationToken);
         
         return user
-            .Map(u => Result.Success(u))
+            .Bind(u => Result.Success(u).Build())
             .Empty(() => Result
                 .NotFound<User>("userId", "User not found"));
     }
