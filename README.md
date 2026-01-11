@@ -91,11 +91,11 @@ dotnet add package Xpandables.AsyncPaged.Linq
 dotnet add package Xpandables.AsyncPaged.Json
 
 # ASP.NET Core integration
-dotnet add package AspNetCore.Net
-dotnet add package AspNetCore.AsyncPaged
-dotnet add package AspNetCore.Events
-dotnet add package AspNetCore.Results
-dotnet add package AspNetCore.Composition
+dotnet add package Xpandables.AspNetCore.Net
+dotnet add package Xpandables.AspNetCore.AsyncPaged
+dotnet add package Xpandables.AspNetCore.Events
+dotnet add package Xpandables.AspNetCore.Results
+dotnet add package Xpandables.AspNetCore.Composition
 ```
 
 ### Quick Example
@@ -167,11 +167,11 @@ Each package has detailed documentation with examples and API references:
 - 📄 [**Xpandables.AsyncPaged.Json**](./System.AsyncPaged.Json/README.md) - JSON serialization for paged data
 
 #### ASP.NET Core Integration
-- 🌐 [**AspNetCore.Net**](./AspNetCore.Net/README.md) - ASP.NET Core minimal API with endpoint routing
-- 📄 [**AspNetCore.AsyncPaged**](./AspNetCore.AsyncPaged/README.md) - Async paged response formatters
-- 🌐 [**AspNetCore.Events**](./AspNetCore.Events/README.md) - W3C trace context middleware
-- ✅ [**AspNetCore.Results**](./AspNetCore.Results/README.md) - Result type HTTP integrations
-- 🔌 [**AspNetCore.Composition**](./AspNetCore.Composition/README.md) - MEF-based service composition
+- 🌐 [**Xpandables.AspNetCore.Net**](./AspNetCore.Net/README.md) - ASP.NET Core minimal API with endpoint routing
+- 📄 [**Xpandables.AspNetCore.AsyncPaged**](./AspNetCore.AsyncPaged/README.md) - Async paged response formatters
+- 🌐 [**Xpandables.AspNetCore.Events**](./AspNetCore.Events/README.md) - W3C trace context middleware
+- ✅ [**Xpandables.AspNetCore.Results**](./AspNetCore.Results/README.md) - Result type HTTP integrations
+- 🔌 [**Xpandables.AspNetCore.Composition**](./AspNetCore.Composition/README.md) - MEF-based service composition
 
 ---
 
