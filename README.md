@@ -7,7 +7,7 @@
 
 **A comprehensive, modular .NET library for building modern, scalable applications with clean architecture patterns**
 
-[Features](#-key-features) • [Getting Started](#-getting-started) • [Documentation](#-documentation) • [Real-World Example](#-real-world-example) • [Architecture](#-architecture) • [Contributing](#-contributing)
+[Features](#-key-features) • [Getting Started](#-getting-started) • [Documentation](#-documentation) • [Architecture](#-architecture) • [Contributing](#-contributing)
 
 </div>
 
@@ -33,16 +33,16 @@
 
 | Feature | Description | Package |
 |---------|-------------|---------|
-| ✅ **Operation Results** | Robust error handling with HTTP-aware result types | [System.Results](./System.Results/README.md) |
-| 🎁 **Optional Values** | Null-safe optional value handling (like Rust's Option) | [System.Optionals](./System.Optionals/README.md) |
-| 📡 **Mediator Pattern** | CQRS and request/response pipeline implementation | [System.Results.Tasks](./System.Results.Tasks/README.md) |
-| 🔗 **Pipeline Decorators** | Validation, transaction, and event decorators | [System.Results.Pipelines](./System.Results.Pipelines/README.md) |
-| ✔️ **Validation** | Flexible validation framework with specifications | [System.Validation](./System.Validation/README.md) |
-| 💾 **Repository Pattern** | Generic repository with unit of work support | [System.Entities.Data](./System.Entities.Data/README.md) |
-| 🌐 **REST Client** | Type-safe, attribute-based HTTP client | [System.Rests](./System.Rests/README.md) |
-| 📝 **Event Sourcing** | Complete event sourcing with W3C trace context support | [System.Events](./System.Events/README.md) |
-| 🗄️ **Event Store** | EF Core event store with outbox pattern | [System.Events.Data](./System.Events.Data/README.md) |
-| 🔄 **Async Paging** | Asynchronous enumerable extensions and pagination | [System.AsyncPaged](./System.AsyncPaged/README.md) |
+| ✅ **Result Pattern** | Robust error handling with HTTP-aware result types | [Xpandables.Results](./System.Results/README.md) |
+| 🎁 **Optional Values** | Null-safe optional value handling (like Rust's Option) | [Xpandables.Optionals](./System.Optionals/README.md) |
+| 📡 **Mediator Pattern** | CQRS and request/response pipeline implementation | [Xpandables.Results.Tasks](./System.Results.Tasks/README.md) |
+| 🔗 **Pipeline Decorators** | Validation, transaction, and event decorators | [Xpandables.Results.Pipelines](./System.Results.Pipelines/README.md) |
+| ✔️ **Validation** | Flexible validation framework with specifications | [Xpandables.Validation](./System.Validation/README.md) |
+| 💾 **Repository Pattern** | Generic repository with unit of work support | [Xpandables.Entities.Data](./System.Entities.Data/README.md) |
+| 🌐 **REST Client** | Type-safe, attribute-based HTTP client | [Xpandables.Rests](./System.Rests/README.md) |
+| 📝 **Event Sourcing** | Complete event sourcing with W3C trace context support | [Xpandables.Events](./System.Events/README.md) |
+| 🗄️ **Event Store** | EF Core event store with outbox pattern | [Xpandables.Events.Data](./System.Events.Data/README.md) |
+| 🔄 **Async Paging** | Asynchronous enumerable extensions and pagination | [Xpandables.AsyncPaged](./System.AsyncPaged/README.md) |
 | 🌐 **W3C Trace Context** | Distributed tracing with traceparent header support | [AspNetCore.Events](./AspNetCore.Events/README.md) |
 
 ---
@@ -61,34 +61,34 @@ Install the packages you need via NuGet Package Manager:
 
 ```bash
 # Core operation result handling
-dotnet add package System.Results
+dotnet add package Xpandables.Results
 
 # Optional value handling
-dotnet add package System.Optionals
+dotnet add package Xpandables.Optionals
 
 # Mediator and pipeline support
-dotnet add package System.Results.Tasks
+dotnet add package Xpandables.Results.Tasks
 
 # Pipeline decorators
-dotnet add package System.Results.Pipelines
+dotnet add package Xpandables.Results.Pipelines
 
 # Validation framework
-dotnet add package System.Validation
+dotnet add package Xpandables.Validation
 
 # Repository pattern with EF Core
-dotnet add package System.Entities.Data
+dotnet add package Xpandables.Entities.Data
 
 # REST client
-dotnet add package System.Rests
+dotnet add package Xpandables.Rests
 
 # Event sourcing
-dotnet add package System.Events
-dotnet add package System.Events.Data
+dotnet add package Xpandables.Events
+dotnet add package Xpandables.Events.Data
 
 # Async paging
-dotnet add package System.AsyncPaged
-dotnet add package System.AsyncPaged.Linq
-dotnet add package System.AsyncPaged.Json
+dotnet add package Xpandables.AsyncPaged
+dotnet add package Xpandables.AsyncPaged.Linq
+dotnet add package Xpandables.AsyncPaged.Json
 
 # ASP.NET Core integration
 dotnet add package AspNetCore.Net
@@ -134,48 +134,6 @@ public sealed class GetUserHandler : IRequestHandler<GetUserQuery, User>
 
 ---
 
-## 💼 Real-World Example
-
-This repository includes a complete **Event Sourcing Banking Sample API** that demonstrates how to build a production-ready application using Xpandables.Net. See the [SampleApi README](./Xpandables.Net.SampleApi/README.md) for a detailed walkthrough.
-
-### Sample API Highlights
-
-The `Xpandables.Net.SampleApi` project showcases:
-
-✅ **Event Sourcing & CQRS** - Complete bank account management with domain events  
-✅ **Minimal API Endpoints** - Clean, modular endpoint definitions with `IEndpointRoute`  
-✅ **EF Core Integration** - Event store and outbox pattern with SQL Server  
-✅ **Swagger Documentation** - Fully documented API with OpenAPI support  
-✅ **Docker Support** - Production-ready containerization  
-
-### Running the Sample
-
-```bash
-# Clone the repository
-git clone https://github.com/Francescolis/Xpandables.Net.git
-cd Xpandables.Net
-
-# Navigate to sample project
-cd Xpandables.Net.SampleApi
-
-# Update connection string in appsettings.json
-# Run migrations (automatic on startup)
-
-# Run the application
-dotnet run
-
-# Navigate to Swagger UI
-# https://localhost:5001/swagger
-```
-
-**Key Files to Explore:**
-
-- `Program.cs` - Application setup with event sourcing
-- `BankAccounts/Features/CreateBankAccount/` - Complete CQRS command example
-- `EventStorage/` - Event store and outbox configuration
-
----
-
 ## 📚 Documentation
 
 ### Package Documentation
@@ -183,37 +141,37 @@ dotnet run
 Each package has detailed documentation with examples and API references:
 
 #### Foundation Packages
-- 🔧 [**System.Primitives**](./System.Primitives/README.md) - Core primitives and utilities
-- ✅ [**System.Results**](./System.Results/README.md) - Operation result handling with request/handler pattern
-- 🎁 [**System.Optionals**](./System.Optionals/README.md) - Null-safe optional value types
+- 🔧 [**Xpandables.Primitives**](./System.Primitives/README.md) - Core primitives and utilities
+- ✅ [**Xpandables.Results**](./System.Results/README.md) - Result pattern handling with request/handler pattern
+- 🎁 [**Xpandables.Optionals**](./System.Optionals/README.md) - Null-safe optional value types
 
 #### Application Layer
-- 📡 [**System.Results.Tasks**](./System.Results.Tasks/README.md) - Mediator pattern and request dispatching
-- 🔗 [**System.Results.Pipelines**](./System.Results.Pipelines/README.md) - Pipeline decorators for validation, transactions, events
-- ✔️ [**System.Validation**](./System.Validation/README.md) - Specification pattern and rule validators
-- 🧩 [**System.Composition**](./System.Composition/README.md) - MEF-based service composition
+- 📡 [**Xpandables.Results.Tasks**](./System.Results.Tasks/README.md) - Mediator pattern and request dispatching
+- 🔗 [**Xpandables.Results.Pipelines**](./System.Results.Pipelines/README.md) - Pipeline decorators for validation, transactions, events
+- ✔️ [**Xpandables.Validation**](./System.Validation/README.md) - Specification pattern and rule validators
+- 🧩 [**Xpandables.Composition**](./System.Composition/README.md) - MEF-based service composition
 
 #### Data Access
-- 💾 [**System.Entities.Data**](./System.Entities.Data/README.md) - EF Core repository with DataContext
+- 💾 [**Xpandables.Entities.Data**](./System.Entities.Data/README.md) - EF Core repository with DataContext
 
 #### Event Handling
-- 📝 [**System.Events**](./System.Events/README.md) - Event sourcing and domain events
-- 🗄️ [**System.Events.Data**](./System.Events.Data/README.md) - EF Core event store implementation
+- 📝 [**Xpandables.Events**](./System.Events/README.md) - Event sourcing and domain events
+- 🗄️ [**Xpandables.Events.Data**](./System.Events.Data/README.md) - EF Core event store implementation
 
 #### HTTP & REST
-- 🌐 [**System.Rests**](./System.Rests/README.md) - Type-safe REST client with attribute-based routing
+- 🌐 [**Xpandables.Rests**](./System.Rests/README.md) - Type-safe REST client with attribute-based routing
 
 #### Async & Utilities
-- 🔄 [**System.AsyncPaged**](./System.AsyncPaged/README.md) - Async paged collections
-- 🔄 [**System.AsyncPaged.Linq**](./System.AsyncPaged.Linq/README.md) - LINQ extensions for async paging
-- 📄 [**System.AsyncPaged.Json**](./System.AsyncPaged.Json/README.md) - JSON serialization for paged data
+- 🔄 [**Xpandables.AsyncPaged**](./System.AsyncPaged/README.md) - Async paged collections
+- 🔄 [**Xpandables.AsyncPaged.Linq**](./System.AsyncPaged.Linq/README.md) - LINQ extensions for async paging
+- 📄 [**Xpandables.AsyncPaged.Json**](./System.AsyncPaged.Json/README.md) - JSON serialization for paged data
 
 #### ASP.NET Core Integration
 - 🌐 [**AspNetCore.Net**](./AspNetCore.Net/README.md) - ASP.NET Core minimal API with endpoint routing
 - 📄 [**AspNetCore.AsyncPaged**](./AspNetCore.AsyncPaged/README.md) - Async paged response formatters
 - 🌐 [**AspNetCore.Events**](./AspNetCore.Events/README.md) - W3C trace context middleware
 - ✅ [**AspNetCore.Results**](./AspNetCore.Results/README.md) - Result type HTTP integrations
-- 🔌 [**AspNetCore.Composition**](./AspNetCore.Composition/README.md) - MEF service composition
+- 🔌 [**AspNetCore.Composition**](./AspNetCore.Composition/README.md) - MEF-based service composition
 
 ---
 
@@ -231,23 +189,23 @@ Xpandables.Net follows clean architecture principles with clear separation of co
                   ↓
 ┌─────────────────────────────────────────┐
 │         Application Layer               │
-│  (System.Results, System.Results.Tasks, │
-│   System.Results.Pipelines,             │
-│   System.Composition)                   │
+│  (Xpandables.Results, Xpandables.Results.Tasks, │
+│   Xpandables.Results.Pipelines,         │
+│   Xpandables.Composition)               │
 └─────────────────────────────────────────┘
                   ↓
 ┌─────────────────────────────────────────┐
 │           Domain Layer                  │
-│ (System.Events, System.Optionals,       │
-│  System.Primitives, System.Validation,  │
-│  System.AsyncPaged)                     │
+│ (Xpandables.Events, Xpandables.Optionals,       │
+│  Xpandables.Primitives, Xpandables.Validation,  │
+│  Xpandables.AsyncPaged)                 │
 └─────────────────────────────────────────┘
                   ↓
 ┌─────────────────────────────────────────┐
 │       Infrastructure Layer              │
-│  (System.Entities.Data, System.Events.  │
-│   Data, System.Rests,                   │
-│   System.AsyncPaged.Linq)               │
+│  (Xpandables.Entities.Data, Xpandables.Events.  │
+│   Data, Xpandables.Rests,               │
+│   Xpandables.AsyncPaged.Linq)           │
 └─────────────────────────────────────────┘
 ```
 
@@ -425,25 +383,25 @@ dotnet test Xpandables.Net.UnitTests
 
 | Package | Description |
 |---------|-------------|
-| **System.Results** | Operation result types with request/handler pattern |
-| **System.Results.Tasks** | Mediator for dispatching requests to handlers |
-| **System.Results.Pipelines** | Pipeline decorators (validation, transactions, events) |
-| **System.Optionals** | Null-safe optional value handling |
-| **System.Primitives** | Core primitives and utilities |
-| **System.Validation** | Specification pattern and rule validators |
-| **System.Composition** | MEF-based service composition |
-| **System.Events** | Domain events and event sourcing with W3C trace IDs |
-| **System.Events.Data** | EF Core event store with outbox pattern |
-| **System.Entities.Data** | EF Core repository with DataContext |
-| **System.Rests** | Type-safe REST client |
-| **System.AsyncPaged** | Async paged collections |
-| **System.AsyncPaged.Linq** | LINQ extensions for async paging |
-| **System.AsyncPaged.Json** | JSON serialization for paged data |
-| **AspNetCore.Net** | ASP.NET Core minimal API integrations |
-| **AspNetCore.AsyncPaged** | ASP.NET Core async paged response formatters |
-| **AspNetCore.Events** | W3C trace context middleware for event correlation |
-| **AspNetCore.Results** | ASP.NET Core result type integrations |
-| **AspNetCore.Composition** | MEF-based ASP.NET Core service composition |
+| **Xpandables.Results** | Result pattern types with request/handler pattern |
+| **Xpandables.Results.Tasks** | Mediator for dispatching requests to handlers |
+| **Xpandables.Results.Pipelines** | Pipeline decorators (validation, transactions, events) |
+| **Xpandables.Optionals** | Null-safe optional value handling |
+| **Xpandables.Primitives** | Core primitives and utilities |
+| **Xpandables.Validation** | Specification pattern and rule validators |
+| **Xpandables.Composition** | MEF-based service composition |
+| **Xpandables.Events** | Domain events and event sourcing with W3C trace IDs |
+| **Xpandables.Events.Data** | EF Core event store with outbox pattern |
+| **Xpandables.Entities.Data** | EF Core repository with DataContext |
+| **Xpandables.Rests** | Type-safe REST client |
+| **Xpandables.AsyncPaged** | Async paged collections |
+| **Xpandables.AsyncPaged.Linq** | LINQ extensions for async paging |
+| **Xpandables.AsyncPaged.Json** | JSON serialization for paged data |
+| **Xpandables.AspNetCore.Net** | ASP.NET Core minimal API integrations |
+| **Xpandables.AspNetCore.AsyncPaged** | ASP.NET Core async paged response formatters |
+| **Xpandables.AspNetCore.Events** | W3C trace context middleware for event correlation |
+| **Xpandables.AspNetCore.Results** | ASP.NET Core result type integrations |
+| **Xpandables.AspNetCore.Composition** | MEF-based ASP.NET Core service composition |
 
 ---
 
@@ -458,7 +416,7 @@ Contributions are welcome! Please feel free to submit a Pull Request. For major 
    git clone https://github.com/Francescolis/Xpandables.Net.git
    ```
 
-2. Open in Visual Studio 2022 (17.13+) or Rider 2024.3+
+2. Open in Visual Studio 2026 (or later) or Rider 2025.3+
 
 3. Build the solution
    ```bash
