@@ -1,6 +1,6 @@
-﻿# 🔗 System.Results.Pipelines
+﻿# 🔗 Xpandables.Results.Pipelines
 
-[![NuGet](https://img.shields.io/badge/NuGet-10.0.0-blue.svg)](https://www.nuget.org/packages/System.Results.Pipelines)
+[![NuGet](https://img.shields.io/badge/NuGet-10.0.1-blue.svg)](https://www.nuget.org/packages/Xpandables.Results.Pipelines)
 [![.NET](https://img.shields.io/badge/.NET-10.0-purple.svg)](https://dotnet.microsoft.com/)
 
 > **Pipeline Decorators** - Pre-built pipeline decorators for validation, transactions, domain events, exception handling, and other cross-cutting concerns in CQRS request pipelines.
@@ -9,7 +9,7 @@
 
 ## 🎯 Overview
 
-`System.Results.Pipelines` provides production-ready pipeline decorators that wrap request handlers with cross-cutting concerns. These decorators execute before and after your main handler logic, enabling clean separation of business logic from infrastructure concerns like validation, transactions, event publishing, and more.
+`Xpandables.Results.Pipelines` provides production-ready pipeline decorators that wrap request handlers with cross-cutting concerns. These decorators execute before and after your main handler logic, enabling clean separation of business logic from infrastructure concerns like validation, transactions, event publishing, and more.
 
 ### ✨ Key Features
 
@@ -28,7 +28,7 @@
 ## 📥 Installation
 
 ```bash
-dotnet add package System.Results.Pipelines
+dotnet add package Xpandables.Results.Pipelines
 ```
 
 ---
@@ -313,10 +313,10 @@ builder.Services
 
 ## 📚 Related Packages
 
-- **System.Results** - Core Result types and request/handler interfaces
-- **System.Results.Tasks** - Mediator implementation
-- **System.Validation** - Specifications and validator abstractions
-- **System.Events** - Domain and integration event abstractions
+- **Xpandables.Results** - Core Result types and request/handler interfaces
+- **Xpandables.Results.Tasks** - Mediator implementation
+- **Xpandables.Validation** - Specifications and validator abstractions
+- **Xpandables.Events** - Domain and integration event abstractions
 
 ---
 

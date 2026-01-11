@@ -1,6 +1,6 @@
-﻿# 🧩 System.Composition
+﻿# 🧩 Xpandables.Composition
 
-[![NuGet](https://img.shields.io/badge/NuGet-10.0.0-blue.svg)](https://www.nuget.org/packages/System.Composition)
+[![NuGet](https://img.shields.io/badge/NuGet-10.0.1-blue.svg)](https://www.nuget.org/packages/Xpandables.Composition)
 [![.NET](https://img.shields.io/badge/.NET-10.0-purple.svg)](https://dotnet.microsoft.com/)
 [![License](https://img.shields.io/badge/License-Apache%202.0-green.svg)](LICENSE)
 
@@ -10,7 +10,7 @@
 
 ## 📋 Overview
 
-`System.Composition` enables modular service registration through MEF (Managed Extensibility Framework). The library provides `IAddServiceExport` for plugin-style service discovery, `RecursiveDirectoryCatalog` for scanning assembly directories, and extension methods for automatic service registration from external DLLs.
+`Xpandables.Composition` enables modular service registration through MEF (Managed Extensibility Framework). The library provides `IAddServiceExport` for plugin-style service discovery, `RecursiveDirectoryCatalog` for scanning assembly directories, and extension methods for automatic service registration from external DLLs.
 
 Built for .NET 10 with C# 14 extension members, this package enables building extensible applications where plugins can self-register their services without requiring compile-time references.
 
@@ -28,13 +28,13 @@ Built for .NET 10 with C# 14 extension members, this package enables building ex
 ## 📦 Installation
 
 ```bash
-dotnet add package System.Composition
+dotnet add package Xpandables.Composition
 ```
 
 Or via NuGet Package Manager:
 
 ```powershell
-Install-Package System.Composition
+Install-Package Xpandables.Composition
 ```
 
 ---

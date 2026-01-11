@@ -1,6 +1,6 @@
-﻿# ✅ System.Validation
+﻿# ✅ Xpandables.Validation
 
-[![NuGet](https://img.shields.io/badge/NuGet-10.0.0-blue.svg)](https://www.nuget.org/packages/System.Validation)
+[![NuGet](https://img.shields.io/badge/NuGet-10.0.1-blue.svg)](https://www.nuget.org/packages/Xpandables.Validation)
 [![.NET](https://img.shields.io/badge/.NET-10.0-purple.svg)](https://dotnet.microsoft.com/)
 
 > **Validation & Specifications** - Specification pattern + rule validators with DI helpers for reusable, composable validation.
@@ -9,23 +9,21 @@
 
 ## 🎯 Overview
 
-`System.Validation` provides the Specification pattern for encapsulating business rules and a small validation framework for validating objects using strongly-typed validators.
+`Xpandables.Validation` provides the Specification pattern for encapsulating business rules and a small validation framework for validating objects using strongly-typed validators.
 
-It is designed to be used standalone (pure in-process validation) or together with `System.Results` and `System.Results.Pipelines` for automatic request validation in CQRS pipelines.
+It is designed to be used standalone (pure in-process validation) or together with `Xpandables.Results` and `Xpandables.Results.Pipelines` for automatic request validation in CQRS pipelines. The package builds on `Xpandables.Primitives` for shared types.
 
 ### ✨ Key Features
 
 - 📋 **ISpecification<T>** - Specification pattern with expression-based criteria
 - 🔗 **Combinators** - And, Or, Not, All, Any for composing specifications
 - ✅ **IValidator<T>** - Strongly-typed validation with sync + async validation
-- 🧰 **RuleValidator<T>** - Base type for building validators with rules/specs
-- 🧩 **CompositeValidator<T>** - Aggregate multiple validators for the same type
 - 🧩 **CompositeValidator<T>** - Aggregate multiple validators for the same argument type
 - 🏭 **Specification Factory Methods** - Equal, NotEqual, Contains, GreaterThan, LessThan, etc.
 - 🔍 **LINQ Integration** - Use specifications in Where clauses and repositories
 - 🧠 **ValidatorFactory / ValidatorProvider / ValidatorResolver** - Resolve validators dynamically through DI
 - 🧱 **AddXValidator / AddXValidators** - Register built-in and custom validators from assemblies
-- 🚀 **IRequiresValidation** - Marker interface consumed by `System.Results.Pipelines`
+- 🚀 **IRequiresValidation** - Marker interface consumed by `Xpandables.Results.Pipelines`
 
 ---
 
@@ -34,7 +32,7 @@ It is designed to be used standalone (pure in-process validation) or together wi
 ### Installation
 
 ```bash
-dotnet add package System.Validation
+dotnet add package Xpandables.Validation
 ```
 
 ### Basic Specification Usage
@@ -263,7 +261,7 @@ builder.Services
 ### Order Validation
 
 ```csharp
-public sealed class OrderValidator : RuleValidator<CreateOrderRequest>
+public sealed class OrderValidator : Validator<CreateOrderRequest>
 {
     public override IReadOnlyCollection<ValidationResult> Validate(CreateOrderRequest instance)
     {
@@ -347,9 +345,9 @@ if (DiscountEligibilitySpec.PremiumDiscount.IsSatisfiedBy(order))
 
 ## 📚 Related Packages
 
-- **System.Primitives** - Core primitives and utilities
-- **System.Results** - Result types with validation integration
-- **System.Results.Pipelines** - Automatic validation in request pipelines
+- **Xpandables.Primitives** - Core primitives and utilities
+- **Xpandables.Results** - Result types with validation integration
+- **Xpandables.Results.Pipelines** - Automatic validation in request pipelines
 
 ---
 

@@ -1,6 +1,6 @@
-﻿# 🎯 System.Optionals
+﻿# 🎯 Xpandables.Optionals
 
-[![NuGet](https://img.shields.io/badge/NuGet-10.0.0-blue.svg)](https://www.nuget.org/packages/System.Optionals)
+[![NuGet](https://img.shields.io/badge/NuGet-10.0.1-blue.svg)](https://www.nuget.org/packages/Xpandables.Optionals)
 [![.NET](https://img.shields.io/badge/.NET-10.0-purple.svg)](https://dotnet.microsoft.com/)
 [![License](https://img.shields.io/badge/License-Apache%202.0-green.svg)](LICENSE)
 
@@ -10,7 +10,7 @@
 
 ## 📋 Overview
 
-`System.Optionals` provides a robust `Optional<T>` type that explicitly represents the presence or absence of a value without using null references. The library includes functional operations (`Map`, `Bind`, `Empty`), LINQ query syntax support, async extensions, operator overloads, and source-generated JSON serialization for AOT compatibility.
+`Xpandables.Optionals` provides a robust `Optional<T>` type that explicitly represents the presence or absence of a value without using null references. The library includes functional operations (`Map`, `Bind`, `Empty`), LINQ query syntax support, async extensions, operator overloads, and source-generated JSON serialization for AOT compatibility.
 
 Built for .NET 10 with C# 14 extension members, this package enables writing safer, more expressive code by making the absence of values explicit in your type system.
 
@@ -30,13 +30,13 @@ Built for .NET 10 with C# 14 extension members, this package enables writing saf
 ## 📦 Installation
 
 ```bash
-dotnet add package System.Optionals
+dotnet add package Xpandables.Optionals
 ```
 
 Or via NuGet Package Manager:
 
 ```powershell
-Install-Package System.Optionals
+Install-Package Xpandables.Optionals
 ```
 
 ---

@@ -1,6 +1,6 @@
-﻿# 🗃️ System.Entities.Data
+﻿# 🗃️ Xpandables.Entities.Data
 
-[![NuGet](https://img.shields.io/badge/NuGet-10.0.0-blue.svg)](https://www.nuget.org/packages/System.Entities.Data)
+[![NuGet](https://img.shields.io/badge/NuGet-10.0.1-blue.svg)](https://www.nuget.org/packages/Xpandables.Entities.Data)
 [![.NET](https://img.shields.io/badge/.NET-10.0-purple.svg)](https://dotnet.microsoft.com/)
 [![License](https://img.shields.io/badge/License-Apache%202.0-green.svg)](LICENSE)
 
@@ -10,7 +10,7 @@
 
 ## 📋 Overview
 
-`System.Entities.Data` provides a complete Entity Framework Core implementation of the repository and unit of work patterns. The library includes `DataContext` with automatic entity lifecycle tracking (`CreatedOn`, `UpdatedOn`, `DeletedOn`), `Repository` for CRUD operations, `UnitOfWork` for transaction management, and `EntityUpdater` for efficient bulk updates using EF Core 10's `ExecuteUpdate` API.
+`Xpandables.Entities.Data` provides a complete Entity Framework Core implementation of the repository and unit of work patterns. The library includes `DataContext` with automatic entity lifecycle tracking (`CreatedOn`, `UpdatedOn`, `DeletedOn`), `Repository` for CRUD operations, `UnitOfWork` for transaction management, and `EntityUpdater` for efficient bulk updates using EF Core 10's `ExecuteUpdate` API.
 
 Built for .NET 10 with C# 14 extension members, this package simplifies data access while maintaining full control over database operations.
 
@@ -33,10 +33,15 @@ dotnet add package System.Entities.Data
 dotnet add package Microsoft.EntityFrameworkCore.SqlServer
 ```
 
+```bash
+dotnet add package Xpandables.Entities.Data
+dotnet add package Microsoft.EntityFrameworkCore.SqlServer
+```
+
 Or via NuGet Package Manager:
 
 ```powershell
-Install-Package System.Entities.Data
+Install-Package Xpandables.Entities.Data
 Install-Package Microsoft.EntityFrameworkCore.SqlServer
 ```
 

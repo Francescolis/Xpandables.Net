@@ -1,6 +1,6 @@
-﻿# ✅ System.Results
+﻿# ✅ Xpandables.Results
 
-[![NuGet](https://img.shields.io/badge/NuGet-10.0.0-blue.svg)](https://www.nuget.org/packages/System.Results)
+[![NuGet](https://img.shields.io/badge/NuGet-10.0.1-blue.svg)](https://www.nuget.org/packages/Xpandables.Results)
 [![.NET](https://img.shields.io/badge/.NET-10.0-purple.svg)](https://dotnet.microsoft.com/)
 
 > **Operation Results & Request Contracts** - Railway-oriented programming with HTTP-aware result types and CQRS request/handler contracts.
@@ -9,7 +9,7 @@
 
 ## 📋 Overview
 
-`System.Results` provides a robust implementation of the Result pattern for representing operation outcomes, along with a request/handler infrastructure for CQRS-style command and query handling. Built for .NET 10, it enables functional error handling and clean separation of concerns.
+`Xpandables.Results` provides a robust implementation of the Result pattern for representing operation outcomes, along with a request/handler infrastructure for CQRS-style command and query handling. Built for .NET 10, it enables functional error handling and clean separation of concerns.
 
 ### ✨ Key Features
 
@@ -26,7 +26,7 @@
 ## 📥 Installation
 
 ```bash
-dotnet add package System.Results
+dotnet add package Xpandables.Results
 ```
 
 ---

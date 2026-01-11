@@ -1,6 +1,6 @@
-﻿# 📡 System.AsyncPaged.Json
+﻿# 📡 Xpandables.AsyncPaged.Json
 
-[![NuGet](https://img.shields.io/badge/NuGet-10.0.0-blue.svg)](https://www.nuget.org/packages/System.AsyncPaged.Json)
+[![NuGet](https://img.shields.io/badge/NuGet-10.0.1-blue.svg)](https://www.nuget.org/packages/Xpandables.AsyncPaged.Json)
 [![.NET](https://img.shields.io/badge/.NET-10.0+-purple.svg)](https://dotnet.microsoft.com/)
 [![License](https://img.shields.io/badge/License-Apache%202.0-green.svg)](LICENSE)
 
@@ -10,7 +10,7 @@
 
 ## 🎯 Overview
 
-`System.AsyncPaged.Json` provides native `System.Text.Json` integration for serializing and deserializing `IAsyncPagedEnumerable<T>` sequences with pagination metadata. It enables efficient handling of large JSON payloads through streaming serialization, memory-aware buffer management, and full cancellation support.
+`Xpandables.AsyncPaged.Json` provides native `System.Text.Json` integration for serializing and deserializing `IAsyncPagedEnumerable<T>` sequences with pagination metadata. It enables efficient handling of large JSON payloads through streaming serialization, memory-aware buffer management, and full cancellation support.
 
 Built for .NET 10 with AOT compatibility, this library seamlessly integrates pagination metadata into JSON output while maintaining high throughput and minimal memory overhead.
 
@@ -31,18 +31,18 @@ Built for .NET 10 with AOT compatibility, this library seamlessly integrates pag
 ## 📦 Installation
 
 ```bash
-dotnet add package System.AsyncPaged.Json
+dotnet add package Xpandables.AsyncPaged.Json
 ```
 
 Or via NuGet Package Manager:
 
 ```powershell
-Install-Package System.AsyncPaged.Json
+Install-Package Xpandables.AsyncPaged.Json
 ```
 
 ### Prerequisites
 
-- `System.AsyncPaged` (automatically installed as a dependency)
+- `Xpandables.AsyncPaged` (automatically installed as a dependency)
 - .NET 10.0 or later
 
 ---

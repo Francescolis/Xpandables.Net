@@ -1,6 +1,6 @@
-﻿# 🔧 System.Primitives
+﻿# 🔧 Xpandables.Primitives
 
-[![NuGet](https://img.shields.io/badge/NuGet-preview-orange.svg)](https://www.nuget.org/)
+[![NuGet](https://img.shields.io/badge/NuGet-10.0.1-blue.svg)](https://www.nuget.org/packages/Xpandables.Primitives)
 [![.NET](https://img.shields.io/badge/.NET-10.0-purple.svg)](https://dotnet.microsoft.com/)
 
 > **Core Primitives & Utilities** - Strongly-typed primitive wrappers (Value Objects), extension methods, state patterns, caching, and foundational utilities.
@@ -9,7 +9,7 @@
 
 ## 🎯 Overview
 
-`System.Primitives` provides the foundational abstractions and utilities used throughout the Xpandables.Net ecosystem. It includes the Value Object pattern via `IPrimitive<T>`, state management patterns, memory-aware caching, element collections, and essential extension methods.
+`Xpandables.Primitives` provides the foundational abstractions and utilities used throughout the Xpandables.Net ecosystem. It includes the Value Object pattern via `IPrimitive<T>`, state management patterns, memory-aware caching, element collections, and essential extension methods.
 
 This library has **zero dependencies** and serves as the base for all other Xpandables.Net packages.
 
@@ -29,7 +29,7 @@ This library has **zero dependencies** and serves as the base for all other Xpan
 ## 📥 Installation
 
 ```bash
-dotnet add package System.Primitives
+dotnet add package Xpandables.Primitives
 ```
 
 ---

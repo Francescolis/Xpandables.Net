@@ -1,6 +1,6 @@
-﻿# 📖 System.AsyncPaged
+﻿# 📖 Xpandables.AsyncPaged
 
-[![NuGet](https://img.shields.io/badge/NuGet-10.0.0-blue.svg)](https://www.nuget.org/packages/System.AsyncPaged)
+[![NuGet](https://img.shields.io/badge/NuGet-10.0.1-blue.svg)](https://www.nuget.org/packages/Xpandables.AsyncPaged)
 [![.NET](https://img.shields.io/badge/.NET-10.0+-purple.svg)](https://dotnet.microsoft.com/)
 [![License](https://img.shields.io/badge/License-Apache%202.0-green.svg)](LICENSE)
 
@@ -10,7 +10,7 @@
 
 ## 🎯 Overview
 
-`System.AsyncPaged` provides a production-ready solution for implementing pagination in asynchronous scenarios. It extends `IAsyncEnumerable<T>` with a lightweight `IAsyncPagedEnumerable<T>` interface that carries pagination metadata, enabling efficient data streaming from databases, APIs, and cloud services without reinventing the wheel.
+`Xpandables.AsyncPaged` provides a production-ready solution for implementing pagination in asynchronous scenarios. It extends `IAsyncEnumerable<T>` with a lightweight `IAsyncPagedEnumerable<T>` interface that carries pagination metadata, enabling efficient data streaming from databases, APIs, and cloud services without reinventing the wheel.
 
 Built for .NET 10 with AOT (Ahead-of-Time) compatibility and full support for modern async patterns, this library eliminates boilerplate while maintaining ergonomic, allocation-conscious APIs.
 
@@ -30,13 +30,13 @@ Built for .NET 10 with AOT (Ahead-of-Time) compatibility and full support for mo
 ## 📦 Installation
 
 ```bash
-dotnet add package System.AsyncPaged
+dotnet add package Xpandables.AsyncPaged
 ```
 
 Or via NuGet Package Manager:
 
 ```powershell
-Install-Package System.AsyncPaged
+Install-Package Xpandables.AsyncPaged
 ```
 
 ---

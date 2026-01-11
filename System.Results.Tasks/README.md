@@ -1,6 +1,6 @@
-﻿# 📡 System.Results.Tasks
+﻿# 📡 Xpandables.Results.Tasks
 
-[![NuGet](https://img.shields.io/badge/NuGet-10.0.0-blue.svg)](https://www.nuget.org/packages/System.Results.Tasks)
+[![NuGet](https://img.shields.io/badge/NuGet-10.0.1-blue.svg)](https://www.nuget.org/packages/Xpandables.Results.Tasks)
 [![.NET](https://img.shields.io/badge/.NET-10.0-purple.svg)](https://dotnet.microsoft.com/)
 
 > **Mediator & Handler Dispatch** - CQRS mediator for dispatching requests to handlers with optional pipeline decorators.
@@ -9,7 +9,7 @@
 
 ## 📋 Overview
 
-`System.Results.Tasks` provides the `IMediator` interface and `Mediator` implementation used to dispatch `IRequest` instances to their registered handlers. It is the runtime dispatcher typically used with `System.Results` request/handler contracts and `System.Results.Pipelines` decorators.
+`Xpandables.Results.Tasks` provides the `IMediator` interface and `Mediator` implementation used to dispatch `IRequest` instances to their registered handlers. It is the runtime dispatcher typically used with `Xpandables.Results` request/handler contracts and `Xpandables.Results.Pipelines` decorators.
 
 ### ✨ Key Features
 
@@ -25,7 +25,7 @@
 ## 📥 Installation
 
 ```bash
-dotnet add package System.Results.Tasks
+dotnet add package Xpandables.Results.Tasks
 ```
 
 ---
