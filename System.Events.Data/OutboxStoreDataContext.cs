@@ -35,7 +35,7 @@ public sealed class OutboxStoreDataContext(DbContextOptions<OutboxStoreDataConte
     /// <summary>
     /// Gets or sets the DbSet for EventEntityIntegration.
     /// </summary>
-    public DbSet<EntityIntegrationEvent> Integrations { get; set; } = null!;
+    public DbSet<EntityEventOutbox> Integrations { get; set; } = null!;
 
     /// <inheritdoc />
     protected override void OnModelCreating(ModelBuilder modelBuilder)
@@ -44,7 +44,7 @@ public sealed class OutboxStoreDataContext(DbContextOptions<OutboxStoreDataConte
 
         modelBuilder.HasDefaultSchema("Events");
 
-        _ = modelBuilder.ApplyConfiguration(new EntityIntegrationEventTypeConfiguration());
+        _ = modelBuilder.ApplyConfiguration(new EntityEventOutboxTypeConfiguration());
 
         base.OnModelCreating(modelBuilder);
     }

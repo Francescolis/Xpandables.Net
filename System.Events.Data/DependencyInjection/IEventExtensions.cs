@@ -96,7 +96,8 @@ public static class IEventExtensions
         public IServiceCollection AddXEventConverterFactory() =>
             services.AddXEventConverterFactory<EventConverterFactory>()
                 .AddSingleton<IEventConverter<EntityDomainEvent, IDomainEvent>, EventConverterDomain>()
-                .AddSingleton<IEventConverter<EntityIntegrationEvent, IIntegrationEvent>, EventConverterIntegration>()
+                .AddSingleton<IEventConverter<EntityEventOutbox, IIntegrationEvent>, EventConverterOutbox>()
+                .AddSingleton<IEventConverter<EntityEventInbox, IIntegrationEvent>, EventConverterInbox>()
                 .AddSingleton<IEventConverter<EntitySnapshotEvent, ISnapshotEvent>, EventConverterSnapshot>();
     }
 }

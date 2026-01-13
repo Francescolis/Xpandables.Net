@@ -225,7 +225,7 @@ public static class IEventStoreExtensions
         /// pattern support.</remarks>
         /// <returns>The updated <see cref="IServiceCollection"/> instance.</returns>
         public IServiceCollection AddXOutboxStoreOfType<[DynamicallyAccessedMembers(EntityEvent.DynamicallyAccessedMemberTypes)] TEntityEventIntegration>()
-            where TEntityEventIntegration : class, IEntityEventIntegration
+            where TEntityEventIntegration : class, IEntityEventOutbox
         {
             ArgumentNullException.ThrowIfNull(services);
             return services.AddXOutboxStore<OutboxStore<TEntityEventIntegration>>();
@@ -235,7 +235,7 @@ public static class IEventStoreExtensions
         /// Adds the default XOutbox store for handling integration events to the service collection.
         /// </summary>
         /// <remarks>This method registers the XOutbox store using the default event type, <see
-        /// cref="EntityIntegrationEvent"/>. Call this method during application startup to enable outbox pattern
+        /// cref="EntityEventOutbox"/>. Call this method during application startup to enable outbox pattern
         /// support for integration events.</remarks>
         /// <returns>The <see cref="IServiceCollection"/> instance with the XOutbox store services registered.</returns>
         public IServiceCollection AddXOutboxStore()
@@ -243,7 +243,7 @@ public static class IEventStoreExtensions
             ArgumentNullException.ThrowIfNull(services);
             return services
                 .AddXOutboxStoreDataContextFactory()
-                .AddXOutboxStoreOfType<EntityIntegrationEvent>();
+                .AddXOutboxStoreOfType<EntityEventOutbox>();
         }
     }
 }

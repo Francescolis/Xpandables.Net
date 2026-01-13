@@ -22,15 +22,15 @@ using System.Text.Json.Serialization.Metadata;
 namespace System.Events.Data;
 
 /// <summary>
-/// Converts between <see cref="IIntegrationEvent"/> and <see cref="EntityIntegrationEvent"/>.
+/// Converts between <see cref="IIntegrationEvent"/> and <see cref="EntityEventInbox"/>.
 /// </summary>
 /// <param name="typeResolver">The type resolver to use for resolving event types.</param>
-public sealed class EventConverterIntegration(ICacheTypeResolver typeResolver) : IEventConverter<EntityIntegrationEvent, IIntegrationEvent>
+public sealed class EventConverterInbox(ICacheTypeResolver typeResolver) : IEventConverter<EntityEventInbox, IIntegrationEvent>
 {
     private readonly ICacheTypeResolver _typeResolver = typeResolver ?? throw new ArgumentNullException(nameof(typeResolver));
 
     /// <inheritdoc/>
-    public EntityIntegrationEvent ConvertEventToEntity(IIntegrationEvent @event, IEventConverterContext context)
+    public EntityEventInbox ConvertEventToEntity(IIntegrationEvent @event, IEventConverterContext context)
     {
         ArgumentNullException.ThrowIfNull(@event);
         ArgumentNullException.ThrowIfNull(context);
@@ -40,13 +40,14 @@ public sealed class EventConverterIntegration(ICacheTypeResolver typeResolver) :
             JsonTypeInfo typeInfo = context.ResolveJsonTypeInfo(@event.GetType());
             JsonDocument data = JsonSerializer.SerializeToDocument(@event, typeInfo);
 
-            return new EntityIntegrationEvent
+            return new EntityEventInbox
             {
                 KeyId = @event.EventId,
                 EventName = @event.GetEventName(),
                 CorrelationId = @event.CorrelationId,
                 CausationId = @event.CausationId,
-                EventData = data
+                EventData = data,
+                Consumer = string.Empty
             };
         }
         catch (Exception exception) when (exception is not InvalidOperationException)
@@ -59,7 +60,7 @@ public sealed class EventConverterIntegration(ICacheTypeResolver typeResolver) :
     }
 
     /// <inheritdoc/>
-    public IIntegrationEvent ConvertEntityToEvent(EntityIntegrationEvent entity, IEventConverterContext context)
+    public IIntegrationEvent ConvertEntityToEvent(EntityEventInbox entity, IEventConverterContext context)
     {
         ArgumentNullException.ThrowIfNull(entity);
         ArgumentNullException.ThrowIfNull(context);

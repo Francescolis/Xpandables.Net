@@ -17,14 +17,18 @@
 namespace System.Events.Data;
 
 /// <summary>
-/// Represents an integration event entity.
+/// Represents an event in the inbox used for tracking the processing state, attempts, and error information of an
+/// entity event within the event-driven system.
 /// </summary>
-public sealed class EntityIntegrationEvent : EntityEvent, IEntityEventIntegration
+/// <remarks>Use this class to monitor and manage the lifecycle of entity events that require reliable processing,
+/// including retry attempts and error handling. This type is typically used in scenarios where event delivery
+/// guarantees and processing status tracking are required.</remarks>
+public sealed class EntityEventInbox : EntityEvent, IEntityEventInbox
 {
     /// <summary>
-    /// Constructs a new instance of the <see cref="EntityIntegrationEvent" /> class.
+    /// Constructs a new instance of the <see cref="EntityEventInbox" /> class.
     /// </summary>
-    public EntityIntegrationEvent() => SetStatus(EventStatus.PENDING);
+    public EntityEventInbox() => SetStatus(EventStatus.PROCESSING);
 
     /// <inheritdoc/>
     public string? ErrorMessage { get; init; }
@@ -37,4 +41,7 @@ public sealed class EntityIntegrationEvent : EntityEvent, IEntityEventIntegratio
 
     /// <inheritdoc/>
     public Guid? ClaimId { get; init; }
+
+    /// <inheritdoc/>
+    public string Consumer { get; set; } = string.Empty;
 }

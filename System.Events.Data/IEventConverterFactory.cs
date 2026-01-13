@@ -45,14 +45,23 @@ public interface IEventConverterFactory
         where TEntityEventDomain : class, IEntityEventDomain;
 
     /// <summary>
-    /// Gets an event converter that transforms integration events of the specified entity event integration type to a
-    /// standard integration event format.
+    /// Gets an event converter that transforms outbox entity events of the specified type into integration events.
     /// </summary>
-    /// <typeparam name="TEntityEventIntegration">The type of the entity event integration to convert. Must implement IEntityEventIntegration.</typeparam>
-    /// <returns>An event converter that converts events of type TEntityEventIntegration to IIntegrationEvent.</returns>
-    /// <exception cref="InvalidOperationException">Thrown if a suitable event converter cannot be found for the specified integration event entity type.</exception>
-    IEventConverter<TEntityEventIntegration, IIntegrationEvent> GetIntegrationEventConverter<TEntityEventIntegration>()
-        where TEntityEventIntegration : class, IEntityEventIntegration;
+    /// <typeparam name="TEntityEventOutbox">The type of the outbox entity event to convert. Must be a class that implements IEntityEventOutbox.</typeparam>
+    /// <returns>An event converter that converts instances of the specified outbox entity event type to integration events.</returns>
+    /// <exception cref="InvalidOperationException">Thrown if a suitable event converter cannot be found for the specified event entity type.</exception>
+    IEventConverter<TEntityEventOutbox, IIntegrationEvent> GetOutboxEventConverter<TEntityEventOutbox>()
+        where TEntityEventOutbox : class, IEntityEventOutbox;
+
+    /// <summary>
+    /// Gets an event converter that transforms inbox entity events of the specified type to integration events.
+    /// </summary>
+    /// <typeparam name="TEntityEventInbox">The type of the inbox entity event. Must be a class that implements <see cref="IEntityEventInbox"/>.</typeparam>
+    /// <returns>An <see cref="IEventConverter{TEntityEventInbox, IIntegrationEvent}"/> instance for converting inbox entity
+    /// events to integration events.</returns>
+    /// <exception cref="InvalidOperationException">Thrown if a suitable event converter cannot be found for the specified event entity type.</exception>
+    IEventConverter<TEntityEventInbox, IIntegrationEvent> GetInboxEventConverter<TEntityEventInbox>()
+        where TEntityEventInbox : class, IEntityEventInbox;
 
     /// <summary>
     /// Gets an event converter that transforms snapshot event entities of the specified type to the standard snapshot

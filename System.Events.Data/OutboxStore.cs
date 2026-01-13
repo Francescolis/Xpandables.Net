@@ -25,7 +25,7 @@ namespace System.Events.Data;
 /// <summary>
 /// Provides an implementation of an outbox pattern for managing integration events.
 /// </summary>
-/// <typeparam name="TEntityIntegrationEvent">The type of the entity integration event.</typeparam>
+/// <typeparam name="TEntityEventOutbox">The type of the entity integration event.</typeparam>
 /// <remarks>The <see cref="OutboxStore{TEntityIntegrationEvent}"/> class is designed to facilitate reliable event processing
 /// by implementing the outbox pattern. It ensures that integration events are stored, claimed, and processed in a
 /// consistent and fault-tolerant manner. This class supports operations such as enqueuing events, claiming pending
@@ -33,17 +33,17 @@ namespace System.Events.Data;
 /// <param name="outboxStoreDataContextFactory">The data context used for accessing the outbox store.</param>
 /// <param name="converterFactory">The factory used to obtain event converters.</param>
 /// <param name="eventEnricher">The enricher used to enrich integration events before processing.</param>
-public sealed class OutboxStore<[DynamicallyAccessedMembers(EntityEvent.DynamicallyAccessedMemberTypes)] TEntityIntegrationEvent>(
+public sealed class OutboxStore<[DynamicallyAccessedMembers(EntityEvent.DynamicallyAccessedMemberTypes)] TEntityEventOutbox>(
     IOutboxStoreDataContextFactory outboxStoreDataContextFactory,
     IEventConverterFactory converterFactory,
     IIntegrationEventEnricher eventEnricher) : IOutboxStore
-    where TEntityIntegrationEvent : class, IEntityEventIntegration
+    where TEntityEventOutbox : class, IEntityEventOutbox
 {
     private readonly EventDataContext _db = outboxStoreDataContextFactory.Create();
     private readonly IEventConverterFactory _converterFactory = converterFactory;
     private readonly IIntegrationEventEnricher _eventEnricher = eventEnricher;
-    private readonly IEventConverter<TEntityIntegrationEvent, IIntegrationEvent> _converter = converterFactory
-        .GetIntegrationEventConverter<TEntityIntegrationEvent>();
+    private readonly IEventConverter<TEntityEventOutbox, IIntegrationEvent> _converter = converterFactory
+        .GetOutboxEventConverter<TEntityEventOutbox>();
 
     /// <inheritdoc />
     public async Task EnqueueAsync(
@@ -53,7 +53,7 @@ public sealed class OutboxStore<[DynamicallyAccessedMembers(EntityEvent.Dynamica
         ArgumentNullException.ThrowIfNull(events);
         ArgumentOutOfRangeException.ThrowIfEqual(events.Length, 0);
 
-        var list = new List<TEntityIntegrationEvent>(events.Length);
+        var list = new List<TEntityEventOutbox>(events.Length);
         var enriched = events.Select(_eventEnricher.Enrich).ToArray();
 
         foreach (var @event in enriched)
@@ -78,7 +78,7 @@ public sealed class OutboxStore<[DynamicallyAccessedMembers(EntityEvent.Dynamica
         var now = DateTime.UtcNow;
         var lease = visibilityTimeout ?? TimeSpan.FromMinutes(5);
         var claimId = Guid.NewGuid();
-        var set = _db.Set<TEntityIntegrationEvent>();
+        var set = _db.Set<TEntityEventOutbox>();
 
         var candidateIds = await set
             .Where(e =>
@@ -133,7 +133,7 @@ public sealed class OutboxStore<[DynamicallyAccessedMembers(EntityEvent.Dynamica
         ArgumentOutOfRangeException.ThrowIfEqual(eventIds.Length, 0);
 
         var now = DateTime.UtcNow;
-        await _db.Set<TEntityIntegrationEvent>()
+        await _db.Set<TEntityEventOutbox>()
             .Where(e => eventIds.Contains(e.KeyId))
             .ExecuteUpdateAsync(updater => updater
                 .SetProperty(e => e.Status, EventStatus.PUBLISHED)
@@ -165,7 +165,7 @@ public sealed class OutboxStore<[DynamicallyAccessedMembers(EntityEvent.Dynamica
              {
                  foreach (var failure in failures)
                  {
-                     await _db.Set<TEntityIntegrationEvent>()
+                     await _db.Set<TEntityEventOutbox>()
                          .Where(e => e.KeyId == failure.EventId)
                          .ExecuteUpdateAsync(updater => updater
                              .SetProperty(e => e.Status, EventStatus.ONERROR)

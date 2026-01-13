@@ -14,15 +14,13 @@
  * limitations under the License.
  *
 ********************************************************************************/
-
 namespace System.Events.Data;
 
 /// <summary>
-/// Represents an integration for handling entity events with error information.
+/// Represents an event inbox for an entity, providing access to the consumer identifier.
+/// Inbox entity contract used for idempotent consumption metadata.
 /// </summary>
-/// <remarks>This interface extends <see cref="IEntityEvent"/> to include error handling capabilities.
-/// Implementations should provide the error message associated with the event entity, if any.</remarks>
-public interface IEntityEventIntegration : IEntityEvent
+public interface IEntityEventInbox : IEntityEvent
 {
     /// <summary>
     /// Gets the error message associated with the event entity.
@@ -43,4 +41,10 @@ public interface IEntityEventIntegration : IEntityEvent
     /// Identifier of the scheduler instance that claims the event for processing.
     /// </summary>
     Guid? ClaimId { get; }
+
+    /// <summary>
+    /// Gets the identifier of the consumer associated with this instance.
+    /// Logical consumer/handler name (part of the idempotency key).
+    /// </summary>
+    string Consumer { get; }
 }

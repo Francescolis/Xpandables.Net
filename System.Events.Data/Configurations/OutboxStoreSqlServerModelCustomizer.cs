@@ -48,7 +48,7 @@ public class OutboxStoreSqlServerModelCustomizer(ModelCustomizerDependencies dep
     {
         ArgumentNullException.ThrowIfNull(modelBuilder);
 
-        modelBuilder.Entity<EntityIntegrationEvent>()
+        modelBuilder.Entity<EntityEventOutbox>()
             .Property(e => e.EventData)
             .HasEventJsonDocumentConversion();
 

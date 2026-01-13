@@ -25,10 +25,10 @@ namespace System.Events.Data.Configurations;
 /// <remarks>This configuration defines property requirements, default values, and indexes for the
 /// EntityIntegrationEvent entity when used with Entity Framework Core. It customizes how the entity is mapped to the
 /// database schema, including optional properties and index definitions.</remarks>
-public sealed class EntityIntegrationEventTypeConfiguration : EntityEventTypeConfiguration<EntityIntegrationEvent>
+public sealed class EntityEventOutboxTypeConfiguration : EntityEventTypeConfiguration<EntityEventOutbox>
 {
     /// <inheritdoc/>
-    public sealed override void Configure(EntityTypeBuilder<EntityIntegrationEvent> builder)
+    public sealed override void Configure(EntityTypeBuilder<EntityEventOutbox> builder)
     {
         base.Configure(builder);
         builder.ToTable("IntegrationEvents", "Events");

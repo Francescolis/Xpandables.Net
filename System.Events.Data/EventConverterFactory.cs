@@ -41,7 +41,7 @@ public sealed class EventConverterFactory : IEventConverterFactory
     public EventConverterFactory(
         IEventConverterContext converterContext,
         IEventConverter<EntityDomainEvent, IDomainEvent> domainConverter,
-        IEventConverter<EntityIntegrationEvent, IIntegrationEvent> integrationConverter,
+        IEventConverter<EntityEventOutbox, IIntegrationEvent> integrationConverter,
         IEventConverter<EntitySnapshotEvent, ISnapshotEvent> snapshotConverter)
     {
         ArgumentNullException.ThrowIfNull(domainConverter);
@@ -53,7 +53,7 @@ public sealed class EventConverterFactory : IEventConverterFactory
         _converters = new Dictionary<Type, object>
         {
             [typeof(EntityDomainEvent)] = domainConverter,
-            [typeof(EntityIntegrationEvent)] = integrationConverter,
+            [typeof(EntityEventOutbox)] = integrationConverter,
             [typeof(EntitySnapshotEvent)] = snapshotConverter
         }.ToFrozenDictionary();
     }
@@ -73,17 +73,31 @@ public sealed class EventConverterFactory : IEventConverterFactory
     }
 
     /// <inheritdoc/>
-    public IEventConverter<TEntityIntegrationEvent, IIntegrationEvent> GetIntegrationEventConverter<TEntityIntegrationEvent>()
-        where TEntityIntegrationEvent : class, IEntityEventIntegration
+    public IEventConverter<TEntityEventOutbox, IIntegrationEvent> GetOutboxEventConverter<TEntityEventOutbox>()
+        where TEntityEventOutbox : class, IEntityEventOutbox
     {
-        if (_converters.TryGetValue(typeof(TEntityIntegrationEvent), out object? converter) &&
-            converter is IEventConverter<TEntityIntegrationEvent, IIntegrationEvent> typed)
+        if (_converters.TryGetValue(typeof(TEntityEventOutbox), out object? converter) &&
+            converter is IEventConverter<TEntityEventOutbox, IIntegrationEvent> typed)
         {
             return typed;
         }
 
         throw new InvalidOperationException(
-            $"No converter registered for entity event type '{typeof(TEntityIntegrationEvent).Name}'.");
+            $"No converter registered for entity event type '{typeof(TEntityEventOutbox).Name}'.");
+    }
+
+    /// <inheritdoc/>
+    public IEventConverter<TEntityEventInbox, IIntegrationEvent> GetInboxEventConverter<TEntityEventInbox>()
+        where TEntityEventInbox : class, IEntityEventInbox
+    {
+        if (_converters.TryGetValue(typeof(TEntityEventInbox), out object? converter) &&
+            converter is IEventConverter<TEntityEventInbox, IIntegrationEvent> typed)
+        {
+            return typed;
+        }
+
+        throw new InvalidOperationException(
+            $"No converter registered for entity event type '{typeof(TEntityEventInbox).Name}'.");
     }
 
     /// <inheritdoc/>
