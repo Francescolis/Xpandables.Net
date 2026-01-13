@@ -35,16 +35,16 @@ public interface IEntityEventInbox : IEntityEvent
     /// <summary>
     /// When the next attempt should be made to process the event.
     /// </summary>
-    DateTime? NextAttemptOn { get; }
+    DateTime? NextAttemptOn { get; set; }
 
     /// <summary>
     /// Identifier of the scheduler instance that claims the event for processing.
     /// </summary>
-    Guid? ClaimId { get; }
+    Guid? ClaimId { get; set; }
 
     /// <summary>
-    /// Gets the identifier of the consumer associated with this instance.
+    /// Gets or sets the identifier of the consumer associated with this instance.
     /// Logical consumer/handler name (part of the idempotency key).
     /// </summary>
-    string Consumer { get; }
+    string Consumer { get; set; }
 }

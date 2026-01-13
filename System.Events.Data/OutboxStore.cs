@@ -15,6 +15,7 @@
  *
 ********************************************************************************/
 using System.Diagnostics.CodeAnalysis;
+using System.Entities;
 using System.Events.Integration;
 
 using Microsoft.EntityFrameworkCore;
@@ -59,7 +60,7 @@ public sealed class OutboxStore<[DynamicallyAccessedMembers(EntityEvent.Dynamica
         foreach (var @event in enriched)
         {
             var entity = _converter.ConvertEventToEntity(@event, _converterFactory.ConverterContext);
-            entity.SetStatus(EventStatus.PENDING);
+            entity.SetStatus(EntityStatus.PENDING.Value);
             list.Add(entity);
         }
 
@@ -82,8 +83,8 @@ public sealed class OutboxStore<[DynamicallyAccessedMembers(EntityEvent.Dynamica
 
         var candidateIds = await set
             .Where(e =>
-                (e.Status == EventStatus.PENDING) ||
-                (e.Status == EventStatus.ONERROR && (e.NextAttemptOn == null || e.NextAttemptOn <= now)))
+                (e.Status == EntityStatus.PENDING.Value) ||
+                (e.Status == EntityStatus.ONERROR.Value && (e.NextAttemptOn == null || e.NextAttemptOn <= now)))
             .Where(e => e.ClaimId == null)
             .OrderBy(e => e.Sequence)
             .Select(e => e.KeyId)
@@ -96,7 +97,7 @@ public sealed class OutboxStore<[DynamicallyAccessedMembers(EntityEvent.Dynamica
         var updated = await set
             .Where(e => candidateIds.Contains(e.KeyId) && e.ClaimId == null)
             .ExecuteUpdateAsync(updater => updater
-                .SetProperty(e => e.Status, EventStatus.PROCESSING)
+                .SetProperty(e => e.Status, EntityStatus.PROCESSING.Value)
                 .SetProperty(e => e.ClaimId, claimId)
                 .SetProperty(e => e.ErrorMessage, (string?)null)
                 .SetProperty(e => e.NextAttemptOn, now.Add(lease))
@@ -136,7 +137,7 @@ public sealed class OutboxStore<[DynamicallyAccessedMembers(EntityEvent.Dynamica
         await _db.Set<TEntityEventOutbox>()
             .Where(e => eventIds.Contains(e.KeyId))
             .ExecuteUpdateAsync(updater => updater
-                .SetProperty(e => e.Status, EventStatus.PUBLISHED)
+                .SetProperty(e => e.Status, EntityStatus.PUBLISHED.Value)
                 .SetProperty(e => e.ErrorMessage, (string?)null)
                 .SetProperty(e => e.AttemptCount, e => e.AttemptCount)
                 .SetProperty(e => e.NextAttemptOn, (DateTime?)null)
@@ -168,7 +169,7 @@ public sealed class OutboxStore<[DynamicallyAccessedMembers(EntityEvent.Dynamica
                      await _db.Set<TEntityEventOutbox>()
                          .Where(e => e.KeyId == failure.EventId)
                          .ExecuteUpdateAsync(updater => updater
-                             .SetProperty(e => e.Status, EventStatus.ONERROR)
+                             .SetProperty(e => e.Status, EntityStatus.ONERROR.Value)
                              .SetProperty(e => e.ErrorMessage, failure.Error)
                              .SetProperty(e => e.AttemptCount, e => e.AttemptCount + 1)
                              .SetProperty(e => e.NextAttemptOn, e => now.AddSeconds(Math.Min(600, 10 * Math.Pow(2, Math.Min(10, e.AttemptCount)))))

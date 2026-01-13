@@ -22,20 +22,20 @@ using Microsoft.EntityFrameworkCore;
 namespace System.Events.Data;
 
 /// <summary>
-/// Represents the data context for handling integration event entities.
+/// Represents the data context for handling inbox event entities.
 /// </summary>
 /// <remarks>
-/// Initializes a new instance of the <see cref="OutboxStoreDataContext" /> class.
+/// Initializes a new instance of the <see cref="InboxStoreDataContext" /> class.
 /// </remarks>
 /// <param name="options">The options to be used by a <see cref="DbContext" />.</param>
 [RequiresUnreferencedCode("This context may be used with unreferenced code.")]
 [RequiresDynamicCode("This context may be used with dynamic code.")]
-public sealed class OutboxStoreDataContext(DbContextOptions<OutboxStoreDataContext> options) : EventDataContext(options)
+public sealed class InboxStoreDataContext(DbContextOptions<InboxStoreDataContext> options) : EventDataContext(options)
 {
     /// <summary>
-    /// Gets or sets the DbSet for EventEntityOutbox.
+    /// Gets or sets the DbSet for EventEntityInbox.
     /// </summary>
-    public DbSet<EntityEventOutbox> OutboxEvents { get; set; } = null!;
+    public DbSet<EntityEventInbox> InboxEvents { get; set; } = null!;
 
     /// <inheritdoc />
     protected override void OnModelCreating(ModelBuilder modelBuilder)
@@ -44,7 +44,7 @@ public sealed class OutboxStoreDataContext(DbContextOptions<OutboxStoreDataConte
 
         modelBuilder.HasDefaultSchema("Events");
 
-        _ = modelBuilder.ApplyConfiguration(new EntityEventOutboxTypeConfiguration());
+        _ = modelBuilder.ApplyConfiguration(new EntityEventInboxTypeConfiguration());
 
         base.OnModelCreating(modelBuilder);
     }

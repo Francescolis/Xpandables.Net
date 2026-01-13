@@ -29,60 +29,109 @@ namespace System.Entities;
 /// automatic JSON serialization through primitive converters, and comprehensive validation support.
 /// Status values are cached for efficient reuse and comparison operations.
 /// </remarks>
-public static class EntityStatus
+[PrimitiveJsonConverter<EntityStatus, string>]
+#pragma warning disable CA1036 // Override methods on comparable types
+public readonly record struct EntityStatus : IPrimitive<EntityStatus, string>
+#pragma warning restore CA1036 // Override methods on comparable types
 {
     private static readonly FrozenSet<string> _validStatusNames = CreateValidStatusNames();
     private static FrozenSet<string> CreateValidStatusNames()
     {
-        return new[] { nameof(ACTIVE), nameof(PENDING), nameof(PROCESSING), nameof(DELETED),
-                      nameof(SUSPENDED), nameof(ONERROR), nameof(PUBLISHED) }
+        return new[] { nameof(ACTIVE), nameof(PENDING), nameof(PROCESSING), nameof(DELETED), nameof(ACCEPTED),
+                      nameof(SUSPENDED), nameof(ONERROR), nameof(PUBLISHED), nameof(DUPLICATE) }
             .ToFrozenSet(StringComparer.OrdinalIgnoreCase);
+    }
+
+    /// <inheritdoc/>
+    public string Value { get; }
+
+    private EntityStatus(string value) => Value = value;
+
+    /// <inheritdoc/>
+    public override string ToString() => Value;
+
+    /// <summary>
+    /// Converts an <see cref="EntityStatus"/> instance to its underlying string value.
+    /// </summary>
+    /// <param name="self">The <see cref="EntityStatus"/> instance to convert.</param>
+    public static implicit operator string(EntityStatus self) => self.Value;
+
+    /// <inheritdoc/>
+    public static string DefaultValue => ACTIVE;
+#pragma warning disable CA2225 // Operator overloads have named alternates
+    /// <summary>
+    /// Converts a string value to an EntityStatus instance using implicit conversion.
+    /// </summary>
+    /// <remarks>This operator enables seamless assignment of string values to EntityStatus variables. If the
+    /// provided string does not correspond to a valid status, the resulting EntityStatus may represent an undefined or
+    /// custom status, depending on the implementation of the Create method.</remarks>
+    /// <param name="value">The string value to convert to an EntityStatus. Cannot be null.</param>
+    public static implicit operator EntityStatus(string value)
+#pragma warning restore CA2225 // Operator overloads have named alternates
+    {
+        ArgumentNullException.ThrowIfNull(value);
+        return Create(value);
+    }
+
+    /// <inheritdoc/>
+    public bool Equals(EntityStatus other) => Value.Equals(other.Value, StringComparison.Ordinal);
+
+    /// <inheritdoc/>
+    public override int GetHashCode() => Value.GetHashCode(StringComparison.Ordinal);
+
+    /// <inheritdoc/>
+    public static EntityStatus Create(string value)
+    {
+        return _validStatusNames.Contains(value)
+            ? new EntityStatus(value)
+            : throw new ValidationException(
+                new ValidationResult($"'{value}' is not a valid entity status.", [nameof(EntityStatus)]), null, value);
     }
 
     /// <summary>
     /// The entity is currently active and functioning.
     /// </summary>
-    public static string ACTIVE => nameof(ACTIVE);
+    public static readonly EntityStatus ACTIVE = nameof(ACTIVE);
 
     /// <summary>
     /// The entity has been accepted for processing (not seen or recoverable).
     /// </summary>
-    public static string ACCEPTED => nameof(ACCEPTED);
+    public static readonly EntityStatus ACCEPTED = nameof(ACCEPTED);
 
     /// <summary>
     /// The entity was alread present and is a duplicate. It must be ignored.
     /// </summary>
-    public static string DUPLICATE => nameof(DUPLICATE);
+    public static readonly EntityStatus DUPLICATE = nameof(DUPLICATE);
 
     /// <summary>
     /// The entity is pending processing or approval.
     /// </summary>
-    public static string PENDING => nameof(PENDING);
+    public static readonly EntityStatus PENDING = nameof(PENDING);
 
     /// <summary>
     /// The entity is currently being processed.
     /// </summary>
-    public static string PROCESSING => nameof(PROCESSING);
+    public static readonly EntityStatus PROCESSING = nameof(PROCESSING);
 
     /// <summary>
     /// The entity has been logically deleted.
     /// </summary>
-    public static string DELETED => nameof(DELETED);
+    public static readonly EntityStatus DELETED = nameof(DELETED);
 
     /// <summary>
     /// The entity is temporarily suspended.
     /// </summary>
-    public static string SUSPENDED => nameof(SUSPENDED);
+    public static readonly EntityStatus SUSPENDED = nameof(SUSPENDED);
 
     /// <summary>
     /// The entity is in an error state requiring attention.
     /// </summary>
-    public static string ONERROR => nameof(ONERROR);
+    public static readonly EntityStatus ONERROR = nameof(ONERROR);
 
     /// <summary>
     /// The entity has been published and is available.
     /// </summary>
-    public static string PUBLISHED => nameof(PUBLISHED);
+    public static readonly EntityStatus PUBLISHED = nameof(PUBLISHED);
 
     #region Utility Methods
 
@@ -98,7 +147,7 @@ public static class EntityStatus
     /// <param name="statusName">The status name to validate.</param>
     /// <returns>true if the status name is valid; otherwise, false.</returns>
     [MethodImpl(MethodImplOptions.AggressiveInlining)]
-    public static bool IsValidStatus(this string? statusName) =>
+    public static bool IsValidStatus(string? statusName) =>
         !string.IsNullOrWhiteSpace(statusName) && _validStatusNames.Contains(statusName);
 
     /// <summary>
@@ -106,7 +155,7 @@ public static class EntityStatus
     /// </summary>
     /// <returns>true if the status is terminal; otherwise, false.</returns>
     [MethodImpl(MethodImplOptions.AggressiveInlining)]
-    public static bool IsTerminal(this string statusName)
+    public static bool IsTerminal(string statusName)
     {
         ArgumentNullException.ThrowIfNull(statusName);
         return statusName.Equals(DELETED, StringComparison.Ordinal)
@@ -118,7 +167,7 @@ public static class EntityStatus
     /// </summary>
     /// <returns>true if the status is active; otherwise, false.</returns>
     [MethodImpl(MethodImplOptions.AggressiveInlining)]
-    public static bool IsActive(this string statusName)
+    public static bool IsActive(string statusName)
     {
         ArgumentNullException.ThrowIfNull(statusName);
         return statusName.Equals(ACTIVE, StringComparison.Ordinal)
@@ -130,7 +179,7 @@ public static class EntityStatus
     /// </summary>
     /// <returns>true if the status is transitional; otherwise, false.</returns>
     [MethodImpl(MethodImplOptions.AggressiveInlining)]
-    public static bool IsTransitional(this string statusName)
+    public static bool IsTransitional(string statusName)
     {
         ArgumentNullException.ThrowIfNull(statusName);
         return statusName.Equals(PENDING, StringComparison.Ordinal)

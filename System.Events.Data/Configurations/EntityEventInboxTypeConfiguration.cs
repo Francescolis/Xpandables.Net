@@ -1,5 +1,5 @@
 ﻿/*******************************************************************************
- * Copyright (C) 2024 Francis-Black EWANE
+ * Copyright (C) 2025 Kamersoft
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -20,18 +20,18 @@ using Microsoft.EntityFrameworkCore.Metadata.Builders;
 namespace System.Events.Data.Configurations;
 
 /// <summary>
-/// Provides the Entity Framework Core configuration for the EntityEventOutbox entity type.
+/// Provides the Entity Framework Core configuration for the EntityEventInbox entity type.
 /// </summary>
 /// <remarks>This configuration defines property requirements, default values, and indexes for the
-/// EntityEventOutbox entity when used with Entity Framework Core. It customizes how the entity is mapped to the
+/// EntityEventInbox entity when used with Entity Framework Core. It customizes how the entity is mapped to the
 /// database schema, including optional properties and index definitions.</remarks>
-public sealed class EntityEventOutboxTypeConfiguration : EntityEventTypeConfiguration<EntityEventOutbox>
+public sealed class EntityEventInboxTypeConfiguration : EntityEventTypeConfiguration<EntityEventInbox>
 {
     /// <inheritdoc/>
-    public sealed override void Configure(EntityTypeBuilder<EntityEventOutbox> builder)
+    public sealed override void Configure(EntityTypeBuilder<EntityEventInbox> builder)
     {
         base.Configure(builder);
-        builder.ToTable("OutboxEvents", "Events");
+        builder.ToTable("InboxEvents", "Events");
 
         builder.Property(e => e.ClaimId).IsRequired(false);
         builder.Property(e => e.AttemptCount).HasDefaultValue(0);
@@ -39,20 +39,21 @@ public sealed class EntityEventOutboxTypeConfiguration : EntityEventTypeConfigur
         builder.Property(e => e.ErrorMessage).IsRequired(false);
         builder.Property(e => e.CausationId).HasMaxLength(64);
         builder.Property(e => e.CorrelationId).HasMaxLength(64);
+        builder.Property(e => e.Consumer).IsRequired().HasMaxLength(256);
 
         builder.Property(e => e.UpdatedOn)
                .IsConcurrencyToken();
 
         builder.HasIndex(e => new { e.Status, e.NextAttemptOn })
-               .HasDatabaseName("IX_OutboxEvent_Status_NextAttemptOn");
+               .HasDatabaseName("IX_InboxEvent_Status_NextAttemptOn");
 
         builder.HasIndex(e => e.ClaimId)
-               .HasDatabaseName("IX_OutboxEvent_ClaimId");
+               .HasDatabaseName("IX_InboxEvent_ClaimId");
 
         builder.HasIndex(e => new { e.Status, e.NextAttemptOn, e.Sequence })
-               .HasDatabaseName("IX_OutboxEvent_Processing");
+               .HasDatabaseName("IX_InboxEvent_Processing");
 
         builder.HasIndex(e => new { e.Status, e.AttemptCount, e.NextAttemptOn })
-               .HasDatabaseName("IX_OutboxEvent_Retry");
+               .HasDatabaseName("IX_InboxEvent_Retry");
     }
 }

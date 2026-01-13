@@ -14,6 +14,8 @@
  * limitations under the License.
  *
 ********************************************************************************/
+using System.Entities;
+
 namespace System.Events.Integration;
 
 /// <summary>
@@ -26,11 +28,69 @@ namespace System.Events.Integration;
 public readonly record struct FailedInboxEvent(Guid EventId, string Consumer, string Error);
 
 /// <summary>
+/// Represents an event indicating that an inbox operation has been completed by a specific consumer.
+/// </summary>
+/// <param name="EventId">The unique identifier for the completed event.</param>
+/// <param name="Consumer">The name of the consumer that completed the inbox event. Cannot be null.</param>
+public readonly record struct CompletedInboxEvent(Guid EventId, string Consumer);
+
+/// <summary>
+/// Represents the result of an inbox event, including its unique identifier and current processing state.
+/// </summary>
+/// <param name="EventId">The unique identifier of the event associated with this status.</param>
+/// <param name="Status">The current processing status of the event.</param>
+public readonly record struct InboxReceiveResult(Guid EventId, EntityStatus Status);
+
+/// <summary>
 /// Represents a contract for storing and retrieving inbox messages.
 /// </summary>
 /// <remarks>Implementations of this interface provide mechanisms for persisting and accessing messages in an
 /// inbox. The specific storage medium and retrieval strategies depend on the concrete implementation.</remarks>
 public interface IInboxStore
 {
+    /// <summary>
+    /// Attempts to register the specified integration event for processing by the given consumer.
+    /// </summary>
+    /// <param name="cancellationToken">Cancellation token.</param>
+    /// <param name="consumer">Logical consumer/handler name (part of the idempotency key).</param>
+    /// <param name="event">The integration event to record.</param>
+    /// <param name="visibilityTimeout">Optional lease duration used when reclaiming failed events via dequeue.</param>
+    /// <returns>An <see cref="InboxReceiveResult"/> indicating whether processing should proceed.</returns>
+    Task<InboxReceiveResult> ReceiveAsync(
+#pragma warning disable CA1716 // Identifiers should not match keywords
+        IIntegrationEvent @event,
+#pragma warning restore CA1716 // Identifiers should not match keywords
+        string consumer,
+        TimeSpan? visibilityTimeout = default,
+        CancellationToken cancellationToken = default);
 
+    /// <summary>
+    /// Claims pending or retryable events for processing (used by background schedulers if desired).
+    /// </summary>
+    /// <param name="cancellationToken">Cancellation token.</param>
+    /// <param name="consumer">Logical consumer/handler name.</param>
+    /// <param name="maxEvents">Maximum events to claim.</param>
+    /// <param name="visibilityTimeout">Lease duration before events become visible again.</param>
+    /// <returns>Claimed integration events for processing.</returns>
+    Task<IReadOnlyList<IIntegrationEvent>> DequeueAsync(
+        string consumer,
+        int maxEvents = 10,
+        TimeSpan? visibilityTimeout = default,
+        CancellationToken cancellationToken = default);
+
+    /// <summary>
+    /// Marks the specified inbox events as completed asynchronously.
+    /// </summary>
+    /// <param name="cancellationToken">A cancellation token that can be used to cancel the operation.</param>
+    /// <param name="events">An array of inbox events to mark as completed. Cannot be null or contain null elements.</param>
+    /// <returns>A task that represents the asynchronous completion operation.</returns>
+    Task CompleteAsync(CancellationToken cancellationToken, params CompletedInboxEvent[] events);
+
+    /// <summary>
+    /// Marks the specified inbox events as failed asynchronously.
+    /// </summary>
+    /// <param name="cancellationToken">A cancellation token that can be used to cancel the operation.</param>
+    /// <param name="failures">An array of failed inbox events to be marked as failed. Cannot be null or empty.</param>
+    /// <returns>A task that represents the asynchronous operation.</returns>
+    Task FailAsync(CancellationToken cancellationToken, params FailedInboxEvent[] failures);
 }
