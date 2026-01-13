@@ -18,11 +18,11 @@
 namespace System.Events.Integration;
 
 /// <summary>
-/// Represents an event that has failed, including its unique identifier and an associated error message.
+/// Represents an outbox event that has failed, including its unique identifier and an associated error message.
 /// </summary>
 /// <param name="EventId">The unique identifier of the event that failed.</param>
 /// <param name="Error">A message describing the error that caused the event to fail. Cannot be null.</param>
-public readonly record struct FailedEvent(Guid EventId, string Error);
+public readonly record struct FailedOutboxEvent(Guid EventId, string Error);
 
 /// <summary>
 /// Defines a contract for an outbox store that manages the reliable enqueueing, retrieval, and state tracking of
@@ -75,5 +75,5 @@ public interface IOutboxStore
     /// <param name="failures">A read-only span containing the failed events to be recorded. The span must not be empty.</param>
     /// <param name="cancellationToken">A cancellation token that can be used to cancel the operation.</param>
     /// <returns>A task that represents the asynchronous operation.</returns>
-    Task FailAsync(CancellationToken cancellationToken, params FailedEvent[] failures);
+    Task FailAsync(CancellationToken cancellationToken, params FailedOutboxEvent[] failures);
 }

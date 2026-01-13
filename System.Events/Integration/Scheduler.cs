@@ -311,7 +311,7 @@ public sealed class Scheduler : Disposable, IScheduler
         var errorCount = 0;
 
         var successIds = new List<Guid>(events.Count);
-        var failures = new List<FailedEvent>(events.Count);
+        var failures = new List<FailedOutboxEvent>(events.Count);
 
         foreach (var @event in events)
         {

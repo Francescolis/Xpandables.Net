@@ -148,7 +148,7 @@ public sealed class OutboxStore<[DynamicallyAccessedMembers(EntityEvent.Dynamica
     /// <inheritdoc />
     public async Task FailAsync(
         CancellationToken cancellationToken,
-        params FailedEvent[] failures)
+        params FailedOutboxEvent[] failures)
     {
         ArgumentNullException.ThrowIfNull(failures);
         ArgumentOutOfRangeException.ThrowIfEqual(failures.Length, 0);

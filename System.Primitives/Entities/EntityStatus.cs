@@ -45,6 +45,16 @@ public static class EntityStatus
     public static string ACTIVE => nameof(ACTIVE);
 
     /// <summary>
+    /// The entity has been accepted for processing (not seen or recoverable).
+    /// </summary>
+    public static string ACCEPTED => nameof(ACCEPTED);
+
+    /// <summary>
+    /// The entity was alread present and is a duplicate. It must be ignored.
+    /// </summary>
+    public static string DUPLICATE => nameof(DUPLICATE);
+
+    /// <summary>
     /// The entity is pending processing or approval.
     /// </summary>
     public static string PENDING => nameof(PENDING);
