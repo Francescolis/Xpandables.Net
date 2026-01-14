@@ -16,6 +16,7 @@
  *
 ********************************************************************************/
 using System.Diagnostics.CodeAnalysis;
+using System.Entities;
 
 using Microsoft.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore.Metadata.Builders;
@@ -45,7 +46,7 @@ public abstract class EntityEventTypeConfiguration<[DynamicallyAccessedMembers(D
         _ = builder.Property(e => e.UpdatedOn).IsRequired(false);
         _ = builder.Property(e => e.DeletedOn).IsRequired(false);
 
-        _ = builder.HasQueryFilter(e => e.Status != EventStatus.DELETED);
+        _ = builder.HasQueryFilter(e => e.Status != EntityStatus.DELETED.Value);
 
         // Global ordering/reads
         _ = builder.HasIndex(e => e.Sequence);

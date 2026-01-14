@@ -65,20 +65,6 @@ public interface IInboxStore
         CancellationToken cancellationToken = default);
 
     /// <summary>
-    /// Claims pending or retryable events for processing (used by background schedulers if desired).
-    /// </summary>
-    /// <param name="cancellationToken">Cancellation token.</param>
-    /// <param name="consumer">Logical consumer/handler name.</param>
-    /// <param name="maxEvents">Maximum events to claim.</param>
-    /// <param name="visibilityTimeout">Lease duration before events become visible again.</param>
-    /// <returns>Claimed integration events for processing.</returns>
-    Task<IReadOnlyList<IIntegrationEvent>> DequeueAsync(
-        string consumer,
-        int maxEvents = 10,
-        TimeSpan? visibilityTimeout = default,
-        CancellationToken cancellationToken = default);
-
-    /// <summary>
     /// Marks the specified inbox events as completed asynchronously.
     /// </summary>
     /// <param name="cancellationToken">A cancellation token that can be used to cancel the operation.</param>

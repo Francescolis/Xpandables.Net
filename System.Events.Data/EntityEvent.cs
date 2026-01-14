@@ -16,6 +16,7 @@
 ********************************************************************************/
 using System.ComponentModel.DataAnnotations;
 using System.Diagnostics.CodeAnalysis;
+using System.Entities;
 using System.Text.Json;
 
 namespace System.Events.Data;
@@ -37,8 +38,8 @@ public abstract class EntityEvent : IEntityEvent
     protected EntityEvent() { }
 
     /// <inheritdoc />
-    [EventStatusValidation(allowCustomStatuses: true)]
-    public string Status { get; set; } = EventStatus.ACTIVE;
+    [EntityStatusValidation(allowCustomStatuses: true)]
+    public string Status { get; set; } = EntityStatus.ACTIVE.Value;
 
     /// <inheritdoc/>
     public string? CausationId { get; init; }
@@ -56,7 +57,7 @@ public abstract class EntityEvent : IEntityEvent
     public DateTime? DeletedOn { get; set; }
 
     /// <inheritdoc/>
-    public bool IsDeleted => Status == EventStatus.DELETED;
+    public bool IsDeleted => Status == EntityStatus.DELETED.Value;
 
     /// <inheritdoc />
     [Key]
@@ -66,7 +67,7 @@ public abstract class EntityEvent : IEntityEvent
     public void SetStatus(string status)
     {
         Status = status;
-        DeletedOn = status == EventStatus.DELETED
+        DeletedOn = status == EntityStatus.DELETED.Value
             ? DateTime.UtcNow
             : null;
     }

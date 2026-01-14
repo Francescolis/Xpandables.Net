@@ -14,6 +14,8 @@
  * limitations under the License.
  *
 ********************************************************************************/
+using System.Entities;
+
 namespace System.Events.Data;
 
 /// <summary>
@@ -28,7 +30,7 @@ public sealed class EntityEventInbox : EntityEvent, IEntityEventInbox
     /// <summary>
     /// Constructs a new instance of the <see cref="EntityEventInbox" /> class.
     /// </summary>
-    public EntityEventInbox() => SetStatus(EventStatus.PROCESSING);
+    public EntityEventInbox() => SetStatus(EntityStatus.PROCESSING.Value);
 
     /// <inheritdoc/>
     public string? ErrorMessage { get; init; }
@@ -37,10 +39,10 @@ public sealed class EntityEventInbox : EntityEvent, IEntityEventInbox
     public int AttemptCount { get; init; }
 
     /// <inheritdoc/>
-    public DateTime? NextAttemptOn { get; init; }
+    public DateTime? NextAttemptOn { get; set; }
 
     /// <inheritdoc/>
-    public Guid? ClaimId { get; init; }
+    public Guid? ClaimId { get; set; }
 
     /// <inheritdoc/>
     public string Consumer { get; set; } = string.Empty;

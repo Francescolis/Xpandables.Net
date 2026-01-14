@@ -15,6 +15,7 @@
  *
 ********************************************************************************/
 using System.Diagnostics.CodeAnalysis;
+using System.Entities;
 using System.Events.Domain;
 using System.Runtime.CompilerServices;
 
@@ -148,7 +149,7 @@ public sealed class EventStore<[DynamicallyAccessedMembers(EntityEvent.Dynamical
             // Soft delete: mark events as deleted using EntityStatus.DELETED
             foreach (var entity in events)
             {
-                entity.SetStatus(EventStatus.DELETED);
+                entity.SetStatus(EntityStatus.DELETED.Value);
             }
             _db.UpdateRange(events);
         }

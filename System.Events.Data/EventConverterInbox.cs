@@ -14,21 +14,15 @@
  * limitations under the License.
  *
 ********************************************************************************/
-using System.Cache;
 using System.Events.Integration;
-using System.Text.Json;
-using System.Text.Json.Serialization.Metadata;
 
 namespace System.Events.Data;
 
 /// <summary>
 /// Converts between <see cref="IIntegrationEvent"/> and <see cref="EntityEventInbox"/>.
 /// </summary>
-/// <param name="typeResolver">The type resolver to use for resolving event types.</param>
-public sealed class EventConverterInbox(ICacheTypeResolver typeResolver) : IEventConverter<EntityEventInbox, IIntegrationEvent>
+public sealed class EventConverterInbox : IEventConverter<EntityEventInbox, IIntegrationEvent>
 {
-    private readonly ICacheTypeResolver _typeResolver = typeResolver ?? throw new ArgumentNullException(nameof(typeResolver));
-
     /// <inheritdoc/>
     public EntityEventInbox ConvertEventToEntity(IIntegrationEvent @event, IEventConverterContext context)
     {
@@ -37,16 +31,13 @@ public sealed class EventConverterInbox(ICacheTypeResolver typeResolver) : IEven
 
         try
         {
-            JsonTypeInfo typeInfo = context.ResolveJsonTypeInfo(@event.GetType());
-            JsonDocument data = JsonSerializer.SerializeToDocument(@event, typeInfo);
-
             return new EntityEventInbox
             {
                 KeyId = @event.EventId,
                 EventName = @event.GetEventName(),
                 CorrelationId = @event.CorrelationId,
                 CausationId = @event.CausationId,
-                EventData = data,
+                EventData = default!,
                 Consumer = string.Empty
             };
         }
@@ -60,27 +51,6 @@ public sealed class EventConverterInbox(ICacheTypeResolver typeResolver) : IEven
     }
 
     /// <inheritdoc/>
-    public IIntegrationEvent ConvertEntityToEvent(EntityEventInbox entity, IEventConverterContext context)
-    {
-        ArgumentNullException.ThrowIfNull(entity);
-        ArgumentNullException.ThrowIfNull(context);
-
-        try
-        {
-            Type targetType = _typeResolver.Resolve(entity.EventName);
-            JsonTypeInfo typeInfo = context.ResolveJsonTypeInfo(targetType);
-
-            object? @event = entity.EventData.Deserialize(typeInfo)
-                ?? throw new InvalidOperationException(
-                    $"Failed to deserialize the event data to {typeInfo.Type.Name}.");
-
-            return (IIntegrationEvent)@event;
-        }
-        catch (Exception exception) when (exception is not InvalidOperationException)
-        {
-            throw new InvalidOperationException(
-                "Failed to convert the event entity. See inner exception for details.",
-                exception);
-        }
-    }
+    public IIntegrationEvent ConvertEntityToEvent(EntityEventInbox entity, IEventConverterContext context) =>
+        throw new NotSupportedException("Conversion to event is not supported.");
 }

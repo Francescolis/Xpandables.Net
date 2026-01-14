@@ -96,66 +96,6 @@ public sealed class InboxStore<[DynamicallyAccessedMembers(EntityEvent.Dynamical
     }
 
     /// <inheritdoc />
-    public async Task<IReadOnlyList<IIntegrationEvent>> DequeueAsync(
-       string consumer,
-        int maxEvents = 10,
-        TimeSpan? visibilityTimeout = default,
-        CancellationToken cancellationToken = default)
-    {
-        ArgumentOutOfRangeException.ThrowIfNegativeOrZero(maxEvents);
-        ArgumentException.ThrowIfNullOrWhiteSpace(consumer);
-
-        var now = DateTime.UtcNow;
-        var lease = visibilityTimeout ?? TimeSpan.FromMinutes(5);
-        var claimId = Guid.NewGuid();
-        var set = _db.Set<TEntityEventInbox>();
-
-        var candidateIds = await set
-            .Where(e => e.Consumer == consumer)
-            .Where(e =>
-                e.Status == EntityStatus.PENDING.Value ||
-                (e.Status == EntityStatus.ONERROR.Value && (e.NextAttemptOn == null || e.NextAttemptOn <= now)))
-            .Where(e => e.ClaimId == null)
-            .OrderBy(e => e.Sequence)
-            .Select(e => e.KeyId)
-            .Take(Math.Max(1, maxEvents))
-            .ToListAsync(cancellationToken)
-            .ConfigureAwait(false);
-
-        if (candidateIds.Count == 0) return [];
-
-        var updated = await set
-            .Where(e => e.Consumer == consumer && candidateIds.Contains(e.KeyId) && e.ClaimId == null)
-            .ExecuteUpdateAsync(updater => updater
-                .SetProperty(e => e.Status, EntityStatus.PROCESSING.Value)
-                .SetProperty(e => e.ClaimId, claimId)
-                .SetProperty(e => e.ErrorMessage, (string?)null)
-                .SetProperty(e => e.NextAttemptOn, now.Add(lease))
-                .SetProperty(e => e.UpdatedOn, now), cancellationToken)
-            .ConfigureAwait(false);
-
-        if (updated == 0) return [];
-
-        var claimed = await set
-            .AsNoTracking()
-            .Where(e => e.ClaimId == claimId && e.Consumer == consumer)
-            .OrderBy(e => e.Sequence)
-            .ToListAsync(cancellationToken)
-            .ConfigureAwait(false);
-
-        var list = new List<IIntegrationEvent>(claimed.Count);
-        foreach (var entity in claimed)
-        {
-            if (_converter.ConvertEntityToEvent(entity, _converterFactory.ConverterContext) is IIntegrationEvent ie)
-            {
-                list.Add(ie);
-            }
-        }
-
-        return list;
-    }
-
-    /// <inheritdoc />
     public async Task CompleteAsync(
         CancellationToken cancellationToken,
         params CompletedInboxEvent[] events)
@@ -165,8 +105,7 @@ public sealed class InboxStore<[DynamicallyAccessedMembers(EntityEvent.Dynamical
 
         var now = DateTime.UtcNow;
         await _db.Set<TEntityEventInbox>()
-            .Where(e => events.Select(evt => new { evt.EventId, evt.Consumer })
-                .Contains(new { e.KeyId, e.Consumer }))
+            .Where(e => events.Any(evt => evt.EventId == e.KeyId && evt.Consumer == e.Consumer))
             .ExecuteUpdateAsync(updater => updater
                 .SetProperty(e => e.Status, EntityStatus.PUBLISHED.Value)
                 .SetProperty(e => e.ErrorMessage, (string?)null)

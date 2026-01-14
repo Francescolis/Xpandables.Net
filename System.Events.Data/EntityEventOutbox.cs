@@ -14,6 +14,8 @@
  * limitations under the License.
  *
 ********************************************************************************/
+using System.Entities;
+
 namespace System.Events.Data;
 
 /// <summary>
@@ -27,7 +29,7 @@ public sealed class EntityEventOutbox : EntityEvent, IEntityEventOutbox
     /// <summary>
     /// Constructs a new instance of the <see cref="EntityEventOutbox" /> class.
     /// </summary>
-    public EntityEventOutbox() => SetStatus(EventStatus.PENDING);
+    public EntityEventOutbox() => SetStatus(EntityStatus.PENDING.Value);
 
     /// <inheritdoc/>
     public string? ErrorMessage { get; init; }
