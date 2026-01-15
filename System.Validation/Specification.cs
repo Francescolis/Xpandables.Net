@@ -80,6 +80,7 @@ public abstract record Specification
     public static ISpecification<TSource> And<TSource>(ISpecification<TSource> left, ISpecification<TSource> right)
     {
         ArgumentNullException.ThrowIfNull(left);
+        ArgumentNullException.ThrowIfNull(right);
         return new Specification<TSource>(left, right, ExpressionType.And);
     }
 
@@ -92,6 +93,7 @@ public abstract record Specification
     public static ISpecification<TSource> AndAlso<TSource>(ISpecification<TSource> left, ISpecification<TSource> right)
     {
         ArgumentNullException.ThrowIfNull(left);
+        ArgumentNullException.ThrowIfNull(right);
         return new Specification<TSource>(left, right, ExpressionType.AndAlso);
     }
 
@@ -104,6 +106,7 @@ public abstract record Specification
     public static ISpecification<TSource> Or<TSource>(ISpecification<TSource> left, ISpecification<TSource> right)
     {
         ArgumentNullException.ThrowIfNull(left);
+        ArgumentNullException.ThrowIfNull(right);
         return new Specification<TSource>(left, right, ExpressionType.Or);
     }
 
@@ -116,6 +119,7 @@ public abstract record Specification
     public static ISpecification<TSource> OrElse<TSource>(ISpecification<TSource> left, ISpecification<TSource> right)
     {
         ArgumentNullException.ThrowIfNull(left);
+        ArgumentNullException.ThrowIfNull(right);
         return new Specification<TSource>(left, right, ExpressionType.OrElse);
     }
     /// <summary>
