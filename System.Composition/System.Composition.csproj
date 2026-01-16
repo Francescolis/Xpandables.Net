@@ -83,7 +83,7 @@
 	</ItemGroup>
 
 	<ItemGroup>
-		<PackageReference Include="System.ComponentModel.Composition" Version="10.0.1" />
+		<PackageReference Include="System.ComponentModel.Composition" Version="10.0.2" />
 	</ItemGroup>
 
 	<ItemGroup>
