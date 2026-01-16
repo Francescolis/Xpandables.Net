@@ -402,17 +402,14 @@ public static class IServiceDecoratorExtensions
                 continue;
             }
 
-            if (serviceType
-                .TryMakeGenericType(
-                    out Type? closedServiceType, out _, argument)
-                && decoratorType
-                    .TryMakeGenericType(
-                    out Type? closedDecoratorType, out _, argument))
+            bool isService = serviceType.TryMakeGenericType(out Type? closedServiceType, out _, argument);
+            bool isDecorator = decoratorType.TryMakeGenericType(out Type? closedDecoratorType, out _, argument);
+            if (isService && isDecorator)
             {
                 _ = services.DecorateDescriptors(
-                    closedServiceType,
+                    closedServiceType!,
                     descriptor => descriptor
-                        .DecorateDescriptor(closedDecoratorType));
+                        .DecorateDescriptor(closedDecoratorType!));
             }
         }
 
@@ -527,7 +524,18 @@ public static class IServiceDecoratorExtensions
     internal static ServiceDescriptor[] GetServiceDescriptors(
          this IServiceCollection services,
          Type serviceType)
-         => [.. services.Where(service => service.ServiceType == serviceType)];
+    {
+        if (serviceType.IsGenericTypeDefinition)
+        {
+            // For open generic types (e.g., IEventHandler<>), match all closed implementations
+            return [.. services.Where(service =>
+                service.ServiceType.IsGenericType &&
+                service.ServiceType.GetGenericTypeDefinition() == serviceType)];
+        }
+
+        // For non-generic or closed generic types, do exact match
+        return [.. services.Where(service => service.ServiceType == serviceType)];
+    }
 
     internal static ServiceDescriptor WithFactory(
         this ServiceDescriptor descriptor,

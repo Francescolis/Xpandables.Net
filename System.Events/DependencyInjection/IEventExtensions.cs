@@ -22,6 +22,7 @@ using System.Events.Integration;
 using System.Reflection;
 
 using Microsoft.Extensions.DependencyInjection.Extensions;
+using Microsoft.Extensions.Logging;
 
 #pragma warning disable IDE0130 // Namespace does not match folder structure
 namespace Microsoft.Extensions.DependencyInjection;
@@ -105,6 +106,117 @@ public static class IEventExtensions
             ArgumentNullException.ThrowIfNull(services);
             services.TryAddScoped<IIntegrationEventEnricher, TIntegrationEventEnricher>();
             return services;
+        }
+
+        /// <summary>
+        /// Adds an inbox idempotency decorator for integration event handlers.
+        /// </summary>
+        /// <remarks>
+        /// <para>
+        /// Wraps <see cref="IEventHandler{TEvent}"/> registrations where:
+        /// <list type="bullet">
+        /// <item><c>TEvent</c> implements <see cref="IIntegrationEvent"/></item>
+        /// <item>The handler type implements <see cref="IInboxConsumer"/></item>
+        /// </list>
+        /// </para>
+        /// <para>
+        /// The decorator ensures idempotent event handling via <see cref="IInboxStore"/> 
+        /// by calling Receive/Complete/Fail around the inner handler.
+        /// Handlers that do not implement <see cref="IInboxConsumer"/> are not decorated.
+        /// </para>
+        /// </remarks>
+        /// <returns>The updated <see cref="IServiceCollection"/>.</returns>
+        [RequiresDynamicCode("Dynamic decorator construction uses MakeGenericType at runtime.")]
+        [RequiresUnreferencedCode("Dynamic decorator construction uses MakeGenericType at runtime.")]
+        public IServiceCollection AddXEventHandlerInboxDecorator()
+        {
+            ArgumentNullException.ThrowIfNull(services);
+
+            return services.XTryDecorate(
+                typeof(IEventHandler<>),
+                (service, provider) =>
+                {
+                    var handlerType = service.GetType();
+
+                    // Find the IEventHandler<TEvent> interface implemented by this handler
+                    var eventHandlerInterface = handlerType
+                        .GetInterfaces()
+                        .FirstOrDefault(i =>
+                            i.IsGenericType &&
+                            i.GetGenericTypeDefinition() == typeof(IEventHandler<>));
+
+                    if (eventHandlerInterface is null)
+                    {
+                        return service;
+                    }
+
+                    var eventType = eventHandlerInterface.GenericTypeArguments[0];
+
+                    // TEvent : class, IIntegrationEvent
+                    if (!typeof(IIntegrationEvent).IsAssignableFrom(eventType))
+                    {
+                        return service;
+                    }
+
+                    // TEventHandler : class, IEventHandler<TEvent>, IInboxConsumer
+                    if (!handlerType.IsClass
+                        || !typeof(IInboxConsumer).IsAssignableFrom(handlerType))
+                    {
+                        return service;
+                    }
+
+                    var closedDecorator = typeof(InboxEventHandlerDecorator<,>)
+                        .MakeGenericType(eventType, handlerType);
+
+                    return ActivatorUtilities.CreateInstance(
+                        provider,
+                        closedDecorator,
+                        service,
+                        provider.GetRequiredService<IInboxStore>(),
+                        provider.GetRequiredService(
+                            typeof(ILogger<>).MakeGenericType(closedDecorator)));
+                });
+            //return services.DecorateDescriptors(
+            //    typeof(IEventHandler<>),
+            //    descriptor =>
+            //    {
+            //        var eventType = descriptor.ServiceType.GenericTypeArguments[0];
+
+            //        // TEvent : class, IIntegrationEvent
+            //        if (!typeof(IIntegrationEvent).IsAssignableFrom(eventType))
+            //        {
+            //            return descriptor;
+            //        }
+
+            //        // Resolve the concrete handler type from the descriptor.
+            //        // Factory-based descriptors without a known implementation type cannot be decorated.
+            //        var handlerType = descriptor.ImplementationType
+            //            ?? descriptor.ImplementationInstance?.GetType();
+
+            //        // TEventHandler : class, IEventHandler<TEvent>, IInboxConsumer
+            //        if (handlerType is null
+            //            || !handlerType.IsClass
+            //            || !typeof(IInboxConsumer).IsAssignableFrom(handlerType))
+            //        {
+            //            return descriptor;
+            //        }
+
+            //        var closedDecorator = typeof(InboxEventHandlerDecorator<,>)
+            //            .MakeGenericType(eventType, handlerType);
+
+            //        return descriptor.WithFactory(provider =>
+            //        {
+            //            var handlerInstance = provider.GetInstance(descriptor);
+            //            var loggerType = typeof(ILogger<>).MakeGenericType(closedDecorator);
+
+            //            return ActivatorUtilities.CreateInstance(
+            //                provider,
+            //                closedDecorator,
+            //                handlerInstance,
+            //                provider.GetRequiredService<IInboxStore>(),
+            //                provider.GetRequiredService(loggerType));
+            //        });
+            //    });
         }
 
         /// <summary>

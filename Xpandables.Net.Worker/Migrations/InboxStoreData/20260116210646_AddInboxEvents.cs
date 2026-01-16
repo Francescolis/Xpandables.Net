@@ -2,10 +2,10 @@
 
 #nullable disable
 
-namespace Xpandables.Net.SampleApi.Migrations.OutboxStoreData;
+namespace Xpandables.Net.Worker.Migrations.InboxStoreData;
 
 /// <inheritdoc />
-public partial class AddIntegrationEvents : Migration
+public partial class AddInboxEvents : Migration
 {
     /// <inheritdoc />
     protected override void Up(MigrationBuilder migrationBuilder)
@@ -14,7 +14,7 @@ public partial class AddIntegrationEvents : Migration
             name: "Events");
 
         migrationBuilder.CreateTable(
-            name: "IntegrationEvents",
+            name: "InboxEvents",
             schema: "Events",
             columns: table => new
             {
@@ -23,47 +23,53 @@ public partial class AddIntegrationEvents : Migration
                 AttemptCount = table.Column<int>(type: "int", nullable: false, defaultValue: 0),
                 NextAttemptOn = table.Column<DateTime>(type: "datetime2", nullable: true),
                 ClaimId = table.Column<Guid>(type: "uniqueidentifier", nullable: true),
-                CausationId = table.Column<string>(type: "nvarchar(64)", nullable: true),
-                CorrelationId = table.Column<string>(type: "nvarchar(64)", nullable: true),
+                Consumer = table.Column<string>(type: "nvarchar(256)", maxLength: 256, nullable: false),
                 Status = table.Column<string>(type: "nvarchar(255)", maxLength: 255, nullable: false),
+                CausationId = table.Column<string>(type: "nvarchar(64)", maxLength: 64, nullable: true),
+                CorrelationId = table.Column<string>(type: "nvarchar(64)", maxLength: 64, nullable: true),
                 CreatedOn = table.Column<DateTime>(type: "datetime2", nullable: false),
                 UpdatedOn = table.Column<DateTime>(type: "datetime2", nullable: true),
                 DeletedOn = table.Column<DateTime>(type: "datetime2", nullable: true),
-                EventName = table.Column<string>(type: "nvarchar(255)", maxLength: 255, nullable: false),
-                EventData = table.Column<string>(type: "nvarchar(max)", nullable: false),
                 Sequence = table.Column<long>(type: "bigint", nullable: false)
                     .Annotation("SqlServer:Identity", "1, 1")
             },
-            constraints: table => table.PrimaryKey("PK_IntegrationEvents", x => x.KeyId));
+            constraints: table => table.PrimaryKey("PK_InboxEvents", x => x.KeyId));
 
         migrationBuilder.CreateIndex(
-            name: "IX_IntegrationEvent_ClaimId",
+            name: "IX_InboxEvent_ClaimId",
             schema: "Events",
-            table: "IntegrationEvents",
+            table: "InboxEvents",
             column: "ClaimId");
 
         migrationBuilder.CreateIndex(
-            name: "IX_IntegrationEvent_Processing",
+            name: "IX_InboxEvent_EventId_Consumer_Unique",
             schema: "Events",
-            table: "IntegrationEvents",
+            table: "InboxEvents",
+            columns: ["KeyId", "Consumer"],
+            unique: true);
+
+        migrationBuilder.CreateIndex(
+            name: "IX_InboxEvent_Processing",
+            schema: "Events",
+            table: "InboxEvents",
             columns: ["Status", "NextAttemptOn", "Sequence"]);
 
         migrationBuilder.CreateIndex(
-            name: "IX_IntegrationEvent_Retry",
+            name: "IX_InboxEvent_Retry",
             schema: "Events",
-            table: "IntegrationEvents",
+            table: "InboxEvents",
             columns: ["Status", "AttemptCount", "NextAttemptOn"]);
 
         migrationBuilder.CreateIndex(
-            name: "IX_IntegrationEvent_Status_NextAttemptOn",
+            name: "IX_InboxEvent_Status_NextAttemptOn",
             schema: "Events",
-            table: "IntegrationEvents",
+            table: "InboxEvents",
             columns: ["Status", "NextAttemptOn"]);
 
         migrationBuilder.CreateIndex(
-            name: "IX_IntegrationEvents_Sequence",
+            name: "IX_InboxEvents_Sequence",
             schema: "Events",
-            table: "IntegrationEvents",
+            table: "InboxEvents",
             column: "Sequence");
     }
 
@@ -71,7 +77,7 @@ public partial class AddIntegrationEvents : Migration
     protected override void Down(MigrationBuilder migrationBuilder)
     {
         migrationBuilder.DropTable(
-            name: "IntegrationEvents",
+            name: "InboxEvents",
             schema: "Events");
     }
 }

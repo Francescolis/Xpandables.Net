@@ -29,7 +29,7 @@ using Microsoft.EntityFrameworkCore.Storage.ValueConversion;
 namespace Xpandables.Net.SampleApi.Migrations
 {
     [DbContext(typeof(EventStoreDataContext))]
-    [Migration("20251227004802_AddDomainEvents")]
+    [Migration("20260116210235_AddDomainEvents")]
     partial class AddDomainEvents
     {
         /// <inheritdoc />
@@ -49,11 +49,13 @@ namespace Xpandables.Net.SampleApi.Migrations
                         .ValueGeneratedOnAdd()
                         .HasColumnType("uniqueidentifier");
 
-                    b.Property<Guid?>("CausationId")
-                        .HasColumnType("uniqueidentifier");
+                    b.Property<string>("CausationId")
+                        .HasMaxLength(64)
+                        .HasColumnType("nvarchar(64)");
 
-                    b.Property<Guid?>("CorrelationId")
-                        .HasColumnType("uniqueidentifier");
+                    b.Property<string>("CorrelationId")
+                        .HasMaxLength(64)
+                        .HasColumnType("nvarchar(64)");
 
                     b.Property<DateTime>("CreatedOn")
                         .HasColumnType("datetime2");
@@ -117,6 +119,14 @@ namespace Xpandables.Net.SampleApi.Migrations
                     b.Property<Guid>("KeyId")
                         .ValueGeneratedOnAdd()
                         .HasColumnType("uniqueidentifier");
+
+                    b.Property<string>("CausationId")
+                        .HasMaxLength(64)
+                        .HasColumnType("nvarchar(64)");
+
+                    b.Property<string>("CorrelationId")
+                        .HasMaxLength(64)
+                        .HasColumnType("nvarchar(64)");
 
                     b.Property<DateTime>("CreatedOn")
                         .HasColumnType("datetime2");

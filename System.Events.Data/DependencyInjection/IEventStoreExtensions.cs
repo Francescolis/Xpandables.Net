@@ -245,5 +245,86 @@ public static class IEventStoreExtensions
                 .AddXOutboxStoreDataContextFactory()
                 .AddXOutboxStoreOfType<EntityEventOutbox>();
         }
+
+        /// <summary>
+        /// Adds the <see cref="InboxStoreDataContext"/> to the service collection with the specified options.
+        /// </summary>
+        /// <param name="optionAction">An action to configure the <see cref="DbContextOptionsBuilder"/>.</param>
+        /// <returns>The same service collection so that multiple calls can be chained.</returns>
+        [RequiresUnreferencedCode("This context may be used with unreferenced code.")]
+        public IServiceCollection AddXInboxStoreDataContext(Action<DbContextOptionsBuilder> optionAction)
+        {
+            ArgumentNullException.ThrowIfNull(services);
+            return services.AddXEventDataContext<InboxStoreDataContext>(optionAction);
+        }
+
+        /// <summary>
+        /// Adds the specified implementation of the <see cref="IInboxStoreDataContextFactory"/> interface 
+        /// to the service collection with scoped lifetime.
+        /// </summary>
+        /// <typeparam name="TInboxStoreDataContextFactory">The type that implements <see cref="IInboxStoreDataContextFactory"/> to register.</typeparam>
+        /// <returns>The <see cref="IServiceCollection"/> instance for chaining further configuration.</returns>
+        public IServiceCollection AddXInboxStoreDataContextFactory<[DynamicallyAccessedMembers(DynamicallyAccessedMemberTypes.PublicConstructors)] TInboxStoreDataContextFactory>()
+            where TInboxStoreDataContextFactory : class, IInboxStoreDataContextFactory
+        {
+            ArgumentNullException.ThrowIfNull(services);
+            services.TryAddScoped<IInboxStoreDataContextFactory, TInboxStoreDataContextFactory>();
+            return services;
+        }
+
+        /// <summary>
+        /// Adds the default implementation of the <see cref="IInboxStoreDataContextFactory"/> to the service 
+        /// collection with scoped lifetime.
+        /// </summary>
+        /// <returns>The <see cref="IServiceCollection"/> instance with the <see cref="IInboxStoreDataContextFactory"/> service registered.</returns>
+        public IServiceCollection AddXInboxStoreDataContextFactory()
+        {
+            ArgumentNullException.ThrowIfNull(services);
+            services.TryAddScoped<IInboxStoreDataContextFactory, InboxStoreDataContextFactory>();
+            return services;
+        }
+
+        /// <summary>
+        /// Registers the specified inbox store implementation as a scoped service in the dependency injection container.
+        /// </summary>
+        /// <typeparam name="TInboxStore">The type of inbox store to register. Must implement <see cref="IInboxStore"/>.</typeparam>
+        /// <returns>The same <see cref="IServiceCollection"/> instance, enabling method chaining.</returns>
+        public IServiceCollection AddXInboxStore<[DynamicallyAccessedMembers(DynamicallyAccessedMemberTypes.PublicConstructors)] TInboxStore>()
+            where TInboxStore : class, IInboxStore
+        {
+            ArgumentNullException.ThrowIfNull(services);
+            services.TryAddScoped<IInboxStore, TInboxStore>();
+            return services;
+        }
+
+        /// <summary>
+        /// Adds the <see cref="InboxStore{TEntityEventInbox}"/> implementation of <see cref="IInboxStore"/>
+        /// for the specified entity type.
+        /// </summary>
+        /// <typeparam name="TEntityEventInbox">The inbox entity type. Must implement <see cref="IEntityEventInbox"/>.</typeparam>
+        /// <returns>The updated <see cref="IServiceCollection"/> instance.</returns>
+        public IServiceCollection AddXInboxStoreOfType<[DynamicallyAccessedMembers(EntityEvent.DynamicallyAccessedMemberTypes)] TEntityEventInbox>()
+            where TEntityEventInbox : class, IEntityEventInbox
+        {
+            ArgumentNullException.ThrowIfNull(services);
+            return services.AddXInboxStore<InboxStore<TEntityEventInbox>>();
+        }
+
+        /// <summary>
+        /// Adds the default inbox store for handling integration event idempotency to the service collection.
+        /// </summary>
+        /// <remarks>
+        /// This method registers the inbox store using the default event type <see cref="EntityEventInbox"/>.
+        /// The inbox pattern ensures exactly-once delivery by deduplicating incoming events based on 
+        /// (EventId, Consumer) composite key.
+        /// </remarks>
+        /// <returns>The <see cref="IServiceCollection"/> instance with the inbox store services registered.</returns>
+        public IServiceCollection AddXInboxStore()
+        {
+            ArgumentNullException.ThrowIfNull(services);
+            return services
+                .AddXInboxStoreDataContextFactory()
+                .AddXInboxStoreOfType<EntityEventInbox>();
+        }
     }
 }

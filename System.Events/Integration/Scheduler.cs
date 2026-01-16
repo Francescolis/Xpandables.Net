@@ -366,22 +366,22 @@ public sealed class Scheduler : Disposable, IScheduler
     [MethodImpl(MethodImplOptions.AggressiveInlining)]
     private void HandleSchedulerException(Exception exception)
     {
-        _consecutiveFailures++;
+        var failures = Interlocked.Increment(ref _consecutiveFailures);
         _metrics.IncrementError();
 
-        LogSchedulerExecutionFailed(_logger, _consecutiveFailures, exception);
+        LogSchedulerExecutionFailed(_logger, failures, exception);
 
         if (_circuitBreakerState != CircuitBreakerState.Open)
         {
-            Interlocked.Increment(ref _circuitBreakerFailureCount);
+            var failureCount = Interlocked.Increment(ref _circuitBreakerFailureCount);
 
-            if (_circuitBreakerFailureCount >= _options.CircuitBreakerFailureThreshold)
+            if (failureCount >= _options.CircuitBreakerFailureThreshold)
             {
                 _circuitBreakerState = CircuitBreakerState.Open;
                 var currentTime = DateTime.UtcNow;
                 _circuitBreakerLastFailureTimeProvider = () => currentTime;
 
-                LogCircuitBreakerOpened(_logger, _circuitBreakerFailureCount, null);
+                LogCircuitBreakerOpened(_logger, failureCount, null);
             }
         }
 
@@ -390,9 +390,9 @@ public sealed class Scheduler : Disposable, IScheduler
 
     private void HandlePartialFailure(int errorCount)
     {
-        if (errorCount > _options.BatchSize * 0.5) // More than 50% failed
+        if (errorCount > _options.BatchSize * 0.5)
         {
-            _consecutiveFailures++;
+            Interlocked.Increment(ref _consecutiveFailures);
             CalculateBackoffDelay();
         }
     }
@@ -403,7 +403,7 @@ public sealed class Scheduler : Disposable, IScheduler
         if (_circuitBreakerState == CircuitBreakerState.HalfOpen)
         {
             _circuitBreakerState = CircuitBreakerState.Closed;
-            _circuitBreakerFailureCount = 0;
+            Interlocked.Exchange(ref _circuitBreakerFailureCount, 0);
             LogCircuitBreakerClosed(_logger, null);
         }
         else if (_circuitBreakerState == CircuitBreakerState.Closed)
@@ -449,13 +449,8 @@ public sealed class Scheduler : Disposable, IScheduler
     }
 
     [MethodImpl(MethodImplOptions.AggressiveInlining)]
-    private void ResetBackoffDelay()
-    {
-        if (_consecutiveFailures > 0)
-        {
-            _consecutiveFailures = 0;
-        }
-    }
+    private void ResetBackoffDelay() =>
+        Interlocked.Exchange(ref _consecutiveFailures, 0);
 
     private void AdjustConcurrencyLimiter(int oldMaxConcurrency, int newMaxConcurrency)
     {

@@ -134,13 +134,13 @@ app.UseSwagger()
     });
 
 
-using (var scope = app.Services.CreateScope())
-{
-    var eventDb = scope.ServiceProvider.GetRequiredService<EventStoreDataContext>();
-    var outboxDb = scope.ServiceProvider.GetRequiredService<OutboxStoreDataContext>();
-    await eventDb.Database.MigrateAsync().ConfigureAwait(false);
-    await outboxDb.Database.MigrateAsync().ConfigureAwait(false);
-}
+//using (var scope = app.Services.CreateScope())
+//{
+//    var eventDb = scope.ServiceProvider.GetRequiredService<EventStoreDataContext>();
+//    var outboxDb = scope.ServiceProvider.GetRequiredService<OutboxStoreDataContext>();
+//    await eventDb.Database.MigrateAsync().ConfigureAwait(false);
+//    await outboxDb.Database.MigrateAsync().ConfigureAwait(false);
+//}
 
 app.UseXEventContextMiddleware();
 app.UseXResultMiddleware();

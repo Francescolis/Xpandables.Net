@@ -15,6 +15,7 @@
  *
 ********************************************************************************/
 using System.Events;
+using System.Events.Integration;
 
 using Microsoft.EntityFrameworkCore;
 
@@ -23,8 +24,11 @@ using Xpandables.Net.Worker.CrossEvents;
 namespace Xpandables.Net.Worker.ReadStorage;
 
 public sealed class MoneyDepositWithdrawIntegrationEventHandler(BankAccountDataContext context) :
-    IEventHandler<MoneyDepositWithdrawIntegrationEvent>
+    IEventHandler<MoneyDepositWithdrawIntegrationEvent>, IInboxConsumer
 {
+    public string Consumer => typeof(MoneyDepositWithdrawIntegrationEventHandler).FullName ??
+        nameof(MoneyDepositWithdrawIntegrationEventHandler);
+
     public async Task HandleAsync(MoneyDepositWithdrawIntegrationEvent eventInstance, CancellationToken cancellationToken = default)
     {
         await context.BankAccounts

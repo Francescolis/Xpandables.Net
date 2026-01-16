@@ -29,13 +29,11 @@ namespace System.Events.Data;
 /// <typeparam name="TEntityEventInbox">Inbox entity type.</typeparam>
 public sealed class InboxStore<[DynamicallyAccessedMembers(EntityEvent.DynamicallyAccessedMemberTypes)] TEntityEventInbox>(
     IInboxStoreDataContextFactory inboxStoreDataContextFactory,
-    IEventConverterFactory converterFactory,
-    IIntegrationEventEnricher eventEnricher) : IInboxStore
+    IEventConverterFactory converterFactory) : IInboxStore
     where TEntityEventInbox : class, IEntityEventInbox
 {
     private readonly EventDataContext _db = inboxStoreDataContextFactory.Create();
     private readonly IEventConverterFactory _converterFactory = converterFactory;
-    private readonly IIntegrationEventEnricher _eventEnricher = eventEnricher;
     private readonly IEventConverter<TEntityEventInbox, IIntegrationEvent> _converter =
         converterFactory.GetInboxEventConverter<TEntityEventInbox>();
 
@@ -76,21 +74,14 @@ public sealed class InboxStore<[DynamicallyAccessedMembers(EntityEvent.Dynamical
             }
         }
 
-        var enriched = _eventEnricher.Enrich(@event);
-        var entity = _converter.ConvertEventToEntity(enriched, _converterFactory.ConverterContext);
+        TEntityEventInbox entity = _converter.ConvertEventToEntity(@event, _converterFactory.ConverterContext);
         entity.SetStatus(EntityStatus.PROCESSING);
-        entity = entity switch
-        {
-            TEntityEventInbox typed => typed,
-            _ => throw new InvalidOperationException($"Expected entity convertible to {typeof(TEntityEventInbox).Name}.")
-        };
-
         entity.Consumer = consumer;
         entity.ClaimId = Guid.NewGuid();
         entity.NextAttemptOn = DateTime.UtcNow.Add(visibilityTimeout ?? TimeSpan.FromMinutes(5));
 
         await _db.AddAsync(entity, cancellationToken).ConfigureAwait(false);
-        // SaveChanges is intentionally deferred to the caller's unit of work.
+        await _db.SaveChangesAsync(cancellationToken).ConfigureAwait(false);
 
         return new InboxReceiveResult(@event.EventId, EntityStatus.ACCEPTED);
     }
@@ -104,16 +95,21 @@ public sealed class InboxStore<[DynamicallyAccessedMembers(EntityEvent.Dynamical
         ArgumentOutOfRangeException.ThrowIfEqual(events.Length, 0);
 
         var now = DateTime.UtcNow;
-        await _db.Set<TEntityEventInbox>()
-            .Where(e => events.Any(evt => evt.EventId == e.KeyId && evt.Consumer == e.Consumer))
-            .ExecuteUpdateAsync(updater => updater
-                .SetProperty(e => e.Status, EntityStatus.PUBLISHED.Value)
-                .SetProperty(e => e.ErrorMessage, (string?)null)
-                .SetProperty(e => e.AttemptCount, e => e.AttemptCount)
-                .SetProperty(e => e.NextAttemptOn, (DateTime?)null)
-                .SetProperty(e => e.ClaimId, (Guid?)null)
-                .SetProperty(e => e.UpdatedOn, now), cancellationToken)
-            .ConfigureAwait(false);
+        var set = _db.Set<TEntityEventInbox>();
+
+        foreach (var evt in events)
+        {
+            await set
+                .Where(e => e.KeyId == evt.EventId && e.Consumer == evt.Consumer)
+                .ExecuteUpdateAsync(updater => updater
+                    .SetProperty(e => e.Status, EntityStatus.PUBLISHED.Value)
+                    .SetProperty(e => e.ErrorMessage, (string?)null)
+                    .SetProperty(e => e.AttemptCount, e => e.AttemptCount)
+                    .SetProperty(e => e.NextAttemptOn, (DateTime?)null)
+                    .SetProperty(e => e.ClaimId, (Guid?)null)
+                    .SetProperty(e => e.UpdatedOn, now), cancellationToken)
+                .ConfigureAwait(false);
+        }
     }
 
     /// <inheritdoc />
@@ -143,7 +139,14 @@ public sealed class InboxStore<[DynamicallyAccessedMembers(EntityEvent.Dynamical
                             .SetProperty(e => e.Status, EntityStatus.ONERROR.Value)
                             .SetProperty(e => e.ErrorMessage, failure.Error)
                             .SetProperty(e => e.AttemptCount, e => e.AttemptCount + 1)
-                            .SetProperty(e => e.NextAttemptOn, e => now.AddSeconds(Math.Min(600, 10 * Math.Pow(2, Math.Min(10, e.AttemptCount)))))
+                            .SetProperty(e => e.NextAttemptOn, e => now.AddSeconds(
+                                e.AttemptCount < 1 ? 10 :
+                                e.AttemptCount < 2 ? 20 :
+                                e.AttemptCount < 3 ? 40 :
+                                e.AttemptCount < 4 ? 80 :
+                                e.AttemptCount < 5 ? 160 :
+                                e.AttemptCount < 6 ? 320 :
+                                600))
                             .SetProperty(e => e.ClaimId, (Guid?)null)
                             .SetProperty(e => e.UpdatedOn, now), cancellationToken)
                         .ConfigureAwait(false);

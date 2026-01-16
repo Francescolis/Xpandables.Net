@@ -15,13 +15,18 @@
  *
 ********************************************************************************/
 using System.Events;
+using System.Events.Integration;
 
 using Xpandables.Net.Worker.CrossEvents;
 
 namespace Xpandables.Net.Worker.ReadStorage;
 
-public sealed class BankAccountCreatedIntegrationEventHandler(BankAccountDataContext context) : IEventHandler<BankAccountCreateIntegrationEvent>
+public sealed class BankAccountCreatedIntegrationEventHandler(BankAccountDataContext context) :
+    IEventHandler<BankAccountCreateIntegrationEvent>, IInboxConsumer
 {
+    public string Consumer => typeof(BankAccountCreatedIntegrationEventHandler).FullName ??
+        nameof(BankAccountCreatedIntegrationEventHandler);
+
     public async Task HandleAsync(BankAccountCreateIntegrationEvent eventInstance, CancellationToken cancellationToken = default)
     {
         BankAccountEntity bankAccount = new()

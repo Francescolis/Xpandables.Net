@@ -8,7 +8,7 @@ using Microsoft.EntityFrameworkCore.Storage.ValueConversion;
 
 #nullable disable
 
-namespace Xpandables.Net.SampleApi.Migrations.OutboxStoreData
+namespace Xpandables.Net.Worker.Migrations
 {
     [DbContext(typeof(OutboxStoreDataContext))]
     partial class OutboxStoreDataContextModelSnapshot : ModelSnapshot

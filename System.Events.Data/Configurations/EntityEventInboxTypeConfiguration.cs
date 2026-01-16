@@ -43,10 +43,13 @@ public sealed class EntityEventInboxTypeConfiguration : EntityEventTypeConfigura
 
         builder.Ignore(e => e.EventData);
         builder.Ignore(e => e.EventName);
-        builder.Ignore(e => e.EventData);
 
         builder.Property(e => e.UpdatedOn)
                .IsConcurrencyToken();
+
+        builder.HasIndex(e => new { e.KeyId, e.Consumer })
+               .IsUnique()
+               .HasDatabaseName("IX_InboxEvent_EventId_Consumer_Unique");
 
         builder.HasIndex(e => new { e.Status, e.NextAttemptOn })
                .HasDatabaseName("IX_InboxEvent_Status_NextAttemptOn");

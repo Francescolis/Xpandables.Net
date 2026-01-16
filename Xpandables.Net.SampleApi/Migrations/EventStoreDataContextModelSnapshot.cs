@@ -47,9 +47,11 @@ namespace Xpandables.Net.SampleApi.Migrations
                         .HasColumnType("uniqueidentifier");
 
                     b.Property<string>("CausationId")
+                        .HasMaxLength(64)
                         .HasColumnType("nvarchar(64)");
 
                     b.Property<string>("CorrelationId")
+                        .HasMaxLength(64)
                         .HasColumnType("nvarchar(64)");
 
                     b.Property<DateTime>("CreatedOn")
@@ -116,9 +118,11 @@ namespace Xpandables.Net.SampleApi.Migrations
                         .HasColumnType("uniqueidentifier");
 
                     b.Property<string>("CausationId")
+                        .HasMaxLength(64)
                         .HasColumnType("nvarchar(64)");
 
                     b.Property<string>("CorrelationId")
+                        .HasMaxLength(64)
                         .HasColumnType("nvarchar(64)");
 
                     b.Property<DateTime>("CreatedOn")

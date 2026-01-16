@@ -23,6 +23,18 @@ builder.Services.AddXOutboxStoreDataContext(options =>
         .EnableServiceProviderCaching()
         .ReplaceService<IModelCustomizer, OutboxStoreSqlServerModelCustomizer>());
 
+builder.Services.AddXInboxStoreDataContext(options =>
+    options
+        .UseSqlServer(builder.Configuration.GetConnectionString("EventStoreDb"),
+        options => options
+            .EnableRetryOnFailure()
+            .UseQuerySplittingBehavior(QuerySplittingBehavior.SplitQuery)
+            .MigrationsHistoryTable("__InboxStoreMigrations")
+            .MigrationsAssembly("Xpandables.Net.Worker"))
+        .EnableDetailedErrors()
+        .EnableSensitiveDataLogging()
+        .EnableServiceProviderCaching());
+
 builder.Services.AddXDataContext<BankAccountDataContext>(options =>
     options
         .UseSqlServer(builder.Configuration.GetConnectionString("ReadStoreDb"),
@@ -38,15 +50,18 @@ builder.Services.AddXDataContext<BankAccountDataContext>(options =>
 builder.Services
     .AddXJsonSerializerOptions()
     .AddXEventHandlers()
+    .AddXEventHandlerInboxDecorator()
     .AddXEventConverterContext()
     .AddXEventPublisher()
     .AddXOutboxStore()
+    .AddXInboxStore()
     .AddXEventConverterFactory()
     .AddXCacheTypeResolver([typeof(Program).Assembly])
     .AddXScheduler()
     .AddXHostedScheduler()
     .AddXEventContextAccessor()
     .AddXIntegrationEventEnricher()
+    .AddXInboxStoreDataContextFactory()
     .AddXOutboxStoreDataContextFactory();
 
 builder.Services.Configure<JsonOptions>(options =>
@@ -62,8 +77,10 @@ using (var scope = host.Services.CreateScope())
 {
     var outboxDb = scope.ServiceProvider.GetRequiredService<OutboxStoreDataContext>();
     var readDb = scope.ServiceProvider.GetRequiredService<BankAccountDataContext>();
+    var inboxDb = scope.ServiceProvider.GetRequiredService<InboxStoreDataContext>();
     await outboxDb.Database.MigrateAsync().ConfigureAwait(false);
     await readDb.Database.MigrateAsync().ConfigureAwait(false);
+    await inboxDb.Database.MigrateAsync().ConfigureAwait(false);
 }
 
 await host.RunAsync();
