@@ -89,7 +89,6 @@ public class DataContext : DbContext
     /// </summary>
     public override void Dispose()
     {
-        // Unsubscribe from events to prevent memory leaks
         ChangeTracker.Tracked -= OnEntityTracked;
         ChangeTracker.StateChanged -= OnEntityStateChanged;
 

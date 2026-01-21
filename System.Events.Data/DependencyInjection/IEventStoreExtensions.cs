@@ -15,6 +15,7 @@
  *
 ********************************************************************************/
 using System.Diagnostics.CodeAnalysis;
+using System.Entities.Data;
 using System.Events.Data;
 using System.Events.Domain;
 using System.Events.Integration;
@@ -52,7 +53,7 @@ public static class IEventStoreExtensions
             Action<DbContextOptionsBuilder>? optionsAction = null,
             ServiceLifetime contextLifetime = ServiceLifetime.Scoped,
             ServiceLifetime optionsLifetime = ServiceLifetime.Scoped)
-            where TDataContext : EventDataContext =>
+            where TDataContext : DataContext =>
             services.AddDbContext<TDataContext>(
                 optionsAction, contextLifetime, optionsLifetime);
 

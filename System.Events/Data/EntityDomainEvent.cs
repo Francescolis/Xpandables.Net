@@ -14,16 +14,19 @@
  * limitations under the License.
  *
 ********************************************************************************/
-
 namespace System.Events.Data;
 
 /// <summary>
-/// Represents a snapshot of an event entity.
+/// Represents a class for event entities in a domain context.
 /// </summary>
-public sealed class EntitySnapshotEvent : EntityEvent, IEntityEventSnapshot
+public sealed class EntityDomainEvent : EntityEvent, IEntityEventDomain
 {
-    /// <summary>
-    /// Gets the owner of the event entity snapshot.
-    /// </summary>
-    public required Guid OwnerId { get; init; }
+    /// <inheritdoc />
+    public required Guid StreamId { get; init; }
+
+    /// <inheritdoc />
+    public required long StreamVersion { get; init; }
+
+    /// <inheritdoc />
+    public required string StreamName { get; init; }
 }

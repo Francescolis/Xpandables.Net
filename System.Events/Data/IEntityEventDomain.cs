@@ -14,33 +14,29 @@
  * limitations under the License.
  *
 ********************************************************************************/
-
 namespace System.Events.Data;
 
 /// <summary>
-/// Represents an integration for handling entity events with error information.
+/// Defines the contract for an event that is associated with a specific stream and version within a domain-driven
+/// design context.
 /// </summary>
-/// <remarks>This interface extends <see cref="IEntityEvent"/> to include error handling capabilities.
-/// Implementations should provide the error message associated with the event entity, if any.</remarks>
-public interface IEntityEventOutbox : IEntityEvent
+/// <remarks>Implementations of this interface represent events that are part of an event stream, typically used
+/// in event sourcing or domain event scenarios. The interface provides access to the stream's unique identifier,
+/// version, and name, enabling consumers to track and process events in the correct order and context.</remarks>
+public interface IEntityEventDomain : IEntityEvent
 {
     /// <summary>
-    /// Gets the error message associated with the event entity.
+    /// Gets the unique identifier for the stream.
     /// </summary>
-    string? ErrorMessage { get; }
+    Guid StreamId { get; }
 
     /// <summary>
-    /// Gets the number of publish attempts made for the current operation.
+    /// Gets the stream version of the event.
     /// </summary>
-    int AttemptCount { get; }
+    long StreamVersion { get; }
 
     /// <summary>
-    /// When the next attempt should be made to process the event.
+    /// Gets the name of the stream associated with this instance.
     /// </summary>
-    DateTime? NextAttemptOn { get; }
-
-    /// <summary>
-    /// Identifier of the scheduler instance that claims the event for processing.
-    /// </summary>
-    Guid? ClaimId { get; }
+    string StreamName { get; init; }
 }

@@ -16,6 +16,7 @@
 ********************************************************************************/
 using System.Diagnostics.CodeAnalysis;
 using System.Entities;
+using System.Entities.Data;
 using System.Events.Domain;
 using System.Runtime.CompilerServices;
 
@@ -37,8 +38,8 @@ public sealed class EventStore<[DynamicallyAccessedMembers(EntityEvent.Dynamical
     where TEntityEventDomain : class, IEntityEventDomain
     where TEntityEventSnapshot : class, IEntityEventSnapshot
 {
-    private readonly EventDataContext _db;
-    private readonly EventDataContext _outbox;
+    private readonly DataContext _db;
+    private readonly DataContext _outbox;
     private readonly IEventConverterFactory _converterFactory;
     private readonly IEventConverter<TEntityEventDomain, IDomainEvent> _domainConveter;
     private readonly IEventConverter<TEntityEventSnapshot, ISnapshotEvent> _snapshotConverter;
@@ -358,7 +359,7 @@ public sealed class EventStore<[DynamicallyAccessedMembers(EntityEvent.Dynamical
     // Subscription implementation for a single stream
     private sealed class StreamSubscription : IAsyncDisposable
     {
-        private readonly EventDataContext _context;
+        private readonly DataContext _context;
         private readonly SubscribeToStreamRequest _request;
         private readonly IEventConverterFactory _converterFactory;
         private readonly IEventConverter<TEntityEventDomain, IDomainEvent> _domainConverter;
@@ -366,7 +367,7 @@ public sealed class EventStore<[DynamicallyAccessedMembers(EntityEvent.Dynamical
         private readonly Task _subscriptionTask;
 
         public StreamSubscription(
-            EventDataContext context,
+            DataContext context,
             SubscribeToStreamRequest request,
             IEventConverterFactory converterFactory,
             IEventConverter<TEntityEventDomain, IDomainEvent> domainConverter,
@@ -434,7 +435,7 @@ public sealed class EventStore<[DynamicallyAccessedMembers(EntityEvent.Dynamical
     // Subscription implementation for all streams
     private sealed class AllStreamsSubscription : IAsyncDisposable
     {
-        private readonly EventDataContext _context;
+        private readonly DataContext _context;
         private readonly SubscribeToAllStreamsRequest _request;
         private readonly IEventConverter<TEntityEventDomain, IDomainEvent> _domainConverter;
         private readonly IEventConverterFactory _converterFactory;
@@ -442,7 +443,7 @@ public sealed class EventStore<[DynamicallyAccessedMembers(EntityEvent.Dynamical
         private readonly Task _subscriptionTask;
 
         public AllStreamsSubscription(
-            EventDataContext context,
+            DataContext context,
             SubscribeToAllStreamsRequest request,
             IEventConverter<TEntityEventDomain, IDomainEvent> domainConverter,
             IEventConverterFactory converterFactory,

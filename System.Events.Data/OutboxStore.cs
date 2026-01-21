@@ -16,6 +16,7 @@
 ********************************************************************************/
 using System.Diagnostics.CodeAnalysis;
 using System.Entities;
+using System.Entities.Data;
 using System.Events.Integration;
 
 using Microsoft.EntityFrameworkCore;
@@ -40,7 +41,7 @@ public sealed class OutboxStore<[DynamicallyAccessedMembers(EntityEvent.Dynamica
     IIntegrationEventEnricher eventEnricher) : IOutboxStore
     where TEntityEventOutbox : class, IEntityEventOutbox
 {
-    private readonly EventDataContext _db = outboxStoreDataContextFactory.Create();
+    private readonly DataContext _db = outboxStoreDataContextFactory.Create();
     private readonly IEventConverterFactory _converterFactory = converterFactory;
     private readonly IIntegrationEventEnricher _eventEnricher = eventEnricher;
     private readonly IEventConverter<TEntityEventOutbox, IIntegrationEvent> _converter = converterFactory

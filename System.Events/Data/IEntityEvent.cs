@@ -14,7 +14,6 @@
  * limitations under the License.
  *
 ********************************************************************************/
-
 using System.Text.Json;
 
 namespace System.Events.Data;

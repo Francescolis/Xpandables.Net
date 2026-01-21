@@ -16,6 +16,7 @@
 ********************************************************************************/
 using System.Diagnostics.CodeAnalysis;
 using System.Entities;
+using System.Entities.Data;
 using System.Events.Integration;
 
 using Microsoft.EntityFrameworkCore;
@@ -32,7 +33,7 @@ public sealed class InboxStore<[DynamicallyAccessedMembers(EntityEvent.Dynamical
     IEventConverterFactory converterFactory) : IInboxStore
     where TEntityEventInbox : class, IEntityEventInbox
 {
-    private readonly EventDataContext _db = inboxStoreDataContextFactory.Create();
+    private readonly DataContext _db = inboxStoreDataContextFactory.Create();
     private readonly IEventConverterFactory _converterFactory = converterFactory;
     private readonly IEventConverter<TEntityEventInbox, IIntegrationEvent> _converter =
         converterFactory.GetInboxEventConverter<TEntityEventInbox>();

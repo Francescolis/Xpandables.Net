@@ -15,6 +15,7 @@
  *
 ********************************************************************************/
 using System.Diagnostics.CodeAnalysis;
+using System.Entities.Data;
 
 namespace System.Events.Data;
 
@@ -30,14 +31,14 @@ public interface IInboxStoreDataContextFactory
     /// Creates a new instance of the EventDataContext for interacting with event data.
     /// </summary>
     /// <returns>An EventDataContext instance that can be used to query and manipulate event data.</returns>
-    EventDataContext Create();
+    DataContext Create();
 }
 
 [SuppressMessage("Performance", "CA1812", Justification = "Instantiated via dependency injection or reflection.")]
 internal sealed class InboxStoreDataContextFactory(InboxStoreDataContext context) : IInboxStoreDataContextFactory
 {
-    private readonly EventDataContext _context = context ?? throw new ArgumentNullException(nameof(context));
+    private readonly DataContext _context = context ?? throw new ArgumentNullException(nameof(context));
 
     /// <inheritdoc />
-    public EventDataContext Create() => _context;
+    public DataContext Create() => _context;
 }
