@@ -29,6 +29,7 @@ Built for **.NET 10** and **C# 14**.
 - 📨 **`IDomainEvent`** — Domain events with stream versioning, causation/correlation, and metadata
 - 🔗 **`IIntegrationEvent`** — Integration events for cross-service communication
 - 📤 **`IOutboxStore`** — Transactional outbox pattern for reliable event delivery
+- 📥 **`IInboxStore`** — Inbox pattern for exactly-once event consumption (idempotency)
 - 📢 **`IEventPublisher`** — Publish/subscribe with multiple registry modes (Static, Dynamic, Composite)
 - ⏰ **`IScheduler`** — Background scheduler for processing pending events
 - 🌐 **W3C Compatible IDs** — `CorrelationId` and `CausationId` are `string?` for W3C trace context support
@@ -608,6 +609,116 @@ The composite publisher will execute both the in-process dispatch and bus publis
 
 ---
 
+## 📥 Inbox Pattern (Exactly-Once Consumption)
+
+The **Inbox pattern** complements the Outbox pattern by ensuring **exactly-once** processing of incoming integration events. It prevents duplicate handling when events are delivered multiple times (at-least-once delivery).
+
+### How It Works
+
+1. When an integration event arrives, the inbox records it with a `(EventId, Consumer)` key
+2. If the event was already processed (status = `PUBLISHED`), handling is skipped
+3. If processing is in progress (status = `PROCESSING`), handling is skipped
+4. On success, the event is marked as `PUBLISHED`
+5. On failure, the event is marked as `ONERROR` with exponential backoff for retry
+
+### Define an Inbox-Enabled Event Handler
+
+Implement `IInboxConsumer` on your event handler to enable inbox idempotency:
+
+```csharp
+using System.Events;
+using System.Events.Integration;
+
+public sealed class OrderPlacedEventHandler : IEventHandler<OrderPlacedIntegrationEvent>, IInboxConsumer
+{
+    // Logical consumer name used as part of the idempotency key
+    public string Consumer => "OrderService.OrderPlacedHandler";
+
+    public async Task HandleAsync(OrderPlacedIntegrationEvent eventInstance, CancellationToken cancellationToken)
+    {
+        // This handler is guaranteed to execute at most once per (EventId, Consumer) pair
+        Console.WriteLine($"Processing order {eventInstance.OrderId}");
+
+        // Perform side effects: update database, send notifications, etc.
+        await Task.CompletedTask;
+    }
+}
+```
+
+### Register the Inbox Decorator
+
+```csharp
+using Microsoft.Extensions.DependencyInjection;
+
+var builder = WebApplication.CreateBuilder(args);
+
+// Register event handlers
+builder.Services.AddXEventHandlers(typeof(Program).Assembly);
+
+// Add inbox decorator for handlers implementing IInboxConsumer
+builder.Services.AddXEventHandlerInboxDecorator();
+
+// Register inbox store (from System.Events.Data)
+builder.Services.AddXInboxStore();
+```
+
+### IInboxStore Interface
+
+```csharp
+using System.Events.Integration;
+
+// The inbox store provides three operations:
+public interface IInboxStore
+{
+    // Register event for processing (returns status indicating if handler should proceed)
+    Task<InboxReceiveResult> ReceiveAsync(
+        IIntegrationEvent @event,
+        string consumer,
+        TimeSpan? visibilityTimeout = default,
+        CancellationToken cancellationToken = default);
+
+    // Mark event as successfully processed
+    Task CompleteAsync(CancellationToken cancellationToken, params CompletedInboxEvent[] events);
+
+    // Mark event as failed (with automatic retry scheduling)
+    Task FailAsync(CancellationToken cancellationToken, params FailedInboxEvent[] failures);
+}
+```
+
+### Inbox Status Flow
+
+```
+┌─────────────┐     ReceiveAsync     ┌─────────────┐
+│   (new)     │ ──────────────────►  │  PROCESSING │
+└─────────────┘                      └──────┬──────┘
+                                            │
+                        ┌───────────────────┴───────────────────┐
+                        │                                       │
+                        ▼                                       ▼
+               ┌─────────────┐                         ┌─────────────┐
+               │  PUBLISHED  │◄─── CompleteAsync       │   ONERROR   │◄─── FailAsync
+               │  (success)  │                         │  (retry)    │
+               └─────────────┘                         └──────┬──────┘
+                    │                                         │
+                    │                                         │ (after visibility timeout)
+                    ▼                                         ▼
+               ┌─────────────┐                         ┌─────────────┐
+               │  DUPLICATE  │◄─── ReceiveAsync        │  PROCESSING │◄─── ReceiveAsync (retry)
+               │  (skipped)  │     (same EventId)      └─────────────┘
+               └─────────────┘
+```
+
+### Why Use Both Outbox and Inbox?
+
+| Pattern | Purpose | Guarantees |
+|---------|---------|------------|
+| **Outbox** | Reliable event **publishing** | At-least-once delivery |
+| **Inbox** | Reliable event **consumption** | Exactly-once processing |
+
+Together, they provide **exactly-once semantics** for distributed event-driven systems.
+
+---
+
 ## ⏰ Background Scheduler
 
 ### Register Hosted Scheduler
@@ -661,6 +772,7 @@ public sealed class OutboxProcessorScheduler : IScheduler
 | `AddXEventPublisher<T>()` | Registers custom event publisher |
 | `AddXEventBus<T>()` | Registers an external bus (`IEventBus`) and a publisher for integration events |
 | `AddXCompositeEventPublisher()` | Registers a composite publisher (in-process + external bus fan-out) |
+| `AddXEventHandlerInboxDecorator()` | Decorates `IInboxConsumer` handlers with inbox idempotency |
 | `AddXEventContext()` | Registers `IEventContextAccessor` backed by `AsyncLocal` |
 
 ---

@@ -15,7 +15,6 @@
  *
 ********************************************************************************/
 
-using System.Collections.Concurrent;
 using System.Data.Common;
 using System.Diagnostics.CodeAnalysis;
 
@@ -39,7 +38,6 @@ namespace System.Entities.Data;
 public class UnitOfWork(DataContext context, IServiceProvider serviceProvider) : IUnitOfWork
 {
     private readonly DataContext _context = context ?? throw new ArgumentNullException(nameof(context));
-    private readonly ConcurrentDictionary<Type, IRepository> _repositories = [];
 
     /// <summary>
     /// Gets a value indicating whether the object has been disposed.
@@ -57,44 +55,32 @@ public class UnitOfWork(DataContext context, IServiceProvider serviceProvider) :
 
         var repositoryType = typeof(TRepository);
 
-        var repository = _repositories.GetOrAdd(typeof(TRepository), _ =>
+        if (repositoryType == typeof(IRepository))
         {
-            IRepository? service;
-            if (repositoryType == typeof(IRepository))
+            return (TRepository)(IRepository)new Repository(_context);
+        }
+
+        try
+        {
+            return ActivatorUtilities.CreateInstance<TRepository>(serviceProvider, _context);
+        }
+        catch (InvalidOperationException)
+        {
+            try
             {
-                service = new Repository(context);
+                var service = ActivatorUtilities.CreateInstance<TRepository>(serviceProvider);
+                service.InjectAmbientContext(_context);
                 return service;
             }
-
-            service = serviceProvider.GetService<TRepository>();
-            if (service is not null)
+            catch (InvalidOperationException ex)
             {
-                service.InjectAmbientContext(context);
-                return service;
+                throw new InvalidOperationException(
+                    $"Unable to create repository of type {repositoryType.Name}. " +
+                    $"Repository must have a constructor that accepts DataContext (or derived type) " +
+                    $"as a parameter, or have a parameterless constructor with InjectAmbientContext support.",
+                    ex);
             }
-
-            var constructor = repositoryType.GetConstructor([typeof(DataContext)]);
-            if (constructor is not null)
-            {
-                service = (TRepository)constructor.Invoke([context]);
-                return service;
-            }
-
-            constructor = repositoryType.GetConstructor(Type.EmptyTypes);
-            if (constructor is not null)
-            {
-                service = (TRepository)constructor.Invoke([]);
-                service.InjectAmbientContext(context);
-                return service;
-            }
-
-            throw new InvalidOperationException(
-                $"Unable to create repository of type {repositoryType.Name}" +
-                $". Repository must be registered in the service provider, have a constructor that accepts DataContext, " +
-                $"or have a parameterless constructor.");
-        });
-
-        return (TRepository)repository;
+        }
     }
 
     /// <inheritdoc />
@@ -214,12 +200,6 @@ public class UnitOfWork(DataContext context, IServiceProvider serviceProvider) :
 
         if (disposing)
         {
-            foreach (var repository in _repositories.Values)
-            {
-                repository?.Dispose();
-            }
-
-            _repositories.Clear();
             _context?.Dispose();
         }
 
@@ -254,13 +234,6 @@ public class UnitOfWork(DataContext context, IServiceProvider serviceProvider) :
 
         if (IsDisposed)
             return;
-
-        foreach (var repository in _repositories.Values)
-        {
-            await repository.DisposeAsync().ConfigureAwait(false);
-        }
-
-        _repositories.Clear();
 
         if (_context != null)
         {

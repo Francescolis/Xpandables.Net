@@ -16,6 +16,7 @@
 ********************************************************************************/
 using System.Diagnostics.CodeAnalysis;
 using System.Entities;
+using System.Reflection;
 
 using Microsoft.Extensions.DependencyInjection.Extensions;
 
@@ -118,7 +119,7 @@ public static class IEntityExtensions
         }
 
         /// <summary>
-        /// Adds multiple repository implementations to the service collection.
+        /// Adds multiple repositories that implement <see cref="IRepository"/> interface to the service collection.
         /// </summary>
         /// <param name="repositoryRegistrations">The repository registrations containing interface and implementation types.</param>
         /// <param name="lifetime">The service lifetime.</param>
@@ -145,6 +146,48 @@ public static class IEntityExtensions
                 }
 
                 services.TryAdd(new ServiceDescriptor(interfaceType, implementationType, lifetime));
+            }
+
+            return services;
+        }
+
+        /// <summary>
+        /// Registers repository implementations found in the specified assemblies with the provided service lifetime.
+        /// </summary>
+        /// <remarks>This method scans the given assemblies for sealed, non-abstract classes that
+        /// implement IRepository and registers them with the dependency injection container using their implemented
+        /// interfaces. Only interfaces derived from IRepository are registered. Ensure that the assemblies contain the
+        /// desired repository implementations before calling this method.</remarks>
+        /// <param name="lifetime">The lifetime to use when registering repository services. Determines how long each service instance is
+        /// retained by the dependency injection container.</param>
+        /// <param name="assemblies">An array of assemblies to scan for repository implementations. If no assemblies are specified, the calling
+        /// assembly is used by default.</param>
+        /// <returns>The IServiceCollection instance that can be used to further configure services.</returns>
+        [RequiresUnreferencedCode("Requires unreferenced code.")]
+        public IServiceCollection AddXRepositories(
+            ServiceLifetime lifetime,
+            params Assembly[] assemblies)
+        {
+            ArgumentNullException.ThrowIfNull(services);
+            ArgumentNullException.ThrowIfNull(assemblies);
+
+            assemblies = assemblies.Length == 0 ? [Assembly.GetCallingAssembly()] : assemblies;
+
+            foreach (var assembly in assemblies)
+            {
+                var types = assembly.GetTypes();
+                var repositoryTypes = types
+                    .Where(t => t.IsClass && t.IsSealed && !t.IsAbstract && typeof(IRepository).IsAssignableFrom(t));
+
+                foreach (var implementationType in repositoryTypes)
+                {
+                    var interfaceTypes = implementationType.GetInterfaces()
+                        .Where(i => i != typeof(IRepository) && typeof(IRepository).IsAssignableFrom(i));
+                    foreach (var interfaceType in interfaceTypes)
+                    {
+                        services.TryAdd(new ServiceDescriptor(interfaceType, implementationType, lifetime));
+                    }
+                }
             }
 
             return services;

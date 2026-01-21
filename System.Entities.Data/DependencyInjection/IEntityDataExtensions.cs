@@ -20,7 +20,6 @@ using System.Entities;
 using System.Entities.Data;
 
 using Microsoft.EntityFrameworkCore;
-using Microsoft.Extensions.DependencyInjection.Extensions;
 
 #pragma warning disable IDE0130 // Namespace does not match folder structure
 namespace Microsoft.Extensions.DependencyInjection;
@@ -29,7 +28,7 @@ namespace Microsoft.Extensions.DependencyInjection;
 /// <summary>
 /// Extension methods for registering Entity Framework repository services.
 /// </summary>
-public static class IEntityFrameworkExtensions
+public static class IEntityDataExtensions
 {
     /// <summary>
     /// </summary>
@@ -77,54 +76,32 @@ public static class IEntityFrameworkExtensions
                 optionsAction, factoryLifetime);
 
         /// <summary>
-        /// Adds Entity Framework Core repository services to the specified service collection.
+        /// Adds default unit of work services to the specified service collection.
         /// </summary>
         /// <returns>The service collection so that additional calls can be chained.</returns>
         /// <exception cref="ArgumentNullException">Thrown when services is null.</exception>
-        public IServiceCollection AddXEntityFrameworkRepositories()
+        public IServiceCollection AddXUnitOfWork()
         {
             ArgumentNullException.ThrowIfNull(services);
 
-            services.TryAddScoped<IRepository, Repository>();
-            services.TryAddScoped<IUnitOfWork, UnitOfWork>();
+            services.AddScoped<IUnitOfWork, UnitOfWork>();
 
             return services;
         }
 
         /// <summary>
-        /// Adds Entity Framework Core repository services with a specific <see cref="DataContext"/>> to the specified service collection.
+        /// Adds default unit of work services with a specific <see cref="DataContext"/>> to the specified service collection.
         /// </summary>
         /// <typeparam name="TDataContext">The type of the DataContext.</typeparam>
         /// <returns>The service collection so that additional calls can be chained.</returns>
         /// <exception cref="ArgumentNullException">Thrown when services is null.</exception>
-        public IServiceCollection AddXEntityFrameworkRepositories<TDataContext>()
+        public IServiceCollection AddXUnitOfWork<TDataContext>()
             where TDataContext : DataContext
         {
             ArgumentNullException.ThrowIfNull(services);
 
-            services.TryAddScoped<IRepository>(provider =>
-            {
-                var context = provider.GetRequiredService<TDataContext>();
-                return new Repository(context);
-            });
-
-            services.TryAddScoped<IRepository<TDataContext>>(provider =>
-            {
-                var context = provider.GetRequiredService<TDataContext>();
-                return new Repository<TDataContext>(context);
-            });
-
-            services.TryAddScoped<IUnitOfWork>(provider =>
-            {
-                var context = provider.GetRequiredService<TDataContext>();
-                return new UnitOfWork(context, provider);
-            });
-
-            services.TryAddScoped<IUnitOfWork<TDataContext>>(provider =>
-            {
-                var context = provider.GetRequiredService<TDataContext>();
-                return new UnitOfWork<TDataContext>(context, provider);
-            });
+            services.AddXUnitOfWork<IUnitOfWork<TDataContext>, UnitOfWork<TDataContext>>();
+            services.AddScoped<IUnitOfWork>(provider => provider.GetRequiredService<IUnitOfWork<TDataContext>>());
 
             return services;
         }

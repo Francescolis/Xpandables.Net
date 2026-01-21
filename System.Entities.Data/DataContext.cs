@@ -57,11 +57,11 @@ public class DataContext : DbContext
     [RequiresUnreferencedCode("The context may be trimmed.")]
     protected DataContext(DbContextOptions options) : base(options)
     {
-        ChangeTracker.Tracked += static (sender, e) => OnEntityTracked(e);
-        ChangeTracker.StateChanged += static (sender, e) => OnEntityStateChanged(e);
+        ChangeTracker.Tracked += OnEntityTracked;
+        ChangeTracker.StateChanged += OnEntityStateChanged;
     }
 
-    private static void OnEntityTracked(EntityTrackedEventArgs e)
+    private static void OnEntityTracked(object? s, EntityTrackedEventArgs e)
     {
         if (e is { FromQuery: false, Entry: { State: EntityState.Added, Entity: IEntity addedEntity } })
         {
@@ -69,7 +69,7 @@ public class DataContext : DbContext
         }
     }
 
-    private static void OnEntityStateChanged(EntityStateChangedEventArgs e)
+    private static void OnEntityStateChanged(object? s, EntityStateChangedEventArgs e)
     {
         if (e is { NewState: EntityState.Modified, Entry.Entity: IEntity entity })
         {
@@ -90,8 +90,8 @@ public class DataContext : DbContext
     public override void Dispose()
     {
         // Unsubscribe from events to prevent memory leaks
-        ChangeTracker.Tracked -= static (sender, e) => OnEntityTracked(e);
-        ChangeTracker.StateChanged -= static (sender, e) => OnEntityStateChanged(e);
+        ChangeTracker.Tracked -= OnEntityTracked;
+        ChangeTracker.StateChanged -= OnEntityStateChanged;
 
         base.Dispose();
 
