@@ -68,7 +68,7 @@ public static class JsonSerializerExtensions
         /// <typeparam name="TValue">The type of the elements in the paged enumerable to serialize.</typeparam>
         /// <param name="utf8Json">The writer to which the UTF-8 encoded JSON will be written.</param>
         /// <param name="pagedEnumerable">The asynchronous paged enumerable whose elements are to be serialized.</param>
-        /// <param name="options">Options to control the behavior of the JSON serialization.</param>
+        /// <param name="options">Options to control the behavior of the JSON serialization. If null, default options are used.</param>
         /// <param name="cancellationToken">A token to monitor for cancellation requests.</param>
         /// <returns>A task that represents the asynchronous serialization operation.</returns>
         [RequiresUnreferencedCode("Serialization may require types that are trimmed.")]
@@ -81,7 +81,6 @@ public static class JsonSerializerExtensions
         {
             ArgumentNullException.ThrowIfNull(utf8Json);
             ArgumentNullException.ThrowIfNull(pagedEnumerable);
-            ArgumentNullException.ThrowIfNull(options);
 
             return SerializeAsyncPagedCoreNonGenericAsync(
                 utf8Json,
@@ -161,7 +160,6 @@ public static class JsonSerializerExtensions
         {
             ArgumentNullException.ThrowIfNull(utf8Json);
             ArgumentNullException.ThrowIfNull(pagedEnumerable);
-            ArgumentNullException.ThrowIfNull(options);
 
             return SerializeAsyncPagedCoreNonGenericAsync(
                 utf8Json,
@@ -364,6 +362,8 @@ public static class JsonSerializerExtensions
 
         await foreach (T item in paged.WithCancellation(cancellationToken).ConfigureAwait(false))
         {
+            cancellationToken.ThrowIfCancellationRequested();
+
             JsonSerializer.Serialize(writer, item, jsonTypeInfo);
             itemCount++;
 
@@ -400,7 +400,7 @@ public static class JsonSerializerExtensions
             cancellationToken);
     }
 
-    [RequiresDynamicCode("Calls System.Reflection.MethodInfo.MakeGenericMethod(params Type[])")]
+    [RequiresDynamicCode("Calls System.Reflection.MethodInfo.MakeGenericMethod(params Type[])")] 
     [RequiresUnreferencedCode("Calls System.Net.Http.Json.HttpContentExtensions.GetJsonTypeInfo(Type, JsonSerializerOptions)")]
     private static Task SerializeAsyncPagedCoreNonGenericAsync(
         object output,
@@ -410,8 +410,8 @@ public static class JsonSerializerExtensions
     {
         var method = SerializeAsyncPagedMethod.MakeGenericMethod(paged.GetArgumentType());
         var jsonTypeInfo = JsonSerializer.GetJsonTypeInfo(paged.GetArgumentType(), options);
-        var task = (Task)method.Invoke(null, [output, paged, jsonTypeInfo, cancellationToken])!;
-        return task;
+        var result = method.Invoke(null, [output, paged, jsonTypeInfo, cancellationToken]);
+        return result as Task ?? throw new InvalidOperationException($"Expected Task from {method.Name}, but got null.");
     }
 
     [UnconditionalSuppressMessage("AOT", "IL3050:Calling members annotated with 'RequiresDynamicCodeAttribute' may break functionality when AOT compiling.", Justification = "<Pending>")]
@@ -424,10 +424,12 @@ public static class JsonSerializerExtensions
         JsonSerializerContext context,
         CancellationToken cancellationToken = default)
     {
-        var method = SerializeAsyncPagedMethod.MakeGenericMethod(paged.GetArgumentType());
-        var jsonTypeInfo = context.GetTypeInfo(paged.GetArgumentType());
-        var task = (Task)method.Invoke(null, [output, paged, jsonTypeInfo, cancellationToken])!;
-        return task;
+        Type argumentType = paged.GetArgumentType();
+        var method = SerializeAsyncPagedMethod.MakeGenericMethod(argumentType);
+        var jsonTypeInfo = context.GetTypeInfo(argumentType)
+            ?? throw new InvalidOperationException($"The type '{argumentType}' is not registered in the provided JsonSerializerContext.");
+        var result = method.Invoke(null, [output, paged, jsonTypeInfo, cancellationToken]);
+        return result as Task ?? throw new InvalidOperationException($"Expected Task from {method.Name}, but got null.");
     }
 
     [UnconditionalSuppressMessage("AOT", "IL3050:Calling members annotated with 'RequiresDynamicCodeAttribute' may break functionality when AOT compiling.", Justification = "<Pending>")]
@@ -441,8 +443,8 @@ public static class JsonSerializerExtensions
         CancellationToken cancellationToken = default)
     {
         var method = SerializeAsyncPagedMethod.MakeGenericMethod(paged.GetArgumentType());
-        var task = (Task)method.Invoke(null, [output, paged, jsonTypeInfo, cancellationToken])!;
-        return task;
+        var result = method.Invoke(null, [output, paged, jsonTypeInfo, cancellationToken]);
+        return result as Task ?? throw new InvalidOperationException($"Expected Task from {method.Name}, but got null.");
     }
 
     private static readonly MethodInfo SerializeAsyncPagedMethod =

@@ -1,4 +1,4 @@
-﻿/*******************************************************************************
+/*******************************************************************************
  * Copyright (C) 2025 Kamersoft
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
@@ -49,7 +49,7 @@ public static class JsonDeserializerExtensions
         /// <param name="cancellationToken">A <see cref="CancellationToken"/> that can be used to cancel the asynchronous operation.</param>
         /// <returns>An <see cref="IAsyncPagedEnumerable{TValue}"/> that asynchronously yields deserialized values from the JSON
         /// stream. The enumerable may be empty if the stream contains no items.</returns>
-        /// <exception cref="ArgumentNullException">Thrown when <paramref name="utf8Json"/> or <paramref name="options"/> is null.</exception>
+        /// <exception cref="ArgumentNullException">Thrown when <paramref name="utf8Json"/> is null.</exception>
         /// <exception cref="OperationCanceledException">Thrown when the operation is canceled.</exception>
         [RequiresUnreferencedCode("Calls System.Net.Http.Json.HttpContentExtensions.GetJsonTypeInfo(Type, JsonSerializerOptions)")]
         [RequiresDynamicCode("Calls System.Net.Http.Json.HttpContentExtensions.GetJsonTypeInfo(Type, JsonSerializerOptions)")]
@@ -60,9 +60,8 @@ public static class JsonDeserializerExtensions
             CancellationToken cancellationToken = default)
         {
             ArgumentNullException.ThrowIfNull(utf8Json);
-            ArgumentNullException.ThrowIfNull(options);
 
-            return DeserializeAsyncPagedEnumerable<TValue>(utf8Json, topLovelValues: false, options, strategy, cancellationToken);
+            return DeserializeAsyncPagedEnumerable<TValue>(utf8Json, topLevelValues: false, options, strategy, cancellationToken);
         }
 
         /// <summary>
@@ -74,7 +73,7 @@ public static class JsonDeserializerExtensions
         /// <typeparam name="TValue">The type of the elements to deserialize from the JSON stream.</typeparam>
         /// <param name="utf8Json">The stream containing the UTF-8 encoded JSON data to deserialize. The stream must be readable and positioned
         /// at the start of the JSON content.</param>
-        /// <param name="topLovelValues">true to deserialize values from the top-level of the JSON array or object; otherwise, false to use the
+        /// <param name="topLevelValues">true to deserialize values from the top-level of the JSON array or object; otherwise, false to use the
         /// default deserialization behavior.</param>
         /// <param name="options">The options to use for JSON deserialization. Cannot be null.</param>
         /// <param name="strategy">The pagination strategy to use when reading paged results from the JSON stream. Use PaginationStrategy.None
@@ -86,16 +85,15 @@ public static class JsonDeserializerExtensions
         [RequiresDynamicCode("Calls System.Net.Http.Json.HttpContentExtensions.GetJsonTypeInfo(Type, JsonSerializerOptions)")]
         public static IAsyncPagedEnumerable<TValue?> DeserializeAsyncPagedEnumerable<TValue>(
             Stream utf8Json,
-            bool topLovelValues,
+            bool topLevelValues,
             JsonSerializerOptions? options = null,
             PaginationStrategy strategy = PaginationStrategy.None,
             CancellationToken cancellationToken = default)
         {
             ArgumentNullException.ThrowIfNull(utf8Json);
-            ArgumentNullException.ThrowIfNull(options);
 
             JsonTypeInfo<TValue> jsonTypeInfo = (JsonTypeInfo<TValue>)JsonSerializer.GetJsonTypeInfo(typeof(TValue), options);
-            return DeserializeAsyncPagedEnumerableCore(utf8Json, jsonTypeInfo, topLovelValues, strategy, cancellationToken);
+            return DeserializeAsyncPagedEnumerableCore(utf8Json, jsonTypeInfo, topLevelValues, strategy, cancellationToken);
         }
 
         /// <summary>
@@ -119,7 +117,7 @@ public static class JsonDeserializerExtensions
             ArgumentNullException.ThrowIfNull(utf8Json);
             ArgumentNullException.ThrowIfNull(jsonTypeInfo);
 
-            return DeserializeAsyncPagedEnumerable(utf8Json, topLovelValues: false, jsonTypeInfo, strategy, cancellationToken);
+            return DeserializeAsyncPagedEnumerable(utf8Json, topLevelValues: false, jsonTypeInfo, strategy, cancellationToken);
         }
 
         /// <summary>
@@ -131,7 +129,7 @@ public static class JsonDeserializerExtensions
         /// <typeparam name="TValue">The type of elements to deserialize from the JSON stream.</typeparam>
         /// <param name="utf8Json">The stream containing UTF-8 encoded JSON data representing a paged collection of TValue elements. Must not
         /// be null.</param>
-        /// <param name="topLovelValues">true to deserialize values from the top-level of the JSON array or object; otherwise, false to use the
+        /// <param name="topLevelValues">true to deserialize values from the top-level of the JSON array or object; otherwise, false to use the
         /// normal deserialization behavior.</param>
         /// <param name="jsonTypeInfo">Metadata used to control the deserialization of objects of type TValue.</param>
         /// <param name="cancellationToken">A cancellation token that can be used to cancel the asynchronous enumeration operation.</param>
@@ -141,7 +139,7 @@ public static class JsonDeserializerExtensions
         /// <exception cref="OperationCanceledException">Thrown when the operation is canceled.</exception>
         public static IAsyncPagedEnumerable<TValue?> DeserializeAsyncPagedEnumerable<TValue>(
             Stream utf8Json,
-            bool topLovelValues,
+            bool topLevelValues,
             JsonTypeInfo<TValue> jsonTypeInfo,
             PaginationStrategy strategy = PaginationStrategy.None,
             CancellationToken cancellationToken = default)
@@ -149,7 +147,7 @@ public static class JsonDeserializerExtensions
             ArgumentNullException.ThrowIfNull(utf8Json);
             ArgumentNullException.ThrowIfNull(jsonTypeInfo);
 
-            return DeserializeAsyncPagedEnumerableCore(utf8Json, jsonTypeInfo, topLovelValues, strategy, cancellationToken);
+            return DeserializeAsyncPagedEnumerableCore(utf8Json, jsonTypeInfo, topLevelValues, strategy, cancellationToken);
         }
 
         /// <summary>
@@ -174,9 +172,8 @@ public static class JsonDeserializerExtensions
             CancellationToken cancellationToken = default)
         {
             ArgumentNullException.ThrowIfNull(utf8Json);
-            ArgumentNullException.ThrowIfNull(options);
 
-            return DeserializeAsyncPagedEnumerable<TValue>(utf8Json, topLovelValues: false, options, strategy, cancellationToken);
+            return DeserializeAsyncPagedEnumerable<TValue>(utf8Json, topLevelValues: false, options, strategy, cancellationToken);
         }
 
         /// <summary>
@@ -188,7 +185,7 @@ public static class JsonDeserializerExtensions
         /// <typeparam name="TValue">The type of the elements to deserialize from the JSON stream.</typeparam>
         /// <param name="utf8Json">The pipe reader containing the UTF-8 encoded JSON data to deserialize. The pipe reader must be readable and positioned
         /// at the start of the JSON content.</param>
-        /// <param name="topLovelValues">true to deserialize values from the top-level of the JSON array or object; otherwise, false to use the
+        /// <param name="topLevelValues">true to deserialize values from the top-level of the JSON array or object; otherwise, false to use the
         /// default deserialization behavior.</param>
         /// <param name="options">The options to use for JSON deserialization. Cannot be null.</param>
         /// <param name="strategy">The pagination strategy to use when reading paged results from the JSON stream. Use PaginationStrategy.None
@@ -200,16 +197,15 @@ public static class JsonDeserializerExtensions
         [RequiresDynamicCode("Calls System.Net.Http.Json.HttpContentExtensions.GetJsonTypeInfo(Type, JsonSerializerOptions)")]
         public static IAsyncPagedEnumerable<TValue?> DeserializeAsyncPagedEnumerable<TValue>(
             PipeReader utf8Json,
-            bool topLovelValues,
+            bool topLevelValues,
             JsonSerializerOptions? options = null,
             PaginationStrategy strategy = PaginationStrategy.None,
             CancellationToken cancellationToken = default)
         {
             ArgumentNullException.ThrowIfNull(utf8Json);
-            ArgumentNullException.ThrowIfNull(options);
 
             JsonTypeInfo<TValue> jsonTypeInfo = (JsonTypeInfo<TValue>)JsonSerializer.GetJsonTypeInfo(typeof(TValue), options);
-            return DeserializeAsyncPagedEnumerableCore(utf8Json, jsonTypeInfo, topLovelValues, strategy, cancellationToken);
+            return DeserializeAsyncPagedEnumerableCore(utf8Json, jsonTypeInfo, topLevelValues, strategy, cancellationToken);
         }
 
         /// <summary>
@@ -233,7 +229,7 @@ public static class JsonDeserializerExtensions
             ArgumentNullException.ThrowIfNull(utf8Json);
             ArgumentNullException.ThrowIfNull(jsonTypeInfo);
 
-            return DeserializeAsyncPagedEnumerable(utf8Json, topLovelValues: false, jsonTypeInfo, strategy, cancellationToken);
+            return DeserializeAsyncPagedEnumerable(utf8Json, topLevelValues: false, jsonTypeInfo, strategy, cancellationToken);
         }
 
         /// <summary>
@@ -245,7 +241,7 @@ public static class JsonDeserializerExtensions
         /// <typeparam name="TValue">The type of elements to deserialize from the JSON pipe reader.</typeparam>
         /// <param name="utf8Json">The pipe reader containing UTF-8 encoded JSON data representing a paged collection of TValue elements. Must not
         /// be null.</param>
-        /// <param name="topLovelValues">true to deserialize values from the top-level of the JSON array or object; otherwise, false to use the
+        /// <param name="topLevelValues">true to deserialize values from the top-level of the JSON array or object; otherwise, false to use the
         /// normal deserialization behavior.</param>
         /// <param name="jsonTypeInfo">Metadata used to control the deserialization of objects of type TValue.</param>
         /// <param name="cancellationToken">A cancellation token that can be used to cancel the asynchronous enumeration operation.</param>
@@ -255,104 +251,130 @@ public static class JsonDeserializerExtensions
         /// <exception cref="OperationCanceledException">Thrown when the operation is canceled.</exception>
         public static IAsyncPagedEnumerable<TValue?> DeserializeAsyncPagedEnumerable<TValue>(
             PipeReader utf8Json,
-            bool topLovelValues,
-            JsonTypeInfo<TValue> jsonTypeInfo,
-            PaginationStrategy strategy = PaginationStrategy.None,
-            CancellationToken cancellationToken = default)
-        {
-            ArgumentNullException.ThrowIfNull(utf8Json);
-            ArgumentNullException.ThrowIfNull(jsonTypeInfo);
+            bool topLevelValues,
+                    JsonTypeInfo<TValue> jsonTypeInfo,
+                    PaginationStrategy strategy = PaginationStrategy.None,
+                    CancellationToken cancellationToken = default)
+                {
+                    ArgumentNullException.ThrowIfNull(utf8Json);
+                    ArgumentNullException.ThrowIfNull(jsonTypeInfo);
 
-            return DeserializeAsyncPagedEnumerableCore(utf8Json, jsonTypeInfo, topLovelValues, strategy, cancellationToken);
-        }
+                    return DeserializeAsyncPagedEnumerableCore(utf8Json, jsonTypeInfo, topLevelValues, strategy, cancellationToken, ownsPipeReader: false);
+                }
 
-    }
+            }
 
     private static IAsyncPagedEnumerable<TValue?> DeserializeAsyncPagedEnumerableCore<TValue>(
         Stream utf8Json,
         JsonTypeInfo<TValue> jsonTypeInfo,
-        bool topLovelValues,
+        bool topLevelValues,
         PaginationStrategy strategy,
         CancellationToken cancellationToken)
     {
         ArgumentNullException.ThrowIfNull(utf8Json);
         ArgumentNullException.ThrowIfNull(jsonTypeInfo);
 
+        // Create PipeReader that will be disposed when enumeration completes
         var reader = PipeReader.Create(
             utf8Json,
             new StreamPipeReaderOptions(
                 bufferSize: 32 * 1024,
                 minimumReadSize: 4 * 1024,
-                useZeroByteReads: true));
+                useZeroByteReads: true,
+                leaveOpen: false));
 
-        return DeserializeAsyncPagedEnumerableCore(reader, jsonTypeInfo, topLovelValues, strategy, cancellationToken);
+        return DeserializeAsyncPagedEnumerableCore(reader, jsonTypeInfo, topLevelValues, strategy, cancellationToken, ownsPipeReader: true);
     }
+
+    private static ReadOnlySpan<byte> PaginationPropertyNameUtf8 => "pagination"u8;
+    private static ReadOnlySpan<byte> ItemsPropertyNameUtf8 => "items"u8;
 
     private static IAsyncPagedEnumerable<TValue?> DeserializeAsyncPagedEnumerableCore<TValue>(
         PipeReader utf8Json,
         JsonTypeInfo<TValue> jsonTypeInfo,
-        bool topLovelValues,
+        bool topLevelValues,
         PaginationStrategy strategy,
-        CancellationToken cancellationToken)
+        CancellationToken cancellationToken,
+        bool ownsPipeReader = false)
     {
         ArgumentNullException.ThrowIfNull(utf8Json);
         ArgumentNullException.ThrowIfNull(jsonTypeInfo);
 
-        Pagination pagination = Pagination.Empty;
+        // Use TaskCompletionSource to avoid race condition where GetPaginationAsync
+        // is called before enumeration has parsed the pagination property
+        TaskCompletionSource<Pagination> paginationTcs = new(TaskCreationOptions.RunContinuationsAsynchronously);
 
         async IAsyncEnumerable<TValue?> ItemsIterator(
             [EnumeratorCancellation] CancellationToken ct = default)
         {
-            JsonReaderState state = new(new JsonReaderOptions { CommentHandling = JsonCommentHandling.Skip });
-
-            while (true)
+            bool paginationSet = false;
+            try
             {
-                ReadResult result = await utf8Json.ReadAsync(ct).ConfigureAwait(false);
-                ReadOnlySequence<byte> buffer = result.Buffer;
+                JsonReaderState state = new(new JsonReaderOptions { CommentHandling = JsonCommentHandling.Skip });
 
-                // Buffer parsed items for this read before yielding (so Utf8JsonReader doesn't cross yields).
-                using PooledList<TValue?> items = new(initialCapacity: 8);
-
-                bool needMoreData;
-
+                while (true)
                 {
-                    var reader = new Utf8JsonReader(buffer, result.IsCompleted, state);
-                    needMoreData = false;
+                    ct.ThrowIfCancellationRequested();
 
-                    while (reader.Read())
+                    ReadResult result = await utf8Json.ReadAsync(ct).ConfigureAwait(false);
+                    ReadOnlySequence<byte> buffer = result.Buffer;
+
+                    // Buffer parsed items for this read before yielding (so Utf8JsonReader doesn't cross yields).
+                    using PooledList<TValue?> items = new(initialCapacity: 8);
+
+                    bool needMoreData;
+
                     {
-                        if (reader.TokenType == JsonTokenType.PropertyName)
+                        var reader = new Utf8JsonReader(buffer, result.IsCompleted, state);
+                        needMoreData = false;
+
+                        while (reader.Read())
                         {
-                            if (reader.ValueTextEquals("pagination"u8))
+                            if (reader.TokenType == JsonTokenType.PropertyName)
                             {
-                                if (!reader.Read())
+                                if (reader.ValueTextEquals(PaginationPropertyNameUtf8))
                                 {
-                                    needMoreData = true;
-                                    break;
-                                }
-
-                                if (!TryDeserializeValue(ref reader, buffer, PaginationJsonContext.Default.Pagination, out Pagination paginationValue))
-                                {
-                                    needMoreData = true;
-                                    break;
-                                }
-
-                                pagination = paginationValue;
-                            }
-                            else if (reader.ValueTextEquals("items"u8))
-                            {
-                                if (!reader.Read())
-                                {
-                                    needMoreData = true;
-                                    break;
-                                }
-
-                                if (reader.TokenType == JsonTokenType.StartArray)
-                                {
-                                    if (!TryReadArrayItems(ref reader, buffer, jsonTypeInfo, items))
+                                    if (!reader.Read())
                                     {
                                         needMoreData = true;
                                         break;
+                                    }
+
+                                    if (!TryDeserializeValue(ref reader, buffer, PaginationJsonContext.Default.Pagination, out Pagination paginationValue))
+                                    {
+                                        needMoreData = true;
+                                        break;
+                                    }
+
+                                    if (!paginationSet)
+                                    {
+                                        paginationTcs.TrySetResult(paginationValue);
+                                        paginationSet = true;
+                                    }
+                                }
+                                else if (reader.ValueTextEquals(ItemsPropertyNameUtf8))
+                                {
+                                    if (!reader.Read())
+                                    {
+                                        needMoreData = true;
+                                        break;
+                                    }
+
+                                    if (reader.TokenType == JsonTokenType.StartArray)
+                                    {
+                                        if (!TryReadArrayItems(ref reader, buffer, jsonTypeInfo, items))
+                                        {
+                                            needMoreData = true;
+                                            break;
+                                        }
+                                    }
+                                    else
+                                    {
+                                        if (!reader.TrySkip())
+                                        {
+                                            needMoreData = true;
+                                            break;
+                                        }
                                     }
                                 }
                                 else
@@ -364,65 +386,80 @@ public static class JsonDeserializerExtensions
                                     }
                                 }
                             }
-                            else
+                            else if (topLevelValues && reader.TokenType == JsonTokenType.StartArray)
                             {
-                                if (!reader.TrySkip())
+                                if (!TryReadArrayItems(ref reader, buffer, jsonTypeInfo, items))
                                 {
                                     needMoreData = true;
                                     break;
                                 }
                             }
-                        }
-                        else if (topLovelValues && reader.TokenType == JsonTokenType.StartArray)
-                        {
-                            if (!TryReadArrayItems(ref reader, buffer, jsonTypeInfo, items))
+
+                            if (needMoreData)
                             {
-                                needMoreData = true;
                                 break;
                             }
                         }
 
-                        if (needMoreData)
-                        {
-                            break;
-                        }
+                        state = reader.CurrentState;
+                        SequencePosition consumed = buffer.GetPosition(reader.BytesConsumed);
+                        utf8Json.AdvanceTo(consumed, buffer.End);
                     }
 
-                    state = reader.CurrentState;
-                    SequencePosition consumed = buffer.GetPosition(reader.BytesConsumed);
-                    utf8Json.AdvanceTo(consumed, buffer.End);
-                }
-
-                for (int i = 0; i < items.Count; i++)
-                {
-                    yield return items[i];
-                }
-
-                if (needMoreData)
-                {
-                    if (result.IsCompleted)
+                    for (int i = 0; i < items.Count; i++)
                     {
-                        throw new JsonException("Incomplete JSON data encountered while deserializing paged items.");
+                        yield return items[i];
                     }
 
-                    continue;
+                    if (needMoreData)
+                    {
+                        if (result.IsCompleted)
+                        {
+                            throw new JsonException("Incomplete JSON data encountered while deserializing paged items.");
+                        }
+
+                        continue;
+                    }
+
+                    if (result.IsCompleted)
+                        break;
+
+                    // No buffered items this iteration, continue reading.
                 }
 
-                if (result.IsCompleted)
-                    break;
+                // If we completed enumeration without finding pagination, set empty
+                if (!paginationSet)
+                {
+                    paginationTcs.TrySetResult(Pagination.Empty);
+                }
 
-                // No buffered items this iteration, continue reading.
+                await utf8Json.CompleteAsync().ConfigureAwait(false);
             }
+            finally
+            {
+                // Ensure pagination is set even if enumeration is abandoned
+                paginationTcs.TrySetResult(Pagination.Empty);
 
-            await utf8Json.CompleteAsync().ConfigureAwait(false);
+                // Complete and dispose PipeReader if we own it
+                if (ownsPipeReader)
+                {
+                    await utf8Json.CompleteAsync().ConfigureAwait(false);
+                }
+            }
         }
 
-        static ValueTask<Pagination> PaginationFactory(Pagination p, CancellationToken _) => new(p);
-        ValueTask<Pagination> paginationFactory(CancellationToken ct) => PaginationFactory(pagination, ct);
+        async ValueTask<Pagination> PaginationFactory(CancellationToken ct)
+        {
+            using CancellationTokenRegistration registration = ct.Register(
+                static state => ((TaskCompletionSource<Pagination>)state!).TrySetCanceled(),
+                paginationTcs);
+
+            return await paginationTcs.Task.ConfigureAwait(false);
+        }
 
         return AsyncPagedEnumerable.Create(
             ItemsIterator(cancellationToken),
-            paginationFactory,
+            PaginationFactory,
             strategy);
     }
 
@@ -478,36 +515,45 @@ public static class JsonDeserializerExtensions
         return true;
     }
 
-    /// <summary>Pooled list to avoid per-buffer allocations while remaining safe across async yields.</summary>
-    private sealed class PooledList<T>(int initialCapacity = 8) : IDisposable
-    {
-        private T[] _array = ArrayPool<T>.Shared.Rent(Math.Max(1, initialCapacity));
-        private int _count;
-
-        public int Count => _count;
-
-        public T this[int index] => _array[index];
-
-        public void Add(T item)
+        /// <summary>Pooled list to avoid per-buffer allocations while remaining safe across async yields.</summary>
+        private sealed class PooledList<T>(int initialCapacity = 8) : IDisposable
         {
-            if (_count == _array.Length)
-                Grow();
-            _array[_count++] = item;
-        }
+            private T[] _array = ArrayPool<T>.Shared.Rent(Math.Max(1, initialCapacity));
+            private int _count;
 
-        private void Grow()
-        {
-            T[] newArray = ArrayPool<T>.Shared.Rent(_array.Length * 2);
-            Array.Copy(_array, 0, newArray, 0, _count);
-            ArrayPool<T>.Shared.Return(_array, RuntimeHelpers.IsReferenceOrContainsReferences<T>());
-            _array = newArray;
-        }
+            public int Count => _count;
 
-        public void Dispose()
-        {
-            ArrayPool<T>.Shared.Return(_array, RuntimeHelpers.IsReferenceOrContainsReferences<T>());
-            _array = [];
-            _count = 0;
+            public T this[int index] => _array[index];
+
+            public void Add(T item)
+            {
+                if (_count == _array.Length)
+                    Grow();
+                _array[_count++] = item;
+            }
+
+            private void Grow()
+            {
+                T[] newArray = ArrayPool<T>.Shared.Rent(_array.Length * 2);
+                Array.Copy(_array, 0, newArray, 0, _count);
+                ArrayPool<T>.Shared.Return(_array, RuntimeHelpers.IsReferenceOrContainsReferences<T>());
+                _array = newArray;
+            }
+
+            public void Dispose()
+            {
+                T[] array = _array;
+                _array = [];
+                int count = _count;
+                _count = 0;
+
+                // Clear references before returning to pool to avoid holding onto objects
+                if (RuntimeHelpers.IsReferenceOrContainsReferences<T>())
+                {
+                    Array.Clear(array, 0, count);
+                }
+
+                ArrayPool<T>.Shared.Return(array, clearArray: false); // Already cleared above if needed
+            }
         }
     }
-}

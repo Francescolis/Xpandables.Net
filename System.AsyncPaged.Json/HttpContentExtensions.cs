@@ -14,7 +14,6 @@
  * limitations under the License.
  *
 ********************************************************************************/
-using System.Diagnostics;
 using System.Diagnostics.CodeAnalysis;
 using System.IO.Pipelines;
 using System.Text;
@@ -62,7 +61,7 @@ public static class HttpContentExtensions
         /// Deserializes the HTTP JSON content into an <see cref="IAsyncPagedEnumerable{T}"/> using
         /// the supplied <see cref="JsonSerializerOptions"/>.
         /// </summary>
-        /// <param name="options">The options to use when deserializing the JSON content.</param>
+        /// <param name="options">The options to use when deserializing the JSON content. If null, default options are used.</param>
         /// <param name="strategy">The pagination strategy to use when deserializing the paged data.</param>
         /// <param name="cancellationToken">The token to monitor for cancellation requests.</param>
         [RequiresUnreferencedCode("Calls System.Net.Http.Json.HttpContentExtensions.GetJsonTypeInfo(Type, JsonSerializerOptions)")]
@@ -73,7 +72,6 @@ public static class HttpContentExtensions
             CancellationToken cancellationToken = default)
         {
             ArgumentNullException.ThrowIfNull(content);
-            ArgumentNullException.ThrowIfNull(options);
 
             return ReadFromJsonAsAsyncPagedEnumerableCore<TValue>(content, options, strategy, cancellationToken);
         }
@@ -127,68 +125,49 @@ public static class HttpContentExtensions
         });
     }
 
-    private static ValueTask<Stream> GetContentStreamAsync(HttpContent content, CancellationToken cancellationToken)
-    {
-        Task<Stream> task = ReadHttpContentStreamAsync(content, cancellationToken);
-
-        return GetEncoding(content) is Encoding sourceEncoding && sourceEncoding != Encoding.UTF8
-            ? GetTranscodingStreamAsync(task, sourceEncoding)
-            : new(task);
-    }
-
-    private static Stream GetContentStream(HttpContent content)
-    {
-        Stream stream = ReadHttpContentStream(content);
-
-        return GetEncoding(content) is Encoding sourceEncoding && sourceEncoding != Encoding.UTF8
-            ? GetTranscodingStream(stream, sourceEncoding)
-            : stream;
-    }
-
-    private static async ValueTask<Stream> GetTranscodingStreamAsync(Task<Stream> task, Encoding sourceEncoding)
-    {
-        Stream contentStream = await task.ConfigureAwait(false);
-
-        // Wrap content stream into a transcoding stream that buffers the data transcoded from the sourceEncoding to utf-8.
-        return GetTranscodingStream(contentStream, sourceEncoding);
-    }
-
-    private static Stream ReadHttpContentStream(HttpContent content) => content.ReadAsStream();
-
-    private static Task<Stream> ReadHttpContentStreamAsync(HttpContent content, CancellationToken cancellationToken) =>
-        content.ReadAsStreamAsync(cancellationToken);
-
-    private static Stream GetTranscodingStream(Stream contentStream, Encoding sourceEncoding) =>
-        Encoding.CreateTranscodingStream(contentStream, innerStreamEncoding: sourceEncoding, outerStreamEncoding: Encoding.UTF8);
-
-    internal const string DefaultMediaType = "application/json; charset=utf-8";
-
-    internal static Encoding? GetEncoding(HttpContent content)
-    {
-        Encoding? encoding = null;
-
-        if (content.Headers.ContentType?.CharSet is string charset)
+        private static ValueTask<Stream> GetContentStreamAsync(HttpContent content, CancellationToken cancellationToken)
         {
-            try
-            {
-                // Remove at most a single set of quotes.
-                if (charset.Length > 2 && charset[0] == '\"' && charset[^1] == '\"')
-                {
-                    encoding = Encoding.GetEncoding(charset[1..^1]);
-                }
-                else
-                {
-                    encoding = Encoding.GetEncoding(charset);
-                }
-            }
-            catch (ArgumentException e)
-            {
-                throw new InvalidOperationException("Charset is invalid", e);
-            }
+            Task<Stream> task = content.ReadAsStreamAsync(cancellationToken);
 
-            Debug.Assert(encoding != null);
+            return GetEncoding(content) is Encoding sourceEncoding && sourceEncoding != Encoding.UTF8
+                ? GetTranscodingStreamAsync(task, sourceEncoding)
+                : new(task);
         }
 
-        return encoding;
+        private static async ValueTask<Stream> GetTranscodingStreamAsync(Task<Stream> task, Encoding sourceEncoding)
+        {
+            Stream contentStream = await task.ConfigureAwait(false);
+
+            // Wrap content stream into a transcoding stream that buffers the data transcoded from the sourceEncoding to utf-8.
+            return Encoding.CreateTranscodingStream(contentStream, innerStreamEncoding: sourceEncoding, outerStreamEncoding: Encoding.UTF8);
+        }
+
+        internal const string DefaultMediaType = "application/json; charset=utf-8";
+
+        internal static Encoding? GetEncoding(HttpContent content)
+        {
+            Encoding? encoding = null;
+
+            if (content.Headers.ContentType?.CharSet is string charset)
+            {
+                try
+                {
+                    // Remove at most a single set of quotes.
+                    if (charset.Length > 2 && charset[0] == '\"' && charset[^1] == '\"')
+                    {
+                        encoding = Encoding.GetEncoding(charset[1..^1]);
+                    }
+                    else
+                    {
+                        encoding = Encoding.GetEncoding(charset);
+                    }
+                }
+                catch (ArgumentException e)
+                {
+                    throw new InvalidOperationException($"The character set '{charset}' is not supported.", e);
+                }
+            }
+
+            return encoding;
+        }
     }
-}
