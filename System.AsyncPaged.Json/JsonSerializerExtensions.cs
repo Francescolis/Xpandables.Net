@@ -415,6 +415,7 @@ public static class JsonSerializerExtensions
     }
 
     [UnconditionalSuppressMessage("AOT", "IL3050:Calling members annotated with 'RequiresDynamicCodeAttribute' may break functionality when AOT compiling.", Justification = "<Pending>")]
+    [UnconditionalSuppressMessage("Trimming", "IL2026:'GetArgumentType' uses reflection to discover implemented interfaces", Justification = "Used for dynamic dispatch in non-AOT scenarios")]
     [UnconditionalSuppressMessage("Trimming", "IL2070:Calling members annotated with 'RequiresUnreferencedCodeAttribute' may break functionality when trimming application code.", Justification = "<Pending>")]
     [UnconditionalSuppressMessage("Trimming", "IL2060:Calling members annotated with 'RequiresAssemblyFilesAttribute' may break functionality when trimming application code.", Justification = "<Pending>")]
     private static Task SerializeAsyncPagedCoreNonGenericAsync(
@@ -430,6 +431,7 @@ public static class JsonSerializerExtensions
     }
 
     [UnconditionalSuppressMessage("AOT", "IL3050:Calling members annotated with 'RequiresDynamicCodeAttribute' may break functionality when AOT compiling.", Justification = "<Pending>")]
+    [UnconditionalSuppressMessage("Trimming", "IL2026:'GetArgumentType' uses reflection to discover implemented interfaces", Justification = "Used for dynamic dispatch in non-AOT scenarios")]
     [UnconditionalSuppressMessage("Trimming", "IL2070:Calling members annotated with 'RequiresUnreferencedCodeAttribute' may break functionality when trimming application code.", Justification = "<Pending>")]
     [UnconditionalSuppressMessage("Trimming", "IL2060:Calling members annotated with 'RequiresAssemblyFilesAttribute' may break functionality when trimming application code.", Justification = "<Pending>")]
     private static Task SerializeAsyncPagedCoreNonGenericAsync(

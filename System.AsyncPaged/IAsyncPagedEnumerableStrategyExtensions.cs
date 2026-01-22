@@ -24,7 +24,7 @@ namespace System.Collections.Generic;
 /// by providing fluent API methods for configuring pagination strategies. These methods simplify the process
 /// of customizing the behavior of asynchronous paged enumerators to suit specific use cases or performance requirements.
 /// </remarks>
-public static class IAsyncPagedEnumerableStrategyStrategyExtensions
+public static class IAsyncPagedEnumerableStrategyExtensions
 {
     /// <summary>
     /// Extension methods for configuring pagination strategies.

@@ -176,7 +176,9 @@ public sealed class IAsyncPagedEnumerableTests
         cts.CancelAfter(TimeSpan.FromMilliseconds(10));
 
         // Act & Assert
-        await Assert.ThrowsAsync<TaskCanceledException>(
+        // Note: OperationCanceledException is thrown by CancellationToken.ThrowIfCancellationRequested(),
+        // while TaskCanceledException (a subclass) is thrown by Task-based operations.
+        await Assert.ThrowsAnyAsync<OperationCanceledException>(
             async () =>
             {
                 await foreach (var item in paged.WithCancellation(cts.Token))

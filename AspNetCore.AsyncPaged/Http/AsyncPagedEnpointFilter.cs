@@ -43,6 +43,7 @@ public sealed class AsyncPagedEnpointFilter : IEndpointFilter
     /// <returns>A <see cref="ValueTask{Object}"/> that represents the asynchronous operation. Returns a paged result if the
     /// endpoint produces an <see cref="IAsyncPagedEnumerable"/>; otherwise, returns the original result.</returns>
     [UnconditionalSuppressMessage("AOT", "IL3050:Calling members annotated with 'RequiresDynamicCodeAttribute' may break functionality when AOT compiling.", Justification = "<Pending>")]
+    [UnconditionalSuppressMessage("Trimming", "IL2026:'GetArgumentType' uses reflection to discover implemented interfaces", Justification = "Used for dynamic dispatch in ASP.NET Core filter")]
     public async ValueTask<object?> InvokeAsync(
         EndpointFilterInvocationContext context,
         EndpointFilterDelegate next)

@@ -14,6 +14,8 @@
  * limitations under the License.
  *
 ********************************************************************************/
+using System.Diagnostics.CodeAnalysis;
+
 namespace System.Collections.Generic;
 
 /// <summary>
@@ -43,12 +45,29 @@ public static class IAsyncPagedEnumerableExtensions
         /// for reflection or dynamic operations.</remarks>
         /// <returns>The Type representing the generic argument T of the <see cref="IAsyncPagedEnumerable{T}"/> implemented by the source.</returns>
         /// <exception cref="InvalidOperationException">Thrown if the source does not implement <see cref="IAsyncPagedEnumerable{T}"/>.</exception>
+        [RequiresUnreferencedCode("This method uses reflection to discover implemented interfaces, which may be incompatible with trimming.")]
         public Type GetArgumentType()
         {
             var sourceType = source.GetType();
-            if (sourceType.IsGenericType
-                || sourceType.GetGenericTypeDefinition() == typeof(IAsyncPagedEnumerable<>))
-                return sourceType.GetGenericArguments()[0];
+
+            // Check if the concrete type itself is a generic type matching IAsyncPagedEnumerable<T>
+            if (sourceType.IsGenericType)
+            {
+                var genericDef = sourceType.GetGenericTypeDefinition();
+                if (genericDef == typeof(IAsyncPagedEnumerable<>))
+                {
+                    return sourceType.GetGenericArguments()[0];
+                }
+            }
+
+            // Search implemented interfaces for IAsyncPagedEnumerable<T>
+            foreach (var iface in sourceType.GetInterfaces())
+            {
+                if (iface.IsGenericType && iface.GetGenericTypeDefinition() == typeof(IAsyncPagedEnumerable<>))
+                {
+                    return iface.GetGenericArguments()[0];
+                }
+            }
 
             throw new InvalidOperationException("The source does not implement IAsyncPagedEnumerable<T>.");
         }

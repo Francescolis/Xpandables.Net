@@ -48,26 +48,61 @@ public enum PaginationStrategy
 /// <remarks>This type is typically used to manage and navigate paginated data in scenarios where results are
 /// divided into discrete pages. It provides metadata about the pagination state, such as the total number of items
 /// available, the size of each page, and the current page being viewed. The continuation token can be used to fetch the
-/// next set of results in a paginated operation.</remarks>
+/// next set of results in a paginated operation.
+/// <para>
+/// Page numbers are 1-based by convention: the first page is page 1. A value of 0 indicates no page is selected.
+/// </para>
+/// </remarks>
 public readonly record struct Pagination
 {
+    private readonly int _pageSize;
+    private readonly int _currentPage;
+    private readonly int? _totalCount;
+
     /// <summary>
     /// Gets the total number of items across all pages. 
     /// A null value indicates the total count is unknown.
     /// </summary>
-    public required int? TotalCount { get; init; }
+    public required int? TotalCount
+    {
+        get => _totalCount;
+        init
+        {
+            if (value.HasValue)
+            {
+                ArgumentOutOfRangeException.ThrowIfNegative(value.Value, nameof(TotalCount));
+            }
+            _totalCount = value;
+        }
+    }
 
     /// <summary>
     /// Gets the number of items to include on each page of results.
     /// Must be zero or greater.
     /// </summary>
-    public required int PageSize { get; init; }
+    public required int PageSize
+    {
+        get => _pageSize;
+        init
+        {
+            ArgumentOutOfRangeException.ThrowIfNegative(value, nameof(PageSize));
+            _pageSize = value;
+        }
+    }
 
     /// <summary>
     /// Gets the current page number in a paginated collection.
-    /// Must be zero or greater.
+    /// Must be zero or greater. Page numbers are 1-based; 0 indicates no page is selected.
     /// </summary>
-    public required int CurrentPage { get; init; }
+    public required int CurrentPage
+    {
+        get => _currentPage;
+        init
+        {
+            ArgumentOutOfRangeException.ThrowIfNegative(value, nameof(CurrentPage));
+            _currentPage = value;
+        }
+    }
 
     /// <summary>
     /// Gets the continuation token used to retrieve the next set of results in a paginated operation.
