@@ -835,6 +835,8 @@ public sealed class PaymentJob(IEventContextAccessor accessor)
 | `AddXAggregateStore<T>()` | Registers aggregate store for specific type |
 | `AddXScheduler()` | Registers scheduler service |
 | `AddXHostedScheduler()` | Registers hosted background scheduler |
+| `AddXDomainEventEnricher<T>()` | Registers domain event enricher |
+| `AddXIntegrationEventEnricher<T>()` | Registers integration event enricher |
 
 ---
 
@@ -847,7 +849,8 @@ public sealed class PaymentJob(IEventContextAccessor accessor)
 - **Implement `IAggregateFactory<T>`** — Enable aggregate store to create instances
 - **Use `PushVersioningEvent`** — For events that need explicit version control
 - **Register handlers via assembly scan** — Use `AddXEventHandlers(assemblies)`
-- **Use outbox pattern** — For reliable integration event delivery
+- **Use outbox pattern** — For reliable integration event delivery (at-least-once)
+- **Use inbox pattern** — For exactly-once consumption via `IInboxConsumer`
 
 ### ❌ Don't
 
@@ -862,7 +865,7 @@ public sealed class PaymentJob(IEventContextAccessor accessor)
 
 | Package | Description |
 |---------|-------------|
-| **System.Events.Data** | EF Core implementation of event store and outbox |
+| **System.Events.Data** | EF Core implementation of event store, outbox, and inbox |
 | **AspNetCore.Events** | ASP.NET Core middleware + DI helpers for `EventContext` |
 | **System.Results** | Result pattern for operation outcomes |
 

@@ -12,16 +12,19 @@
 `System.Events.Data` provides EF Core implementations for the abstractions in `System.Events`:
 
 - `EventStoreDataContext` (domain events + snapshots)
-- `OutboxStoreDataContext` (integration events)
+- `OutboxStoreDataContext` (integration events for outbox pattern)
+- `InboxStoreDataContext` (integration events for inbox pattern)
 - `EventStore` (`IEventStore`) append/read/stream management
 - `OutboxStore` (`IOutboxStore`) enqueue/dequeue/complete/fail
+- `InboxStore` (`IInboxStore`) receive/complete/fail for exactly-once consumption
 
 Targeted for **.NET 10** and intended to be used together with SQL Server (or other EF Core providers).
 
 ### ✨ Key Features
 
 - **Event store tables** for domain events and snapshots
-- **Outbox table** for integration events and reliable delivery
+- **Outbox table** for integration events and reliable delivery (at-least-once publishing)
+- **Inbox table** for integration events and exactly-once consumption (idempotency)
 - **Event converters** for translating between stored entities and runtime events
 - **Stream operations**: read/append, stream existence/version, subscriptions
 - **Transactional flush**: commit event store + outbox consistently (via the store APIs)
@@ -53,16 +56,26 @@ builder.Services.AddXEventStoreDataContext(options =>
         builder.Configuration.GetConnectionString("EventStoreDb"),
         sql => sql.MigrationsHistoryTable("__EventStoreMigrations")));
 
-// Outbox store (integration events)
+// Outbox store (integration events for reliable publishing)
 builder.Services.AddXOutboxStoreDataContext(options =>
     options.UseSqlServer(
         builder.Configuration.GetConnectionString("EventStoreDb"),
         sql => sql.MigrationsHistoryTable("__OutboxStoreMigrations")));
 
+// Inbox store (integration events for exactly-once consumption)
+builder.Services.AddXInboxStoreDataContext(options =>
+    options.UseSqlServer(
+        builder.Configuration.GetConnectionString("EventStoreDb"),
+        sql => sql.MigrationsHistoryTable("__InboxStoreMigrations")));
+
 // Stores + converters
 builder.Services.AddXEventStore();
 builder.Services.AddXOutboxStore();
+builder.Services.AddXInboxStore();
 builder.Services.AddXEventConverterFactory();
+
+// Optional: Inbox decorator for handlers implementing IInboxConsumer
+builder.Services.AddXEventHandlerInboxDecorator();
 
 // Optional but recommended for correlation/causation enrichment
 builder.Services.AddXEventContext();
@@ -197,6 +210,57 @@ public sealed class IntegrationEventPublisher
         return Task.CompletedTask;
     }
 }
+```
+
+### `InboxStoreDataContext`
+
+The EF Core DbContext for the inbox pattern (exactly-once consumption):
+
+```csharp
+using System.Events.Data;
+
+// The context stores consumed integration events to ensure exactly-once processing
+// Events are tracked by (EventId, Consumer) composite key
+
+// Register via DI
+builder.Services.AddXInboxStoreDataContext(options =>
+    options.UseSqlServer(
+        builder.Configuration.GetConnectionString("EventStoreDb"),
+        sql => sql.MigrationsHistoryTable("__InboxStoreMigrations")));
+```
+
+### `InboxStore`
+
+The EF Core implementation of `IInboxStore` for idempotent event consumption:
+
+```csharp
+using System.Events.Integration;
+
+public sealed class OrderPlacedEventHandler : IEventHandler<OrderPlacedIntegrationEvent>, IInboxConsumer
+{
+    private readonly IOrderService _orderService;
+
+    // Consumer name forms part of the idempotency key (EventId + Consumer)
+    public string Consumer => "OrderService.OrderPlacedHandler";
+
+    public OrderPlacedEventHandler(IOrderService orderService)
+        => _orderService = orderService;
+
+    public async Task HandleAsync(OrderPlacedIntegrationEvent eventInstance, CancellationToken cancellationToken)
+    {
+        // This handler is guaranteed to execute at most once per (EventId, Consumer) pair
+        // The InboxEventHandlerDecorator wraps this handler automatically
+        await _orderService.ProcessOrderAsync(eventInstance.OrderId, cancellationToken);
+    }
+}
+```
+
+**Inbox registration:**
+
+```csharp
+// Register inbox store and decorator
+builder.Services.AddXInboxStore();
+builder.Services.AddXEventHandlerInboxDecorator();
 ```
 
 ### Event converters
@@ -438,9 +502,9 @@ Stores aggregate snapshots:
 | CorrelationId | string? | String-based correlation identifier |
 | CreatedOn | DateTime | When the snapshot was created |
 
-### EntityIntegrationEvent
+### EntityEventOutbox
 
-Stores integration events for outbox pattern:
+Stores integration events for outbox pattern (reliable publishing):
 
 | Property | Type | Description |
 |----------|------|-------------|
@@ -449,8 +513,25 @@ Stores integration events for outbox pattern:
 | EventData | string | Serialized event data |
 | CausationId | string? | String-based causation identifier |
 | CorrelationId | string? | String-based correlation identifier (W3C trace ID, GUID, etc.) |
-| Status | EventStatus | PENDING, PROCESSED, FAILED |
+| Status | EntityStatus | PENDING, PUBLISHED, ONERROR |
 | CreatedOn | DateTime | When the event was created |
+
+### EntityEventInbox
+
+Stores integration events for inbox pattern (exactly-once consumption):
+
+| Property | Type | Description |
+|----------|------|-------------|
+| KeyId | Guid | Unique event identifier |
+| Consumer | string | Logical consumer/handler name (part of composite key) |
+| EventName | string | Event type name |
+| EventData | string | Serialized event data |
+| CausationId | string? | String-based causation identifier |
+| CorrelationId | string? | String-based correlation identifier |
+| Status | EntityStatus | PROCESSING, PUBLISHED (success), ONERROR (failed) |
+| ClaimId | Guid? | Lease identifier for visibility timeout |
+| NextAttemptOn | DateTime? | When retry is allowed (after visibility timeout) |
+| CreatedOn | DateTime | When the event was received |
 
 ---
 
@@ -463,6 +544,7 @@ Stores integration events for outbox pattern:
 5. **Truncate old events** - Clean up after taking snapshots
 6. **Keep correlation IDs** - flow `EventContext` in your app to keep causation/correlation consistent
 7. **Use W3C trace IDs** - leverage `traceparent` for distributed tracing interoperability
+8. **Combine Outbox + Inbox** - Use outbox for reliable publishing, inbox for exactly-once consumption
 
 ---
 
