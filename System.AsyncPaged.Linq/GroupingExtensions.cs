@@ -70,7 +70,8 @@ public static class GroupingExtensions
 
                 await foreach (var item in source.WithCancellation(ct).ConfigureAwait(false))
                 {
-                    var key = keySelector(item);
+                    var key = keySelector(item)
+                        ?? throw new InvalidOperationException($"Key selector returned null for element of type '{typeof(TSource).Name}'.");
                     if (!groups.TryGetValue(key, out var group))
                     {
                         group = [];
@@ -138,7 +139,8 @@ public static class GroupingExtensions
 
                 await foreach (var item in source.WithCancellation(ct).ConfigureAwait(false))
                 {
-                    var key = keySelector(item);
+                    var key = keySelector(item)
+                        ?? throw new InvalidOperationException($"Key selector returned null for element of type '{typeof(TSource).Name}'.");
                     var element = elementSelector(item);
                     if (!groups.TryGetValue(key, out var group))
                     {
@@ -207,7 +209,8 @@ public static class GroupingExtensions
 
                 await foreach (var item in source.WithCancellation(ct).ConfigureAwait(false))
                 {
-                    var key = keySelector(item);
+                    var key = keySelector(item)
+                        ?? throw new InvalidOperationException($"Key selector returned null for element of type '{typeof(TSource).Name}'.");
                     if (!groups.TryGetValue(key, out var group))
                     {
                         group = [];
@@ -231,13 +234,13 @@ public static class GroupingExtensions
         #endregion
     }
 
-    // Helper classes for grouping
-    private sealed class Grouping<TKey, TElement>(TKey key, IEnumerable<TElement> elements) : IGrouping<TKey, TElement>
+    /// <summary>
+    /// Represents a collection of objects that have a common key.
+    /// </summary>
+    private sealed record Grouping<TKey, TElement>(TKey Key, IReadOnlyList<TElement> Elements) : IGrouping<TKey, TElement>
         where TKey : notnull
     {
-        public TKey Key { get; } = key;
-
-        public IEnumerator<TElement> GetEnumerator() => elements.GetEnumerator();
+        public IEnumerator<TElement> GetEnumerator() => Elements.GetEnumerator();
 
         IEnumerator IEnumerable.GetEnumerator() => GetEnumerator();
     }

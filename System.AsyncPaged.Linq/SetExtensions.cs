@@ -59,6 +59,8 @@ public static class SetExtensions
 
             async IAsyncEnumerable<TSource> Iterator([EnumeratorCancellation] CancellationToken ct = default)
             {
+                ct.ThrowIfCancellationRequested();
+
                 var seen = new HashSet<TSource>(comparer);
 
                 await foreach (var item in source.WithCancellation(ct).ConfigureAwait(false))
@@ -106,6 +108,8 @@ public static class SetExtensions
 
             async IAsyncEnumerable<TSource> Iterator([EnumeratorCancellation] CancellationToken ct = default)
             {
+                ct.ThrowIfCancellationRequested();
+
                 var otherSet = new HashSet<TSource>(comparer);
                 await foreach (var item in other.WithCancellation(ct).ConfigureAwait(false))
                 {
@@ -152,6 +156,8 @@ public static class SetExtensions
 
             async IAsyncEnumerable<TSource> Iterator([EnumeratorCancellation] CancellationToken ct = default)
             {
+                ct.ThrowIfCancellationRequested();
+
                 var otherSet = new HashSet<TSource>(comparer);
                 await foreach (var item in other.WithCancellation(ct).ConfigureAwait(false))
                 {
@@ -188,6 +194,8 @@ public static class SetExtensions
 
             async IAsyncEnumerable<TSource> Iterator([EnumeratorCancellation] CancellationToken ct = default)
             {
+                ct.ThrowIfCancellationRequested();
+
                 await foreach (var item in source.WithCancellation(ct).ConfigureAwait(false))
                 {
                     yield return item;
@@ -216,6 +224,8 @@ public static class SetExtensions
 
             async IAsyncEnumerable<TSource> Iterator([EnumeratorCancellation] CancellationToken ct = default)
             {
+                ct.ThrowIfCancellationRequested();
+
                 yield return element;
 
                 await foreach (var item in source.WithCancellation(ct).ConfigureAwait(false))
@@ -241,6 +251,8 @@ public static class SetExtensions
 
             async IAsyncEnumerable<TSource> Iterator([EnumeratorCancellation] CancellationToken ct = default)
             {
+                ct.ThrowIfCancellationRequested();
+
                 await foreach (var item in source.WithCancellation(ct).ConfigureAwait(false))
                 {
                     yield return item;
@@ -278,6 +290,8 @@ public static class SetExtensions
 
             async IAsyncEnumerable<TResult> Iterator([EnumeratorCancellation] CancellationToken ct = default)
             {
+                ct.ThrowIfCancellationRequested();
+
                 await using var sourceEnumerator = source.GetAsyncEnumerator(ct);
                 await using var otherEnumerator = other.GetAsyncEnumerator(ct);
 
@@ -331,6 +345,8 @@ public static class SetExtensions
 
             async IAsyncEnumerable<TSource?> Iterator([EnumeratorCancellation] CancellationToken ct = default)
             {
+                ct.ThrowIfCancellationRequested();
+
                 bool hasElements = false;
                 await foreach (var item in source.WithCancellation(ct).ConfigureAwait(false))
                 {
@@ -347,6 +363,203 @@ public static class SetExtensions
                 ct => new ValueTask<Pagination>(source.GetPaginationAsync(ct)));
         }
 
-        #endregion
-    }
-}
+                #endregion
+
+                #region Distinct
+
+                /// <summary>
+                /// Returns distinct elements from the asynchronous paged sequence using the default equality comparer to compare values.
+                /// </summary>
+                /// <returns>An <see cref="IAsyncPagedEnumerable{TSource}"/> that contains distinct elements from the source sequence.</returns>
+                /// <exception cref="ArgumentNullException">Thrown when the source sequence is null.</exception>
+                /// <remarks>
+                /// <para>
+                /// <b>Warning:</b> This operation buffers seen elements in a <see cref="HashSet{T}"/>,
+                /// which may consume significant memory for large sequences with many distinct values.
+                /// </para>
+                /// <para>
+                /// <b>Pagination Note:</b> The original pagination metadata is preserved, but may not accurately
+                /// reflect the filtered result count. Use MaterializationExtensions.MaterializeAsync
+                /// if accurate post-filter pagination is required.
+                /// </para>
+                /// </remarks>
+                public IAsyncPagedEnumerable<TSource> DistinctPaged()
+                {
+                    return source.DistinctPaged(EqualityComparer<TSource>.Default);
+                }
+
+                /// <summary>
+                /// Returns distinct elements from the asynchronous paged sequence using a specified equality comparer to compare values.
+                /// </summary>
+                /// <param name="comparer">An equality comparer to compare values.</param>
+                /// <returns>An <see cref="IAsyncPagedEnumerable{TSource}"/> that contains distinct elements from the source sequence.</returns>
+                /// <exception cref="ArgumentNullException">Thrown when the source sequence is null.</exception>
+                /// <remarks>
+                /// <para>
+                /// <b>Warning:</b> This operation buffers seen elements in a <see cref="HashSet{T}"/>,
+                /// which may consume significant memory for large sequences with many distinct values.
+                /// </para>
+                /// <para>
+                /// <b>Pagination Note:</b> The original pagination metadata is preserved, but may not accurately
+                /// reflect the filtered result count. Use MaterializationExtensions.MaterializeAsync
+                /// if accurate post-filter pagination is required.
+                /// </para>
+                /// </remarks>
+                public IAsyncPagedEnumerable<TSource> DistinctPaged(IEqualityComparer<TSource>? comparer)
+                {
+                    ArgumentNullException.ThrowIfNull(source);
+
+                    async IAsyncEnumerable<TSource> Iterator([EnumeratorCancellation] CancellationToken ct = default)
+                    {
+                        ct.ThrowIfCancellationRequested();
+
+                        var seen = new HashSet<TSource>(comparer);
+                        await foreach (var item in source.WithCancellation(ct).ConfigureAwait(false))
+                        {
+                            if (seen.Add(item))
+                                yield return item;
+                        }
+                    }
+
+                    return AsyncPagedEnumerable.Create(
+                        Iterator(),
+                        ct => new ValueTask<Pagination>(source.GetPaginationAsync(ct)));
+                }
+
+                /// <summary>
+                /// Returns distinct elements from the asynchronous paged sequence using a specified key selector function.
+                /// </summary>
+                /// <typeparam name="TKey">The type of the key returned by the key selector function.</typeparam>
+                /// <param name="keySelector">A function to extract the key for each element.</param>
+                /// <returns>An <see cref="IAsyncPagedEnumerable{TSource}"/> that contains distinct elements from the source sequence.</returns>
+                /// <exception cref="ArgumentNullException">Thrown when the source sequence or key selector is null.</exception>
+                /// <remarks>
+                /// <para>
+                /// <b>Warning:</b> This operation buffers seen keys in a <see cref="HashSet{T}"/>,
+                /// which may consume significant memory for large sequences with many distinct keys.
+                /// </para>
+                /// <para>
+                /// <b>Pagination Note:</b> The original pagination metadata is preserved, but may not accurately
+                /// reflect the filtered result count. Use MaterializationExtensions.MaterializeAsync
+                /// if accurate post-filter pagination is required.
+                /// </para>
+                /// </remarks>
+                public IAsyncPagedEnumerable<TSource> DistinctByPaged<TKey>(Func<TSource, TKey> keySelector)
+                {
+                    return source.DistinctByPaged(keySelector, EqualityComparer<TKey>.Default);
+                }
+
+                /// <summary>
+                /// Returns distinct elements from the asynchronous paged sequence using a specified key selector function and equality comparer.
+                /// </summary>
+                /// <typeparam name="TKey">The type of the key returned by the key selector function.</typeparam>
+                /// <param name="keySelector">A function to extract the key for each element.</param>
+                /// <param name="comparer">An equality comparer to compare keys.</param>
+                /// <returns>An <see cref="IAsyncPagedEnumerable{TSource}"/> that contains distinct elements from the source sequence.</returns>
+                /// <exception cref="ArgumentNullException">Thrown when the source sequence or key selector is null.</exception>
+                /// <remarks>
+                /// <para>
+                /// <b>Warning:</b> This operation buffers seen keys in a <see cref="HashSet{T}"/>,
+                /// which may consume significant memory for large sequences with many distinct keys.
+                /// </para>
+                /// <para>
+                /// <b>Pagination Note:</b> The original pagination metadata is preserved, but may not accurately
+                /// reflect the filtered result count. Use MaterializationExtensions.MaterializeAsync
+                /// if accurate post-filter pagination is required.
+                /// </para>
+                /// </remarks>
+                public IAsyncPagedEnumerable<TSource> DistinctByPaged<TKey>(Func<TSource, TKey> keySelector, IEqualityComparer<TKey>? comparer)
+                {
+                    ArgumentNullException.ThrowIfNull(source);
+                    ArgumentNullException.ThrowIfNull(keySelector);
+
+                    async IAsyncEnumerable<TSource> Iterator([EnumeratorCancellation] CancellationToken ct = default)
+                    {
+                        ct.ThrowIfCancellationRequested();
+
+                        var seenKeys = new HashSet<TKey>(comparer);
+                        await foreach (var item in source.WithCancellation(ct).ConfigureAwait(false))
+                        {
+                            var key = keySelector(item);
+                            if (seenKeys.Add(key))
+                                yield return item;
+                        }
+                    }
+
+                            return AsyncPagedEnumerable.Create(
+                                Iterator(),
+                                ct => new ValueTask<Pagination>(source.GetPaginationAsync(ct)));
+                            }
+
+                            #endregion
+
+                    #region Cast / OfType
+
+                    /// <summary>
+                    /// Casts the elements of the asynchronous paged sequence to the specified type.
+                    /// </summary>
+                    /// <typeparam name="TResult">The type to cast the elements of source to.</typeparam>
+                    /// <returns>An <see cref="IAsyncPagedEnumerable{TResult}"/> that contains each element of the source sequence cast to the specified type.</returns>
+                    /// <exception cref="ArgumentNullException">Thrown when the source sequence is null.</exception>
+                    /// <exception cref="InvalidCastException">An element in the sequence cannot be cast to type <typeparamref name="TResult"/>.</exception>
+                    /// <remarks>
+                    /// <para>
+                    /// <b>Pagination Note:</b> The original pagination metadata is preserved since this operation
+                    /// does not change the number of elements.
+                    /// </para>
+                    /// </remarks>
+                    public IAsyncPagedEnumerable<TResult> CastPaged<TResult>()
+                    {
+                        ArgumentNullException.ThrowIfNull(source);
+
+                        async IAsyncEnumerable<TResult> Iterator([EnumeratorCancellation] CancellationToken ct = default)
+                        {
+                            ct.ThrowIfCancellationRequested();
+
+                            await foreach (var item in source.WithCancellation(ct).ConfigureAwait(false))
+                            {
+                                yield return (TResult)(object)item!;
+                            }
+                        }
+
+                        return AsyncPagedEnumerable.Create(
+                            Iterator(),
+                            ct => new ValueTask<Pagination>(source.GetPaginationAsync(ct)));
+                    }
+
+                    /// <summary>
+                    /// Filters the elements of the asynchronous paged sequence based on a specified type.
+                    /// </summary>
+                    /// <typeparam name="TResult">The type to filter the elements of the sequence on.</typeparam>
+                    /// <returns>An <see cref="IAsyncPagedEnumerable{TResult}"/> that contains elements from the source sequence of type <typeparamref name="TResult"/>.</returns>
+                    /// <exception cref="ArgumentNullException">Thrown when the source sequence is null.</exception>
+                    /// <remarks>
+                    /// <para>
+                    /// <b>Pagination Note:</b> The original pagination metadata is preserved, but may not accurately
+                    /// reflect the filtered result count since elements of non-matching types are excluded.
+                    /// Use MaterializationExtensions.MaterializeAsync if accurate post-filter pagination is required.
+                    /// </para>
+                    /// </remarks>
+                    public IAsyncPagedEnumerable<TResult> OfTypePaged<TResult>()
+                    {
+                        ArgumentNullException.ThrowIfNull(source);
+
+                        async IAsyncEnumerable<TResult> Iterator([EnumeratorCancellation] CancellationToken ct = default)
+                        {
+                            ct.ThrowIfCancellationRequested();
+
+                            await foreach (var item in source.WithCancellation(ct).ConfigureAwait(false))
+                            {
+                                if (item is TResult result)
+                                    yield return result;
+                            }
+                        }
+
+                        return AsyncPagedEnumerable.Create(
+                            Iterator(),
+                            ct => new ValueTask<Pagination>(source.GetPaginationAsync(ct)));
+                    }
+
+                    #endregion
+                        }
+                    }

@@ -52,6 +52,12 @@ public static class OrderingExtensions
         /// <param name="comparer">A comparer to compare keys.</param>
         /// <returns>An <see cref="IAsyncPagedEnumerable{TSource}"/> whose elements are sorted according to a key.</returns>
         /// <exception cref="ArgumentNullException">Thrown when the source sequence or key selector is null.</exception>
+        /// <remarks>
+        /// <para>
+        /// <b>Warning:</b> This operation buffers all elements in memory before sorting,
+        /// which may cause memory pressure for large sequences.
+        /// </para>
+        /// </remarks>
         public IAsyncPagedEnumerable<TSource> OrderByPaged<TKey>(Func<TSource, TKey> keySelector, IComparer<TKey>? comparer)
         {
             ArgumentNullException.ThrowIfNull(source);
@@ -61,6 +67,8 @@ public static class OrderingExtensions
 
             async IAsyncEnumerable<TSource> Iterator([EnumeratorCancellation] CancellationToken ct = default)
             {
+                ct.ThrowIfCancellationRequested();
+
                 var list = new List<TSource>();
                 await foreach (var item in source.WithCancellation(ct).ConfigureAwait(false))
                 {
@@ -101,6 +109,12 @@ public static class OrderingExtensions
         /// <param name="comparer">A comparer to compare keys.</param>
         /// <returns>An <see cref="IAsyncPagedEnumerable{TSource}"/> whose elements are sorted in descending order according to a key.</returns>
         /// <exception cref="ArgumentNullException">Thrown when the source sequence or key selector is null.</exception>
+        /// <remarks>
+        /// <para>
+        /// <b>Warning:</b> This operation buffers all elements in memory before sorting,
+        /// which may cause memory pressure for large sequences.
+        /// </para>
+        /// </remarks>
         public IAsyncPagedEnumerable<TSource> OrderByDescendingPaged<TKey>(Func<TSource, TKey> keySelector, IComparer<TKey>? comparer)
         {
             ArgumentNullException.ThrowIfNull(source);
@@ -110,6 +124,8 @@ public static class OrderingExtensions
 
             async IAsyncEnumerable<TSource> Iterator([EnumeratorCancellation] CancellationToken ct = default)
             {
+                ct.ThrowIfCancellationRequested();
+
                 var list = new List<TSource>();
                 await foreach (var item in source.WithCancellation(ct).ConfigureAwait(false))
                 {
@@ -139,12 +155,20 @@ public static class OrderingExtensions
         /// </summary>
         /// <returns>An <see cref="IAsyncPagedEnumerable{TSource}"/> whose elements correspond to those of the source sequence in reverse order.</returns>
         /// <exception cref="ArgumentNullException">Thrown when the source sequence is null.</exception>
+        /// <remarks>
+        /// <para>
+        /// <b>Warning:</b> This operation buffers all elements in memory before reversing,
+        /// which may cause memory pressure for large sequences.
+        /// </para>
+        /// </remarks>
         public IAsyncPagedEnumerable<TSource> ReversePaged()
         {
             ArgumentNullException.ThrowIfNull(source);
 
             async IAsyncEnumerable<TSource> Iterator([EnumeratorCancellation] CancellationToken ct = default)
             {
+                ct.ThrowIfCancellationRequested();
+
                 var list = new List<TSource>();
                 await foreach (var item in source.WithCancellation(ct).ConfigureAwait(false))
                 {

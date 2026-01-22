@@ -46,7 +46,6 @@ public static class MaterializationExtensions
         /// PERFORMANCE: Use this when you know pagination will be accessed multiple times or before enumeration starts.
         /// This triggers the lazy computation mechanism once and caches the result.
         /// </remarks>
-        [MethodImpl(MethodImplOptions.AggressiveInlining)]
         public async ValueTask<IAsyncPagedEnumerable<T>> PrecomputePaginationAsync(
             CancellationToken cancellationToken = default)
         {
@@ -152,7 +151,6 @@ public static class MaterializationExtensions
     /// Best for small to medium datasets where accurate count is needed.
     /// </remarks>
     /// <exception cref="ArgumentNullException">Thrown when <paramref name="source"/> is null.</exception>
-    [MethodImpl(MethodImplOptions.AggressiveInlining)]
     public static async ValueTask<IAsyncPagedEnumerable<T>> ToMaterializedAsyncPagedEnumerable<T>(
         this IAsyncEnumerable<T> source,
         CancellationToken cancellationToken = default)
@@ -182,7 +180,6 @@ public static class MaterializationExtensions
     /// <returns>A paged enumerable with all items materialized.</returns>
     /// <exception cref="ArgumentNullException">Thrown when <paramref name="source"/> is null.</exception>
     /// <exception cref="ArgumentOutOfRangeException">Thrown when <paramref name="pageSize"/> or <paramref name="currentPage"/> is less than or equal to zero.</exception>
-    [MethodImpl(MethodImplOptions.AggressiveInlining)]
     public static async ValueTask<IAsyncPagedEnumerable<T>> ToMaterializedAsyncPagedEnumerable<T>(
         this IAsyncEnumerable<T> source,
         int pageSize,

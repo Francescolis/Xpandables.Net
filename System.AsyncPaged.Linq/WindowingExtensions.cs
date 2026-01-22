@@ -40,6 +40,10 @@ public static class WindowingExtensions
         /// <returns>An <see cref="IAsyncPagedEnumerable{T}"/> where each element is an array representing a window of consecutive elements.</returns>
         /// <exception cref="ArgumentNullException">Thrown when the source sequence is null.</exception>
         /// <exception cref="ArgumentOutOfRangeException">Thrown when <paramref name="windowSize"/> is less than 1.</exception>
+        /// <remarks>
+        /// Only full windows are returned. If the source sequence has fewer elements than the window size,
+        /// no windows are yielded. This behavior is consistent with other windowed aggregate methods.
+        /// </remarks>
         public IAsyncPagedEnumerable<TSource[]> WindowPaged(int windowSize)
         {
             ArgumentNullException.ThrowIfNull(source);
@@ -47,6 +51,8 @@ public static class WindowingExtensions
 
             async IAsyncEnumerable<TSource[]> Iterator([EnumeratorCancellation] CancellationToken ct = default)
             {
+                ct.ThrowIfCancellationRequested();
+
                 var window = new Queue<TSource>(windowSize);
                 await foreach (var item in source.WithCancellation(ct).ConfigureAwait(false))
                 {
@@ -57,11 +63,6 @@ public static class WindowingExtensions
                     if (window.Count == windowSize)
                         yield return [.. window];
                 }
-
-                // If we have elements but haven't reached the full window size, 
-                // yield the remaining elements as a partial window
-                if (window.Count > 0 && window.Count < windowSize)
-                    yield return [.. window];
             }
 
             return AsyncPagedEnumerable.Create(
@@ -85,6 +86,8 @@ public static class WindowingExtensions
 
             async IAsyncEnumerable<int> Iterator([EnumeratorCancellation] CancellationToken ct = default)
             {
+                ct.ThrowIfCancellationRequested();
+
                 var window = new Queue<int>(windowSize);
                 int currentSum = 0;
 
@@ -126,6 +129,8 @@ public static class WindowingExtensions
 
             async IAsyncEnumerable<long> Iterator([EnumeratorCancellation] CancellationToken ct = default)
             {
+                ct.ThrowIfCancellationRequested();
+
                 var window = new Queue<long>(windowSize);
                 long currentSum = 0;
 
@@ -165,36 +170,38 @@ public static class WindowingExtensions
             ArgumentNullException.ThrowIfNull(selector);
             ArgumentOutOfRangeException.ThrowIfLessThan(windowSize, 1);
 
-            async IAsyncEnumerable<double> Iterator([EnumeratorCancellation] CancellationToken ct = default)
-            {
-                var window = new Queue<double>(windowSize);
-                double currentSum = 0;
-
-                await foreach (var item in source.WithCancellation(ct).ConfigureAwait(false))
+                async IAsyncEnumerable<double> Iterator([EnumeratorCancellation] CancellationToken ct = default)
                 {
-                    var value = selector(item);
-                    window.Enqueue(value);
-                    currentSum += value;
+                    ct.ThrowIfCancellationRequested();
 
-                    if (window.Count > windowSize)
+                    var window = new Queue<double>(windowSize);
+                    double currentSum = 0;
+
+                    await foreach (var item in source.WithCancellation(ct).ConfigureAwait(false))
                     {
-                        var removedValue = window.Dequeue();
-                        currentSum -= removedValue;
-                    }
+                        var value = selector(item);
+                        window.Enqueue(value);
+                        currentSum += value;
 
-                    if (window.Count == windowSize)
-                        yield return currentSum;
+                        if (window.Count > windowSize)
+                        {
+                            var removedValue = window.Dequeue();
+                            currentSum -= removedValue;
+                        }
+
+                        if (window.Count == windowSize)
+                            yield return currentSum;
+                    }
                 }
+
+                return AsyncPagedEnumerable.Create(
+                    Iterator(),
+                    ct => new ValueTask<Pagination>(source.GetPaginationAsync(ct)));
             }
 
-            return AsyncPagedEnumerable.Create(
-                Iterator(),
-                ct => new ValueTask<Pagination>(source.GetPaginationAsync(ct)));
-        }
-
-        /// <summary>
-        /// Computes a windowed average over the sequence using the specified window size and value selector.
-        /// </summary>
+            /// <summary>
+            /// Computes a windowed average over the sequence using the specified window size and value selector.
+            /// </summary>
         /// <param name="windowSize">The size of the sliding window.</param>
         /// <param name="selector">A function to extract a numeric value from each element.</param>
         /// <returns>An <see cref="IAsyncPagedEnumerable{T}"/> where each element is the average of values in the current window.</returns>
@@ -206,78 +213,89 @@ public static class WindowingExtensions
             ArgumentNullException.ThrowIfNull(selector);
             ArgumentOutOfRangeException.ThrowIfLessThan(windowSize, 1);
 
-            async IAsyncEnumerable<double> Iterator([EnumeratorCancellation] CancellationToken ct = default)
-            {
-                var window = new Queue<double>(windowSize);
-                double currentSum = 0;
-
-                await foreach (var item in source.WithCancellation(ct).ConfigureAwait(false))
+                async IAsyncEnumerable<double> Iterator([EnumeratorCancellation] CancellationToken ct = default)
                 {
-                    var value = selector(item);
-                    window.Enqueue(value);
-                    currentSum += value;
+                    ct.ThrowIfCancellationRequested();
 
-                    if (window.Count > windowSize)
+                    var window = new Queue<double>(windowSize);
+                    double currentSum = 0;
+
+                    await foreach (var item in source.WithCancellation(ct).ConfigureAwait(false))
                     {
-                        var removedValue = window.Dequeue();
-                        currentSum -= removedValue;
-                    }
+                        var value = selector(item);
+                        window.Enqueue(value);
+                        currentSum += value;
 
-                    if (window.Count == windowSize)
-                        yield return currentSum / windowSize;
-                }
-            }
-
-            return AsyncPagedEnumerable.Create(
-                Iterator(),
-                ct => new ValueTask<Pagination>(source.GetPaginationAsync(ct)));
-        }
-
-        /// <summary>
-        /// Computes a windowed minimum over the sequence using the specified window size and value selector.
-        /// </summary>
-        /// <typeparam name="TValue">The type of the value returned by the selector.</typeparam>
-        /// <param name="windowSize">The size of the sliding window.</param>
-        /// <param name="selector">A function to extract a value from each element.</param>
-        /// <returns>An <see cref="IAsyncPagedEnumerable{T}"/> where each element is the minimum of values in the current window.</returns>
-        /// <exception cref="ArgumentNullException">Thrown when the source sequence or selector is null.</exception>
-        /// <exception cref="ArgumentOutOfRangeException">Thrown when <paramref name="windowSize"/> is less than 1.</exception>
-        public IAsyncPagedEnumerable<TValue> WindowedMinPaged<TValue>(int windowSize, Func<TSource, TValue> selector)
-            where TValue : IComparable<TValue>
-        {
-            ArgumentNullException.ThrowIfNull(source);
-            ArgumentNullException.ThrowIfNull(selector);
-            ArgumentOutOfRangeException.ThrowIfLessThan(windowSize, 1);
-
-            async IAsyncEnumerable<TValue> Iterator([EnumeratorCancellation] CancellationToken ct = default)
-            {
-                var window = new Queue<TValue>(windowSize);
-
-                await foreach (var item in source.WithCancellation(ct).ConfigureAwait(false))
-                {
-                    var value = selector(item);
-                    window.Enqueue(value);
-
-                    if (window.Count > windowSize)
-                        window.Dequeue();
-
-                    if (window.Count == windowSize)
-                    {
-                        var min = window.First();
-                        foreach (var windowValue in window.Skip(1))
+                        if (window.Count > windowSize)
                         {
-                            if (windowValue.CompareTo(min) < 0)
-                                min = windowValue;
+                            var removedValue = window.Dequeue();
+                            currentSum -= removedValue;
                         }
-                        yield return min;
+
+                        if (window.Count == windowSize)
+                            yield return currentSum / windowSize;
                     }
                 }
+
+                return AsyncPagedEnumerable.Create(
+                    Iterator(),
+                    ct => new ValueTask<Pagination>(source.GetPaginationAsync(ct)));
             }
 
-            return AsyncPagedEnumerable.Create(
-                Iterator(),
-                ct => new ValueTask<Pagination>(source.GetPaginationAsync(ct)));
-        }
+            /// <summary>
+            /// Computes a windowed minimum over the sequence using the specified window size and value selector.
+            /// </summary>
+            /// <typeparam name="TValue">The type of the value returned by the selector.</typeparam>
+            /// <param name="windowSize">The size of the sliding window.</param>
+            /// <param name="selector">A function to extract a value from each element.</param>
+            /// <returns>An <see cref="IAsyncPagedEnumerable{T}"/> where each element is the minimum of values in the current window.</returns>
+            /// <exception cref="ArgumentNullException">Thrown when the source sequence or selector is null.</exception>
+            /// <exception cref="ArgumentOutOfRangeException">Thrown when <paramref name="windowSize"/> is less than 1.</exception>
+            /// <remarks>
+            /// This method uses a monotonic deque algorithm for O(n) performance instead of O(n²).
+            /// </remarks>
+            public IAsyncPagedEnumerable<TValue> WindowedMinPaged<TValue>(int windowSize, Func<TSource, TValue> selector)
+                where TValue : IComparable<TValue>
+            {
+                ArgumentNullException.ThrowIfNull(source);
+                ArgumentNullException.ThrowIfNull(selector);
+                ArgumentOutOfRangeException.ThrowIfLessThan(windowSize, 1);
+
+                async IAsyncEnumerable<TValue> Iterator([EnumeratorCancellation] CancellationToken ct = default)
+                {
+                    ct.ThrowIfCancellationRequested();
+
+                    // Monotonic deque: stores (index, value) pairs where values are increasing from front to back
+                    var deque = new LinkedList<(int Index, TValue Value)>();
+                    int index = 0;
+
+                    await foreach (var item in source.WithCancellation(ct).ConfigureAwait(false))
+                    {
+                        var value = selector(item);
+
+                        // Remove elements from back that are greater than current value (they can never be minimum)
+                        while (deque.Count > 0 && deque.Last!.Value.Value.CompareTo(value) >= 0)
+                            deque.RemoveLast();
+
+                        // Add current element
+                        deque.AddLast((index, value));
+
+                        // Remove elements that are outside the window from front
+                        while (deque.Count > 0 && deque.First!.Value.Index <= index - windowSize)
+                            deque.RemoveFirst();
+
+                        // Yield minimum (front of deque) when we have a full window
+                        if (index >= windowSize - 1)
+                            yield return deque.First!.Value.Value;
+
+                        index++;
+                    }
+                }
+
+                return AsyncPagedEnumerable.Create(
+                    Iterator(),
+                    ct => new ValueTask<Pagination>(source.GetPaginationAsync(ct)));
+            }
 
         /// <summary>
         /// Computes a windowed maximum over the sequence using the specified window size and value selector.
@@ -288,6 +306,9 @@ public static class WindowingExtensions
         /// <returns>An <see cref="IAsyncPagedEnumerable{T}"/> where each element is the maximum of values in the current window.</returns>
         /// <exception cref="ArgumentNullException">Thrown when the source sequence or selector is null.</exception>
         /// <exception cref="ArgumentOutOfRangeException">Thrown when <paramref name="windowSize"/> is less than 1.</exception>
+        /// <remarks>
+        /// This method uses a monotonic deque algorithm for O(n) performance instead of O(n²).
+        /// </remarks>
         public IAsyncPagedEnumerable<TValue> WindowedMaxPaged<TValue>(int windowSize, Func<TSource, TValue> selector)
             where TValue : IComparable<TValue>
         {
@@ -297,26 +318,32 @@ public static class WindowingExtensions
 
             async IAsyncEnumerable<TValue> Iterator([EnumeratorCancellation] CancellationToken ct = default)
             {
-                var window = new Queue<TValue>(windowSize);
+                ct.ThrowIfCancellationRequested();
+
+                // Monotonic deque: stores (index, value) pairs where values are decreasing from front to back
+                var deque = new LinkedList<(int Index, TValue Value)>();
+                int index = 0;
 
                 await foreach (var item in source.WithCancellation(ct).ConfigureAwait(false))
                 {
                     var value = selector(item);
-                    window.Enqueue(value);
 
-                    if (window.Count > windowSize)
-                        window.Dequeue();
+                    // Remove elements from back that are less than current value (they can never be maximum)
+                    while (deque.Count > 0 && deque.Last!.Value.Value.CompareTo(value) <= 0)
+                        deque.RemoveLast();
 
-                    if (window.Count == windowSize)
-                    {
-                        var max = window.First();
-                        foreach (var windowValue in window.Skip(1))
-                        {
-                            if (windowValue.CompareTo(max) > 0)
-                                max = windowValue;
-                        }
-                        yield return max;
-                    }
+                    // Add current element
+                    deque.AddLast((index, value));
+
+                    // Remove elements that are outside the window from front
+                    while (deque.Count > 0 && deque.First!.Value.Index <= index - windowSize)
+                        deque.RemoveFirst();
+
+                    // Yield maximum (front of deque) when we have a full window
+                    if (index >= windowSize - 1)
+                        yield return deque.First!.Value.Value;
+
+                    index++;
                 }
             }
 
@@ -340,6 +367,8 @@ public static class WindowingExtensions
 
             async IAsyncEnumerable<(TSource Previous, TSource Current)> Iterator([EnumeratorCancellation] CancellationToken ct = default)
             {
+                ct.ThrowIfCancellationRequested();
+
                 TSource? previous = default;
                 bool hasPrevious = false;
 
@@ -372,6 +401,8 @@ public static class WindowingExtensions
 
             async IAsyncEnumerable<TResult> Iterator([EnumeratorCancellation] CancellationToken ct = default)
             {
+                ct.ThrowIfCancellationRequested();
+
                 TSource? previous = default;
                 bool hasPrevious = false;
 
@@ -409,6 +440,8 @@ public static class WindowingExtensions
 
             async IAsyncEnumerable<TAccumulate> Iterator([EnumeratorCancellation] CancellationToken ct = default)
             {
+                ct.ThrowIfCancellationRequested();
+
                 var accumulator = seed;
                 yield return accumulator;
 
@@ -437,6 +470,8 @@ public static class WindowingExtensions
 
             async IAsyncEnumerable<TSource> Iterator([EnumeratorCancellation] CancellationToken ct = default)
             {
+                ct.ThrowIfCancellationRequested();
+
                 TSource? accumulator = default;
                 bool hasAccumulator = false;
 

@@ -92,7 +92,8 @@ public static class JoinExtensions
                 var innerLookup = new Dictionary<TKey, List<TInner>>(comparer!);
                 await foreach (var innerElement in inner.WithCancellation(ct).ConfigureAwait(false))
                 {
-                    var innerKey = innerKeySelector(innerElement);
+                    var innerKey = innerKeySelector(innerElement)
+                        ?? throw new InvalidOperationException($"Inner key selector returned null for element of type '{typeof(TInner).Name}'.");
                     if (!innerLookup.TryGetValue(innerKey, out var list))
                     {
                         list = [];
@@ -104,7 +105,8 @@ public static class JoinExtensions
                 // Join with outer sequence
                 await foreach (var outerElement in source.WithCancellation(ct).ConfigureAwait(false))
                 {
-                    var outerKey = outerKeySelector(outerElement);
+                    var outerKey = outerKeySelector(outerElement)
+                        ?? throw new InvalidOperationException($"Outer key selector returned null for element of type '{typeof(TSource).Name}'.");
                     if (innerLookup.TryGetValue(outerKey, out var matchingInnerElements))
                     {
                         foreach (var innerElement in matchingInnerElements)
@@ -184,7 +186,8 @@ public static class JoinExtensions
                 var innerLookup = new Dictionary<TKey, List<TInner>>(comparer!);
                 await foreach (var innerElement in inner.WithCancellation(ct).ConfigureAwait(false))
                 {
-                    var innerKey = innerKeySelector(innerElement);
+                    var innerKey = innerKeySelector(innerElement)
+                        ?? throw new InvalidOperationException($"Inner key selector returned null for element of type '{typeof(TInner).Name}'.");
                     if (!innerLookup.TryGetValue(innerKey, out var list))
                     {
                         list = [];
@@ -196,7 +199,8 @@ public static class JoinExtensions
                 // Group join with outer sequence
                 await foreach (var outerElement in source.WithCancellation(ct).ConfigureAwait(false))
                 {
-                    var outerKey = outerKeySelector(outerElement);
+                    var outerKey = outerKeySelector(outerElement)
+                        ?? throw new InvalidOperationException($"Outer key selector returned null for element of type '{typeof(TSource).Name}'.");
                     var matchingInnerElements = innerLookup.TryGetValue(outerKey, out var list) ? list : [];
                     yield return resultSelector(outerElement, matchingInnerElements);
                 }

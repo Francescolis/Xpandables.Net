@@ -49,6 +49,35 @@ public static class ProjectionExtensions
         }
 
         /// <summary>
+        /// Projects each element of the asynchronous paged sequence into a new form using a synchronous selector that incorporates the element's index.
+        /// </summary>
+        /// <typeparam name="TResult">Result element type.</typeparam>
+        /// <param name="selector">Synchronous projection function that receives the element and its zero-based index.</param>
+        /// <returns>An <see cref="IAsyncPagedEnumerable{TResult}"/> whose elements are the result of invoking the selector on each element of the source sequence.</returns>
+        /// <exception cref="ArgumentNullException">Thrown when the source sequence or selector is null.</exception>
+        public IAsyncPagedEnumerable<TResult> SelectPaged<TResult>(Func<TSource, int, TResult> selector)
+        {
+            ArgumentNullException.ThrowIfNull(source);
+            ArgumentNullException.ThrowIfNull(selector);
+
+            async IAsyncEnumerable<TResult> Iterator([EnumeratorCancellation] CancellationToken ct = default)
+            {
+                ct.ThrowIfCancellationRequested();
+
+                int index = 0;
+                await foreach (var item in source.WithCancellation(ct).ConfigureAwait(false))
+                {
+                    yield return selector(item, index);
+                    index++;
+                }
+            }
+
+            return AsyncPagedEnumerable.Create(
+                Iterator(),
+                ct => new ValueTask<Pagination>(source.GetPaginationAsync(ct)));
+        }
+
+        /// <summary>
         /// Projects each element using an asynchronous selector (without cancellation token).
         /// </summary>
         /// <typeparam name="TResult">Result element type.</typeparam>
@@ -60,6 +89,8 @@ public static class ProjectionExtensions
 
             async IAsyncEnumerable<TResult> ProjectAsync([EnumeratorCancellation] CancellationToken ct = default)
             {
+                ct.ThrowIfCancellationRequested();
+
                 await foreach (var item in source.WithCancellation(ct).ConfigureAwait(false))
                 {
                     yield return await selectorAsync(item).ConfigureAwait(false);
@@ -83,6 +114,8 @@ public static class ProjectionExtensions
 
             async IAsyncEnumerable<TResult> ProjectAsync([EnumeratorCancellation] CancellationToken ct = default)
             {
+                ct.ThrowIfCancellationRequested();
+
                 await foreach (var item in source.WithCancellation(ct).ConfigureAwait(false))
                 {
                     yield return await selectorAsync(item, ct).ConfigureAwait(false);

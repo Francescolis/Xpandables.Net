@@ -46,6 +46,8 @@ public static class TransformationExtensions
 
             async IAsyncEnumerable<TCollection> Iterator([EnumeratorCancellation] CancellationToken ct = default)
             {
+                ct.ThrowIfCancellationRequested();
+
                 await foreach (var outer in source.WithCancellation(ct).ConfigureAwait(false))
                 {
                     var innerSeq = collectionSelector(outer) ?? throw new InvalidOperationException("Collection selector returned null.");
@@ -80,6 +82,8 @@ public static class TransformationExtensions
 
             async IAsyncEnumerable<TResult> Iterator([EnumeratorCancellation] CancellationToken ct = default)
             {
+                ct.ThrowIfCancellationRequested();
+
                 await foreach (var outer in source.WithCancellation(ct).ConfigureAwait(false))
                 {
                     var innerSeq = collectionSelector(outer) ?? throw new InvalidOperationException("Collection selector returned null.");
@@ -110,6 +114,8 @@ public static class TransformationExtensions
 
             async IAsyncEnumerable<TCollection> Iterator([EnumeratorCancellation] CancellationToken ct = default)
             {
+                ct.ThrowIfCancellationRequested();
+
                 await foreach (var outer in source.WithCancellation(ct).ConfigureAwait(false))
                 {
                     var innerAsync = asyncCollectionSelector(outer) ?? throw new InvalidOperationException("Collection selector returned null.");
@@ -138,24 +144,26 @@ public static class TransformationExtensions
             ArgumentNullException.ThrowIfNull(asyncCollectionSelector);
             ArgumentNullException.ThrowIfNull(resultSelector);
 
-            async IAsyncEnumerable<TResult> Iterator([EnumeratorCancellation] CancellationToken ct = default)
-            {
-                await foreach (var outer in source.WithCancellation(ct).ConfigureAwait(false))
+                async IAsyncEnumerable<TResult> Iterator([EnumeratorCancellation] CancellationToken ct = default)
                 {
-                    var innerAsync = asyncCollectionSelector(outer) ?? throw new InvalidOperationException("Collection selector returned null.");
-                    await foreach (var inner in innerAsync.WithCancellation(ct).ConfigureAwait(false))
-                        yield return resultSelector(outer, inner);
+                    ct.ThrowIfCancellationRequested();
+
+                    await foreach (var outer in source.WithCancellation(ct).ConfigureAwait(false))
+                    {
+                        var innerAsync = asyncCollectionSelector(outer) ?? throw new InvalidOperationException("Collection selector returned null.");
+                        await foreach (var inner in innerAsync.WithCancellation(ct).ConfigureAwait(false))
+                            yield return resultSelector(outer, inner);
+                    }
                 }
+
+                return AsyncPagedEnumerable.Create(
+                    Iterator(),
+                    ct => new ValueTask<Pagination>(source.GetPaginationAsync(ct)));
             }
 
-            return AsyncPagedEnumerable.Create(
-                Iterator(),
-                ct => new ValueTask<Pagination>(source.GetPaginationAsync(ct)));
-        }
-
-        /// <summary>
-        /// Projects each element of the source sequence to a cancellation-aware asynchronous inner sequence and flattens the results.
-        /// </summary>
+            /// <summary>
+            /// Projects each element of the source sequence to a cancellation-aware asynchronous inner sequence and flattens the results.
+            /// </summary>
         /// <typeparam name="TCollection">Inner async collection element type.</typeparam>
         /// <param name="asyncCollectionSelector">Cancellation-aware selector producing an async sequence for each source element.</param>
         public IAsyncPagedEnumerable<TCollection> SelectManyPagedAsync<TCollection>(
@@ -164,24 +172,26 @@ public static class TransformationExtensions
             ArgumentNullException.ThrowIfNull(source);
             ArgumentNullException.ThrowIfNull(asyncCollectionSelector);
 
-            async IAsyncEnumerable<TCollection> Iterator([EnumeratorCancellation] CancellationToken ct = default)
-            {
-                await foreach (var outer in source.WithCancellation(ct).ConfigureAwait(false))
+                async IAsyncEnumerable<TCollection> Iterator([EnumeratorCancellation] CancellationToken ct = default)
                 {
-                    var innerAsync = asyncCollectionSelector(outer, ct) ?? throw new InvalidOperationException("Collection selector returned null.");
-                    await foreach (var inner in innerAsync.WithCancellation(ct).ConfigureAwait(false))
-                        yield return inner;
+                    ct.ThrowIfCancellationRequested();
+
+                    await foreach (var outer in source.WithCancellation(ct).ConfigureAwait(false))
+                    {
+                        var innerAsync = asyncCollectionSelector(outer, ct) ?? throw new InvalidOperationException("Collection selector returned null.");
+                        await foreach (var inner in innerAsync.WithCancellation(ct).ConfigureAwait(false))
+                            yield return inner;
+                    }
                 }
+
+                return AsyncPagedEnumerable.Create(
+                    Iterator(),
+                    ct => new ValueTask<Pagination>(source.GetPaginationAsync(ct)));
             }
 
-            return AsyncPagedEnumerable.Create(
-                Iterator(),
-                ct => new ValueTask<Pagination>(source.GetPaginationAsync(ct)));
-        }
-
-        /// <summary>
-        /// Projects each element of the source sequence to a cancellation-aware asynchronous inner sequence and flattens the results using a result selector.
-        /// </summary>
+            /// <summary>
+            /// Projects each element of the source sequence to a cancellation-aware asynchronous inner sequence and flattens the results using a result selector.
+            /// </summary>
         /// <typeparam name="TCollection">Inner async collection element type.</typeparam>
         /// <typeparam name="TResult">Result element type.</typeparam>
         /// <param name="asyncCollectionSelector">Cancellation-aware selector producing an async sequence for each source element.</param>
@@ -194,20 +204,22 @@ public static class TransformationExtensions
             ArgumentNullException.ThrowIfNull(asyncCollectionSelector);
             ArgumentNullException.ThrowIfNull(resultSelector);
 
-            async IAsyncEnumerable<TResult> Iterator([EnumeratorCancellation] CancellationToken ct = default)
-            {
-                await foreach (var outer in source.WithCancellation(ct).ConfigureAwait(false))
+                async IAsyncEnumerable<TResult> Iterator([EnumeratorCancellation] CancellationToken ct = default)
                 {
-                    var innerAsync = asyncCollectionSelector(outer, ct) ?? throw new InvalidOperationException("Collection selector returned null.");
-                    await foreach (var inner in innerAsync.WithCancellation(ct).ConfigureAwait(false))
-                        yield return resultSelector(outer, inner);
-                }
-            }
+                    ct.ThrowIfCancellationRequested();
 
-            return AsyncPagedEnumerable.Create(
-                Iterator(),
-                ct => new ValueTask<Pagination>(source.GetPaginationAsync(ct)));
-        }
-        #endregion
+                    await foreach (var outer in source.WithCancellation(ct).ConfigureAwait(false))
+                    {
+                        var innerAsync = asyncCollectionSelector(outer, ct) ?? throw new InvalidOperationException("Collection selector returned null.");
+                        await foreach (var inner in innerAsync.WithCancellation(ct).ConfigureAwait(false))
+                            yield return resultSelector(outer, inner);
+                    }
+                }
+
+                return AsyncPagedEnumerable.Create(
+                    Iterator(),
+                    ct => new ValueTask<Pagination>(source.GetPaginationAsync(ct)));
+            }
+            #endregion
     }
 }
