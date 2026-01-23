@@ -25,7 +25,7 @@ namespace System.Entities;
 /// Hibernate, Dapper) to leverage its full capabilities and optimizations).</para>
 /// </summary>
 /// <remarks>This interface provides methods for fetching, inserting, updating, and deleting entities in a data
-/// store. It supports asynchronous operations and allows for query customization through the use of LINQ expressions.
+/// store. It supports asynchronous operations and allows for query customization through the use of query specifications.
 /// Implementations of this interface should handle the underlying data access logic.</remarks>
 /// <typeparam name="TEntity">The type of the entity to query from the data source. Must be a reference type.</typeparam>
 public interface IRepository<[DynamicallyAccessedMembers(DynamicallyAccessedMemberTypes.All)] TEntity> : IDisposable, IAsyncDisposable
@@ -37,86 +37,78 @@ public interface IRepository<[DynamicallyAccessedMembers(DynamicallyAccessedMemb
     bool IsUnitOfWorkEnabled { get; set; }
 
     /// <summary>
-    /// Asynchronously retrieves a sequence of results from the data source based on the specified filter.
+    /// Asynchronously retrieves a sequence of results from the data source based on the specified query specification.
     /// </summary>
     /// <remarks>
     /// <para>The query is executed asynchronously and results are streamed as they become available. The
-    /// returned sequence is not materialized in memory; results are fetched on demand. This method is suitable for
-    /// processing large result sets efficiently.</para>
-    /// <para><b>Warning:</b> Do not call materializing methods (e.g., ToList(), ToArray()) inside the filter function,
-    /// as this defeats deferred execution and may cause performance issues.</para>
+    /// returned sequence is not materialized in memory; results are fetched on demand.</para>
+    /// <para>Use <see cref="QuerySpecification.For{TEntity}"/> to create specifications with a fluent builder.</para>
     /// </remarks>
-    /// <typeparam name="TResult">The type of the result projected by the filter.</typeparam>
-    /// <param name="filter">A function that applies filtering and projection to the queryable collection of entities, returning the desired
-    /// result set.</param>
+    /// <typeparam name="TResult">The type of the result projected by the specification.</typeparam>
+    /// <param name="specification">A query specification that defines filtering, projection, ordering, and paging.</param>
     /// <param name="cancellationToken">A cancellation token that can be used to cancel the asynchronous operation.</param>
-    /// <returns>An asynchronous sequence of results matching the filter criteria. The sequence is streamed and may be empty if
-    /// no results are found.</returns>
+    /// <returns>An asynchronous sequence of results matching the specification criteria.</returns>
     IAsyncEnumerable<TResult> FetchAsync<TResult>(
-        Func<IQueryable<TEntity>, IQueryable<TResult>> filter,
+        IQuerySpecification<TEntity, TResult> specification,
         CancellationToken cancellationToken = default);
 
     /// <summary>
-    /// Asynchronously retrieves a single result from the data source based on the specified filter.
+    /// Asynchronously retrieves a single result from the data source based on the specified query specification.
     /// </summary>
     /// <remarks>
-    /// <para>Returns the single element matching the filter, or throws if zero or more than one element exists.</para>
-    /// <para><b>Warning:</b> Do not call materializing methods inside the filter function.</para>
+    /// <para>Returns the single element matching the specification, or throws if zero or more than one element exists.</para>
     /// </remarks>
-    /// <typeparam name="TResult">The type of the result projected by the filter.</typeparam>
-    /// <param name="filter">A function that applies filtering and projection to the queryable collection of entities.</param>
+    /// <typeparam name="TResult">The type of the result projected by the specification.</typeparam>
+    /// <param name="specification">A query specification that defines filtering, projection, ordering, and paging.</param>
     /// <param name="cancellationToken">A cancellation token that can be used to cancel the asynchronous operation.</param>
-    /// <returns>The single result matching the filter criteria.</returns>
-    /// <exception cref="InvalidOperationException">Thrown when zero or more than one element matches the filter.</exception>
+    /// <returns>The single result matching the specification criteria.</returns>
+    /// <exception cref="InvalidOperationException">Thrown when zero or more than one element matches the specification.</exception>
     Task<TResult> FetchSingleAsync<TResult>(
-        Func<IQueryable<TEntity>, IQueryable<TResult>> filter,
+        IQuerySpecification<TEntity, TResult> specification,
         CancellationToken cancellationToken = default);
 
     /// <summary>
     /// Asynchronously retrieves a single result from the data source, or a default value if no result is found.
     /// </summary>
     /// <remarks>
-    /// <para>Returns the single element matching the filter, default if none exists, or throws if more than one element exists.</para>
-    /// <para><b>Warning:</b> Do not call materializing methods inside the filter function.</para>
+    /// <para>Returns the single element matching the specification, default if none exists, or throws if more than one element exists.</para>
     /// </remarks>
-    /// <typeparam name="TResult">The type of the result projected by the filter.</typeparam>
-    /// <param name="filter">A function that applies filtering and projection to the queryable collection of entities.</param>
+    /// <typeparam name="TResult">The type of the result projected by the specification.</typeparam>
+    /// <param name="specification">A query specification that defines filtering, projection, ordering, and paging.</param>
     /// <param name="cancellationToken">A cancellation token that can be used to cancel the asynchronous operation.</param>
-    /// <returns>The single result matching the filter criteria, or default if none found.</returns>
-    /// <exception cref="InvalidOperationException">Thrown when more than one element matches the filter.</exception>
+    /// <returns>The single result matching the specification criteria, or default if none found.</returns>
+    /// <exception cref="InvalidOperationException">Thrown when more than one element matches the specification.</exception>
     Task<TResult?> FetchSingleOrDefaultAsync<TResult>(
-        Func<IQueryable<TEntity>, IQueryable<TResult>> filter,
+        IQuerySpecification<TEntity, TResult> specification,
         CancellationToken cancellationToken = default);
 
     /// <summary>
-    /// Asynchronously retrieves the first result from the data source based on the specified filter.
+    /// Asynchronously retrieves the first result from the data source based on the specified query specification.
     /// </summary>
     /// <remarks>
-    /// <para>Returns the first element matching the filter, or throws if no elements exist.</para>
-    /// <para><b>Warning:</b> Do not call materializing methods inside the filter function.</para>
+    /// <para>Returns the first element matching the specification, or throws if no elements exist.</para>
     /// </remarks>
-    /// <typeparam name="TResult">The type of the result projected by the filter.</typeparam>
-    /// <param name="filter">A function that applies filtering and projection to the queryable collection of entities.</param>
+    /// <typeparam name="TResult">The type of the result projected by the specification.</typeparam>
+    /// <param name="specification">A query specification that defines filtering, projection, ordering, and paging.</param>
     /// <param name="cancellationToken">A cancellation token that can be used to cancel the asynchronous operation.</param>
-    /// <returns>The first result matching the filter criteria.</returns>
-    /// <exception cref="InvalidOperationException">Thrown when no elements match the filter.</exception>
+    /// <returns>The first result matching the specification criteria.</returns>
+    /// <exception cref="InvalidOperationException">Thrown when no elements match the specification.</exception>
     Task<TResult> FetchFirstAsync<TResult>(
-        Func<IQueryable<TEntity>, IQueryable<TResult>> filter,
+        IQuerySpecification<TEntity, TResult> specification,
         CancellationToken cancellationToken = default);
 
     /// <summary>
     /// Asynchronously retrieves the first result from the data source, or a default value if no result is found.
     /// </summary>
     /// <remarks>
-    /// <para>Returns the first element matching the filter, or default if none exists.</para>
-    /// <para><b>Warning:</b> Do not call materializing methods inside the filter function.</para>
+    /// <para>Returns the first element matching the specification, or default if none exists.</para>
     /// </remarks>
-    /// <typeparam name="TResult">The type of the result projected by the filter.</typeparam>
-    /// <param name="filter">A function that applies filtering and projection to the queryable collection of entities.</param>
+    /// <typeparam name="TResult">The type of the result projected by the specification.</typeparam>
+    /// <param name="specification">A query specification that defines filtering, projection, ordering, and paging.</param>
     /// <param name="cancellationToken">A cancellation token that can be used to cancel the asynchronous operation.</param>
-    /// <returns>The first result matching the filter criteria, or default if none found.</returns>
+    /// <returns>The first result matching the specification criteria, or default if none found.</returns>
     Task<TResult?> FetchFirstOrDefaultAsync<TResult>(
-        Func<IQueryable<TEntity>, IQueryable<TResult>> filter,
+        IQuerySpecification<TEntity, TResult> specification,
         CancellationToken cancellationToken = default);
 
     /// <summary>
@@ -138,58 +130,58 @@ public interface IRepository<[DynamicallyAccessedMembers(DynamicallyAccessedMemb
     Task<int> UpdateAsync(IEnumerable<TEntity> entities, CancellationToken cancellationToken = default);
 
     /// <summary>
-    /// Asynchronously updates entities of type TEntity that match the specified filter using the provided update
+    /// Asynchronously updates entities of type TEntity that match the specified specification using the provided update
     /// expression.
     /// </summary>
-    /// <param name="filter">A function that applies filtering logic to an IQueryable of TEntity, selecting which entities will be updated.</param>
+    /// <param name="specification">A query specification that defines which entities will be updated.</param>
     /// <param name="updateExpression">An expression that defines how the selected entities should be updated. The expression maps each entity to its
     /// updated values.</param>
     /// <param name="cancellationToken">A token to monitor for cancellation requests. The operation is canceled if the token is triggered.</param>
     /// <returns>A task that represents the asynchronous update operation, containing the number of entities updated.</returns>
     Task<int> UpdateAsync(
-        Func<IQueryable<TEntity>, IQueryable<TEntity>> filter,
+        IQuerySpecification<TEntity, TEntity> specification,
         Expression<Func<TEntity, TEntity>> updateExpression,
         CancellationToken cancellationToken = default);
 
     /// <summary>
-    /// Asynchronously updates entities of type TEntity that match the specified filter.
+    /// Asynchronously updates entities of type TEntity that match the specified specification.
     /// </summary>
-    /// <remarks>The update is applied to all entities returned by the filter. The operation is performed
+    /// <remarks>The update is applied to all entities matching the specification. The operation is performed
     /// asynchronously and may be cancelled using the provided cancellation token.</remarks>
-    /// <param name="filter">A function that applies a filter to the set of entities, returning the entities to be updated.</param>
+    /// <param name="specification">A query specification that defines which entities will be updated.</param>
     /// <param name="updateAction">An action that defines the update to apply to each filtered entity.</param>
     /// <param name="cancellationToken">A cancellation token that can be used to cancel the asynchronous operation.</param>
     /// <returns>A task that represents the asynchronous update operation, containing the number of entities updated.</returns>
     Task<int> UpdateAsync(
-        Func<IQueryable<TEntity>, IQueryable<TEntity>> filter,
+        IQuerySpecification<TEntity, TEntity> specification,
         Action<TEntity> updateAction,
         CancellationToken cancellationToken = default);
 
     /// <summary>
-    /// Asynchronously updates entities of type TEntity that match the specified filter using a fluent updater.
+    /// Asynchronously updates entities of type TEntity that match the specified specification using a fluent updater.
     /// </summary>
     /// <remarks>This method uses the fluent updater pattern to specify multiple property updates in a single
     /// operation. It provides an efficient way to perform bulk updates without loading entities into memory.</remarks>
-    /// <param name="filter">A function that applies filtering logic to select which entities will be updated.</param>
+    /// <param name="specification">A query specification that defines which entities will be updated.</param>
     /// <param name="updater">A fluent updater that specifies the property updates to apply.</param>
     /// <param name="cancellationToken">A token to monitor for cancellation requests.</param>
     /// <returns>A task that represents the asynchronous bulk update operation, containing the number of entities updated.</returns>
-    /// <exception cref="ArgumentNullException">Thrown when filter or updater is null.</exception>
+    /// <exception cref="ArgumentNullException">Thrown when specification or updater is null.</exception>
     /// <exception cref="InvalidOperationException">Thrown when the updater contains no property updates.</exception>
     [RequiresDynamicCode("Dynamic code generation is required for this method.")]
     [RequiresUnreferencedCode("Calls MakeGenericMethod which may require unreferenced code.")]
     Task<int> UpdateAsync(
-        Func<IQueryable<TEntity>, IQueryable<TEntity>> filter,
+        IQuerySpecification<TEntity, TEntity> specification,
         EntityUpdater<TEntity> updater,
         CancellationToken cancellationToken = default);
 
     /// <summary>
-    /// Deletes entities from the repository based on a filter.
+    /// Deletes entities from the repository based on a query specification.
     /// </summary>
-    /// <param name="filter">The filter to apply to the entities to delete.</param>
+    /// <param name="specification">A query specification that defines which entities will be deleted.</param>
     /// <param name="cancellationToken">A token to cancel the operation.</param>
     /// <returns>A task that represents the asynchronous operation, containing the number of entities deleted.</returns>
     Task<int> DeleteAsync(
-        Func<IQueryable<TEntity>, IQueryable<TEntity>> filter,
+        IQuerySpecification<TEntity, TEntity> specification,
         CancellationToken cancellationToken = default);
 }
