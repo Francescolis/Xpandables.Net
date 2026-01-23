@@ -1,5 +1,5 @@
 /*******************************************************************************
- * Copyright (C) 2024 Francis-Black EWANE
+ * Copyright (C) 2025 Kamersoft
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -14,7 +14,6 @@
  * limitations under the License.
  *
 ********************************************************************************/
-
 using System.Diagnostics.CodeAnalysis;
 using System.Linq.Expressions;
 
@@ -29,11 +28,13 @@ namespace System.Entities.Data;
 /// in a relational database. It uses <see cref="DataContext"/> to interact with the database and supports all standard
 /// repository operations including querying, adding, updating, and deleting entities asynchronously.</remarks>
 /// <remarks>
-/// Initializes a new instance of the <see cref="Repository"/> class.
+/// Initializes a new instance of the <see cref="Repository{TEntity}"/> class.
 /// </remarks>
 /// <param name="context">The Entity Framework DbContext to use for database operations.</param>
 /// <exception cref="ArgumentNullException">Thrown when context is null.</exception>
-public class Repository(DataContext context) : IRepository
+/// <typeparam name="TEntity">The type of the entity to query from the data source. Must be a reference type.</typeparam>
+public class Repository<[DynamicallyAccessedMembers(DynamicallyAccessedMemberTypes.All)] TEntity>(DataContext context) : IRepository<TEntity>
+    where TEntity : class
 {
     /// <summary>
     /// Gets a value indicating whether the object has been disposed.
@@ -51,10 +52,9 @@ public class Repository(DataContext context) : IRepository
     public bool IsUnitOfWorkEnabled { get; set; } = true;
 
     /// <inheritdoc />
-    public virtual IAsyncEnumerable<TResult> FetchAsync<[DynamicallyAccessedMembers(DynamicallyAccessedMemberTypes.All)] TEntity, TResult>(
+    public virtual IAsyncEnumerable<TResult> FetchAsync<TResult>(
         Func<IQueryable<TEntity>, IQueryable<TResult>> filter,
         CancellationToken cancellationToken = default)
-        where TEntity : class
     {
         ObjectDisposedException.ThrowIf(IsDisposed, context);
         ArgumentNullException.ThrowIfNull(filter);
@@ -65,10 +65,9 @@ public class Repository(DataContext context) : IRepository
     }
 
     /// <inheritdoc />
-    public virtual async Task<TResult> FetchSingleAsync<[DynamicallyAccessedMembers(DynamicallyAccessedMemberTypes.All)] TEntity, TResult>(
+    public virtual async Task<TResult> FetchSingleAsync<TResult>(
         Func<IQueryable<TEntity>, IQueryable<TResult>> filter,
         CancellationToken cancellationToken = default)
-        where TEntity : class
     {
         ObjectDisposedException.ThrowIf(IsDisposed, context);
         ArgumentNullException.ThrowIfNull(filter);
@@ -78,10 +77,9 @@ public class Repository(DataContext context) : IRepository
     }
 
     /// <inheritdoc />
-    public virtual async Task<TResult?> FetchSingleOrDefaultAsync<[DynamicallyAccessedMembers(DynamicallyAccessedMemberTypes.All)] TEntity, TResult>(
+    public virtual async Task<TResult?> FetchSingleOrDefaultAsync<TResult>(
         Func<IQueryable<TEntity>, IQueryable<TResult>> filter,
         CancellationToken cancellationToken = default)
-        where TEntity : class
     {
         ObjectDisposedException.ThrowIf(IsDisposed, context);
         ArgumentNullException.ThrowIfNull(filter);
@@ -91,10 +89,9 @@ public class Repository(DataContext context) : IRepository
     }
 
     /// <inheritdoc />
-    public virtual async Task<TResult> FetchFirstAsync<[DynamicallyAccessedMembers(DynamicallyAccessedMemberTypes.All)] TEntity, TResult>(
+    public virtual async Task<TResult> FetchFirstAsync<TResult>(
         Func<IQueryable<TEntity>, IQueryable<TResult>> filter,
         CancellationToken cancellationToken = default)
-        where TEntity : class
     {
         ObjectDisposedException.ThrowIf(IsDisposed, context);
         ArgumentNullException.ThrowIfNull(filter);
@@ -104,10 +101,9 @@ public class Repository(DataContext context) : IRepository
     }
 
     /// <inheritdoc />
-    public virtual async Task<TResult?> FetchFirstOrDefaultAsync<[DynamicallyAccessedMembers(DynamicallyAccessedMemberTypes.All)] TEntity, TResult>(
+    public virtual async Task<TResult?> FetchFirstOrDefaultAsync<TResult>(
         Func<IQueryable<TEntity>, IQueryable<TResult>> filter,
         CancellationToken cancellationToken = default)
-        where TEntity : class
     {
         ObjectDisposedException.ThrowIf(IsDisposed, context);
         ArgumentNullException.ThrowIfNull(filter);
@@ -117,10 +113,9 @@ public class Repository(DataContext context) : IRepository
     }
 
     /// <inheritdoc />
-    public virtual async Task<int> AddAsync<[DynamicallyAccessedMembers(DynamicallyAccessedMemberTypes.All)] TEntity>(
+    public virtual async Task<int> AddAsync(
         IEnumerable<TEntity> entities,
         CancellationToken cancellationToken = default)
-        where TEntity : class
     {
         ObjectDisposedException.ThrowIf(IsDisposed, context);
         ArgumentNullException.ThrowIfNull(entities);
@@ -146,10 +141,9 @@ public class Repository(DataContext context) : IRepository
     }
 
     /// <inheritdoc />
-    public virtual async Task<int> UpdateAsync<[DynamicallyAccessedMembers(DynamicallyAccessedMemberTypes.All)] TEntity>(
+    public virtual async Task<int> UpdateAsync(
         IEnumerable<TEntity> entities,
         CancellationToken cancellationToken = default)
-        where TEntity : class
     {
         ObjectDisposedException.ThrowIf(IsDisposed, context);
         ArgumentNullException.ThrowIfNull(entities);
@@ -167,11 +161,10 @@ public class Repository(DataContext context) : IRepository
     }
 
     /// <inheritdoc />
-    public virtual async Task<int> UpdateAsync<[DynamicallyAccessedMembers(DynamicallyAccessedMemberTypes.All)] TEntity>(
+    public virtual async Task<int> UpdateAsync(
         Func<IQueryable<TEntity>, IQueryable<TEntity>> filter,
         Expression<Func<TEntity, TEntity>> updateExpression,
         CancellationToken cancellationToken = default)
-        where TEntity : class
     {
         ObjectDisposedException.ThrowIf(IsDisposed, context);
         ArgumentNullException.ThrowIfNull(filter);
@@ -203,11 +196,10 @@ public class Repository(DataContext context) : IRepository
     }
 
     /// <inheritdoc />
-    public virtual async Task<int> UpdateAsync<[DynamicallyAccessedMembers(DynamicallyAccessedMemberTypes.All)] TEntity>(
+    public virtual async Task<int> UpdateAsync(
         Func<IQueryable<TEntity>, IQueryable<TEntity>> filter,
         Action<TEntity> updateAction,
         CancellationToken cancellationToken = default)
-        where TEntity : class
     {
         ObjectDisposedException.ThrowIf(IsDisposed, context);
         ArgumentNullException.ThrowIfNull(filter);
@@ -238,11 +230,10 @@ public class Repository(DataContext context) : IRepository
     /// <inheritdoc />
     [RequiresDynamicCode("Dynamic code generation is required for this method.")]
     [RequiresUnreferencedCode("Calls MakeGenericMethod which may require unreferenced code.")]
-    public virtual async Task<int> UpdateAsync<[DynamicallyAccessedMembers(DynamicallyAccessedMemberTypes.All)] TEntity>(
+    public virtual async Task<int> UpdateAsync(
         Func<IQueryable<TEntity>, IQueryable<TEntity>> filter,
         EntityUpdater<TEntity> updater,
         CancellationToken cancellationToken = default)
-        where TEntity : class
     {
         ObjectDisposedException.ThrowIf(IsDisposed, context);
         ArgumentNullException.ThrowIfNull(filter);
@@ -274,10 +265,9 @@ public class Repository(DataContext context) : IRepository
     }
 
     /// <inheritdoc />
-    public virtual async Task<int> DeleteAsync<[DynamicallyAccessedMembers(DynamicallyAccessedMemberTypes.All)] TEntity>(
+    public virtual async Task<int> DeleteAsync(
         Func<IQueryable<TEntity>, IQueryable<TEntity>> filter,
         CancellationToken cancellationToken = default)
-        where TEntity : class
     {
         ObjectDisposedException.ThrowIf(IsDisposed, context);
         ArgumentNullException.ThrowIfNull(filter);
@@ -413,13 +403,11 @@ public class Repository(DataContext context) : IRepository
     /// <summary>
     /// Applies a property update to an entity instance.
     /// </summary>
-    /// <typeparam name="TEntity">The entity type.</typeparam>
     /// <param name="entity">The entity to update.</param>
     /// <param name="update">The property update to apply.</param>
-    private static void ApplyPropertyUpdate<TEntity>(
+    private static void ApplyPropertyUpdate(
         TEntity entity,
         IEntityPropertyUpdate<TEntity> update)
-        where TEntity : class
     {
         // Get the property from the expression
         if (update.PropertyExpression.Body is MemberExpression memberExpression)

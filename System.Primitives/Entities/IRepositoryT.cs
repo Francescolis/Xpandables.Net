@@ -27,7 +27,9 @@ namespace System.Entities;
 /// <remarks>This interface provides methods for fetching, inserting, updating, and deleting entities in a data
 /// store. It supports asynchronous operations and allows for query customization through the use of LINQ expressions.
 /// Implementations of this interface should handle the underlying data access logic.</remarks>
-public interface IRepository : IDisposable, IAsyncDisposable
+/// <typeparam name="TEntity">The type of the entity to query from the data source. Must be a reference type.</typeparam>
+public interface IRepository<[DynamicallyAccessedMembers(DynamicallyAccessedMemberTypes.All)] TEntity> : IDisposable, IAsyncDisposable
+    where TEntity : class
 {
     /// <summary>
     /// Gets or sets a value indicating whether the repository operations are executed within a unit of work.
@@ -44,17 +46,15 @@ public interface IRepository : IDisposable, IAsyncDisposable
     /// <para><b>Warning:</b> Do not call materializing methods (e.g., ToList(), ToArray()) inside the filter function,
     /// as this defeats deferred execution and may cause performance issues.</para>
     /// </remarks>
-    /// <typeparam name="TEntity">The type of the entity to query from the data source. Must be a reference type.</typeparam>
     /// <typeparam name="TResult">The type of the result projected by the filter.</typeparam>
     /// <param name="filter">A function that applies filtering and projection to the queryable collection of entities, returning the desired
     /// result set.</param>
     /// <param name="cancellationToken">A cancellation token that can be used to cancel the asynchronous operation.</param>
     /// <returns>An asynchronous sequence of results matching the filter criteria. The sequence is streamed and may be empty if
     /// no results are found.</returns>
-    IAsyncEnumerable<TResult> FetchAsync<[DynamicallyAccessedMembers(DynamicallyAccessedMemberTypes.All)] TEntity, TResult>(
+    IAsyncEnumerable<TResult> FetchAsync<TResult>(
         Func<IQueryable<TEntity>, IQueryable<TResult>> filter,
-        CancellationToken cancellationToken = default)
-        where TEntity : class;
+        CancellationToken cancellationToken = default);
 
     /// <summary>
     /// Asynchronously retrieves a single result from the data source based on the specified filter.
@@ -63,16 +63,14 @@ public interface IRepository : IDisposable, IAsyncDisposable
     /// <para>Returns the single element matching the filter, or throws if zero or more than one element exists.</para>
     /// <para><b>Warning:</b> Do not call materializing methods inside the filter function.</para>
     /// </remarks>
-    /// <typeparam name="TEntity">The type of the entity to query from the data source. Must be a reference type.</typeparam>
     /// <typeparam name="TResult">The type of the result projected by the filter.</typeparam>
     /// <param name="filter">A function that applies filtering and projection to the queryable collection of entities.</param>
     /// <param name="cancellationToken">A cancellation token that can be used to cancel the asynchronous operation.</param>
     /// <returns>The single result matching the filter criteria.</returns>
     /// <exception cref="InvalidOperationException">Thrown when zero or more than one element matches the filter.</exception>
-    Task<TResult> FetchSingleAsync<[DynamicallyAccessedMembers(DynamicallyAccessedMemberTypes.All)] TEntity, TResult>(
+    Task<TResult> FetchSingleAsync<TResult>(
         Func<IQueryable<TEntity>, IQueryable<TResult>> filter,
-        CancellationToken cancellationToken = default)
-        where TEntity : class;
+        CancellationToken cancellationToken = default);
 
     /// <summary>
     /// Asynchronously retrieves a single result from the data source, or a default value if no result is found.
@@ -81,16 +79,14 @@ public interface IRepository : IDisposable, IAsyncDisposable
     /// <para>Returns the single element matching the filter, default if none exists, or throws if more than one element exists.</para>
     /// <para><b>Warning:</b> Do not call materializing methods inside the filter function.</para>
     /// </remarks>
-    /// <typeparam name="TEntity">The type of the entity to query from the data source. Must be a reference type.</typeparam>
     /// <typeparam name="TResult">The type of the result projected by the filter.</typeparam>
     /// <param name="filter">A function that applies filtering and projection to the queryable collection of entities.</param>
     /// <param name="cancellationToken">A cancellation token that can be used to cancel the asynchronous operation.</param>
     /// <returns>The single result matching the filter criteria, or default if none found.</returns>
     /// <exception cref="InvalidOperationException">Thrown when more than one element matches the filter.</exception>
-    Task<TResult?> FetchSingleOrDefaultAsync<[DynamicallyAccessedMembers(DynamicallyAccessedMemberTypes.All)] TEntity, TResult>(
+    Task<TResult?> FetchSingleOrDefaultAsync<TResult>(
         Func<IQueryable<TEntity>, IQueryable<TResult>> filter,
-        CancellationToken cancellationToken = default)
-        where TEntity : class;
+        CancellationToken cancellationToken = default);
 
     /// <summary>
     /// Asynchronously retrieves the first result from the data source based on the specified filter.
@@ -99,16 +95,14 @@ public interface IRepository : IDisposable, IAsyncDisposable
     /// <para>Returns the first element matching the filter, or throws if no elements exist.</para>
     /// <para><b>Warning:</b> Do not call materializing methods inside the filter function.</para>
     /// </remarks>
-    /// <typeparam name="TEntity">The type of the entity to query from the data source. Must be a reference type.</typeparam>
     /// <typeparam name="TResult">The type of the result projected by the filter.</typeparam>
     /// <param name="filter">A function that applies filtering and projection to the queryable collection of entities.</param>
     /// <param name="cancellationToken">A cancellation token that can be used to cancel the asynchronous operation.</param>
     /// <returns>The first result matching the filter criteria.</returns>
     /// <exception cref="InvalidOperationException">Thrown when no elements match the filter.</exception>
-    Task<TResult> FetchFirstAsync<[DynamicallyAccessedMembers(DynamicallyAccessedMemberTypes.All)] TEntity, TResult>(
+    Task<TResult> FetchFirstAsync<TResult>(
         Func<IQueryable<TEntity>, IQueryable<TResult>> filter,
-        CancellationToken cancellationToken = default)
-        where TEntity : class;
+        CancellationToken cancellationToken = default);
 
     /// <summary>
     /// Asynchronously retrieves the first result from the data source, or a default value if no result is found.
@@ -117,80 +111,65 @@ public interface IRepository : IDisposable, IAsyncDisposable
     /// <para>Returns the first element matching the filter, or default if none exists.</para>
     /// <para><b>Warning:</b> Do not call materializing methods inside the filter function.</para>
     /// </remarks>
-    /// <typeparam name="TEntity">The type of the entity to query from the data source. Must be a reference type.</typeparam>
     /// <typeparam name="TResult">The type of the result projected by the filter.</typeparam>
     /// <param name="filter">A function that applies filtering and projection to the queryable collection of entities.</param>
     /// <param name="cancellationToken">A cancellation token that can be used to cancel the asynchronous operation.</param>
     /// <returns>The first result matching the filter criteria, or default if none found.</returns>
-    Task<TResult?> FetchFirstOrDefaultAsync<[DynamicallyAccessedMembers(DynamicallyAccessedMemberTypes.All)] TEntity, TResult>(
+    Task<TResult?> FetchFirstOrDefaultAsync<TResult>(
         Func<IQueryable<TEntity>, IQueryable<TResult>> filter,
-        CancellationToken cancellationToken = default)
-        where TEntity : class;
+        CancellationToken cancellationToken = default);
 
     /// <summary>
     /// Asynchronously adds one or more entities of the specified type to the data store.
     /// </summary>
     /// <remarks>If the operation is canceled via the provided cancellation token, the returned task will be
     /// in a canceled state. The entities are not persisted until the operation completes successfully.</remarks>
-    /// <typeparam name="TEntity">The type of entities to add. Must be a reference type.</typeparam>
     /// <param name="entities">A collection of entities to add to the data store. Cannot be null or contain null elements.</param>
     /// <param name="cancellationToken">A cancellation token that can be used to cancel the asynchronous operation.</param>
     /// <returns>A task that represents the asynchronous add operation, containing the number of entities added.</returns>
-    Task<int> AddAsync<[DynamicallyAccessedMembers(DynamicallyAccessedMemberTypes.All)] TEntity>(
-        IEnumerable<TEntity> entities,
-        CancellationToken cancellationToken = default)
-        where TEntity : class;
+    Task<int> AddAsync(IEnumerable<TEntity> entities, CancellationToken cancellationToken = default);
 
     /// <summary>
     /// Asynchronously updates the specified entities in the data store.
     /// </summary>
-    /// <typeparam name="TEntity">The type of entities to update. Must be a reference type.</typeparam>
     /// <param name="entities">A collection of entities to update. Each entity must not be null.</param>
     /// <param name="cancellationToken">A cancellation token that can be used to cancel the update operation.</param>
     /// <returns>A task that represents the asynchronous update operation, containing the number of entities updated.</returns>
-    Task<int> UpdateAsync<[DynamicallyAccessedMembers(DynamicallyAccessedMemberTypes.All)] TEntity>(
-        IEnumerable<TEntity> entities,
-        CancellationToken cancellationToken = default)
-        where TEntity : class;
+    Task<int> UpdateAsync(IEnumerable<TEntity> entities, CancellationToken cancellationToken = default);
 
     /// <summary>
     /// Asynchronously updates entities of type TEntity that match the specified filter using the provided update
     /// expression.
     /// </summary>
-    /// <typeparam name="TEntity">The type of the entities to update. Must be a reference type.</typeparam>
     /// <param name="filter">A function that applies filtering logic to an IQueryable of TEntity, selecting which entities will be updated.</param>
     /// <param name="updateExpression">An expression that defines how the selected entities should be updated. The expression maps each entity to its
     /// updated values.</param>
     /// <param name="cancellationToken">A token to monitor for cancellation requests. The operation is canceled if the token is triggered.</param>
     /// <returns>A task that represents the asynchronous update operation, containing the number of entities updated.</returns>
-    Task<int> UpdateAsync<[DynamicallyAccessedMembers(DynamicallyAccessedMemberTypes.All)] TEntity>(
+    Task<int> UpdateAsync(
         Func<IQueryable<TEntity>, IQueryable<TEntity>> filter,
         Expression<Func<TEntity, TEntity>> updateExpression,
-        CancellationToken cancellationToken = default)
-        where TEntity : class;
+        CancellationToken cancellationToken = default);
 
     /// <summary>
     /// Asynchronously updates entities of type TEntity that match the specified filter.
     /// </summary>
     /// <remarks>The update is applied to all entities returned by the filter. The operation is performed
     /// asynchronously and may be cancelled using the provided cancellation token.</remarks>
-    /// <typeparam name="TEntity">The type of the entities to update. Must be a reference type.</typeparam>
     /// <param name="filter">A function that applies a filter to the set of entities, returning the entities to be updated.</param>
     /// <param name="updateAction">An action that defines the update to apply to each filtered entity.</param>
     /// <param name="cancellationToken">A cancellation token that can be used to cancel the asynchronous operation.</param>
     /// <returns>A task that represents the asynchronous update operation, containing the number of entities updated.</returns>
-    Task<int> UpdateAsync<[DynamicallyAccessedMembers(DynamicallyAccessedMemberTypes.All)] TEntity>(
+    Task<int> UpdateAsync(
         Func<IQueryable<TEntity>, IQueryable<TEntity>> filter,
         Action<TEntity> updateAction,
-        CancellationToken cancellationToken = default)
-        where TEntity : class;
+        CancellationToken cancellationToken = default);
 
     /// <summary>
     /// Asynchronously updates entities of type TEntity that match the specified filter using a fluent updater.
     /// </summary>
     /// <remarks>This method uses the fluent updater pattern to specify multiple property updates in a single
     /// operation. It provides an efficient way to perform bulk updates without loading entities into memory.</remarks>
-    /// <typeparam name="TEntity">The type of the entities to update. Must be a reference type.</typeparam>
     /// <param name="filter">A function that applies filtering logic to select which entities will be updated.</param>
     /// <param name="updater">A fluent updater that specifies the property updates to apply.</param>
     /// <param name="cancellationToken">A token to monitor for cancellation requests.</param>
@@ -199,21 +178,18 @@ public interface IRepository : IDisposable, IAsyncDisposable
     /// <exception cref="InvalidOperationException">Thrown when the updater contains no property updates.</exception>
     [RequiresDynamicCode("Dynamic code generation is required for this method.")]
     [RequiresUnreferencedCode("Calls MakeGenericMethod which may require unreferenced code.")]
-    Task<int> UpdateAsync<[DynamicallyAccessedMembers(DynamicallyAccessedMemberTypes.All)] TEntity>(
+    Task<int> UpdateAsync(
         Func<IQueryable<TEntity>, IQueryable<TEntity>> filter,
         EntityUpdater<TEntity> updater,
-        CancellationToken cancellationToken = default)
-        where TEntity : class;
+        CancellationToken cancellationToken = default);
 
     /// <summary>
     /// Deletes entities from the repository based on a filter.
     /// </summary>
-    /// <typeparam name="TEntity">The type of the entity.</typeparam>
     /// <param name="filter">The filter to apply to the entities to delete.</param>
     /// <param name="cancellationToken">A token to cancel the operation.</param>
     /// <returns>A task that represents the asynchronous operation, containing the number of entities deleted.</returns>
-    Task<int> DeleteAsync<[DynamicallyAccessedMembers(DynamicallyAccessedMemberTypes.All)] TEntity>(
+    Task<int> DeleteAsync(
         Func<IQueryable<TEntity>, IQueryable<TEntity>> filter,
-        CancellationToken cancellationToken = default)
-        where TEntity : class;
+        CancellationToken cancellationToken = default);
 }
