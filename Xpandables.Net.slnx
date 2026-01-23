@@ -55,6 +55,9 @@
   <Project Path="System.Entities.Data/System.Entities.Data.csproj" Id="d3e941fc-222a-4861-bd00-c142052b9d06">
     <Platform Project="x64" />
   </Project>
+  <Project Path="System.Entities/System.Entities.csproj" Id="dd1962fe-07c1-4eaf-b179-7bb14b3d0e6e">
+    <Platform Project="x64" />
+  </Project>
   <Project Path="System.Events.Data/System.Events.Data.csproj" Id="d5b52978-5f0f-4789-a2d5-0e3819e69975">
     <Platform Project="x64" />
   </Project>
