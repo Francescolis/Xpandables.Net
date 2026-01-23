@@ -65,49 +65,109 @@ public class Repository(DataContext context) : IRepository
     }
 
     /// <inheritdoc />
-    public virtual async Task AddAsync<[DynamicallyAccessedMembers(DynamicallyAccessedMemberTypes.All)] TEntity>(
-        CancellationToken cancellationToken,
-        params TEntity[] entities)
+    public virtual async Task<TResult> FetchSingleAsync<[DynamicallyAccessedMembers(DynamicallyAccessedMemberTypes.All)] TEntity, TResult>(
+        Func<IQueryable<TEntity>, IQueryable<TResult>> filter,
+        CancellationToken cancellationToken = default)
+        where TEntity : class
+    {
+        ObjectDisposedException.ThrowIf(IsDisposed, context);
+        ArgumentNullException.ThrowIfNull(filter);
+
+        var query = filter(context.Set<TEntity>().AsNoTracking());
+        return await query.SingleAsync(cancellationToken).ConfigureAwait(false);
+    }
+
+    /// <inheritdoc />
+    public virtual async Task<TResult?> FetchSingleOrDefaultAsync<[DynamicallyAccessedMembers(DynamicallyAccessedMemberTypes.All)] TEntity, TResult>(
+        Func<IQueryable<TEntity>, IQueryable<TResult>> filter,
+        CancellationToken cancellationToken = default)
+        where TEntity : class
+    {
+        ObjectDisposedException.ThrowIf(IsDisposed, context);
+        ArgumentNullException.ThrowIfNull(filter);
+
+        var query = filter(context.Set<TEntity>().AsNoTracking());
+        return await query.SingleOrDefaultAsync(cancellationToken).ConfigureAwait(false);
+    }
+
+    /// <inheritdoc />
+    public virtual async Task<TResult> FetchFirstAsync<[DynamicallyAccessedMembers(DynamicallyAccessedMemberTypes.All)] TEntity, TResult>(
+        Func<IQueryable<TEntity>, IQueryable<TResult>> filter,
+        CancellationToken cancellationToken = default)
+        where TEntity : class
+    {
+        ObjectDisposedException.ThrowIf(IsDisposed, context);
+        ArgumentNullException.ThrowIfNull(filter);
+
+        var query = filter(context.Set<TEntity>().AsNoTracking());
+        return await query.FirstAsync(cancellationToken).ConfigureAwait(false);
+    }
+
+    /// <inheritdoc />
+    public virtual async Task<TResult?> FetchFirstOrDefaultAsync<[DynamicallyAccessedMembers(DynamicallyAccessedMemberTypes.All)] TEntity, TResult>(
+        Func<IQueryable<TEntity>, IQueryable<TResult>> filter,
+        CancellationToken cancellationToken = default)
+        where TEntity : class
+    {
+        ObjectDisposedException.ThrowIf(IsDisposed, context);
+        ArgumentNullException.ThrowIfNull(filter);
+
+        var query = filter(context.Set<TEntity>().AsNoTracking());
+        return await query.FirstOrDefaultAsync(cancellationToken).ConfigureAwait(false);
+    }
+
+    /// <inheritdoc />
+    public virtual async Task<int> AddAsync<[DynamicallyAccessedMembers(DynamicallyAccessedMemberTypes.All)] TEntity>(
+        IEnumerable<TEntity> entities,
+        CancellationToken cancellationToken = default)
         where TEntity : class
     {
         ObjectDisposedException.ThrowIf(IsDisposed, context);
         ArgumentNullException.ThrowIfNull(entities);
-        ArgumentOutOfRangeException.ThrowIfLessThan(entities.Length, 1, nameof(entities));
 
-        if (entities.Length == 1)
+        var entityList = entities as IList<TEntity> ?? entities.ToList();
+        ArgumentOutOfRangeException.ThrowIfLessThan(entityList.Count, 1, nameof(entities));
+
+        if (entityList.Count == 1)
         {
-            await context.AddAsync(entities[0], cancellationToken).ConfigureAwait(false);
+            await context.AddAsync(entityList[0], cancellationToken).ConfigureAwait(false);
         }
         else
         {
-            await context.AddRangeAsync(entities, cancellationToken).ConfigureAwait(false);
+            await context.AddRangeAsync(entityList, cancellationToken).ConfigureAwait(false);
         }
 
         if (!IsUnitOfWorkEnabled)
         {
-            await SaveChangesAsync(cancellationToken).ConfigureAwait(false);
+            return await SaveChangesAsync(cancellationToken).ConfigureAwait(false);
         }
+
+        return entityList.Count;
     }
 
     /// <inheritdoc />
-    public virtual async Task UpdateAsync<[DynamicallyAccessedMembers(DynamicallyAccessedMemberTypes.All)] TEntity>(
-        CancellationToken cancellationToken,
-        params TEntity[] entities)
+    public virtual async Task<int> UpdateAsync<[DynamicallyAccessedMembers(DynamicallyAccessedMemberTypes.All)] TEntity>(
+        IEnumerable<TEntity> entities,
+        CancellationToken cancellationToken = default)
         where TEntity : class
     {
         ObjectDisposedException.ThrowIf(IsDisposed, context);
         ArgumentNullException.ThrowIfNull(entities);
-        ArgumentOutOfRangeException.ThrowIfLessThan(entities.Length, 1, nameof(entities));
 
-        context.Set<TEntity>().UpdateRange(entities);
+        var entityList = entities as IList<TEntity> ?? entities.ToList();
+        ArgumentOutOfRangeException.ThrowIfLessThan(entityList.Count, 1, nameof(entities));
+
+        context.Set<TEntity>().UpdateRange(entityList);
         if (!IsUnitOfWorkEnabled)
         {
-            await SaveChangesAsync().ConfigureAwait(false);
+            return await SaveChangesAsync(cancellationToken).ConfigureAwait(false);
         }
+
+        return entityList.Count;
     }
 
     /// <inheritdoc />
-    public virtual async Task UpdateAsync<[DynamicallyAccessedMembers(DynamicallyAccessedMemberTypes.All)] TEntity>(
+    public virtual async Task<int> UpdateAsync<[DynamicallyAccessedMembers(DynamicallyAccessedMemberTypes.All)] TEntity>(
         Func<IQueryable<TEntity>, IQueryable<TEntity>> filter,
         Expression<Func<TEntity, TEntity>> updateExpression,
         CancellationToken cancellationToken = default)
@@ -135,13 +195,15 @@ public class Repository(DataContext context) : IRepository
             context.Set<TEntity>().UpdateRange(entities);
             if (!IsUnitOfWorkEnabled)
             {
-                await SaveChangesAsync(cancellationToken).ConfigureAwait(false);
+                return await SaveChangesAsync(cancellationToken).ConfigureAwait(false);
             }
         }
+
+        return entities.Count;
     }
 
     /// <inheritdoc />
-    public virtual async Task UpdateAsync<[DynamicallyAccessedMembers(DynamicallyAccessedMemberTypes.All)] TEntity>(
+    public virtual async Task<int> UpdateAsync<[DynamicallyAccessedMembers(DynamicallyAccessedMemberTypes.All)] TEntity>(
         Func<IQueryable<TEntity>, IQueryable<TEntity>> filter,
         Action<TEntity> updateAction,
         CancellationToken cancellationToken = default)
@@ -166,15 +228,17 @@ public class Repository(DataContext context) : IRepository
             context.Set<TEntity>().UpdateRange(entities);
             if (!IsUnitOfWorkEnabled)
             {
-                await SaveChangesAsync(cancellationToken).ConfigureAwait(false);
+                return await SaveChangesAsync(cancellationToken).ConfigureAwait(false);
             }
         }
+
+        return entities.Count;
     }
 
     /// <inheritdoc />
     [RequiresDynamicCode("Dynamic code generation is required for this method.")]
     [RequiresUnreferencedCode("Calls MakeGenericMethod which may require unreferenced code.")]
-    public virtual async Task UpdateAsync<[DynamicallyAccessedMembers(DynamicallyAccessedMemberTypes.All)] TEntity>(
+    public virtual async Task<int> UpdateAsync<[DynamicallyAccessedMembers(DynamicallyAccessedMemberTypes.All)] TEntity>(
         Func<IQueryable<TEntity>, IQueryable<TEntity>> filter,
         EntityUpdater<TEntity> updater,
         CancellationToken cancellationToken = default)
@@ -190,8 +254,7 @@ public class Repository(DataContext context) : IRepository
         if (!IsUnitOfWorkEnabled)
         {
             var setters = updater.ToSetPropertyCalls();
-            await query.ExecuteUpdateAsync(setters, cancellationToken).ConfigureAwait(false);
-            return;
+            return await query.ExecuteUpdateAsync(setters, cancellationToken).ConfigureAwait(false);
         }
 
         var entities = new List<TEntity>();
@@ -206,10 +269,12 @@ public class Repository(DataContext context) : IRepository
 
             entities.Add(entity);
         }
+
+        return entities.Count;
     }
 
     /// <inheritdoc />
-    public virtual async Task DeleteAsync<[DynamicallyAccessedMembers(DynamicallyAccessedMemberTypes.All)] TEntity>(
+    public virtual async Task<int> DeleteAsync<[DynamicallyAccessedMembers(DynamicallyAccessedMemberTypes.All)] TEntity>(
         Func<IQueryable<TEntity>, IQueryable<TEntity>> filter,
         CancellationToken cancellationToken = default)
         where TEntity : class
@@ -221,11 +286,12 @@ public class Repository(DataContext context) : IRepository
 
         if (!IsUnitOfWorkEnabled)
         {
-            await query.ExecuteDeleteAsync(cancellationToken).ConfigureAwait(false);
-            return;
+            return await query.ExecuteDeleteAsync(cancellationToken).ConfigureAwait(false);
         }
 
-        context.RemoveRange(query);
+        var entityList = await query.ToListAsync(cancellationToken).ConfigureAwait(false);
+        context.RemoveRange(entityList);
+        return entityList.Count;
     }
 
     /// <inheritdoc />
@@ -322,12 +388,12 @@ public class Repository(DataContext context) : IRepository
     /// changes to tracked entities to persist those changes to the database.</remarks>
     /// <param name="cancellationToken">A cancellation token that can be used to cancel the save operation. The default value is <see
     /// cref="CancellationToken.None"/>.</param>
-    /// <returns>A task that represents the asynchronous save operation.</returns>
-    private async Task SaveChangesAsync(CancellationToken cancellationToken = default)
+    /// <returns>A task that represents the asynchronous save operation with the number of affected entities.</returns>
+    private async Task<int> SaveChangesAsync(CancellationToken cancellationToken = default)
     {
         try
         {
-            await context.SaveChangesAsync(cancellationToken).ConfigureAwait(false);
+            return await context.SaveChangesAsync(cancellationToken).ConfigureAwait(false);
         }
         catch (DbUpdateConcurrencyException ex)
         {
@@ -340,7 +406,7 @@ public class Repository(DataContext context) : IRepository
                 }
             }
 
-            await context.SaveChangesAsync(cancellationToken).ConfigureAwait(false);
+            return await context.SaveChangesAsync(cancellationToken).ConfigureAwait(false);
         }
     }
 

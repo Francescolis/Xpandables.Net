@@ -99,7 +99,7 @@ public readonly record struct EntityStatus : IPrimitive<EntityStatus, string>
     public static readonly EntityStatus ACCEPTED = nameof(ACCEPTED);
 
     /// <summary>
-    /// The entity was alread present and is a duplicate. It must be ignored.
+    /// The entity was already present and is a duplicate. It must be ignored.
     /// </summary>
     public static readonly EntityStatus DUPLICATE = nameof(DUPLICATE);
 

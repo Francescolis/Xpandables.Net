@@ -99,7 +99,7 @@ public sealed class EntityUpdater<TSource> : EntityUpdater
     /// <summary>
     /// Initializes a new instance of the <see cref="EntityUpdater{TSource}"/> class.
     /// </summary>
-    internal EntityUpdater()
+    public EntityUpdater()
     {
         _updates = [];
     }
@@ -108,8 +108,9 @@ public sealed class EntityUpdater<TSource> : EntityUpdater
     /// Initializes a new instance of the <see cref="EntityUpdater{TSource}"/> class with an initial property update.
     /// </summary>
     /// <param name="update">The initial property update expression.</param>
-    internal EntityUpdater(IEntityPropertyUpdate<TSource> update)
+    public EntityUpdater(IEntityPropertyUpdate<TSource> update)
     {
+        ArgumentNullException.ThrowIfNull(update);
         _updates = [update];
     }
 

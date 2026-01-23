@@ -51,12 +51,13 @@ public abstract class Entity<TKey> : IEntity<TKey>
     [Key]
     public required TKey KeyId { get; init; }
 
-    /// <inheritdoc />
-    public void SetStatus(string status)
-    {
-        Status = status;
-        DeletedOn = status == EntityStatus.DELETED
-            ? DateTime.UtcNow
-            : null;
+        /// <inheritdoc />
+        public void SetStatus(string status)
+        {
+            Status = status;
+            UpdatedOn = DateTime.UtcNow;
+            DeletedOn = status == EntityStatus.DELETED
+                ? DateTime.UtcNow
+                : null;
+        }
     }
-}
