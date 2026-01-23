@@ -143,7 +143,7 @@ public readonly record struct QuerySpecificationBuilder<TEntity>
     {
         ArgumentNullException.ThrowIfNull(keySelector);
 
-        var order = new OrderSpecification<TEntity, TKey>(keySelector, descending: false);
+        var order = new OrderSpecification<TEntity, TKey>(keySelector, Descending: false);
         return new(_predicate, _includes, _orderBy.Add(order), _skip, _take, _asTracking, _isDistinct);
     }
 
@@ -157,7 +157,7 @@ public readonly record struct QuerySpecificationBuilder<TEntity>
     {
         ArgumentNullException.ThrowIfNull(keySelector);
 
-        var order = new OrderSpecification<TEntity, TKey>(keySelector, descending: true);
+        var order = new OrderSpecification<TEntity, TKey>(keySelector, Descending: true);
         return new(_predicate, _includes, _orderBy.Add(order), _skip, _take, _asTracking, _isDistinct);
     }
 
@@ -401,15 +401,20 @@ internal sealed record ThenIncludeSpecification<TPreviousProperty, TProperty> : 
 /// <summary>
 /// Represents an ordering specification for a specific property.
 /// </summary>
-internal sealed record OrderSpecification<TEntity, TKey> : IOrderSpecification<TEntity>
+internal sealed record OrderSpecification<TEntity, TKey>(
+    Expression<Func<TEntity, TKey>> KeySelector,
+    bool Descending) : IOrderSpecification<TEntity>
     where TEntity : class
 {
-    public LambdaExpression KeySelector { get; }
-    public bool Descending { get; }
+    /// <inheritdoc />
+    public IOrderedQueryable<TEntity> ApplyFirst(IQueryable<TEntity> query) =>
+        Descending
+            ? query.OrderByDescending(KeySelector)
+            : query.OrderBy(KeySelector);
 
-    internal OrderSpecification(Expression<Func<TEntity, TKey>> keySelector, bool descending)
-    {
-        KeySelector = keySelector;
-        Descending = descending;
-    }
+    /// <inheritdoc />
+    public IOrderedQueryable<TEntity> ApplySubsequent(IOrderedQueryable<TEntity> query) =>
+        Descending
+            ? query.ThenByDescending(KeySelector)
+            : query.ThenBy(KeySelector);
 }

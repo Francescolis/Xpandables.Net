@@ -1,5 +1,5 @@
 /*******************************************************************************
- * Copyright (C) 2024 Francis-Black EWANE
+ * Copyright (C) 2025 Kamersoft
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -14,7 +14,6 @@
  * limitations under the License.
  *
 ********************************************************************************/
-
 using System.Diagnostics.CodeAnalysis;
 using System.Linq.Expressions;
 
@@ -29,11 +28,13 @@ namespace System.Entities.Data;
 /// in a relational database. It uses <see cref="DataContext"/> to interact with the database and supports all standard
 /// repository operations including querying, adding, updating, and deleting entities asynchronously.</remarks>
 /// <remarks>
-/// Initializes a new instance of the <see cref="Repository"/> class.
+/// Initializes a new instance of the <see cref="Repository{TEntity}"/> class.
 /// </remarks>
 /// <param name="context">The Entity Framework DbContext to use for database operations.</param>
 /// <exception cref="ArgumentNullException">Thrown when context is null.</exception>
-public class Repository(DataContext context) : IRepository
+/// <typeparam name="TEntity">The type of the entity to query from the data source. Must be a reference type.</typeparam>
+public class Repository<[DynamicallyAccessedMembers(DynamicallyAccessedMemberTypes.All)] TEntity>(DataContext context) : IRepository<TEntity>
+    where TEntity : class
 {
     /// <summary>
     /// Gets a value indicating whether the object has been disposed.
@@ -51,81 +52,75 @@ public class Repository(DataContext context) : IRepository
     public bool IsUnitOfWorkEnabled { get; set; } = true;
 
     /// <inheritdoc />
-    public virtual IAsyncEnumerable<TResult> FetchAsync<[DynamicallyAccessedMembers(DynamicallyAccessedMemberTypes.All)] TEntity, TResult>(
-        Func<IQueryable<TEntity>, IQueryable<TResult>> filter,
+    public virtual IAsyncPagedEnumerable<TResult> FetchAsync<TResult>(
+        IQuerySpecification<TEntity, TResult> specification,
         CancellationToken cancellationToken = default)
-        where TEntity : class
     {
         ObjectDisposedException.ThrowIf(IsDisposed, context);
-        ArgumentNullException.ThrowIfNull(filter);
+        ArgumentNullException.ThrowIfNull(specification);
 
-        var query = filter(context.Set<TEntity>().AsNoTracking());
+        var query = ApplySpecification(specification);
 
-        return query.AsAsyncEnumerable();
+        return query.ToAsyncPagedEnumerable();
     }
 
     /// <inheritdoc />
-    public virtual async Task<TResult> FetchSingleAsync<[DynamicallyAccessedMembers(DynamicallyAccessedMemberTypes.All)] TEntity, TResult>(
-        Func<IQueryable<TEntity>, IQueryable<TResult>> filter,
+    public virtual async Task<TResult> FetchSingleAsync<TResult>(
+        IQuerySpecification<TEntity, TResult> specification,
         CancellationToken cancellationToken = default)
-        where TEntity : class
     {
         ObjectDisposedException.ThrowIf(IsDisposed, context);
-        ArgumentNullException.ThrowIfNull(filter);
+        ArgumentNullException.ThrowIfNull(specification);
 
-        var query = filter(context.Set<TEntity>().AsNoTracking());
+        var query = ApplySpecification(specification);
         return await query.SingleAsync(cancellationToken).ConfigureAwait(false);
     }
 
     /// <inheritdoc />
-    public virtual async Task<TResult?> FetchSingleOrDefaultAsync<[DynamicallyAccessedMembers(DynamicallyAccessedMemberTypes.All)] TEntity, TResult>(
-        Func<IQueryable<TEntity>, IQueryable<TResult>> filter,
+    public virtual async Task<TResult?> FetchSingleOrDefaultAsync<TResult>(
+        IQuerySpecification<TEntity, TResult> specification,
         CancellationToken cancellationToken = default)
-        where TEntity : class
     {
         ObjectDisposedException.ThrowIf(IsDisposed, context);
-        ArgumentNullException.ThrowIfNull(filter);
+        ArgumentNullException.ThrowIfNull(specification);
 
-        var query = filter(context.Set<TEntity>().AsNoTracking());
+        var query = ApplySpecification(specification);
         return await query.SingleOrDefaultAsync(cancellationToken).ConfigureAwait(false);
     }
 
     /// <inheritdoc />
-    public virtual async Task<TResult> FetchFirstAsync<[DynamicallyAccessedMembers(DynamicallyAccessedMemberTypes.All)] TEntity, TResult>(
-        Func<IQueryable<TEntity>, IQueryable<TResult>> filter,
+    public virtual async Task<TResult> FetchFirstAsync<TResult>(
+        IQuerySpecification<TEntity, TResult> specification,
         CancellationToken cancellationToken = default)
-        where TEntity : class
     {
         ObjectDisposedException.ThrowIf(IsDisposed, context);
-        ArgumentNullException.ThrowIfNull(filter);
+        ArgumentNullException.ThrowIfNull(specification);
 
-        var query = filter(context.Set<TEntity>().AsNoTracking());
+        var query = ApplySpecification(specification);
         return await query.FirstAsync(cancellationToken).ConfigureAwait(false);
     }
 
     /// <inheritdoc />
-    public virtual async Task<TResult?> FetchFirstOrDefaultAsync<[DynamicallyAccessedMembers(DynamicallyAccessedMemberTypes.All)] TEntity, TResult>(
-        Func<IQueryable<TEntity>, IQueryable<TResult>> filter,
+    public virtual async Task<TResult?> FetchFirstOrDefaultAsync<TResult>(
+        IQuerySpecification<TEntity, TResult> specification,
         CancellationToken cancellationToken = default)
-        where TEntity : class
     {
         ObjectDisposedException.ThrowIf(IsDisposed, context);
-        ArgumentNullException.ThrowIfNull(filter);
+        ArgumentNullException.ThrowIfNull(specification);
 
-        var query = filter(context.Set<TEntity>().AsNoTracking());
+        var query = ApplySpecification(specification);
         return await query.FirstOrDefaultAsync(cancellationToken).ConfigureAwait(false);
     }
 
     /// <inheritdoc />
-    public virtual async Task<int> AddAsync<[DynamicallyAccessedMembers(DynamicallyAccessedMemberTypes.All)] TEntity>(
+    public virtual async Task<int> AddAsync(
         IEnumerable<TEntity> entities,
         CancellationToken cancellationToken = default)
-        where TEntity : class
     {
         ObjectDisposedException.ThrowIf(IsDisposed, context);
         ArgumentNullException.ThrowIfNull(entities);
 
-        var entityList = entities as IList<TEntity> ?? entities.ToList();
+        var entityList = entities as IList<TEntity> ?? [.. entities];
         ArgumentOutOfRangeException.ThrowIfLessThan(entityList.Count, 1, nameof(entities));
 
         if (entityList.Count == 1)
@@ -146,15 +141,14 @@ public class Repository(DataContext context) : IRepository
     }
 
     /// <inheritdoc />
-    public virtual async Task<int> UpdateAsync<[DynamicallyAccessedMembers(DynamicallyAccessedMemberTypes.All)] TEntity>(
+    public virtual async Task<int> UpdateAsync(
         IEnumerable<TEntity> entities,
         CancellationToken cancellationToken = default)
-        where TEntity : class
     {
         ObjectDisposedException.ThrowIf(IsDisposed, context);
         ArgumentNullException.ThrowIfNull(entities);
 
-        var entityList = entities as IList<TEntity> ?? entities.ToList();
+        var entityList = entities as IList<TEntity> ?? [.. entities];
         ArgumentOutOfRangeException.ThrowIfLessThan(entityList.Count, 1, nameof(entities));
 
         context.Set<TEntity>().UpdateRange(entityList);
@@ -167,17 +161,16 @@ public class Repository(DataContext context) : IRepository
     }
 
     /// <inheritdoc />
-    public virtual async Task<int> UpdateAsync<[DynamicallyAccessedMembers(DynamicallyAccessedMemberTypes.All)] TEntity>(
-        Func<IQueryable<TEntity>, IQueryable<TEntity>> filter,
+    public virtual async Task<int> UpdateAsync(
+        IQuerySpecification<TEntity, TEntity> specification,
         Expression<Func<TEntity, TEntity>> updateExpression,
         CancellationToken cancellationToken = default)
-        where TEntity : class
     {
         ObjectDisposedException.ThrowIf(IsDisposed, context);
-        ArgumentNullException.ThrowIfNull(filter);
+        ArgumentNullException.ThrowIfNull(specification);
         ArgumentNullException.ThrowIfNull(updateExpression);
 
-        var query = filter(context.Set<TEntity>());
+        var query = ApplyEntitySpecification(specification);
 
         var compiled = updateExpression.Compile();
         var entities = new List<TEntity>();
@@ -203,17 +196,16 @@ public class Repository(DataContext context) : IRepository
     }
 
     /// <inheritdoc />
-    public virtual async Task<int> UpdateAsync<[DynamicallyAccessedMembers(DynamicallyAccessedMemberTypes.All)] TEntity>(
-        Func<IQueryable<TEntity>, IQueryable<TEntity>> filter,
+    public virtual async Task<int> UpdateAsync(
+        IQuerySpecification<TEntity, TEntity> specification,
         Action<TEntity> updateAction,
         CancellationToken cancellationToken = default)
-        where TEntity : class
     {
         ObjectDisposedException.ThrowIf(IsDisposed, context);
-        ArgumentNullException.ThrowIfNull(filter);
+        ArgumentNullException.ThrowIfNull(specification);
         ArgumentNullException.ThrowIfNull(updateAction);
 
-        var query = filter(context.Set<TEntity>());
+        var query = ApplyEntitySpecification(specification);
         var entities = new List<TEntity>();
         await foreach (TEntity entity in query.AsAsyncEnumerable()
             .WithCancellation(cancellationToken)
@@ -238,18 +230,17 @@ public class Repository(DataContext context) : IRepository
     /// <inheritdoc />
     [RequiresDynamicCode("Dynamic code generation is required for this method.")]
     [RequiresUnreferencedCode("Calls MakeGenericMethod which may require unreferenced code.")]
-    public virtual async Task<int> UpdateAsync<[DynamicallyAccessedMembers(DynamicallyAccessedMemberTypes.All)] TEntity>(
-        Func<IQueryable<TEntity>, IQueryable<TEntity>> filter,
-        EntityUpdater<TEntity> updater,
-        CancellationToken cancellationToken = default)
-        where TEntity : class
+    public virtual async Task<int> UpdateAsync(
+IQuerySpecification<TEntity, TEntity> specification,
+EntityUpdater<TEntity> updater,
+CancellationToken cancellationToken = default)
     {
         ObjectDisposedException.ThrowIf(IsDisposed, context);
-        ArgumentNullException.ThrowIfNull(filter);
+        ArgumentNullException.ThrowIfNull(specification);
         ArgumentNullException.ThrowIfNull(updater);
         ArgumentOutOfRangeException.ThrowIfLessThan(updater.Updates.Count, 1, nameof(updater.Updates));
 
-        var query = filter(context.Set<TEntity>());
+        var query = ApplyEntitySpecification(specification);
 
         if (!IsUnitOfWorkEnabled)
         {
@@ -274,15 +265,14 @@ public class Repository(DataContext context) : IRepository
     }
 
     /// <inheritdoc />
-    public virtual async Task<int> DeleteAsync<[DynamicallyAccessedMembers(DynamicallyAccessedMemberTypes.All)] TEntity>(
-        Func<IQueryable<TEntity>, IQueryable<TEntity>> filter,
+    public virtual async Task<int> DeleteAsync(
+        IQuerySpecification<TEntity, TEntity> specification,
         CancellationToken cancellationToken = default)
-        where TEntity : class
     {
         ObjectDisposedException.ThrowIf(IsDisposed, context);
-        ArgumentNullException.ThrowIfNull(filter);
+        ArgumentNullException.ThrowIfNull(specification);
 
-        var query = filter(context.Set<TEntity>());
+        var query = ApplyEntitySpecification(specification);
 
         if (!IsUnitOfWorkEnabled)
         {
@@ -292,6 +282,190 @@ public class Repository(DataContext context) : IRepository
         var entityList = await query.ToListAsync(cancellationToken).ConfigureAwait(false);
         context.RemoveRange(entityList);
         return entityList.Count;
+    }
+
+    /// <summary>
+    /// Applies the specification to build a projected query.
+    /// </summary>
+    /// <typeparam name="TResult">The type of the projected result.</typeparam>
+    /// <param name="specification">The query specification to apply.</param>
+    /// <returns>A queryable with the specification applied and projected to the result type.</returns>
+    private IQueryable<TResult> ApplySpecification<TResult>(
+        IQuerySpecification<TEntity, TResult> specification)
+    {
+        IQueryable<TEntity> query = context.Set<TEntity>();
+
+        // Apply tracking behavior
+        query = specification.AsTracking
+            ? query.AsTracking()
+            : query.AsNoTracking();
+
+        // Apply includes
+        query = ApplyIncludes(query, specification.Includes);
+
+        // Apply predicate
+        if (specification.Predicate is not null)
+        {
+            query = query.Where(specification.Predicate);
+        }
+
+        // Apply ordering
+        query = ApplyOrdering(query, specification.OrderBy);
+
+        // Apply distinct (before skip/take)
+        if (specification.IsDistinct)
+        {
+            query = query.Distinct();
+        }
+
+        // Apply skip
+        if (specification.Skip.HasValue)
+        {
+            query = query.Skip(specification.Skip.Value);
+        }
+
+        // Apply take
+        if (specification.Take.HasValue)
+        {
+            query = query.Take(specification.Take.Value);
+        }
+
+        // Apply projection
+        return query.Select(specification.Selector);
+    }
+
+    /// <summary>
+    /// Applies the specification to build an entity query (without projection).
+    /// Used for update and delete operations.
+    /// </summary>
+    /// <param name="specification">The query specification to apply.</param>
+    /// <returns>A queryable with the specification applied.</returns>
+    private IQueryable<TEntity> ApplyEntitySpecification(
+        IQuerySpecification<TEntity, TEntity> specification)
+    {
+        IQueryable<TEntity> query = context.Set<TEntity>();
+
+        // Apply includes
+        query = ApplyIncludes(query, specification.Includes);
+
+        // Apply predicate
+        if (specification.Predicate is not null)
+        {
+            query = query.Where(specification.Predicate);
+        }
+
+        // Apply ordering
+        query = ApplyOrdering(query, specification.OrderBy);
+
+        // Apply skip
+        if (specification.Skip.HasValue)
+        {
+            query = query.Skip(specification.Skip.Value);
+        }
+
+        // Apply take
+        if (specification.Take.HasValue)
+        {
+            query = query.Take(specification.Take.Value);
+        }
+
+        return query;
+    }
+
+    /// <summary>
+    /// Applies include specifications to a query using string-based navigation paths.
+    /// </summary>
+    /// <param name="query">The source query.</param>
+    /// <param name="includes">The collection of include specifications.</param>
+    /// <returns>The query with includes applied.</returns>
+    private static IQueryable<TEntity> ApplyIncludes(
+        IQueryable<TEntity> query,
+        IReadOnlyList<IIncludeSpecification<TEntity>> includes)
+    {
+        if (includes.Count == 0)
+        {
+            return query;
+        }
+
+        foreach (var include in includes)
+        {
+            // Extract the navigation path from the expression
+            var navigationPath = GetNavigationPath(include.IncludeExpression);
+            query = query.Include(navigationPath);
+
+            // Apply ThenIncludes by building the full path
+            foreach (var thenInclude in include.ThenIncludes)
+            {
+                var thenPath = $"{navigationPath}.{GetNavigationPath(thenInclude.ThenIncludeExpression)}";
+                query = query.Include(thenPath);
+            }
+        }
+
+        return query;
+    }
+
+    /// <summary>
+    /// Extracts the navigation property path from a lambda expression.
+    /// </summary>
+    /// <param name="expression">The lambda expression representing the navigation property.</param>
+    /// <returns>The dot-separated navigation path string.</returns>
+    private static string GetNavigationPath(LambdaExpression expression)
+    {
+        var path = new System.Text.StringBuilder();
+        var current = expression.Body;
+
+        // Handle Convert expressions (for value types or interfaces)
+        while (current is UnaryExpression unary && unary.NodeType == ExpressionType.Convert)
+        {
+            current = unary.Operand;
+        }
+
+        // Build the path from member access chain
+        while (current is MemberExpression member)
+        {
+            if (path.Length > 0)
+            {
+                path.Insert(0, '.');
+            }
+
+            path.Insert(0, member.Member.Name);
+            current = member.Expression!;
+
+            // Handle Convert expressions in the chain
+            while (current is UnaryExpression unary && unary.NodeType == ExpressionType.Convert)
+            {
+                current = unary.Operand;
+            }
+        }
+
+        return path.ToString();
+    }
+
+    /// <summary>
+    /// Applies ordering specifications to a query.
+    /// </summary>
+    /// <param name="query">The source query.</param>
+    /// <param name="orderSpecs">The collection of order specifications.</param>
+    /// <returns>The query with ordering applied.</returns>
+    private static IQueryable<TEntity> ApplyOrdering(
+        IQueryable<TEntity> query,
+        IReadOnlyList<IOrderSpecification<TEntity>> orderSpecs)
+    {
+        if (orderSpecs.Count == 0)
+        {
+            return query;
+        }
+
+        // Apply first ordering
+        var orderedQuery = orderSpecs[0].ApplyFirst(query);
+
+        // Apply subsequent orderings
+        for (int i = 1; i < orderSpecs.Count; i++)
+        {
+            orderedQuery = orderSpecs[i].ApplySubsequent(orderedQuery);
+        }
+
+        return orderedQuery;
     }
 
     /// <inheritdoc />
@@ -413,13 +587,11 @@ public class Repository(DataContext context) : IRepository
     /// <summary>
     /// Applies a property update to an entity instance.
     /// </summary>
-    /// <typeparam name="TEntity">The entity type.</typeparam>
     /// <param name="entity">The entity to update.</param>
     /// <param name="update">The property update to apply.</param>
-    private static void ApplyPropertyUpdate<TEntity>(
+    private static void ApplyPropertyUpdate(
         TEntity entity,
         IEntityPropertyUpdate<TEntity> update)
-        where TEntity : class
     {
         // Get the property from the expression
         if (update.PropertyExpression.Body is MemberExpression memberExpression)

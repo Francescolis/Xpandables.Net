@@ -29,11 +29,11 @@ namespace System.Entities.Data;
 public static class IRepositoryExtensions
 {
     /// <summary>
-    /// <see cref="IRepository"/> extensions.
+    /// <see cref="IRepository{TEntity}"/> extensions.
     /// </summary>
     /// <typeparam name="TRepository">The type of the repository. </typeparam>
     extension<TRepository>(TRepository repository)
-        where TRepository : class, IRepository
+        where TRepository : class
     {
         /// <summary>
         /// Injects the specified ambient <see cref="DataContext"/> into the underlying repository instance, enabling it

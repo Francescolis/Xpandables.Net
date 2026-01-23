@@ -105,19 +105,28 @@ public interface IThenIncludeSpecification
 }
 
 /// <summary>
-/// Represents an ordering specification.
+/// Represents an ordering specification that can apply itself to a query.
 /// </summary>
 /// <typeparam name="TEntity">The type of the entity.</typeparam>
 public interface IOrderSpecification<TEntity>
     where TEntity : class
 {
     /// <summary>
-    /// Gets the expression representing the property to order by.
-    /// </summary>
-    LambdaExpression KeySelector { get; }
-
-    /// <summary>
     /// Gets a value indicating whether to order in descending order.
     /// </summary>
     bool Descending { get; }
+
+    /// <summary>
+    /// Applies this ordering as the primary sort to an unordered query.
+    /// </summary>
+    /// <param name="query">The unordered query.</param>
+    /// <returns>An ordered query with this ordering applied.</returns>
+    IOrderedQueryable<TEntity> ApplyFirst(IQueryable<TEntity> query);
+
+    /// <summary>
+    /// Applies this ordering as a secondary sort to an already ordered query.
+    /// </summary>
+    /// <param name="query">The already ordered query.</param>
+    /// <returns>An ordered query with this additional ordering applied.</returns>
+    IOrderedQueryable<TEntity> ApplySubsequent(IOrderedQueryable<TEntity> query);
 }

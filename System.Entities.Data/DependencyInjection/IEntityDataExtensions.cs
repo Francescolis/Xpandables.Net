@@ -20,6 +20,7 @@ using System.Entities;
 using System.Entities.Data;
 
 using Microsoft.EntityFrameworkCore;
+using Microsoft.Extensions.DependencyInjection.Extensions;
 
 #pragma warning disable IDE0130 // Namespace does not match folder structure
 namespace Microsoft.Extensions.DependencyInjection;
@@ -102,6 +103,21 @@ public static class IEntityDataExtensions
 
             services.AddXUnitOfWork<IUnitOfWork<TDataContext>, UnitOfWork<TDataContext>>();
             services.AddScoped<IUnitOfWork>(provider => provider.GetRequiredService<IUnitOfWork<TDataContext>>());
+
+            return services;
+        }
+
+        /// <summary>
+        /// Adds the default repository implementation to the service collection.
+        /// </summary>
+        /// <param name="lifetime">The service lifetime.</param>
+        /// <returns>The service collection so that additional calls can be chained.</returns>
+        /// <exception cref="ArgumentNullException">Thrown when services is null.</exception>
+        public IServiceCollection AddXRepository(ServiceLifetime lifetime = ServiceLifetime.Scoped)
+        {
+            ArgumentNullException.ThrowIfNull(services);
+
+            services.TryAdd(new ServiceDescriptor(typeof(IRepository<>), typeof(Repository<>), lifetime));
 
             return services;
         }

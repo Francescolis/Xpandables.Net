@@ -35,7 +35,7 @@ public interface IUnitOfWork : IDisposable, IAsyncDisposable
     /// <returns>The repository instance.</returns>
     [RequiresUnreferencedCode("Requires unreferenced code.")]
     TRepository GetRepository<[DynamicallyAccessedMembers(DynamicallyAccessedMemberTypes.PublicConstructors | DynamicallyAccessedMemberTypes.PublicParameterlessConstructor)] TRepository>()
-       where TRepository : class, IRepository;
+       where TRepository : class;
 
     /// <summary>
     /// Begins a new transaction asynchronously.

@@ -49,16 +49,11 @@ public class UnitOfWork(DataContext context, IServiceProvider serviceProvider) :
     /// <inheritdoc />
     [RequiresUnreferencedCode("Requires unreferenced code.")]
     public virtual TRepository GetRepository<[DynamicallyAccessedMembers(DynamicallyAccessedMemberTypes.PublicConstructors | DynamicallyAccessedMemberTypes.PublicParameterlessConstructor)] TRepository>()
-        where TRepository : class, IRepository
+        where TRepository : class
     {
         ThrowIfDisposed();
 
         var repositoryType = typeof(TRepository);
-
-        if (repositoryType == typeof(IRepository))
-        {
-            return (TRepository)(IRepository)new Repository(_context);
-        }
 
         try
         {
