@@ -77,20 +77,6 @@ public static class IEntityDataExtensions
                 optionsAction, factoryLifetime);
 
         /// <summary>
-        /// Adds default unit of work services to the specified service collection.
-        /// </summary>
-        /// <returns>The service collection so that additional calls can be chained.</returns>
-        /// <exception cref="ArgumentNullException">Thrown when services is null.</exception>
-        public IServiceCollection AddXUnitOfWork()
-        {
-            ArgumentNullException.ThrowIfNull(services);
-
-            services.AddScoped<IUnitOfWork, UnitOfWork>();
-
-            return services;
-        }
-
-        /// <summary>
         /// Adds default unit of work services with a specific <see cref="DataContext"/>> to the specified service collection.
         /// </summary>
         /// <typeparam name="TDataContext">The type of the DataContext.</typeparam>

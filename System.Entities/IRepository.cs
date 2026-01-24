@@ -27,13 +27,7 @@ namespace System.Entities;
 /// This interface serves as a base for <see cref="IRepository{TEntity}"/> and allows
 /// dependency injection containers to discover and register repository implementations.
 /// </remarks>
-public interface IRepository : IDisposable, IAsyncDisposable
-{
-    /// <summary>
-    /// Gets or sets a value indicating whether the repository operations are executed within a unit of work.
-    /// </summary>
-    bool IsUnitOfWorkEnabled { get; set; }
-}
+public interface IRepository : IDisposable, IAsyncDisposable;
 
 /// <summary>
 /// Defines a generic repository interface for performing asynchronous CRUD operations on entities.
@@ -130,7 +124,9 @@ public interface IRepository<[DynamicallyAccessedMembers(DynamicallyAccessedMemb
     /// <param name="entities">A collection of entities to add to the data store. Cannot be null or contain null elements.</param>
     /// <param name="cancellationToken">A cancellation token that can be used to cancel the asynchronous operation.</param>
     /// <returns>A task that represents the asynchronous add operation, containing the number of entities added.</returns>
-    Task<int> AddAsync(IEnumerable<TEntity> entities, CancellationToken cancellationToken = default);
+    Task<int> AddAsync(
+        IEnumerable<TEntity> entities,
+        CancellationToken cancellationToken = default);
 
     /// <summary>
     /// Asynchronously updates the specified entities in the data store.
@@ -138,7 +134,9 @@ public interface IRepository<[DynamicallyAccessedMembers(DynamicallyAccessedMemb
     /// <param name="entities">A collection of entities to update. Each entity must not be null.</param>
     /// <param name="cancellationToken">A cancellation token that can be used to cancel the update operation.</param>
     /// <returns>A task that represents the asynchronous update operation, containing the number of entities updated.</returns>
-    Task<int> UpdateAsync(IEnumerable<TEntity> entities, CancellationToken cancellationToken = default);
+    Task<int> UpdateAsync(
+        IEnumerable<TEntity> entities,
+        CancellationToken cancellationToken = default);
 
     /// <summary>
     /// Asynchronously updates entities of type TEntity that match the specified specification using the provided update
@@ -200,12 +198,59 @@ public interface IRepository<[DynamicallyAccessedMembers(DynamicallyAccessedMemb
         CancellationToken cancellationToken = default);
 
     /// <summary>
+    /// Asynchronously updates entities of type TEntity that match the specified specification using a fluent updater.
+    /// This operation is immediately executed and cannot be rolled back via UnitOfWork.
+    /// <example>
+    /// <code>
+    /// var spec = QuerySpecification
+    ///     .For&lt;Product&gt;()
+    ///     .Where(p =&gt; p.IsActive)
+    ///     .Build();
+    ///     
+    /// var updater = EntityUpdater
+    ///     .For&lt;Product&gt;()
+    ///     .SetProperty(e=&gt; e.Price, e =&gt; e.Price * 1.1m) // Increase price by 10%
+    ///     .SetProperty(e=&gt; e.LastUpdated, DateTime.UtcNow); // Set last updated to now
+    ///     
+    /// var updated = await repository.UpdateAsync(spec, updater, cancellationToken);
+    /// </code>
+    /// </example>
+    /// </summary>
+    /// <remarks>This method uses the fluent updater pattern to specify multiple property updates in a single
+    /// operation. It provides an efficient way to perform bulk updates without loading entities into memory.</remarks>
+    /// <param name="specification">A query specification that defines which entities will be updated.</param>
+    /// <param name="updater">A fluent updater that specifies the property updates to apply.</param>
+    /// <param name="cancellationToken">A token to monitor for cancellation requests.</param>
+    /// <returns>A task that represents the asynchronous bulk update operation, containing the number of entities updated.</returns>
+    /// <exception cref="ArgumentNullException">Thrown when specification or updater is null.</exception>
+    /// <exception cref="InvalidOperationException">Thrown when the updater contains no property updates.</exception>
+    Task<int> UpdateBulkAsync(
+        IQuerySpecification<TEntity, TEntity> specification,
+        EntityUpdater<TEntity> updater,
+        CancellationToken cancellationToken = default);
+
+    /// <summary>
     /// Deletes entities from the repository based on a query specification.
     /// </summary>
     /// <param name="specification">A query specification that defines which entities will be deleted.</param>
     /// <param name="cancellationToken">A token to cancel the operation.</param>
     /// <returns>A task that represents the asynchronous operation, containing the number of entities deleted.</returns>
     Task<int> DeleteAsync(
+        IQuerySpecification<TEntity, TEntity> specification,
+        CancellationToken cancellationToken = default);
+
+    /// <summary>
+    /// Asynchronously deletes all entities that match the specified query criteria.
+    /// This operation is immediately executed and cannot be rolled back via UnitOfWork.
+    /// </summary>
+    /// <remarks>If the operation is canceled via the provided cancellation token, the returned task will be
+    /// canceled. Exceptions may be thrown if the operation fails due to invalid arguments or underlying data store
+    /// errors.</remarks>
+    /// <param name="specification">The query specification that defines the criteria used to select entities for deletion. Cannot be null.</param>
+    /// <param name="cancellationToken">A cancellation token that can be used to cancel the delete operation.</param>
+    /// <returns>A task that represents the asynchronous operation. The task result contains the number of entities that were
+    /// deleted.</returns>
+    Task<int> DeleteBulkAsync(
         IQuerySpecification<TEntity, TEntity> specification,
         CancellationToken cancellationToken = default);
 }

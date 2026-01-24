@@ -46,8 +46,6 @@ public sealed class InboxStore<[DynamicallyAccessedMembers(DynamicallyAccessedMe
         ArgumentNullException.ThrowIfNull(@event);
         ArgumentException.ThrowIfNullOrWhiteSpace(consumer);
 
-        _inboxRepository.IsUnitOfWorkEnabled = false;
-
         var specification = QuerySpecification
             .For<TEntityEventInbox>()
             .Where(e => e.KeyId == @event.EventId && e.Consumer == consumer)
@@ -83,21 +81,18 @@ public sealed class InboxStore<[DynamicallyAccessedMembers(DynamicallyAccessedMe
         entity.NextAttemptOn = DateTime.UtcNow.Add(visibilityTimeout ?? TimeSpan.FromMinutes(5));
 
         await _inboxRepository.AddAsync([entity], cancellationToken).ConfigureAwait(false);
+        await unitOfWork.SaveChangesAsync(cancellationToken).ConfigureAwait(false);
 
         return new InboxReceiveResult(@event.EventId, EntityStatus.ACCEPTED);
     }
 
     /// <inheritdoc />
-    [UnconditionalSuppressMessage("Trimming", "IL2026:Members annotated with 'RequiresUnreferencedCodeAttribute' require dynamic access otherwise can break functionality when trimming application code", Justification = "<Pending>")]
-    [UnconditionalSuppressMessage("AOT", "IL3050:Calling members annotated with 'RequiresDynamicCodeAttribute' may break functionality when AOT compiling.", Justification = "<Pending>")]
     public async Task CompleteAsync(
         CancellationToken cancellationToken,
         params CompletedInboxEvent[] events)
     {
         ArgumentNullException.ThrowIfNull(events);
         ArgumentOutOfRangeException.ThrowIfEqual(events.Length, 0);
-
-        _inboxRepository.IsUnitOfWorkEnabled = false;
 
         var now = DateTime.UtcNow;
 
@@ -118,22 +113,18 @@ public sealed class InboxStore<[DynamicallyAccessedMembers(DynamicallyAccessedMe
                 .SetProperty(e => e.UpdatedOn, now);
 
             await _inboxRepository
-                .UpdateAsync(specification, updater, cancellationToken)
+                .UpdateBulkAsync(specification, updater, cancellationToken)
                 .ConfigureAwait(false);
         }
     }
 
     /// <inheritdoc />
-    [UnconditionalSuppressMessage("Trimming", "IL2026:Members annotated with 'RequiresUnreferencedCodeAttribute' require dynamic access otherwise can break functionality when trimming application code", Justification = "<Pending>")]
-    [UnconditionalSuppressMessage("AOT", "IL3050:Calling members annotated with 'RequiresDynamicCodeAttribute' may break functionality when AOT compiling.", Justification = "<Pending>")]
     public async Task FailAsync(
         CancellationToken cancellationToken,
         params FailedInboxEvent[] failures)
     {
         ArgumentNullException.ThrowIfNull(failures);
         ArgumentOutOfRangeException.ThrowIfEqual(failures.Length, 0);
-
-        _inboxRepository.IsUnitOfWorkEnabled = false;
 
         var now = DateTime.UtcNow;
 
@@ -163,7 +154,7 @@ public sealed class InboxStore<[DynamicallyAccessedMembers(DynamicallyAccessedMe
                     .SetProperty(e => e.UpdatedOn, now);
 
                 await _inboxRepository
-                    .UpdateAsync(specification, updater, cancellationToken)
+                    .UpdateBulkAsync(specification, updater, cancellationToken)
                     .ConfigureAwait(false);
             }
         }

@@ -128,37 +128,24 @@ public sealed class EventStore<[DynamicallyAccessedMembers(DynamicallyAccessedMe
             .Where(e => e.StreamId == request.StreamId)
             .Build();
 
-        var events = await _domainRepository
-            .FetchAsync(specification, cancellationToken)
-            .ToListAsync(cancellationToken)
-            .ConfigureAwait(false);
-
-        if (events.Count == 0)
-        {
-            return;
-        }
-
         if (request.HardDelete)
         {
             // Hard delete: permanently remove events from the database
             await _domainRepository
-                .DeleteAsync(specification, cancellationToken)
+                .DeleteBulkAsync(specification, cancellationToken)
                 .ConfigureAwait(false);
         }
         else
         {
-            // Soft delete: mark events as deleted using EntityStatus.DELETED
-            foreach (var entity in events)
-            {
-                entity.SetStatus(EntityStatus.DELETED.Value);
-            }
+            var updater = EntityUpdater
+                .For<TEntityEventDomain>()
+                .SetProperty(e => e.Status, EntityStatus.DELETED.Value);
 
             await _domainRepository
-                .UpdateAsync(events, cancellationToken)
+                .UpdateAsync(specification, updater, cancellationToken)
                 .ConfigureAwait(false);
+            // defer SaveChanges to FlushEventsAsync
         }
-
-        // defer SaveChanges to FlushEventsAsync
     }
 
     ///<inheritdoc/>

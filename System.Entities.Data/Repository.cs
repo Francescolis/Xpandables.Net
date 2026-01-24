@@ -33,15 +33,19 @@ namespace System.Entities.Data;
 /// <param name="context">The Entity Framework DbContext to use for database operations.</param>
 /// <exception cref="ArgumentNullException">Thrown when context is null.</exception>
 /// <typeparam name="TEntity">The type of the entity to query from the data source. Must be a reference type.</typeparam>
-public class Repository<[DynamicallyAccessedMembers(DynamicallyAccessedMemberTypes.All)] TEntity>(DataContext context) : IRepository<TEntity>
+public class Repository<[DynamicallyAccessedMembers(DynamicallyAccessedMemberTypes.All)] TEntity>(DataContext context) :
+    IRepository<TEntity>, IAmbientContextReceiver<DataContext>
     where TEntity : class
 {
+    [SuppressMessage("Usage", "CA2213:Disposable fields should be disposed", Justification = "<Pending>")]
+    private DataContext _context = context ?? throw new ArgumentNullException(nameof(context));
+
     /// <summary>
     /// Gets or sets the data context used for database operations.
     /// </summary>
     /// <remarks>The context must be provided and cannot be null. It is used to manage the database connection
     /// and track changes to entities.</remarks>
-    protected DataContext Context { get; set; } = context ?? throw new ArgumentNullException(nameof(context));
+    protected DataContext Context => _context;
 
     /// <summary>
     /// Gets a value indicating whether the object has been disposed.
@@ -50,13 +54,13 @@ public class Repository<[DynamicallyAccessedMembers(DynamicallyAccessedMemberTyp
     /// members of a disposed object may result in exceptions or undefined behavior.</remarks>
     protected bool IsDisposed { get; set; }
 
-    /// <summary>
-    /// Gets a value indicating whether persistence operations are executed within a unit of work context.
-    /// </summary>
-    /// <remarks>This property indicates if the add/updates should be executed as part of a unit of work,
-    /// allowing for transactional consistency across multiple operations.
-    /// The default value is <see langword="true"/>.</remarks>
-    public bool IsUnitOfWorkEnabled { get; set; } = true;
+    /// <inheritdoc />
+    [SuppressMessage("Design", "CA1033:Interface methods should be callable by child types", Justification = "<Pending>")]
+    void IAmbientContextReceiver<DataContext>.SetAmbientContext(DataContext context)
+    {
+        ArgumentNullException.ThrowIfNull(context);
+        _context = context;
+    }
 
     /// <inheritdoc />
     public virtual IAsyncPagedEnumerable<TResult> FetchAsync<TResult>(
@@ -67,7 +71,6 @@ public class Repository<[DynamicallyAccessedMembers(DynamicallyAccessedMemberTyp
         ArgumentNullException.ThrowIfNull(specification);
 
         var query = ApplySpecification(specification);
-
         return query.ToAsyncPagedEnumerable();
     }
 
@@ -139,11 +142,6 @@ public class Repository<[DynamicallyAccessedMembers(DynamicallyAccessedMemberTyp
             await Context.AddRangeAsync(entityList, cancellationToken).ConfigureAwait(false);
         }
 
-        if (!IsUnitOfWorkEnabled)
-        {
-            return await SaveChangesAsync(cancellationToken).ConfigureAwait(false);
-        }
-
         return entityList.Count;
     }
 
@@ -159,10 +157,6 @@ public class Repository<[DynamicallyAccessedMembers(DynamicallyAccessedMemberTyp
         ArgumentOutOfRangeException.ThrowIfLessThan(entityList.Count, 1, nameof(entities));
 
         Context.Set<TEntity>().UpdateRange(entityList);
-        if (!IsUnitOfWorkEnabled)
-        {
-            return await SaveChangesAsync(cancellationToken).ConfigureAwait(false);
-        }
 
         return entityList.Count;
     }
@@ -193,10 +187,6 @@ public class Repository<[DynamicallyAccessedMembers(DynamicallyAccessedMemberTyp
         if (entities.Count > 0)
         {
             Context.Set<TEntity>().UpdateRange(entities);
-            if (!IsUnitOfWorkEnabled)
-            {
-                return await SaveChangesAsync(cancellationToken).ConfigureAwait(false);
-            }
         }
 
         return entities.Count;
@@ -225,10 +215,6 @@ public class Repository<[DynamicallyAccessedMembers(DynamicallyAccessedMemberTyp
         if (entities.Count > 0)
         {
             Context.Set<TEntity>().UpdateRange(entities);
-            if (!IsUnitOfWorkEnabled)
-            {
-                return await SaveChangesAsync(cancellationToken).ConfigureAwait(false);
-            }
         }
 
         return entities.Count;
@@ -247,12 +233,6 @@ public class Repository<[DynamicallyAccessedMembers(DynamicallyAccessedMemberTyp
 
         var query = ApplyEntitySpecification(specification);
 
-        if (!IsUnitOfWorkEnabled)
-        {
-            var setters = updater.ToSetPropertyCalls();
-            return await query.ExecuteUpdateAsync(setters, cancellationToken).ConfigureAwait(false);
-        }
-
         var entities = new List<TEntity>();
         await foreach (TEntity entity in query.AsAsyncEnumerable()
             .WithCancellation(cancellationToken)
@@ -269,6 +249,25 @@ public class Repository<[DynamicallyAccessedMembers(DynamicallyAccessedMemberTyp
         return entities.Count;
     }
 
+    /// <inheritdoc/>
+    public virtual async Task<int> UpdateBulkAsync(
+        IQuerySpecification<TEntity, TEntity> specification,
+        EntityUpdater<TEntity> updater,
+        CancellationToken cancellationToken = default)
+    {
+        ObjectDisposedException.ThrowIf(IsDisposed, Context);
+        ArgumentNullException.ThrowIfNull(specification);
+        ArgumentNullException.ThrowIfNull(updater);
+        ArgumentOutOfRangeException.ThrowIfLessThan(updater.Updates.Count, 1, nameof(updater.Updates));
+
+        var query = ApplyEntitySpecification(specification);
+
+        var setters = updater.ToSetPropertyCalls();
+        return await query
+            .ExecuteUpdateAsync(setters, cancellationToken)
+            .ConfigureAwait(false);
+    }
+
     /// <inheritdoc />
     public virtual async Task<int> DeleteAsync(
         IQuerySpecification<TEntity, TEntity> specification,
@@ -279,14 +278,21 @@ public class Repository<[DynamicallyAccessedMembers(DynamicallyAccessedMemberTyp
 
         var query = ApplyEntitySpecification(specification);
 
-        if (!IsUnitOfWorkEnabled)
-        {
-            return await query.ExecuteDeleteAsync(cancellationToken).ConfigureAwait(false);
-        }
-
         var entityList = await query.ToListAsync(cancellationToken).ConfigureAwait(false);
         Context.RemoveRange(entityList);
         return entityList.Count;
+    }
+
+    /// <inheritdoc />
+    public virtual async Task<int> DeleteBulkAsync(
+        IQuerySpecification<TEntity, TEntity> specification,
+        CancellationToken cancellationToken = default)
+    {
+        ObjectDisposedException.ThrowIf(IsDisposed, Context);
+        ArgumentNullException.ThrowIfNull(specification);
+
+        var query = ApplyEntitySpecification(specification);
+        return await query.ExecuteDeleteAsync(cancellationToken).ConfigureAwait(false);
     }
 
     /// <summary>

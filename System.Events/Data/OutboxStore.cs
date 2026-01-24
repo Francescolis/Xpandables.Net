@@ -61,8 +61,9 @@ public sealed class OutboxStore<[DynamicallyAccessedMembers(DynamicallyAccessedM
             list.Add(entity);
         }
 
-        await _integrationRepository.AddAsync(list, cancellationToken).ConfigureAwait(false);
-        // defer SaveChanges to Event Store flush
+        await _integrationRepository
+            .AddAsync(list, cancellationToken)
+            .ConfigureAwait(false);
     }
 
     /// <inheritdoc />
@@ -107,11 +108,9 @@ public sealed class OutboxStore<[DynamicallyAccessedMembers(DynamicallyAccessedM
             .Where(e => candidateIds.Contains(e.KeyId) && e.ClaimId == null)
             .Build();
 
-        _integrationRepository.IsUnitOfWorkEnabled = false;
         var updated = await _integrationRepository
-            .UpdateAsync(specificationUpdater, updater, cancellationToken)
+            .UpdateBulkAsync(specificationUpdater, updater, cancellationToken)
             .ConfigureAwait(false);
-        _integrationRepository.IsUnitOfWorkEnabled = true;
 
         if (updated == 0) return [];
 
@@ -161,11 +160,9 @@ public sealed class OutboxStore<[DynamicallyAccessedMembers(DynamicallyAccessedM
             .SetProperty(e => e.ClaimId, (Guid?)null)
             .SetProperty(e => e.UpdatedOn, now);
 
-        _integrationRepository.IsUnitOfWorkEnabled = false;
         await _integrationRepository
-            .UpdateAsync(specification, updater, cancellationToken)
+            .UpdateBulkAsync(specification, updater, cancellationToken)
             .ConfigureAwait(false);
-        _integrationRepository.IsUnitOfWorkEnabled = true;
     }
 
     /// <inheritdoc />
@@ -179,7 +176,6 @@ public sealed class OutboxStore<[DynamicallyAccessedMembers(DynamicallyAccessedM
         var now = DateTime.UtcNow;
         try
         {
-            _integrationRepository.IsUnitOfWorkEnabled = false;
             foreach (var failure in failures)
             {
                 var specification = QuerySpecification
@@ -197,7 +193,7 @@ public sealed class OutboxStore<[DynamicallyAccessedMembers(DynamicallyAccessedM
                     .SetProperty(e => e.UpdatedOn, now);
 
                 await _integrationRepository
-                    .UpdateAsync(specification, updater, cancellationToken)
+                    .UpdateBulkAsync(specification, updater, cancellationToken)
                     .ConfigureAwait(false);
             }
         }
@@ -206,10 +202,6 @@ public sealed class OutboxStore<[DynamicallyAccessedMembers(DynamicallyAccessedM
             throw new InvalidOperationException(
                 "An error occurred while processing failed outbox events.",
                 exception);
-        }
-        finally
-        {
-            _integrationRepository.IsUnitOfWorkEnabled = true;
         }
     }
 }

@@ -31,15 +31,16 @@ namespace System.Entities.Data;
 /// It manages the DbContext lifecycle and ensures that all operations within a unit of work are executed within
 /// the same transaction context.</remarks>
 /// <remarks>
-/// Initializes a new instance of the <see cref="UnitOfWork"/> class.
+/// Initializes a new instance of the <see cref="UnitOfWork{TDataContext}"/> class.
 /// </remarks>
 /// <param name="context">The Entity Framework DbContext to use for database operations.</param>
 /// <param name="serviceProvider">service provider for dependency injection of repositories.</param>
 /// <exception cref="ArgumentNullException">Thrown when context is null.</exception>
-public class UnitOfWork(DataContext context, IServiceProvider serviceProvider) : IUnitOfWork
+public class UnitOfWork<TContext>(TContext context, IServiceProvider serviceProvider) : IUnitOfWork<TContext>
+    where TContext : DataContext
 {
     [SuppressMessage("Usage", "CA2213:Disposable fields should be disposed", Justification = "<Pending>")]
-    private readonly DataContext _context = context ?? throw new ArgumentNullException(nameof(context));
+    private readonly TContext _context = context ?? throw new ArgumentNullException(nameof(context));
 
     /// <summary>
     /// Gets a value indicating whether the object has been disposed.
@@ -49,7 +50,6 @@ public class UnitOfWork(DataContext context, IServiceProvider serviceProvider) :
     protected bool IsDisposed { get; set; }
 
     /// <inheritdoc />
-    [UnconditionalSuppressMessage("Trimming", "IL2026:Members annotated with 'RequiresUnreferencedCodeAttribute' require dynamic access otherwise can break functionality when trimming application code", Justification = "<Pending>")]
     public virtual TRepository GetRepository<[DynamicallyAccessedMembers(DynamicallyAccessedMemberTypes.PublicConstructors | DynamicallyAccessedMemberTypes.PublicParameterlessConstructor)] TRepository>()
         where TRepository : class, IRepository
     {
@@ -67,14 +67,15 @@ public class UnitOfWork(DataContext context, IServiceProvider serviceProvider) :
             }
             else
             {
-                return ActivatorUtilities.CreateInstance<TRepository>(serviceProvider, _context);
+                var instance = ActivatorUtilities.CreateInstance<TRepository>(serviceProvider, _context);
+                return instance;
             }
         }
         catch (InvalidOperationException ex)
         {
             throw new InvalidOperationException(
                 $"Unable to create repository of type {repositoryType.FullName}. " +
-                $"Repository must have a constructor that accepts DataContext (or derived type) " +
+                $"Repository must have a constructor that accepts {typeof(TContext).Name} (or derived type) " +
                 $"as a parameter, or have a parameterless constructor with InjectAmbientContext support.",
                 ex);
         }
@@ -297,25 +298,4 @@ public class UnitOfWork(DataContext context, IServiceProvider serviceProvider) :
     /// Throws an ObjectDisposedException if the unit of work has been disposed.
     /// </summary>
     private void ThrowIfDisposed() => ObjectDisposedException.ThrowIf(IsDisposed, context);
-}
-
-/// <summary>
-/// Generic Entity Framework Core implementation of the Unit of Work pattern with typed context.
-/// </summary>
-/// <typeparam name="TDataContext">The type of the DbContext.</typeparam>
-/// <remarks>This implementation provides the same functionality as EntityFrameworkUnitOfWork but with
-/// strong typing for the specific DbContext type.</remarks>
-/// <remarks>
-/// Initializes a new instance of the <see cref="UnitOfWork{TDataContext}"/> class.
-/// </remarks>
-/// <param name="context">The strongly-typed Entity Framework DbContext.</param>
-/// <param name="serviceProvider">Optional service provider for dependency injection of repositories.</param>
-/// <exception cref="ArgumentNullException">Thrown when context is null.</exception>
-public class UnitOfWork<TDataContext>(TDataContext context, IServiceProvider serviceProvider) :
-    UnitOfWork(context, serviceProvider), IUnitOfWork<TDataContext>
-    where TDataContext : DataContext
-{
-    /// <inheritdoc />
-    public override TRepository GetRepository<[DynamicallyAccessedMembers(DynamicallyAccessedMemberTypes.PublicConstructors | DynamicallyAccessedMemberTypes.PublicParameterlessConstructor)] TRepository>() =>
-        base.GetRepository<TRepository>();
 }
