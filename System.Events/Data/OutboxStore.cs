@@ -66,8 +66,6 @@ public sealed class OutboxStore<[DynamicallyAccessedMembers(DynamicallyAccessedM
     }
 
     /// <inheritdoc />
-    [UnconditionalSuppressMessage("Trimming", "IL2026:Members annotated with 'RequiresUnreferencedCodeAttribute' require dynamic access otherwise can break functionality when trimming application code", Justification = "<Pending>")]
-    [UnconditionalSuppressMessage("AOT", "IL3050:Calling members annotated with 'RequiresDynamicCodeAttribute' may break functionality when AOT compiling.", Justification = "<Pending>")]
     public async Task<IReadOnlyList<IIntegrationEvent>> DequeueAsync(
         CancellationToken cancellationToken,
         int maxEvents = 10,
@@ -139,8 +137,6 @@ public sealed class OutboxStore<[DynamicallyAccessedMembers(DynamicallyAccessedM
     }
 
     /// <inheritdoc />
-    [UnconditionalSuppressMessage("Trimming", "IL2026:Members annotated with 'RequiresUnreferencedCodeAttribute' require dynamic access otherwise can break functionality when trimming application code", Justification = "<Pending>")]
-    [UnconditionalSuppressMessage("AOT", "IL3050:Calling members annotated with 'RequiresDynamicCodeAttribute' may break functionality when AOT compiling.", Justification = "<Pending>")]
     public async Task CompleteAsync(
         CancellationToken cancellationToken,
         params Guid[] eventIds)
@@ -169,8 +165,6 @@ public sealed class OutboxStore<[DynamicallyAccessedMembers(DynamicallyAccessedM
     }
 
     /// <inheritdoc />
-    [UnconditionalSuppressMessage("Trimming", "IL2026:Members annotated with 'RequiresUnreferencedCodeAttribute' require dynamic access otherwise can break functionality when trimming application code", Justification = "<Pending>")]
-    [UnconditionalSuppressMessage("AOT", "IL3050:Calling members annotated with 'RequiresDynamicCodeAttribute' may break functionality when AOT compiling.", Justification = "<Pending>")]
     public async Task FailAsync(
         CancellationToken cancellationToken,
         params FailedOutboxEvent[] failures)

@@ -15,8 +15,6 @@
  *
 ********************************************************************************/
 
-using System.Diagnostics.CodeAnalysis;
-
 using Microsoft.EntityFrameworkCore.Query;
 
 namespace System.Entities.Data;
@@ -38,8 +36,6 @@ public static class EntityUpdaterExtensions
         /// <summary>
         /// Builds an update setters action for EF Core 10 RC1 ExecuteUpdate APIs.
         /// </summary>
-        [RequiresDynamicCode("Dynamic code generation is required for this method.")]
-        [RequiresUnreferencedCode("Calls MakeGenericMethod which may require unreferenced code.")]
         public Action<UpdateSettersBuilder<TSource>> ToSetPropertyCalls()
         {
             ArgumentNullException.ThrowIfNull(updater);

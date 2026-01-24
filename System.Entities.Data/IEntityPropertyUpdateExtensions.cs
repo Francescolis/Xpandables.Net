@@ -14,7 +14,6 @@
  * limitations under the License.
  *
 ********************************************************************************/
-using System.Diagnostics.CodeAnalysis;
 using System.Linq.Expressions;
 using System.Reflection;
 
@@ -64,13 +63,13 @@ public static class IEntityPropertyUpdateExtensions
         /// Builds an <see cref="Action{T}"/> that applies all configured property updates to a given
         /// <see cref="UpdateSettersBuilder{TSource}"/> instance.
         /// </summary>
-        /// <remarks>This method generates and compiles a delegate compatible with EF Core 10 RC1
+        /// <remarks>This method generates and compiles a delegate compatible with EF Core 10
         /// ExecuteUpdate/ExecuteUpdateAsync.</remarks>
         /// <returns>An <see cref="Action{T}"/> taking <see cref="UpdateSettersBuilder{TSource}"/> that applies all updates.</returns>
         /// <exception cref="InvalidOperationException">Thrown if a property update contains a <c>PropertyExpression</c> that is not a <see
         /// cref="LambdaExpression"/> or has an unexpected parameter signature.</exception>
-        [RequiresDynamicCode("Dynamic code generation is required for this method.")]
-        [RequiresUnreferencedCode("Calls MakeGenericMethod which may require unreferenced code.")]
+        //[RequiresDynamicCode("Dynamic code generation is required for this method.")]
+        //[RequiresUnreferencedCode("Calls MakeGenericMethod which may require unreferenced code.")]
         public Action<UpdateSettersBuilder<TSource>> ToSetPropertyCalls()
         {
             ArgumentNullException.ThrowIfNull(updates);

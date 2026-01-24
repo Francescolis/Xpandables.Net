@@ -179,8 +179,6 @@ public interface IRepository<[DynamicallyAccessedMembers(DynamicallyAccessedMemb
     /// <returns>A task that represents the asynchronous bulk update operation, containing the number of entities updated.</returns>
     /// <exception cref="ArgumentNullException">Thrown when specification or updater is null.</exception>
     /// <exception cref="InvalidOperationException">Thrown when the updater contains no property updates.</exception>
-    [RequiresDynamicCode("Dynamic code generation is required for this method.")]
-    [RequiresUnreferencedCode("Calls MakeGenericMethod which may require unreferenced code.")]
     Task<int> UpdateAsync(
         IQuerySpecification<TEntity, TEntity> specification,
         EntityUpdater<TEntity> updater,

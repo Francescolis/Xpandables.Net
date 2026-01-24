@@ -235,8 +235,6 @@ public class Repository<[DynamicallyAccessedMembers(DynamicallyAccessedMemberTyp
     }
 
     /// <inheritdoc />
-    [RequiresDynamicCode("Dynamic code generation is required for this method.")]
-    [RequiresUnreferencedCode("Calls MakeGenericMethod which may require unreferenced code.")]
     public virtual async Task<int> UpdateAsync(
         IQuerySpecification<TEntity, TEntity> specification,
         EntityUpdater<TEntity> updater,
