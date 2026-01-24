@@ -133,11 +133,6 @@ public sealed class EntityUpdater<TSource> : EntityUpdater
     /// <summary>
     /// Adds another property update with a computed value to the current updater.
     /// </summary>
-    /// <typeparam name="TProperty">The type of the property being updated.</typeparam>
-    /// <param name="propertyExpression">An expression that selects the property to update.</param>
-    /// <param name="valueExpression">An expression that computes the new value for the property.</param>
-    /// <returns>The same <see cref="EntityUpdater{TSource}"/> instance for fluent chaining.</returns>
-    /// <exception cref="ArgumentNullException">Thrown when any parameter is null.</exception>
     public EntityUpdater<TSource> SetProperty<TProperty>(
         Expression<Func<TSource, TProperty>> propertyExpression,
         Expression<Func<TSource, TProperty>> valueExpression)
@@ -145,7 +140,7 @@ public sealed class EntityUpdater<TSource> : EntityUpdater
         ArgumentNullException.ThrowIfNull(propertyExpression);
         ArgumentNullException.ThrowIfNull(valueExpression);
 
-        var update = new PropertyUpdate<TSource, TProperty>(propertyExpression, valueExpression);
+        var update = new ComputedPropertyUpdate<TSource, TProperty>(propertyExpression, valueExpression);
         _updates.Add(update);
 
         return this;
@@ -154,19 +149,13 @@ public sealed class EntityUpdater<TSource> : EntityUpdater
     /// <summary>
     /// Adds another property update with a constant value to the current updater.
     /// </summary>
-    /// <typeparam name="TProperty">The type of the property being updated.</typeparam>
-    /// <param name="propertyExpression">An expression that selects the property to update.</param>
-    /// <param name="value">The constant value to set for the property.</param>
-    /// <returns>The same <see cref="EntityUpdater{TSource}"/> instance for fluent chaining.</returns>
-    /// <exception cref="ArgumentNullException">Thrown when propertyExpression is null.</exception>
     public EntityUpdater<TSource> SetProperty<TProperty>(
         Expression<Func<TSource, TProperty>> propertyExpression,
         TProperty value)
     {
         ArgumentNullException.ThrowIfNull(propertyExpression);
 
-        var constantExpression = Expression.Constant(value, typeof(TProperty));
-        var update = new PropertyUpdate<TSource, TProperty>(propertyExpression, constantExpression);
+        var update = new ConstantPropertyUpdate<TSource, TProperty>(propertyExpression, value);
         _updates.Add(update);
 
         return this;

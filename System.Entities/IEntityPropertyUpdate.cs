@@ -22,9 +22,6 @@ namespace System.Entities;
 /// Represents a property update expression for entity update operations.
 /// </summary>
 /// <typeparam name="TSource">The type of the entity being updated.</typeparam>
-/// <remarks>This interface defines the contract for property update expressions that can be
-/// applied to update operations. Implementations should encapsulate the logic for
-/// applying specific property updates.</remarks>
 public interface IEntityPropertyUpdate<TSource>
     where TSource : class
 {
@@ -46,31 +43,76 @@ public interface IEntityPropertyUpdate<TSource>
     /// <summary>
     /// Gets a value indicating whether the update uses a constant value.
     /// </summary>
-    public bool IsConstant => ValueExpression is ConstantExpression;
+    bool IsConstant { get; }
+
+    /// <summary>
+    /// Applies this update using the provided applicator.
+    /// This enables AOT-compliant polymorphic dispatch without reflection.
+    /// </summary>
+    /// <typeparam name="TBuilder">The type of the builder (e.g., UpdateSettersBuilder).</typeparam>
+    /// <param name="builder">The builder instance to apply the update to.</param>
+    /// <param name="applicator">The applicator that knows how to apply updates to the builder.</param>
+    void Apply<TBuilder>(TBuilder builder, IPropertyUpdateApplicator<TSource, TBuilder> applicator);
 }
 
+/// <summary>
+/// Defines how to apply property updates to a specific builder type.
+/// Implement this interface in the data layer for specific ORMs.
+/// </summary>
+/// <typeparam name="TSource">The type of the entity being updated.</typeparam>
+/// <typeparam name="TBuilder">The type of the builder (e.g., UpdateSettersBuilder).</typeparam>
+public interface IPropertyUpdateApplicator<TSource, TBuilder>
+    where TSource : class
+{
+    /// <summary>
+    /// Applies a computed property update (property selector + value expression).
+    /// </summary>
+    void ApplyComputed<TProperty>(
+        TBuilder builder,
+        Expression<Func<TSource, TProperty>> propertyExpression,
+        Expression<Func<TSource, TProperty>> valueExpression);
+
+    /// <summary>
+    /// Applies a constant property update (property selector + constant value).
+    /// </summary>
+    void ApplyConstant<TProperty>(
+        TBuilder builder,
+        Expression<Func<TSource, TProperty>> propertyExpression,
+        TProperty value);
+}
 
 /// <summary>
 /// Represents a property update with a computed value expression.
 /// </summary>
-/// <typeparam name="TSource">The type of the entity being updated.</typeparam>
-/// <typeparam name="TProperty">The type of the property being updated.</typeparam>
-/// <remarks>
-/// Initializes a new instance of the <see cref="PropertyUpdate{TSource, TProperty}"/> class.
-/// </remarks>
-/// <param name="propertyExpression">The expression that selects the property to update.</param>
-/// <param name="valueExpression">The expression that computes the new value for the property.</param>
-internal sealed class PropertyUpdate<TSource, TProperty>(
+internal sealed class ComputedPropertyUpdate<TSource, TProperty>(
     Expression<Func<TSource, TProperty>> propertyExpression,
-    Expression valueExpression) : IEntityPropertyUpdate<TSource>
+    Expression<Func<TSource, TProperty>> valueExpression) : IEntityPropertyUpdate<TSource>
     where TSource : class
 {
-    /// <inheritdoc />
     public LambdaExpression PropertyExpression => propertyExpression;
-
-    /// <inheritdoc />
     public Expression ValueExpression => valueExpression;
-
-    /// <inheritdoc />
     public Type PropertyType => typeof(TProperty);
+    public bool IsConstant => false;
+
+    public void Apply<TBuilder>(TBuilder builder, IPropertyUpdateApplicator<TSource, TBuilder> applicator)
+        => applicator.ApplyComputed(builder, propertyExpression, valueExpression);
+}
+
+/// <summary>
+/// Represents a property update with a constant value.
+/// </summary>
+internal sealed class ConstantPropertyUpdate<TSource, TProperty>(
+    Expression<Func<TSource, TProperty>> propertyExpression,
+    TProperty value) : IEntityPropertyUpdate<TSource>
+    where TSource : class
+{
+    private readonly ConstantExpression _valueExpression = Expression.Constant(value, typeof(TProperty));
+
+    public LambdaExpression PropertyExpression => propertyExpression;
+    public Expression ValueExpression => _valueExpression;
+    public Type PropertyType => typeof(TProperty);
+    public bool IsConstant => true;
+
+    public void Apply<TBuilder>(TBuilder builder, IPropertyUpdateApplicator<TSource, TBuilder> applicator)
+        => applicator.ApplyConstant(builder, propertyExpression, value);
 }

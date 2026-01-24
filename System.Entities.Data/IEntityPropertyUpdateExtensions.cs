@@ -15,43 +15,43 @@
  *
 ********************************************************************************/
 using System.Linq.Expressions;
-using System.Reflection;
 
 using Microsoft.EntityFrameworkCore.Query;
 
 namespace System.Entities.Data;
 
 /// <summary>
-/// Provides extension methods for converting collections of entity property update expressions to the format required
-/// by Entity Framework Core's ExecuteUpdate and related APIs.
+/// EF Core implementation of <see cref="IPropertyUpdateApplicator{TSource, TBuilder}"/>.
 /// </summary>
-/// <remarks>Updated for EF Core 10 : uses <see cref="UpdateSettersBuilder{TSource}"/> and returns
-/// <see cref="Action{T}"/> delegates compatible with ExecuteUpdate/ExecuteUpdateAsync.</remarks>
+internal sealed class EfCorePropertyUpdateApplicator<TSource>
+    : IPropertyUpdateApplicator<TSource, UpdateSettersBuilder<TSource>>
+    where TSource : class
+{
+    public static readonly EfCorePropertyUpdateApplicator<TSource> Instance = new();
+
+    public void ApplyComputed<TProperty>(
+        UpdateSettersBuilder<TSource> builder,
+        Expression<Func<TSource, TProperty>> propertyExpression,
+        Expression<Func<TSource, TProperty>> valueExpression)
+        => builder.SetProperty(propertyExpression, valueExpression);
+
+    public void ApplyConstant<TProperty>(
+        UpdateSettersBuilder<TSource> builder,
+        Expression<Func<TSource, TProperty>> propertyExpression,
+        TProperty value)
+        => builder.SetProperty(propertyExpression, value);
+}
+
+/// <summary>
+/// Provides extension methods for converting collections of entity property updates
+/// to the format required by EF Core's ExecuteUpdate APIs.
+/// </summary>
+/// <remarks>
+/// This implementation is fully AOT-compliant as it avoids dynamic code generation
+/// and MakeGenericMethod calls at runtime.
+/// </remarks>
 public static class IEntityPropertyUpdateExtensions
 {
-    private static class MethodCache<TSource>
-        where TSource : class
-    {
-        // Capture the two UpdateSettersBuilder<T>.SetProperty overloads via expressions
-        // to obtain generic method definitions without name-based reflection.
-
-        // s => s.SetProperty((Expression<Func<TSrc, TProp>>)null!, (Expression<Func<TSrc, TProp>>)null!)
-        private static Expression<Func<UpdateSettersBuilder<TSrc>, UpdateSettersBuilder<TSrc>>> CaptureComputed<TSrc, TProp>()
-            where TSrc : class
-            => s => s.SetProperty((Expression<Func<TSrc, TProp>>)null!, (Expression<Func<TSrc, TProp>>)null!);
-
-        // s => s.SetProperty((Expression<Func<TSrc, TProp>>)null!, default(TProp)!)
-        private static Expression<Func<UpdateSettersBuilder<TSrc>, UpdateSettersBuilder<TSrc>>> CaptureConstant<TSrc, TProp>()
-            where TSrc : class
-            => s => s.SetProperty((Expression<Func<TSrc, TProp>>)null!, default(TProp)!);
-
-        public static readonly MethodInfo SetPropertyComputedOpenGeneric =
-            ((MethodCallExpression)CaptureComputed<TSource, int>().Body).Method.GetGenericMethodDefinition();
-
-        public static readonly MethodInfo SetPropertyConstantOpenGeneric =
-            ((MethodCallExpression)CaptureConstant<TSource, int>().Body).Method.GetGenericMethodDefinition();
-    }
-
     /// <summary>
     /// <see cref="IEntityPropertyUpdate{TSource}"/> extensions.
     /// </summary>
@@ -60,16 +60,14 @@ public static class IEntityPropertyUpdateExtensions
         where TSource : class
     {
         /// <summary>
-        /// Builds an <see cref="Action{T}"/> that applies all configured property updates to a given
-        /// <see cref="UpdateSettersBuilder{TSource}"/> instance.
+        /// Builds an <see cref="Action{T}"/> that applies all configured property updates
+        /// to a given <see cref="UpdateSettersBuilder{TSource}"/> instance.
         /// </summary>
-        /// <remarks>This method generates and compiles a delegate compatible with EF Core 10
-        /// ExecuteUpdate/ExecuteUpdateAsync.</remarks>
-        /// <returns>An <see cref="Action{T}"/> taking <see cref="UpdateSettersBuilder{TSource}"/> that applies all updates.</returns>
-        /// <exception cref="InvalidOperationException">Thrown if a property update contains a <c>PropertyExpression</c> that is not a <see
-        /// cref="LambdaExpression"/> or has an unexpected parameter signature.</exception>
-        //[RequiresDynamicCode("Dynamic code generation is required for this method.")]
-        //[RequiresUnreferencedCode("Calls MakeGenericMethod which may require unreferenced code.")]
+        /// <remarks>
+        /// This method is AOT-compliant and does not use dynamic code generation
+        /// or MakeGenericMethod at runtime.
+        /// </remarks>
+        /// <returns>An action that applies all updates to the builder.</returns>
         public Action<UpdateSettersBuilder<TSource>> ToSetPropertyCalls()
         {
             ArgumentNullException.ThrowIfNull(updates);
@@ -80,88 +78,15 @@ public static class IEntityPropertyUpdateExtensions
                 return static _ => { };
             }
 
-            var builderParam = Expression.Parameter(typeof(UpdateSettersBuilder<TSource>), "s");
-            var calls = new List<Expression>(capacity: list.Count + 1);
-
-            foreach (var update in list)
+            // Capture list in closure - polymorphic dispatch handles type safety
+            return builder =>
             {
-                ArgumentNullException.ThrowIfNull(update);
-
-                if (update.PropertyExpression is not LambdaExpression propertyLambda)
-                    throw new InvalidOperationException("PropertyExpression must be a LambdaExpression.");
-
-                var propertyType = update.PropertyType;
-                var expectedPropLambdaType = typeof(Func<,>).MakeGenericType(typeof(TSource), propertyType);
-                var propParam = EnsureSingleParameter(propertyLambda, typeof(TSource));
-
-                var rebuiltPropLambda = Expression.Lambda(
-                    expectedPropLambdaType,
-                    Expression.Convert(propertyLambda.Body, propertyType),
-                    propParam);
-
-                if (update.ValueExpression is LambdaExpression valueAsLambda)
+                var applicator = EfCorePropertyUpdateApplicator<TSource>.Instance;
+                foreach (var update in list)
                 {
-                    // Computed value: SetProperty(Expression<Func<TSource, TProp>>, Expression<Func<TSource, TProp>>)
-                    var valueParam = EnsureSingleParameter(valueAsLambda, typeof(TSource));
-                    var retargetedBody = new ParameterReplaceVisitor(valueParam, propParam).Visit(valueAsLambda.Body)!;
-                    var valueLambda = Expression.Lambda(
-                        expectedPropLambdaType,
-                        Expression.Convert(retargetedBody, propertyType),
-                        propParam);
-
-                    var computedMethod = MethodCache<TSource>.SetPropertyComputedOpenGeneric.MakeGenericMethod(propertyType);
-                    calls.Add(
-                        Expression.Call(
-                            instance: builderParam,
-                            method: computedMethod,
-                            arguments:
-                            [
-                                Expression.Quote(rebuiltPropLambda),
-                                Expression.Quote(valueLambda)
-                            ]));
+                    update.Apply(builder, applicator);
                 }
-                else
-                {
-                    // Constant value: SetProperty(Expression<Func<TSource, TProp>>, TProp)
-                    var constantBody = Expression.Convert(update.ValueExpression, propertyType);
-                    var constantMethod = MethodCache<TSource>.SetPropertyConstantOpenGeneric.MakeGenericMethod(propertyType);
-
-                    calls.Add(
-                        Expression.Call(
-                            instance: builderParam,
-                            method: constantMethod,
-                            arguments:
-                            [
-                                Expression.Quote(rebuiltPropLambda),
-                                constantBody
-                            ]));
-                }
-            }
-
-            // Ensure void-return block
-            calls.Add(Expression.Empty());
-            var block = Expression.Block(calls);
-
-            var lambda = Expression.Lambda<Action<UpdateSettersBuilder<TSource>>>(block, builderParam);
-            return lambda.Compile();
+            };
         }
-    }
-
-    private static ParameterExpression EnsureSingleParameter(LambdaExpression lambda, Type expectedParamType)
-    {
-        if (lambda.Parameters.Count != 1)
-            throw new InvalidOperationException("Lambda must have exactly one parameter.");
-
-        var p = lambda.Parameters[0];
-        if (p.Type != expectedParamType)
-            throw new InvalidOperationException("Lambda parameter type mismatch.");
-
-        return p;
-    }
-
-    private sealed class ParameterReplaceVisitor(Expression oldParam, Expression newParam) : ExpressionVisitor
-    {
-        protected override Expression VisitParameter(ParameterExpression node)
-            => ReferenceEquals(node, oldParam) ? newParam : base.VisitParameter(node);
     }
 }
