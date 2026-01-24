@@ -37,6 +37,13 @@ public class Repository<[DynamicallyAccessedMembers(DynamicallyAccessedMemberTyp
     where TEntity : class
 {
     /// <summary>
+    /// Gets or sets the data context used for database operations.
+    /// </summary>
+    /// <remarks>The context must be provided and cannot be null. It is used to manage the database connection
+    /// and track changes to entities.</remarks>
+    protected DataContext Context { get; set; } = context ?? throw new ArgumentNullException(nameof(context));
+
+    /// <summary>
     /// Gets a value indicating whether the object has been disposed.
     /// </summary>
     /// <remarks>Use this property to determine if the object is no longer usable due to disposal. Accessing
@@ -56,7 +63,7 @@ public class Repository<[DynamicallyAccessedMembers(DynamicallyAccessedMemberTyp
         IQuerySpecification<TEntity, TResult> specification,
         CancellationToken cancellationToken = default)
     {
-        ObjectDisposedException.ThrowIf(IsDisposed, context);
+        ObjectDisposedException.ThrowIf(IsDisposed, Context);
         ArgumentNullException.ThrowIfNull(specification);
 
         var query = ApplySpecification(specification);
@@ -69,7 +76,7 @@ public class Repository<[DynamicallyAccessedMembers(DynamicallyAccessedMemberTyp
         IQuerySpecification<TEntity, TResult> specification,
         CancellationToken cancellationToken = default)
     {
-        ObjectDisposedException.ThrowIf(IsDisposed, context);
+        ObjectDisposedException.ThrowIf(IsDisposed, Context);
         ArgumentNullException.ThrowIfNull(specification);
 
         var query = ApplySpecification(specification);
@@ -81,7 +88,7 @@ public class Repository<[DynamicallyAccessedMembers(DynamicallyAccessedMemberTyp
         IQuerySpecification<TEntity, TResult> specification,
         CancellationToken cancellationToken = default)
     {
-        ObjectDisposedException.ThrowIf(IsDisposed, context);
+        ObjectDisposedException.ThrowIf(IsDisposed, Context);
         ArgumentNullException.ThrowIfNull(specification);
 
         var query = ApplySpecification(specification);
@@ -93,7 +100,7 @@ public class Repository<[DynamicallyAccessedMembers(DynamicallyAccessedMemberTyp
         IQuerySpecification<TEntity, TResult> specification,
         CancellationToken cancellationToken = default)
     {
-        ObjectDisposedException.ThrowIf(IsDisposed, context);
+        ObjectDisposedException.ThrowIf(IsDisposed, Context);
         ArgumentNullException.ThrowIfNull(specification);
 
         var query = ApplySpecification(specification);
@@ -105,7 +112,7 @@ public class Repository<[DynamicallyAccessedMembers(DynamicallyAccessedMemberTyp
         IQuerySpecification<TEntity, TResult> specification,
         CancellationToken cancellationToken = default)
     {
-        ObjectDisposedException.ThrowIf(IsDisposed, context);
+        ObjectDisposedException.ThrowIf(IsDisposed, Context);
         ArgumentNullException.ThrowIfNull(specification);
 
         var query = ApplySpecification(specification);
@@ -117,7 +124,7 @@ public class Repository<[DynamicallyAccessedMembers(DynamicallyAccessedMemberTyp
         IEnumerable<TEntity> entities,
         CancellationToken cancellationToken = default)
     {
-        ObjectDisposedException.ThrowIf(IsDisposed, context);
+        ObjectDisposedException.ThrowIf(IsDisposed, Context);
         ArgumentNullException.ThrowIfNull(entities);
 
         var entityList = entities as IList<TEntity> ?? [.. entities];
@@ -125,11 +132,11 @@ public class Repository<[DynamicallyAccessedMembers(DynamicallyAccessedMemberTyp
 
         if (entityList.Count == 1)
         {
-            await context.AddAsync(entityList[0], cancellationToken).ConfigureAwait(false);
+            await Context.AddAsync(entityList[0], cancellationToken).ConfigureAwait(false);
         }
         else
         {
-            await context.AddRangeAsync(entityList, cancellationToken).ConfigureAwait(false);
+            await Context.AddRangeAsync(entityList, cancellationToken).ConfigureAwait(false);
         }
 
         if (!IsUnitOfWorkEnabled)
@@ -145,13 +152,13 @@ public class Repository<[DynamicallyAccessedMembers(DynamicallyAccessedMemberTyp
         IEnumerable<TEntity> entities,
         CancellationToken cancellationToken = default)
     {
-        ObjectDisposedException.ThrowIf(IsDisposed, context);
+        ObjectDisposedException.ThrowIf(IsDisposed, Context);
         ArgumentNullException.ThrowIfNull(entities);
 
         var entityList = entities as IList<TEntity> ?? [.. entities];
         ArgumentOutOfRangeException.ThrowIfLessThan(entityList.Count, 1, nameof(entities));
 
-        context.Set<TEntity>().UpdateRange(entityList);
+        Context.Set<TEntity>().UpdateRange(entityList);
         if (!IsUnitOfWorkEnabled)
         {
             return await SaveChangesAsync(cancellationToken).ConfigureAwait(false);
@@ -166,7 +173,7 @@ public class Repository<[DynamicallyAccessedMembers(DynamicallyAccessedMemberTyp
         Expression<Func<TEntity, TEntity>> updateExpression,
         CancellationToken cancellationToken = default)
     {
-        ObjectDisposedException.ThrowIf(IsDisposed, context);
+        ObjectDisposedException.ThrowIf(IsDisposed, Context);
         ArgumentNullException.ThrowIfNull(specification);
         ArgumentNullException.ThrowIfNull(updateExpression);
 
@@ -179,13 +186,13 @@ public class Repository<[DynamicallyAccessedMembers(DynamicallyAccessedMemberTyp
             .ConfigureAwait(false))
         {
             TEntity updated = compiled(entity);
-            context.Entry(entity).State = EntityState.Detached;
+            Context.Entry(entity).State = EntityState.Detached;
             entities.Add(updated);
         }
 
         if (entities.Count > 0)
         {
-            context.Set<TEntity>().UpdateRange(entities);
+            Context.Set<TEntity>().UpdateRange(entities);
             if (!IsUnitOfWorkEnabled)
             {
                 return await SaveChangesAsync(cancellationToken).ConfigureAwait(false);
@@ -201,7 +208,7 @@ public class Repository<[DynamicallyAccessedMembers(DynamicallyAccessedMemberTyp
         Action<TEntity> updateAction,
         CancellationToken cancellationToken = default)
     {
-        ObjectDisposedException.ThrowIf(IsDisposed, context);
+        ObjectDisposedException.ThrowIf(IsDisposed, Context);
         ArgumentNullException.ThrowIfNull(specification);
         ArgumentNullException.ThrowIfNull(updateAction);
 
@@ -217,7 +224,7 @@ public class Repository<[DynamicallyAccessedMembers(DynamicallyAccessedMemberTyp
 
         if (entities.Count > 0)
         {
-            context.Set<TEntity>().UpdateRange(entities);
+            Context.Set<TEntity>().UpdateRange(entities);
             if (!IsUnitOfWorkEnabled)
             {
                 return await SaveChangesAsync(cancellationToken).ConfigureAwait(false);
@@ -231,11 +238,11 @@ public class Repository<[DynamicallyAccessedMembers(DynamicallyAccessedMemberTyp
     [RequiresDynamicCode("Dynamic code generation is required for this method.")]
     [RequiresUnreferencedCode("Calls MakeGenericMethod which may require unreferenced code.")]
     public virtual async Task<int> UpdateAsync(
-IQuerySpecification<TEntity, TEntity> specification,
-EntityUpdater<TEntity> updater,
-CancellationToken cancellationToken = default)
+        IQuerySpecification<TEntity, TEntity> specification,
+        EntityUpdater<TEntity> updater,
+        CancellationToken cancellationToken = default)
     {
-        ObjectDisposedException.ThrowIf(IsDisposed, context);
+        ObjectDisposedException.ThrowIf(IsDisposed, Context);
         ArgumentNullException.ThrowIfNull(specification);
         ArgumentNullException.ThrowIfNull(updater);
         ArgumentOutOfRangeException.ThrowIfLessThan(updater.Updates.Count, 1, nameof(updater.Updates));
@@ -269,7 +276,7 @@ CancellationToken cancellationToken = default)
         IQuerySpecification<TEntity, TEntity> specification,
         CancellationToken cancellationToken = default)
     {
-        ObjectDisposedException.ThrowIf(IsDisposed, context);
+        ObjectDisposedException.ThrowIf(IsDisposed, Context);
         ArgumentNullException.ThrowIfNull(specification);
 
         var query = ApplyEntitySpecification(specification);
@@ -280,7 +287,7 @@ CancellationToken cancellationToken = default)
         }
 
         var entityList = await query.ToListAsync(cancellationToken).ConfigureAwait(false);
-        context.RemoveRange(entityList);
+        Context.RemoveRange(entityList);
         return entityList.Count;
     }
 
@@ -293,7 +300,7 @@ CancellationToken cancellationToken = default)
     private IQueryable<TResult> ApplySpecification<TResult>(
         IQuerySpecification<TEntity, TResult> specification)
     {
-        IQueryable<TEntity> query = context.Set<TEntity>();
+        IQueryable<TEntity> query = Context.Set<TEntity>();
 
         // Apply tracking behavior
         query = specification.AsTracking
@@ -343,7 +350,7 @@ CancellationToken cancellationToken = default)
     private IQueryable<TEntity> ApplyEntitySpecification(
         IQuerySpecification<TEntity, TEntity> specification)
     {
-        IQueryable<TEntity> query = context.Set<TEntity>();
+        IQueryable<TEntity> query = Context.Set<TEntity>();
 
         // Apply includes
         query = ApplyIncludes(query, specification.Includes);
@@ -567,7 +574,7 @@ CancellationToken cancellationToken = default)
     {
         try
         {
-            return await context.SaveChangesAsync(cancellationToken).ConfigureAwait(false);
+            return await Context.SaveChangesAsync(cancellationToken).ConfigureAwait(false);
         }
         catch (DbUpdateConcurrencyException ex)
         {
@@ -576,11 +583,11 @@ CancellationToken cancellationToken = default)
                 if (entry.State == EntityState.Modified)
                 {
                     entry.State = EntityState.Detached;
-                    context.Add(entry.Entity);
+                    Context.Add(entry.Entity);
                 }
             }
 
-            return await context.SaveChangesAsync(cancellationToken).ConfigureAwait(false);
+            return await Context.SaveChangesAsync(cancellationToken).ConfigureAwait(false);
         }
     }
 

@@ -57,6 +57,10 @@ public sealed class EventStoreSqlServerModelCustomizer(ModelCustomizerDependenci
             .Property(e => e.EventData)
             .HasEventJsonDocumentConversion();
 
+        modelBuilder.Entity<EntityEventOutbox>()
+            .Property(e => e.EventData)
+            .HasEventJsonDocumentConversion();
+
         base.Customize(modelBuilder, context);
     }
 }

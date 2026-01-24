@@ -10,30 +10,18 @@ using Xpandables.Net.Worker.ReadStorage;
 
 var builder = Host.CreateApplicationBuilder(args);
 
-builder.Services.AddXOutboxStoreDataContext(options =>
+builder.Services.AddXEventDataContext(options =>
     options
         .UseSqlServer(builder.Configuration.GetConnectionString("EventStoreDb"),
         options => options
             .EnableRetryOnFailure()
             .UseQuerySplittingBehavior(QuerySplittingBehavior.SplitQuery)
-            .MigrationsHistoryTable("__OutboxStoreMigrations")
+            .MigrationsHistoryTable("__EventStoreMigrations")
             .MigrationsAssembly("Xpandables.Net.Worker"))
         .EnableDetailedErrors()
         .EnableSensitiveDataLogging()
         .EnableServiceProviderCaching()
-        .ReplaceService<IModelCustomizer, OutboxStoreSqlServerModelCustomizer>());
-
-builder.Services.AddXInboxStoreDataContext(options =>
-    options
-        .UseSqlServer(builder.Configuration.GetConnectionString("EventStoreDb"),
-        options => options
-            .EnableRetryOnFailure()
-            .UseQuerySplittingBehavior(QuerySplittingBehavior.SplitQuery)
-            .MigrationsHistoryTable("__InboxStoreMigrations")
-            .MigrationsAssembly("Xpandables.Net.Worker"))
-        .EnableDetailedErrors()
-        .EnableSensitiveDataLogging()
-        .EnableServiceProviderCaching());
+        .ReplaceService<IModelCustomizer, EventStoreSqlServerModelCustomizer>());
 
 builder.Services.AddXDataContext<BankAccountDataContext>(options =>
     options
@@ -53,16 +41,17 @@ builder.Services
     .AddXEventHandlerInboxDecorator()
     .AddXEventConverterContext()
     .AddXEventPublisher()
+    .AddXEventStore()
     .AddXOutboxStore()
     .AddXInboxStore()
+    .AddXEventRepositories()
+    .AddXUnitOfWork<EventDataContext>()
     .AddXEventConverterFactory()
     .AddXCacheTypeResolver([typeof(Program).Assembly])
     .AddXScheduler()
     .AddXHostedScheduler()
     .AddXEventContextAccessor()
-    .AddXIntegrationEventEnricher()
-    .AddXInboxStoreDataContextFactory()
-    .AddXOutboxStoreDataContextFactory();
+    .AddXIntegrationEventEnricher();
 
 builder.Services.Configure<JsonOptions>(options =>
 {
@@ -75,12 +64,10 @@ var host = builder.Build();
 
 using (var scope = host.Services.CreateScope())
 {
-    var outboxDb = scope.ServiceProvider.GetRequiredService<OutboxStoreDataContext>();
+    var outboxDb = scope.ServiceProvider.GetRequiredService<EventDataContext>();
     var readDb = scope.ServiceProvider.GetRequiredService<BankAccountDataContext>();
-    var inboxDb = scope.ServiceProvider.GetRequiredService<InboxStoreDataContext>();
     await outboxDb.Database.MigrateAsync().ConfigureAwait(false);
     await readDb.Database.MigrateAsync().ConfigureAwait(false);
-    await inboxDb.Database.MigrateAsync().ConfigureAwait(false);
 }
 
 await host.RunAsync();

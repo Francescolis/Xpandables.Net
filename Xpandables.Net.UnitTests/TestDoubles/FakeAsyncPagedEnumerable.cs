@@ -1,13 +1,8 @@
-using System.Collections.Generic;
-using System.Runtime.CompilerServices;
-using System.Threading;
-using System.Threading.Tasks;
-
 namespace Xpandables.Net.UnitTests.TestDoubles;
 
 internal sealed class FakeAsyncPagedEnumerable<T>(IEnumerable<T> source, Pagination? pagination = null) : IAsyncPagedEnumerable<T>
 {
-    private readonly List<T> _items = source.ToList();
+    private readonly List<T> _items = [.. source];
     private readonly Pagination _pagination = pagination ?? Pagination.Create(pageSize: 10, currentPage: 1, totalCount: source.Count(), continuationToken: null);
 
     public Pagination Pagination => _pagination;
@@ -23,7 +18,7 @@ internal sealed class FakeAsyncPagedEnumerable<T>(IEnumerable<T> source, Paginat
         private readonly List<T> _items;
         private readonly CancellationToken _cancellationToken;
         private int _index = -1;
-        private Pagination _pagination;
+        private readonly Pagination _pagination;
 
         public Enumerator(List<T> items, Pagination pagination, CancellationToken cancellationToken)
         {

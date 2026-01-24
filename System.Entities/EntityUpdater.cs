@@ -30,6 +30,15 @@ namespace System.Entities;
 public abstract class EntityUpdater
 {
     /// <summary>
+    /// Creates a new instance of the EntityUpdater for the specified source type.
+    /// </summary>
+    /// <typeparam name="TSource">The type of the source entity that the updater will operate on. This type must be a reference type.</typeparam>
+    /// <returns>An instance of <see cref="EntityUpdater{TSource}"/> that can be used to update entities of the specified type.</returns>
+    public static EntityUpdater<TSource> For<TSource>()
+        where TSource : class
+        => new();
+
+    /// <summary>
     /// Creates a new updater with a property set to a computed value.
     /// <example>
     /// <code>

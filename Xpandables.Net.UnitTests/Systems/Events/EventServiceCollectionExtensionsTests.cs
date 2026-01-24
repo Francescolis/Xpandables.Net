@@ -40,10 +40,8 @@ public sealed class EventServiceCollectionExtensionsTests
 
         // Act
         using IServiceScope scope = provider.CreateScope();
-        EventStoreDataContext eventDb = scope.ServiceProvider.GetRequiredService<EventStoreDataContext>();
-        OutboxStoreDataContext outboxDb = scope.ServiceProvider.GetRequiredService<OutboxStoreDataContext>();
+        EventDataContext eventDb = scope.ServiceProvider.GetRequiredService<EventDataContext>();
         eventDb.Database.Migrate();
-        outboxDb.Database.Migrate();
 
         // Assert
         var aggregateStore = scope.ServiceProvider.GetRequiredService<IAggregateStore<TestBankAccountAggregate>>();
@@ -68,12 +66,9 @@ public sealed class EventServiceCollectionExtensionsTests
         services.AddXIntegrationEventEnricher();
         services.AddXDomainEventEnricher();
         services.AddXEventContextAccessor();
-        services.AddXEventStoreDataContext(options =>
+        services.AddXEventDataContext(options =>
             options.UseSqlite(directory.EventStoreConnectionString)
                     .ReplaceService<IModelCustomizer, EventStoreSqlServerModelCustomizer>());
-        services.AddXOutboxStoreDataContext(options =>
-            options.UseSqlite(directory.OutboxConnectionString)
-                    .ReplaceService<IModelCustomizer, OutboxStoreSqlServerModelCustomizer>());
         services.AddXEventStore();
         services.AddXOutboxStore();
         services.AddSingleton<IPendingDomainEventsBuffer, PendingDomainEventsBuffer>();

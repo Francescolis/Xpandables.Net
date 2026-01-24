@@ -23,8 +23,7 @@ public sealed class EventStoreSqlServerIntegrationTests
         using ServiceProvider provider = BuildSqlServerProvider(database);
 
         await using AsyncServiceScope scope = provider.CreateAsyncScope();
-        var eventDb = scope.ServiceProvider.GetRequiredService<EventStoreDataContext>();
-        var outboxDb = scope.ServiceProvider.GetRequiredService<OutboxStoreDataContext>();
+        var eventDb = scope.ServiceProvider.GetRequiredService<EventDataContext>();
         var readStoreDb = scope.ServiceProvider.GetRequiredService<ReadStoreProbeContext>();
 
         var aggregateStore = scope.ServiceProvider.GetRequiredService<IAggregateStore<TestBankAccountAggregate>>();
@@ -71,12 +70,9 @@ public sealed class EventStoreSqlServerIntegrationTests
         services.AddSingleton(new JsonSerializerOptions(JsonSerializerDefaults.Web));
         services.AddXCacheTypeResolver([typeof(TestBankAccountAggregate).Assembly, typeof(AccountOpened).Assembly]);
         services.AddXEventConverterFactory();
-        services.AddXEventStoreDataContext(options =>
+        services.AddXEventDataContext(options =>
             options.UseSqlServer(configuration.GetConnectionString(database.EventStoreConnectionString))
             .ReplaceService<IModelCustomizer, EventStoreSqlServerModelCustomizer>());
-        services.AddXOutboxStoreDataContext(options =>
-            options.UseSqlServer(configuration.GetConnectionString(database.EventStoreConnectionString))
-            .ReplaceService<IModelCustomizer, OutboxStoreSqlServerModelCustomizer>());
         services.AddDbContext<ReadStoreProbeContext>(options =>
             options.UseSqlServer(configuration.GetConnectionString(database.ReadStoreConnectionString)));
         services.AddXEventStore();

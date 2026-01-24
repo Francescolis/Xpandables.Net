@@ -26,4 +26,8 @@
 		<ProjectReference Include="..\System.Entities.Data\System.Entities.Data.csproj" />
 		<ProjectReference Include="..\System.Events.Data\System.Events.Data.csproj" />
 	</ItemGroup>
+
+	<ItemGroup>
+	  <Folder Include="Migrations\" />
+	</ItemGroup>
 </Project>

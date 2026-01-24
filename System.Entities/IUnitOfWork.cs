@@ -33,9 +33,8 @@ public interface IUnitOfWork : IDisposable, IAsyncDisposable
     /// </summary>
     /// <typeparam name="TRepository">The type of the repository.</typeparam>
     /// <returns>The repository instance.</returns>
-    [RequiresUnreferencedCode("Requires unreferenced code.")]
     TRepository GetRepository<[DynamicallyAccessedMembers(DynamicallyAccessedMemberTypes.PublicConstructors | DynamicallyAccessedMemberTypes.PublicParameterlessConstructor)] TRepository>()
-       where TRepository : class;
+       where TRepository : class, IRepository;
 
     /// <summary>
     /// Begins a new transaction asynchronously.

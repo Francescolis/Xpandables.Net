@@ -24,7 +24,7 @@ builder.Services.AddCors(options =>
             .AllowCredentials()));
 
 // Configure SqlServer database for event sourcing
-builder.Services.AddXEventStoreDataContext(options =>
+builder.Services.AddXEventDataContext(options =>
     options
         .UseSqlServer(builder.Configuration.GetConnectionString("EventStoreDb"),
         options => options
@@ -36,19 +36,6 @@ builder.Services.AddXEventStoreDataContext(options =>
         .EnableSensitiveDataLogging()
         .EnableServiceProviderCaching()
         .ReplaceService<IModelCustomizer, EventStoreSqlServerModelCustomizer>());
-
-builder.Services.AddXOutboxStoreDataContext(options =>
-    options
-        .UseSqlServer(builder.Configuration.GetConnectionString("EventStoreDb"),
-        options => options
-            .EnableRetryOnFailure()
-            .UseQuerySplittingBehavior(QuerySplittingBehavior.SplitQuery)
-            .MigrationsHistoryTable("__OutboxStoreMigrations")
-            .MigrationsAssembly("Xpandables.Net.SampleApi"))
-        .EnableDetailedErrors()
-        .EnableSensitiveDataLogging()
-        .EnableServiceProviderCaching()
-        .ReplaceService<IModelCustomizer, OutboxStoreSqlServerModelCustomizer>());
 
 builder.Services.AddXDataContext<BankAccountDataContext>(options =>
     options
@@ -84,8 +71,6 @@ builder.Services
     .AddXEventContextMiddleware()
     .AddXDomainEventEnricher()
     .AddXIntegrationEventEnricher()
-    .AddXOutboxStoreDataContextFactory()
-    .AddXEventStoreDataContextFactory()
     .AddXResultProblemDetails()
     .AddXMinimalSupport(options =>
         options.ConfigureEndpoint = builder =>

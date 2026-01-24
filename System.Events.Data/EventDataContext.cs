@@ -26,12 +26,12 @@ namespace System.Events.Data;
 /// Represents the data context for handling event entities.
 /// </summary>
 /// <remarks>
-/// Initializes a new instance of the <see cref="EventStoreDataContext" /> class.
+/// Initializes a new instance of the <see cref="EventDataContext" /> class.
 /// </remarks>
 /// <param name="options">The options to be used by a <see cref="DbContext" />.</param>
 [RequiresUnreferencedCode("This context may be used with unreferenced code.")]
 [RequiresDynamicCode("This context may be used with dynamic code.")]
-public sealed class EventStoreDataContext(DbContextOptions<EventStoreDataContext> options) : DataContext(options)
+public sealed class EventDataContext(DbContextOptions<EventDataContext> options) : DataContext(options)
 {
     /// <summary>
     /// Gets or sets the DbSet for EventEntityDomain.
@@ -43,6 +43,16 @@ public sealed class EventStoreDataContext(DbContextOptions<EventStoreDataContext
     /// </summary>
     public DbSet<EntitySnapshotEvent> Snapshots { get; set; } = null!;
 
+    /// <summary>
+    /// Gets or sets the DbSet for EventEntityOutbox.
+    /// </summary>
+    public DbSet<EntityEventOutbox> OutboxEvents { get; set; } = null!;
+
+    /// <summary>
+    /// Gets or sets the DbSet for EventEntityInbox.
+    /// </summary>
+    public DbSet<EntityEventInbox> InboxEvents { get; set; } = null!;
+
     /// <inheritdoc />
     protected override void OnModelCreating(ModelBuilder modelBuilder)
     {
@@ -51,6 +61,8 @@ public sealed class EventStoreDataContext(DbContextOptions<EventStoreDataContext
 
         _ = modelBuilder.ApplyConfiguration(new EntityDomainEventTypeConfiguration());
         _ = modelBuilder.ApplyConfiguration(new EntitySnapShotEventTypeConfiguration());
+        _ = modelBuilder.ApplyConfiguration(new EntityEventOutboxTypeConfiguration());
+        _ = modelBuilder.ApplyConfiguration(new EntityEventInboxTypeConfiguration());
 
         base.OnModelCreating(modelBuilder);
     }

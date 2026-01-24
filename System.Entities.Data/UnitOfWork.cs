@@ -19,6 +19,7 @@ using System.Data.Common;
 using System.Diagnostics.CodeAnalysis;
 
 using Microsoft.EntityFrameworkCore;
+using Microsoft.EntityFrameworkCore.Storage;
 using Microsoft.Extensions.DependencyInjection;
 
 namespace System.Entities.Data;
@@ -37,6 +38,7 @@ namespace System.Entities.Data;
 /// <exception cref="ArgumentNullException">Thrown when context is null.</exception>
 public class UnitOfWork(DataContext context, IServiceProvider serviceProvider) : IUnitOfWork
 {
+    [SuppressMessage("Usage", "CA2213:Disposable fields should be disposed", Justification = "<Pending>")]
     private readonly DataContext _context = context ?? throw new ArgumentNullException(nameof(context));
 
     /// <summary>
@@ -47,9 +49,9 @@ public class UnitOfWork(DataContext context, IServiceProvider serviceProvider) :
     protected bool IsDisposed { get; set; }
 
     /// <inheritdoc />
-    [RequiresUnreferencedCode("Requires unreferenced code.")]
+    [UnconditionalSuppressMessage("Trimming", "IL2026:Members annotated with 'RequiresUnreferencedCodeAttribute' require dynamic access otherwise can break functionality when trimming application code", Justification = "<Pending>")]
     public virtual TRepository GetRepository<[DynamicallyAccessedMembers(DynamicallyAccessedMemberTypes.PublicConstructors | DynamicallyAccessedMemberTypes.PublicParameterlessConstructor)] TRepository>()
-        where TRepository : class
+        where TRepository : class, IRepository
     {
         ThrowIfDisposed();
 
@@ -57,7 +59,16 @@ public class UnitOfWork(DataContext context, IServiceProvider serviceProvider) :
 
         try
         {
-            return ActivatorUtilities.CreateInstance<TRepository>(serviceProvider, _context);
+            if (repositoryType.IsInterface)
+            {
+                var service = ActivatorUtilities.GetServiceOrCreateInstance<TRepository>(serviceProvider);
+                service.InjectAmbientContext(_context);
+                return service;
+            }
+            else
+            {
+                return ActivatorUtilities.CreateInstance<TRepository>(serviceProvider, _context);
+            }
         }
         catch (InvalidOperationException)
         {
@@ -132,14 +143,42 @@ public class UnitOfWork(DataContext context, IServiceProvider serviceProvider) :
     {
         ThrowIfDisposed();
 
-        try
+        IExecutionStrategy strategy = _context.Database.CreateExecutionStrategy();
+
+        return await strategy.ExecuteAsync(async () =>
         {
-            return await _context.SaveChangesAsync(cancellationToken).ConfigureAwait(false);
-        }
-        catch (DbUpdateException exception)
-        {
-            throw new InvalidOperationException("Failed to save changes to the database.", exception);
-        }
+            // Use a transaction if one is not already present
+            if (_context.Database.CurrentTransaction == null)
+            {
+                using var transaction = await _context.Database
+                    .BeginTransactionAsync(cancellationToken)
+                    .ConfigureAwait(false);
+
+                try
+                {
+                    var result = await _context.SaveChangesAsync(cancellationToken).ConfigureAwait(false);
+                    await transaction.CommitAsync(cancellationToken).ConfigureAwait(false);
+                    return result;
+                }
+                catch (DbUpdateException exception)
+                {
+                    await transaction.RollbackAsync(cancellationToken).ConfigureAwait(false);
+                    throw new InvalidOperationException("Failed to save changes to the database.", exception);
+                }
+            }
+            else
+            {
+                try
+                {
+                    return await _context.SaveChangesAsync(cancellationToken).ConfigureAwait(false);
+                }
+                catch (DbUpdateException exception)
+                {
+                    // An ambient transaction is present, let it handle the rollback
+                    throw new InvalidOperationException("Failed to save changes to the database.", exception);
+                }
+            }
+        }).ConfigureAwait(false);
     }
 
     /// <inheritdoc />
@@ -147,14 +186,39 @@ public class UnitOfWork(DataContext context, IServiceProvider serviceProvider) :
     {
         ThrowIfDisposed();
 
-        try
+        IExecutionStrategy strategy = _context.Database.CreateExecutionStrategy();
+
+        return strategy.Execute(() =>
         {
-            return _context.SaveChanges();
-        }
-        catch (DbUpdateException exception)
-        {
-            throw new InvalidOperationException("Failed to save changes to the database.", exception);
-        }
+            // Use a transaction if one is not already present
+            if (_context.Database.CurrentTransaction == null)
+            {
+                using var transaction = _context.Database.BeginTransaction();
+                try
+                {
+                    var result = _context.SaveChanges();
+                    transaction.Commit();
+                    return result;
+                }
+                catch (DbUpdateException exception)
+                {
+                    transaction.Rollback();
+                    throw new InvalidOperationException("Failed to save changes to the database.", exception);
+                }
+            }
+            else
+            {
+                try
+                {
+                    return _context.SaveChanges();
+                }
+                catch (DbUpdateException exception)
+                {
+                    // An ambient transaction is present, let it handle the rollback
+                    throw new InvalidOperationException("Failed to save changes to the database.", exception);
+                }
+            }
+        });
     }
 
     /// <inheritdoc/>
@@ -195,7 +259,7 @@ public class UnitOfWork(DataContext context, IServiceProvider serviceProvider) :
 
         if (disposing)
         {
-            _context?.Dispose();
+            // Note: We don't dispose the DbContext here as it should be managed by the dependency injection container
         }
 
         // Dispose has been called.
@@ -232,7 +296,7 @@ public class UnitOfWork(DataContext context, IServiceProvider serviceProvider) :
 
         if (_context != null)
         {
-            await _context.DisposeAsync().ConfigureAwait(false);
+            // Note: We don't dispose the DbContext here as it should be managed by the dependency injection container
         }
 
         IsDisposed = true;
@@ -261,7 +325,6 @@ public class UnitOfWork<TDataContext>(TDataContext context, IServiceProvider ser
     where TDataContext : DataContext
 {
     /// <inheritdoc />
-    [RequiresUnreferencedCode("Requires unreferenced code.")]
     public override TRepository GetRepository<[DynamicallyAccessedMembers(DynamicallyAccessedMemberTypes.PublicConstructors | DynamicallyAccessedMemberTypes.PublicParameterlessConstructor)] TRepository>() =>
         base.GetRepository<TRepository>();
 }
