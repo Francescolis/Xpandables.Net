@@ -17,16 +17,12 @@
 namespace System.Events.Data;
 
 /// <summary>
-/// Represents a class for event entities in a domain context.
+/// Represents a snapshot of an event entity.
 /// </summary>
-public sealed class EntityDomainEvent : EntityEvent, IEntityEventDomain
+public sealed class EntityEventSnapshot : EntityEvent, IEntityEventSnapshot
 {
-    /// <inheritdoc />
-    public required Guid StreamId { get; init; }
-
-    /// <inheritdoc />
-    public required long StreamVersion { get; init; }
-
-    /// <inheritdoc />
-    public required string StreamName { get; init; }
+    /// <summary>
+    /// Gets the owner of the event entity snapshot.
+    /// </summary>
+    public required Guid OwnerId { get; init; }
 }

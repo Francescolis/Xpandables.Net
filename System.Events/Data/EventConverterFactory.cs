@@ -41,10 +41,10 @@ public sealed class EventConverterFactory : IEventConverterFactory
     /// <param name="snapshotConverter">The event converter used to convert EntitySnapshotEvent instances to ISnapshotEvent instances. Cannot be null.</param>
     public EventConverterFactory(
         IEventConverterContext converterContext,
-        IEventConverter<EntityDomainEvent, IDomainEvent> domainConverter,
+        IEventConverter<EntityEventDomain, IDomainEvent> domainConverter,
         IEventConverter<EntityEventOutbox, IIntegrationEvent> integrationConverter,
         IEventConverter<EntityEventInbox, IIntegrationEvent> inboxConverter,
-        IEventConverter<EntitySnapshotEvent, ISnapshotEvent> snapshotConverter)
+        IEventConverter<EntityEventSnapshot, ISnapshotEvent> snapshotConverter)
     {
         ArgumentNullException.ThrowIfNull(domainConverter);
         ArgumentNullException.ThrowIfNull(integrationConverter);
@@ -55,10 +55,10 @@ public sealed class EventConverterFactory : IEventConverterFactory
 
         _converters = new Dictionary<Type, object>
         {
-            [typeof(EntityDomainEvent)] = domainConverter,
+            [typeof(EntityEventDomain)] = domainConverter,
             [typeof(EntityEventOutbox)] = integrationConverter,
             [typeof(EntityEventInbox)] = inboxConverter,
-            [typeof(EntitySnapshotEvent)] = snapshotConverter
+            [typeof(EntityEventSnapshot)] = snapshotConverter
         }.ToFrozenDictionary();
     }
 

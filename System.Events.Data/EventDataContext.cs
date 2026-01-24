@@ -36,12 +36,12 @@ public sealed class EventDataContext(DbContextOptions<EventDataContext> options)
     /// <summary>
     /// Gets or sets the DbSet for EventEntityDomain.
     /// </summary>
-    public DbSet<EntityDomainEvent> Domains { get; set; } = null!;
+    public DbSet<EntityEventDomain> Domains { get; set; } = null!;
 
     /// <summary>
     /// Gets or sets the DbSet for EventEntitySnapshot.
     /// </summary>
-    public DbSet<EntitySnapshotEvent> Snapshots { get; set; } = null!;
+    public DbSet<EntityEventSnapshot> Snapshots { get; set; } = null!;
 
     /// <summary>
     /// Gets or sets the DbSet for EventEntityOutbox.

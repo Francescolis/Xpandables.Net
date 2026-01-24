@@ -25,12 +25,12 @@ public interface IEntityEventInbox : IEntityEvent
     /// <summary>
     /// Gets the error message associated with the event entity.
     /// </summary>
-    string? ErrorMessage { get; }
+    string? ErrorMessage { get; set; }
 
     /// <summary>
     /// Gets the number of publish attempts made for the current operation.
     /// </summary>
-    int AttemptCount { get; }
+    int AttemptCount { get; set; }
 
     /// <summary>
     /// When the next attempt should be made to process the event.

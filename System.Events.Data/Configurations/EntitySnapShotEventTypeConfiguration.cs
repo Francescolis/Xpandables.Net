@@ -25,10 +25,10 @@ namespace System.Events.Data.Configurations;
 /// <remarks>This configuration defines property requirements and indexes for the EntitySnapshotEvent entity. It
 /// is intended to be used within the Entity Framework Core model-building process to ensure correct schema generation
 /// and query performance.</remarks>
-public sealed class EntitySnapShotEventTypeConfiguration : EntityEventTypeConfiguration<EntitySnapshotEvent>
+public sealed class EntitySnapShotEventTypeConfiguration : EntityEventTypeConfiguration<EntityEventSnapshot>
 {
     /// <inheritdoc/>
-    public sealed override void Configure(EntityTypeBuilder<EntitySnapshotEvent> builder)
+    public sealed override void Configure(EntityTypeBuilder<EntityEventSnapshot> builder)
     {
         base.Configure(builder);
         builder.ToTable("SnapshotEvents");

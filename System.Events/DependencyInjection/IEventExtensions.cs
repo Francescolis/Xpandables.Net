@@ -102,10 +102,10 @@ public static class IEventExtensions
         /// <returns>The updated service collection with the Event converter factory registered.</returns>
         public IServiceCollection AddXEventConverterFactory() =>
             services.AddXEventConverterFactory<EventConverterFactory>()
-                .AddSingleton<IEventConverter<EntityDomainEvent, IDomainEvent>, EventConverterDomain>()
+                .AddSingleton<IEventConverter<EntityEventDomain, IDomainEvent>, EventConverterDomain>()
                 .AddSingleton<IEventConverter<EntityEventOutbox, IIntegrationEvent>, EventConverterOutbox>()
                 .AddSingleton<IEventConverter<EntityEventInbox, IIntegrationEvent>, EventConverterInbox>()
-                .AddSingleton<IEventConverter<EntitySnapshotEvent, ISnapshotEvent>, EventConverterSnapshot>();
+                .AddSingleton<IEventConverter<EntityEventSnapshot, ISnapshotEvent>, EventConverterSnapshot>();
 
         /// <summary>
         /// Adds services required for event context propagation and enrichment to the dependency injection container.
@@ -695,14 +695,14 @@ public static class IEventExtensions
         /// collection.
         /// </summary>
         /// <remarks>This method registers the XEventStore infrastructure using the default event types
-        /// <see cref="EntityDomainEvent"/> and <see cref="EntitySnapshotEvent"/>. Call this method during application
+        /// <see cref="EntityEventDomain"/> and <see cref="EntityEventSnapshot"/>. Call this method during application
         /// startup to enable event sourcing features for entities.</remarks>
         /// <returns>The <see cref="IServiceCollection"/> instance with XEventStore services registered. This enables further
         /// configuration of the service collection.</returns>
         public IServiceCollection AddXEventStore()
         {
             ArgumentNullException.ThrowIfNull(services);
-            return services.AddXEventStoreOfType<EntityDomainEvent, EntitySnapshotEvent>();
+            return services.AddXEventStoreOfType<EntityEventDomain, EntityEventSnapshot>();
         }
 
         /// <summary>

@@ -22,15 +22,15 @@ using System.Text.Json.Serialization.Metadata;
 namespace System.Events.Data;
 
 /// <summary>
-/// Converts between <see cref="IDomainEvent"/> and <see cref="EntityDomainEvent"/>.
+/// Converts between <see cref="IDomainEvent"/> and <see cref="EntityEventDomain"/>.
 /// </summary>
 /// <param name="typeResolver">The type resolver to use for resolving event types. Cannot be null.</param>
-public sealed class EventConverterDomain(ICacheTypeResolver typeResolver) : IEventConverter<EntityDomainEvent, IDomainEvent>
+public sealed class EventConverterDomain(ICacheTypeResolver typeResolver) : IEventConverter<EntityEventDomain, IDomainEvent>
 {
     private readonly ICacheTypeResolver _typeResolver = typeResolver ?? throw new ArgumentNullException(nameof(typeResolver));
 
     /// <inheritdoc/>
-    public EntityDomainEvent ConvertEventToEntity(IDomainEvent @event, IEventConverterContext context)
+    public EntityEventDomain ConvertEventToEntity(IDomainEvent @event, IEventConverterContext context)
     {
         ArgumentNullException.ThrowIfNull(@event);
         ArgumentNullException.ThrowIfNull(context);
@@ -40,7 +40,7 @@ public sealed class EventConverterDomain(ICacheTypeResolver typeResolver) : IEve
             JsonTypeInfo typeInfo = context.ResolveJsonTypeInfo(@event.GetType());
             JsonDocument data = JsonSerializer.SerializeToDocument(@event, typeInfo);
 
-            return new EntityDomainEvent
+            return new EntityEventDomain
             {
                 KeyId = @event.EventId,
                 StreamId = @event.StreamId,
@@ -62,7 +62,7 @@ public sealed class EventConverterDomain(ICacheTypeResolver typeResolver) : IEve
     }
 
     /// <inheritdoc/>
-    public IDomainEvent ConvertEntityToEvent(EntityDomainEvent entity, IEventConverterContext context)
+    public IDomainEvent ConvertEntityToEvent(EntityEventDomain entity, IEventConverterContext context)
     {
         ArgumentNullException.ThrowIfNull(entity);
         ArgumentNullException.ThrowIfNull(context);

@@ -22,15 +22,15 @@ using System.Text.Json.Serialization.Metadata;
 namespace System.Events.Data;
 
 /// <summary>
-/// Converts between <see cref="ISnapshotEvent"/> and <see cref="EntitySnapshotEvent"/>.
+/// Converts between <see cref="ISnapshotEvent"/> and <see cref="EntityEventSnapshot"/>.
 /// </summary>
 /// <param name="typeResolver">The type resolver to use for resolving event types. Cannot be null.</param>  
-public sealed class EventConverterSnapshot(ICacheTypeResolver typeResolver) : IEventConverter<EntitySnapshotEvent, ISnapshotEvent>
+public sealed class EventConverterSnapshot(ICacheTypeResolver typeResolver) : IEventConverter<EntityEventSnapshot, ISnapshotEvent>
 {
     private readonly ICacheTypeResolver _typeResolver = typeResolver ?? throw new ArgumentNullException(nameof(typeResolver));
 
     /// <inheritdoc/>
-    public EntitySnapshotEvent ConvertEventToEntity(ISnapshotEvent @event, IEventConverterContext context)
+    public EntityEventSnapshot ConvertEventToEntity(ISnapshotEvent @event, IEventConverterContext context)
     {
         ArgumentNullException.ThrowIfNull(@event);
         ArgumentNullException.ThrowIfNull(context);
@@ -40,7 +40,7 @@ public sealed class EventConverterSnapshot(ICacheTypeResolver typeResolver) : IE
             JsonTypeInfo typeInfo = context.ResolveJsonTypeInfo(@event.GetType());
             JsonDocument data = JsonSerializer.SerializeToDocument(@event, typeInfo);
 
-            return new EntitySnapshotEvent
+            return new EntityEventSnapshot
             {
                 KeyId = @event.EventId,
                 OwnerId = @event.OwnerId,
@@ -60,7 +60,7 @@ public sealed class EventConverterSnapshot(ICacheTypeResolver typeResolver) : IE
     }
 
     /// <inheritdoc/>
-    public ISnapshotEvent ConvertEntityToEvent(EntitySnapshotEvent entity, IEventConverterContext context)
+    public ISnapshotEvent ConvertEntityToEvent(EntityEventSnapshot entity, IEventConverterContext context)
     {
         ArgumentNullException.ThrowIfNull(entity);
         ArgumentNullException.ThrowIfNull(context);

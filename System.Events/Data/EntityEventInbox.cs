@@ -33,10 +33,10 @@ public sealed class EntityEventInbox : EntityEvent, IEntityEventInbox
     public EntityEventInbox() => SetStatus(EntityStatus.PROCESSING.Value);
 
     /// <inheritdoc/>
-    public string? ErrorMessage { get; init; }
+    public string? ErrorMessage { get; set; }
 
     /// <inheritdoc/>
-    public int AttemptCount { get; init; }
+    public int AttemptCount { get; set; }
 
     /// <inheritdoc/>
     public DateTime? NextAttemptOn { get; set; }

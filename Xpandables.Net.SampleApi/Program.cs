@@ -29,9 +29,7 @@ builder.Services.AddXEventDataContext(options =>
         .UseSqlServer(builder.Configuration.GetConnectionString("EventStoreDb"),
         options => options
             .EnableRetryOnFailure()
-            .UseQuerySplittingBehavior(QuerySplittingBehavior.SplitQuery)
-            .MigrationsHistoryTable("__EventStoreMigrations")
-            .MigrationsAssembly("Xpandables.Net.SampleApi"))
+            .UseQuerySplittingBehavior(QuerySplittingBehavior.SplitQuery))
         .EnableDetailedErrors()
         .EnableSensitiveDataLogging()
         .EnableServiceProviderCaching()
@@ -42,9 +40,7 @@ builder.Services.AddXDataContext<BankAccountDataContext>(options =>
         .UseSqlServer(builder.Configuration.GetConnectionString("ReadStoreDb"),
         options => options
             .EnableRetryOnFailure()
-            .UseQuerySplittingBehavior(QuerySplittingBehavior.SplitQuery)
-            .MigrationsHistoryTable("_ReadStoreMigrations")
-            .MigrationsAssembly("Xpandables.Net.SampleApi"))
+            .UseQuerySplittingBehavior(QuerySplittingBehavior.SplitQuery))
         .EnableDetailedErrors()
         .EnableSensitiveDataLogging()
         .EnableServiceProviderCaching());
@@ -64,6 +60,8 @@ builder.Services
     .AddXEventStore()
     .AddXOutboxStore()
     .AddMemoryCache()
+    .AddXEventRepositories()
+    .AddXUnitOfWork<EventDataContext>()
     .AddXEventConverterFactory()
     .AddXCacheTypeResolver([typeof(BankAccount).Assembly])
     .AddXResultMiddleware()

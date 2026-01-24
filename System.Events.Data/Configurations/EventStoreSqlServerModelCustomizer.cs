@@ -49,11 +49,11 @@ public sealed class EventStoreSqlServerModelCustomizer(ModelCustomizerDependenci
     {
         ArgumentNullException.ThrowIfNull(modelBuilder);
 
-        modelBuilder.Entity<EntitySnapshotEvent>()
+        modelBuilder.Entity<EntityEventSnapshot>()
             .Property(e => e.EventData)
             .HasEventJsonDocumentConversion();
 
-        modelBuilder.Entity<EntityDomainEvent>()
+        modelBuilder.Entity<EntityEventDomain>()
             .Property(e => e.EventData)
             .HasEventJsonDocumentConversion();
 

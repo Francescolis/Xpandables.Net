@@ -77,10 +77,10 @@ public static class IEventStoreExtensions
         {
             ArgumentNullException.ThrowIfNull(services);
             return services
-                .AddXEventRepository<EntityDomainEvent>()
+                .AddXEventRepository<EntityEventDomain>()
                 .AddXEventRepository<EntityEventInbox>()
                 .AddXEventRepository<EntityEventOutbox>()
-                .AddXEventRepository<IEntityEventSnapshot>();
+                .AddXEventRepository<EntityEventSnapshot>();
         }
     }
 }

@@ -32,14 +32,14 @@ public sealed class EntityEventOutbox : EntityEvent, IEntityEventOutbox
     public EntityEventOutbox() => SetStatus(EntityStatus.PENDING.Value);
 
     /// <inheritdoc/>
-    public string? ErrorMessage { get; init; }
+    public string? ErrorMessage { get; set; }
 
     /// <inheritdoc/>
-    public int AttemptCount { get; init; }
+    public int AttemptCount { get; set; }
 
     /// <inheritdoc/>
-    public DateTime? NextAttemptOn { get; init; }
+    public DateTime? NextAttemptOn { get; set; }
 
     /// <inheritdoc/>
-    public Guid? ClaimId { get; init; }
+    public Guid? ClaimId { get; set; }
 }

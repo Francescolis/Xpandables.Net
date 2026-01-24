@@ -26,20 +26,20 @@ public interface IEntityEventOutbox : IEntityEvent
     /// <summary>
     /// Gets the error message associated with the event entity.
     /// </summary>
-    string? ErrorMessage { get; }
+    string? ErrorMessage { get; set; }
 
     /// <summary>
     /// Gets the number of publish attempts made for the current operation.
     /// </summary>
-    int AttemptCount { get; }
+    int AttemptCount { get; set; }
 
     /// <summary>
     /// When the next attempt should be made to process the event.
     /// </summary>
-    DateTime? NextAttemptOn { get; }
+    DateTime? NextAttemptOn { get; set; }
 
     /// <summary>
     /// Identifier of the scheduler instance that claims the event for processing.
     /// </summary>
-    Guid? ClaimId { get; }
+    Guid? ClaimId { get; set; }
 }

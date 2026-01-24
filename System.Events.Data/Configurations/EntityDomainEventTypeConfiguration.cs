@@ -26,10 +26,10 @@ namespace System.Events.Data.Configurations;
 /// when using Entity Framework Core. It ensures that StreamId, StreamVersion, and StreamName are required fields, sets
 /// a maximum length for StreamName, and establishes primary and unique composite keys for event stream
 /// identification.</remarks>
-public sealed class EntityDomainEventTypeConfiguration : EntityEventTypeConfiguration<EntityDomainEvent>
+public sealed class EntityDomainEventTypeConfiguration : EntityEventTypeConfiguration<EntityEventDomain>
 {
     /// <inheritdoc/>
-    public sealed override void Configure(EntityTypeBuilder<EntityDomainEvent> builder)
+    public sealed override void Configure(EntityTypeBuilder<EntityEventDomain> builder)
     {
         base.Configure(builder);
         builder.ToTable("DomainEvents", "Events");
