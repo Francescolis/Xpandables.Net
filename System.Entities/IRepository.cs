@@ -170,6 +170,21 @@ public interface IRepository<[DynamicallyAccessedMembers(DynamicallyAccessedMemb
 
     /// <summary>
     /// Asynchronously updates entities of type TEntity that match the specified specification using a fluent updater.
+    /// <example>
+    /// <code>
+    /// var spec = QuerySpecification
+    ///     .For&lt;Product&gt;()
+    ///     .Where(p =&gt; p.IsActive)
+    ///     .Build();
+    ///     
+    /// var updater = EntityUpdater
+    ///     .For&lt;Product&gt;()
+    ///     .SetProperty(e=&gt; e.Price, e =&gt; e.Price * 1.1m) // Increase price by 10%
+    ///     .SetProperty(e=&gt; e.LastUpdated, DateTime.UtcNow); // Set last updated to now
+    ///     
+    /// var updated = await repository.UpdateAsync(spec, updater, cancellationToken);
+    /// </code>
+    /// </example>
     /// </summary>
     /// <remarks>This method uses the fluent updater pattern to specify multiple property updates in a single
     /// operation. It provides an efficient way to perform bulk updates without loading entities into memory.</remarks>

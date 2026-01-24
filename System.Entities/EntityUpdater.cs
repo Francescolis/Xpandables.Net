@@ -95,6 +95,14 @@ public abstract class EntityUpdater
 
 /// <summary>
 /// Provides a fluent API for building update operations on entities.
+/// <example>
+/// <code>
+/// var updater = EntityUpdater
+///     .For&lt;Product&gt;()
+///     .SetProperty(e=&gt; e.Price, e =&gt; e.Price * 1.1m) // Increase price by 10%
+///     .SetProperty(e=&gt; e.LastUpdated, DateTime.UtcNow); // Set last updated to now
+/// </code>
+/// </example>
 /// </summary>
 /// <typeparam name="TSource">The type of the entity being updated.</typeparam>
 /// <remarks>This class allows for the construction of multiple property updates in a fluent manner,
