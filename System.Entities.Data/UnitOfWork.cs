@@ -70,22 +70,13 @@ public class UnitOfWork(DataContext context, IServiceProvider serviceProvider) :
                 return ActivatorUtilities.CreateInstance<TRepository>(serviceProvider, _context);
             }
         }
-        catch (InvalidOperationException)
+        catch (InvalidOperationException ex)
         {
-            try
-            {
-                var service = ActivatorUtilities.CreateInstance<TRepository>(serviceProvider);
-                service.InjectAmbientContext(_context);
-                return service;
-            }
-            catch (InvalidOperationException ex)
-            {
-                throw new InvalidOperationException(
-                    $"Unable to create repository of type {repositoryType.Name}. " +
-                    $"Repository must have a constructor that accepts DataContext (or derived type) " +
-                    $"as a parameter, or have a parameterless constructor with InjectAmbientContext support.",
-                    ex);
-            }
+            throw new InvalidOperationException(
+                $"Unable to create repository of type {repositoryType.Name}. " +
+                $"Repository must have a constructor that accepts DataContext (or derived type) " +
+                $"as a parameter, or have a parameterless constructor with InjectAmbientContext support.",
+                ex);
         }
     }
 
