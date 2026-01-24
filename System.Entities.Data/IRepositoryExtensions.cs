@@ -84,6 +84,10 @@ public static class IRepositoryExtensions
                         $"Ensure the field is accessible and compatible with the ambient DataContext type.", ex);
                 }
             }
+
+            throw new InvalidOperationException(
+                $"The repository type '{repositoryType.Name}' does not have a writable property or accessible field of type '{typeof(DataContext).Name}' to inject the ambient DataContext. " +
+                $"Ensure that the repository is designed to accept a DataContext for ambient context injection.");
         }
     }
 
