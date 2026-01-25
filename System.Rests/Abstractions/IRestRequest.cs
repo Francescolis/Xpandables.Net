@@ -149,3 +149,47 @@ public interface IRestRequestStreamPaged<TResult> : IRestRequestStreamPaged
     [EditorBrowsable(EditorBrowsableState.Never)]
     Type? IRestRequest.ResultType => ResultType;
 }
+
+/// <summary>
+/// Provides AOT-compatible deserialization for streaming REST responses.
+/// </summary>
+/// <remarks>
+/// Implement this interface on your request class to enable AOT-compatible streaming deserialization.
+/// This avoids reflection-based generic method invocation at runtime.
+/// </remarks>
+public interface IRestStreamDeserializer
+{
+    /// <summary>
+    /// Deserializes the HTTP content to an async enumerable stream.
+    /// </summary>
+    /// <param name="content">The HTTP content to deserialize.</param>
+    /// <param name="options">The JSON serializer options to use.</param>
+    /// <param name="cancellationToken">A cancellation token to observe.</param>
+    /// <returns>An async enumerable of the deserialized items.</returns>
+    object DeserializeAsAsyncEnumerable(
+        HttpContent content,
+        Text.Json.JsonSerializerOptions options,
+        CancellationToken cancellationToken);
+}
+
+/// <summary>
+/// Provides AOT-compatible deserialization for paged streaming REST responses.
+/// </summary>
+/// <remarks>
+/// Implement this interface on your request class to enable AOT-compatible paged streaming deserialization.
+/// This avoids reflection-based generic method invocation at runtime.
+/// </remarks>
+public interface IRestStreamPagedDeserializer
+{
+    /// <summary>
+    /// Deserializes the HTTP content to an async paged enumerable stream.
+    /// </summary>
+    /// <param name="content">The HTTP content to deserialize.</param>
+    /// <param name="options">The JSON serializer options to use.</param>
+    /// <param name="cancellationToken">A cancellation token to observe.</param>
+    /// <returns>An async paged enumerable of the deserialized items.</returns>
+    object DeserializeAsAsyncPagedEnumerable(
+        HttpContent content,
+        Text.Json.JsonSerializerOptions options,
+        CancellationToken cancellationToken);
+}

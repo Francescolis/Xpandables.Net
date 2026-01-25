@@ -33,14 +33,15 @@ public sealed class RestStringComposer<TRestRequest> : IRestRequestComposer<TRes
 {
     /// <inheritdoc/>
     [SuppressMessage("Reliability", "CA2000:Dispose objects before losing scope", Justification = "<Pending>")]
-    public void Compose(RestRequestContext context)
+    public ValueTask ComposeAsync(RestRequestContext context, CancellationToken cancellationToken = default)
     {
-        ArgumentNullException.ThrowIfNull(context, nameof(context));
+        ArgumentNullException.ThrowIfNull(context);
+        cancellationToken.ThrowIfCancellationRequested();
 
         if ((context.Attribute.Location & Location.Body) != Location.Body
             || context.Attribute.BodyFormat != BodyFormat.String)
         {
-            return;
+            return ValueTask.CompletedTask;
         }
 
         JsonTypeInfo<TRestRequest>? jsonTypeInfo = (JsonTypeInfo<TRestRequest>?)context.SerializerOptions.GetTypeInfo(typeof(TRestRequest))
@@ -60,5 +61,6 @@ public sealed class RestStringComposer<TRestRequest> : IRestRequestComposer<TRes
         {
             context.Message.Content = content;
         }
+        return ValueTask.CompletedTask;
     }
 }

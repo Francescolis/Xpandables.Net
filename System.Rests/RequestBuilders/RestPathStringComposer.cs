@@ -29,13 +29,14 @@ public sealed class RestPathStringComposer<TRestRequest> : IRestRequestComposer<
     where TRestRequest : class, IRestPathString
 {
     /// <inheritdoc/>
-    public void Compose(RestRequestContext context)
+    public ValueTask ComposeAsync(RestRequestContext context, CancellationToken cancellationToken = default)
     {
-        ArgumentNullException.ThrowIfNull(context, nameof(context));
+        ArgumentNullException.ThrowIfNull(context);
+        cancellationToken.ThrowIfCancellationRequested();
 
         if ((context.Attribute.Location & Location.Path) != Location.Path)
         {
-            return;
+            return ValueTask.CompletedTask;
         }
 
         IDictionary<string, string> pathString = ((IRestPathString)context.Request).GetPathString();
@@ -50,6 +51,7 @@ public sealed class RestPathStringComposer<TRestRequest> : IRestRequestComposer<
 
             context.Message.RequestUri = new Uri(path, UriKind.RelativeOrAbsolute);
         }
+        return ValueTask.CompletedTask;
     }
 
     /// <summary>

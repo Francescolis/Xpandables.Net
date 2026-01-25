@@ -67,7 +67,9 @@ public sealed class RestResponseFailureComposer : IRestResponseComposer
             };
         }
         catch (Exception exception)
-            when (exception is not ArgumentNullException)
+            when (exception is not ArgumentNullException
+                and not OperationCanceledException
+                and not InvalidOperationException)
         {
             return new RestResponse
             {

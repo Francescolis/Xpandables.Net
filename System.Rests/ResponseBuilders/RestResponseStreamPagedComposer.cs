@@ -15,7 +15,6 @@
  *
 ********************************************************************************/
 using System.Collections;
-using System.Diagnostics.CodeAnalysis;
 using System.Net.Http.Json;
 using System.Rests.Abstractions;
 using System.Text.Json;
@@ -26,7 +25,10 @@ namespace System.Rests.ResponseBuilders;
 /// <summary>
 /// Composes a paged stream RestResponse asynchronously using the provided RestResponseContext.
 /// </summary>
-/// <remarks>This implementation returns an <see cref="IAsyncPagedEnumerable{T}"/>.</remarks>
+/// <remarks>
+/// This implementation returns an <see cref="IAsyncPagedEnumerable{T}"/>.
+/// For AOT compatibility, the request should implement <see cref="IRestStreamPagedDeserializer"/>.
+/// </remarks>
 public sealed class RestResponseStreamPagedComposer : IRestResponseComposer
 {
     /// <inheritdoc/>
@@ -57,12 +59,27 @@ public sealed class RestResponseStreamPagedComposer : IRestResponseComposer
         {
             await Task.Yield();
 
-            Type type = ((IRestRequestStreamPaged)context.Request).ResultType;
-            JsonTypeInfo? typeInfo = (options.TypeInfoResolver?.GetTypeInfo(type, options))
-                ?? throw new InvalidOperationException(
-                    $"{nameof(ComposeAsync)}: The JsonTypeInfo for type {type.Name} could not be resolved.");
+            object? asyncPagedResult;
 
-            var asyncPagedResult = ReadFromJsonAsyncPagedEnumerable(response.Content, typeInfo, cancellationToken);
+            // Use AOT-compatible deserializer if available
+            if (context.Request is IRestStreamPagedDeserializer deserializer)
+            {
+                asyncPagedResult = deserializer.DeserializeAsAsyncPagedEnumerable(
+                    response.Content,
+                    options,
+                    cancellationToken);
+            }
+            else
+            {
+                // Fallback for non-AOT scenarios using JsonTypeInfo
+                Type type = ((IRestRequestStreamPaged)context.Request).ResultType;
+                JsonTypeInfo? typeInfo = options.TypeInfoResolver?.GetTypeInfo(type, options)
+                    ?? throw new InvalidOperationException(
+                        $"{nameof(ComposeAsync)}: The JsonTypeInfo for type {type.Name} could not be resolved. " +
+                        $"For AOT compatibility, implement {nameof(IRestStreamPagedDeserializer)} on your request type.");
+
+                asyncPagedResult = ReadFromJsonAsyncPagedEnumerableInternal(response.Content, typeInfo, cancellationToken);
+            }
 
             return new RestResponse
             {
@@ -74,7 +91,9 @@ public sealed class RestResponseStreamPagedComposer : IRestResponseComposer
             };
         }
         catch (Exception exception)
-            when (exception is not ArgumentNullException)
+            when (exception is not ArgumentNullException
+                and not OperationCanceledException
+                and not InvalidOperationException)
         {
             return new RestResponse
             {
@@ -87,18 +106,23 @@ public sealed class RestResponseStreamPagedComposer : IRestResponseComposer
         }
     }
 
-    [UnconditionalSuppressMessage("Trimming", "IL2026:Members annotated with 'RequiresUnreferencedCodeAttribute' require dynamic access otherwise can break functionality when trimming application code", Justification = "<Pending>")]
-    [UnconditionalSuppressMessage("AOT", "IL3050:Calling members annotated with 'RequiresDynamicCodeAttribute' may break functionality when AOT compiling.", Justification = "<Pending>")]
-    static object? ReadFromJsonAsyncPagedEnumerable(HttpContent content, JsonTypeInfo jsonTypeInfo, CancellationToken cancellationToken)
+#pragma warning disable IL2026 // Suppress trimming warning for fallback scenario
+#pragma warning disable IL3050 // Suppress AOT warning for fallback scenario
+    private static object? ReadFromJsonAsyncPagedEnumerableInternal(
+        HttpContent content,
+        JsonTypeInfo jsonTypeInfo,
+        CancellationToken cancellationToken)
     {
         var method = typeof(HttpContentExtensions)
             .GetMethod(nameof(HttpContentExtensions.ReadFromJsonAsAsyncPagedEnumerable),
             [typeof(HttpContent), typeof(JsonSerializerOptions), typeof(PaginationStrategy), typeof(CancellationToken)])
             ?? throw new InvalidOperationException(
-                $"{nameof(ReadFromJsonAsyncPagedEnumerable)}: Could not find method {nameof(HttpContentExtensions.ReadFromJsonAsAsyncPagedEnumerable)}.");
+                $"Could not find method {nameof(HttpContentExtensions.ReadFromJsonAsAsyncPagedEnumerable)}. " +
+                $"For AOT compatibility, implement {nameof(IRestStreamPagedDeserializer)} on your request type.");
 
         var genericMethod = method.MakeGenericMethod(jsonTypeInfo.Type);
-        var result = genericMethod.Invoke(null, [content, jsonTypeInfo.Options, PaginationStrategy.None, cancellationToken]);
-        return result;
+        return genericMethod.Invoke(null, [content, jsonTypeInfo.Options, PaginationStrategy.None, cancellationToken]);
     }
+#pragma warning restore IL3050
+#pragma warning restore IL2026
 }

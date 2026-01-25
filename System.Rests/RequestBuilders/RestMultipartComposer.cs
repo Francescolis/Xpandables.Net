@@ -28,17 +28,19 @@ public sealed class RestMultipartComposer<TRestRequest> : IRestRequestComposer<T
     where TRestRequest : class, IRestMultipart
 {
     /// <inheritdoc/>
-    public void Compose(RestRequestContext context)
+    public ValueTask ComposeAsync(RestRequestContext context, CancellationToken cancellationToken = default)
     {
-        ArgumentNullException.ThrowIfNull(context, nameof(context));
+        ArgumentNullException.ThrowIfNull(context);
+        cancellationToken.ThrowIfCancellationRequested();
 
         if ((context.Attribute.Location & Location.Body) != Location.Body
             || context.Attribute.BodyFormat != BodyFormat.Multipart)
         {
-            return;
+            return ValueTask.CompletedTask;
         }
 
         MultipartFormDataContent content = ((IRestMultipart)context.Request).GetMultipartContent();
         context.Message.Content = content;
+        return ValueTask.CompletedTask;
     }
 }

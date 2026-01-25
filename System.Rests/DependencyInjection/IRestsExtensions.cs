@@ -20,6 +20,10 @@ using System.Rests.Abstractions;
 using System.Rests.RequestBuilders;
 using System.Rests.ResponseBuilders;
 
+using Microsoft.Extensions.Http.Resilience;
+
+using Polly;
+
 
 #pragma warning disable IDE0130 // Namespace does not match folder structure
 namespace Microsoft.Extensions.DependencyInjection;
@@ -104,6 +108,35 @@ public static class IRestsExtensions
             services.AddXRestResponseBuilder<RestResponseBuilder>();
 
         /// <summary>
+        /// Configures REST client options including timeout, retry, circuit breaker, and logging settings.
+        /// </summary>
+        /// <param name="configure">A delegate to configure the <see cref="RestClientOptions"/>.</param>
+        /// <returns>The <see cref="IServiceCollection"/> instance with the options configured.</returns>
+        public IServiceCollection ConfigureXRestClientOptions(Action<RestClientOptions> configure)
+        {
+            ArgumentNullException.ThrowIfNull(configure);
+            return services.Configure(configure);
+        }
+
+        /// <summary>
+        /// Adds a request interceptor to the REST client pipeline.
+        /// </summary>
+        /// <typeparam name="TInterceptor">The type of the request interceptor to add.</typeparam>
+        /// <returns>The <see cref="IServiceCollection"/> instance with the interceptor registered.</returns>
+        public IServiceCollection AddXRestRequestInterceptor<[DynamicallyAccessedMembers(DynamicallyAccessedMemberTypes.PublicConstructors)] TInterceptor>()
+            where TInterceptor : class, IRestRequestInterceptor
+            => services.AddTransient<IRestRequestInterceptor, TInterceptor>();
+
+        /// <summary>
+        /// Adds a response interceptor to the REST client pipeline.
+        /// </summary>
+        /// <typeparam name="TInterceptor">The type of the response interceptor to add.</typeparam>
+        /// <returns>The <see cref="IServiceCollection"/> instance with the interceptor registered.</returns>
+        public IServiceCollection AddXRestResponseInterceptor<[DynamicallyAccessedMembers(DynamicallyAccessedMemberTypes.PublicConstructors)] TInterceptor>()
+            where TInterceptor : class, IRestResponseInterceptor
+            => services.AddTransient<IRestResponseInterceptor, TInterceptor>();
+
+        /// <summary>
         /// Adds a typed REST client of the specified type to the dependency injection container and configures the
         /// underlying HTTP client.
         /// </summary>
@@ -138,6 +171,70 @@ public static class IRestsExtensions
                 .AddXRestClient<RestClient>(configureClient);
 
         /// <summary>
+        /// Adds and configures an XRest HTTP client with resilience policies (retry and circuit breaker).
+        /// </summary>
+        /// <remarks>
+        /// This method registers the XRest client with resilience policies based on the configured <see cref="RestClientOptions"/>.
+        /// The resilience policies include retry with exponential backoff and circuit breaker patterns.
+        /// </remarks>
+        /// <param name="configureClient">A delegate that configures the underlying <see cref="HttpClient"/> instance.</param>
+        /// <returns>An <see cref="IHttpClientBuilder"/> that can be used to further configure the HTTP client.</returns>
+        public IHttpClientBuilder AddXRestClientWithResilience(
+            Action<IServiceProvider, HttpClient> configureClient)
+        {
+            var builder = services.AddXRestClient(configureClient);
+
+            builder.AddResilienceHandler("RestClientResilience", (resilienceBuilder, context) =>
+            {
+                var options = context.ServiceProvider
+                    .GetService<Microsoft.Extensions.Options.IOptions<RestClientOptions>>()?.Value
+                    ?? new RestClientOptions();
+
+                // Add retry policy if configured
+                if (options.Retry is not null)
+                {
+                    resilienceBuilder.AddRetry(new HttpRetryStrategyOptions
+                    {
+                        MaxRetryAttempts = options.Retry.MaxRetryAttempts,
+                        Delay = options.Retry.Delay,
+                        MaxDelay = options.Retry.MaxDelay,
+                        UseJitter = options.Retry.JitterFactor > 0,
+                        BackoffType = options.Retry.UseExponentialBackoff
+                            ? DelayBackoffType.Exponential
+                            : DelayBackoffType.Constant,
+                        ShouldHandle = args =>
+                        {
+                            if (args.Outcome.Result is not null)
+                            {
+                                int statusCode = (int)args.Outcome.Result.StatusCode;
+                                bool shouldRetry = options.Retry.RetryableStatusCodes.Contains(statusCode);
+                                return ValueTask.FromResult(shouldRetry);
+                            }
+                            return ValueTask.FromResult(args.Outcome.Exception is not null);
+                        }
+                    });
+                }
+
+                // Add circuit breaker policy if configured
+                if (options.CircuitBreaker is not null)
+                {
+                    resilienceBuilder.AddCircuitBreaker(new HttpCircuitBreakerStrategyOptions
+                    {
+                        FailureRatio = options.CircuitBreaker.FailureThreshold / 100.0,
+                        BreakDuration = options.CircuitBreaker.BreakDuration,
+                        SamplingDuration = options.CircuitBreaker.SamplingDuration,
+                        MinimumThroughput = options.CircuitBreaker.MinimumThroughput
+                    });
+                }
+
+                // Add timeout
+                resilienceBuilder.AddTimeout(options.Timeout);
+            });
+
+            return builder;
+        }
+
+        /// <summary>
         /// Registers the default set of REST request composer implementations with the dependency injection container.
         /// </summary>
         /// <remarks>Call this method to add support for composing various types of REST requests, such as
@@ -156,7 +253,6 @@ public static class IRestsExtensions
                 .AddTransient(typeof(IRestRequestComposer<>), typeof(RestFormUrlEncodedComposer<>))
                 .AddTransient(typeof(IRestRequestComposer<>), typeof(RestMultipartComposer<>))
                 .AddTransient(typeof(IRestRequestComposer<>), typeof(RestStreamComposer<>))
-                .AddTransient(typeof(IRestRequestComposer<>), typeof(RestPatchComposer<>))
                 .AddTransient(typeof(IRestRequestComposer<>), typeof(RestPathStringComposer<>))
                 .AddTransient(typeof(IRestRequestComposer<>), typeof(RestStringComposer<>));
 

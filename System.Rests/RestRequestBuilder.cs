@@ -37,7 +37,7 @@ public sealed class RestRequestBuilder(
 
     /// <inheritdoc />
     [SuppressMessage("Reliability", "CA2000:Dispose objects before losing scope", Justification = "<Pending>")]
-    public ValueTask<RestRequest> BuildRequestAsync<TRestRequest>(TRestRequest request,
+    public async ValueTask<RestRequest> BuildRequestAsync<TRestRequest>(TRestRequest request,
         CancellationToken cancellationToken = default)
         where TRestRequest : class, IRestRequest
     {
@@ -68,15 +68,14 @@ public sealed class RestRequestBuilder(
 
         foreach (IRestRequestComposer<TRestRequest> composer in composers)
         {
-            cancellationToken.ThrowIfCancellationRequested();
-            composer.Compose(context);
+            await composer.ComposeAsync(context, cancellationToken).ConfigureAwait(false);
         }
 
         cancellationToken.ThrowIfCancellationRequested();
 
         message = FinalizeHttpRequestMessage(context);
 
-        return ValueTask.FromResult(new RestRequest { HttpRequestMessage = message });
+        return new RestRequest { HttpRequestMessage = message };
     }
 
     private static HttpRequestMessage InitializeHttpRequestMessage(RestAttribute attribute)

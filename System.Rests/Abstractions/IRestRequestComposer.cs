@@ -30,8 +30,10 @@ public interface IRestRequestComposer<TRestRequest>
     where TRestRequest : class, IRestRequest
 {
     /// <summary>
-    /// Composes the <see cref="HttpRequestMessage"/> using the request context.
+    /// Composes the <see cref="HttpRequestMessage"/> using the request context asynchronously.
     /// </summary>
     /// <param name="context">This parameter provides the necessary context for building the http request.</param>
-    void Compose(RestRequestContext context);
+    /// <param name="cancellationToken">A cancellation token to observe while waiting for the task to complete.</param>
+    /// <returns>A <see cref="ValueTask"/> representing the asynchronous operation.</returns>
+    ValueTask ComposeAsync(RestRequestContext context, CancellationToken cancellationToken = default);
 }

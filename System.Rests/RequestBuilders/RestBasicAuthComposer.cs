@@ -29,17 +29,19 @@ public sealed class RestBasicAuthComposer<TRestRequest> : IRestRequestComposer<T
     where TRestRequest : class, IRestBasicAuthentication
 {
     /// <inheritdoc/>
-    public void Compose(RestRequestContext context)
+    public ValueTask ComposeAsync(RestRequestContext context, CancellationToken cancellationToken = default)
     {
         ArgumentNullException.ThrowIfNull(context);
+        cancellationToken.ThrowIfCancellationRequested();
 
         if ((context.Attribute.Location & Location.BasicAuth) != Location.BasicAuth)
         {
-            return;
+            return ValueTask.CompletedTask;
         }
 
         AuthenticationHeaderValue value = ((IRestBasicAuthentication)context.Request).GetAuthenticationHeaderValue();
 
         context.Message.Headers.Authorization = value;
+        return ValueTask.CompletedTask;
     }
 }

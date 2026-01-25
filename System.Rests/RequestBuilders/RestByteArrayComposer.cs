@@ -28,14 +28,15 @@ public sealed class RestByteArrayComposer<TRestRequest> : IRestRequestComposer<T
     where TRestRequest : class, IRestByteArray
 {
     /// <inheritdoc/>
-    public void Compose(RestRequestContext context)
+    public ValueTask ComposeAsync(RestRequestContext context, CancellationToken cancellationToken = default)
     {
         ArgumentNullException.ThrowIfNull(context);
+        cancellationToken.ThrowIfCancellationRequested();
 
         if ((context.Attribute.Location & Location.Body) != Location.Body
              || context.Attribute.BodyFormat != BodyFormat.ByteArray)
         {
-            return;
+            return ValueTask.CompletedTask;
         }
 
         ByteArrayContent byteArray = ((IRestByteArray)context.Request).GetByteArrayContent();
@@ -48,5 +49,6 @@ public sealed class RestByteArrayComposer<TRestRequest> : IRestRequestComposer<T
         {
             context.Message.Content = byteArray;
         }
+        return ValueTask.CompletedTask;
     }
 }

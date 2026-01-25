@@ -20,7 +20,11 @@ namespace System.Rests.Abstractions;
 /// Defines a contract for RESTful client operations. It serves as a blueprint for implementing REST client
 /// functionalities.
 /// </summary>
-public interface IRestClient : IDisposable
+/// <remarks>
+/// The <see cref="HttpClient"/> is typically managed by the dependency injection container via 
+/// <see cref="IHttpClientFactory"/> and should not be disposed by the consumer.
+/// </remarks>
+public interface IRestClient
 {
     /// <summary>
     /// Provides an instance of HttpClient for making HTTP requests.

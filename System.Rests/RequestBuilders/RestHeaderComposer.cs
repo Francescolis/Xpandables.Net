@@ -29,13 +29,14 @@ public sealed class RestHeaderComposer<TRestRequest> : IRestRequestComposer<TRes
     where TRestRequest : class, IRestHeader
 {
     /// <inheritdoc/>
-    public void Compose(RestRequestContext context)
+    public ValueTask ComposeAsync(RestRequestContext context, CancellationToken cancellationToken = default)
     {
-        ArgumentNullException.ThrowIfNull(context, nameof(context));
+        ArgumentNullException.ThrowIfNull(context);
+        cancellationToken.ThrowIfCancellationRequested();
 
         if ((context.Attribute.Location & Location.Header) != Location.Header)
         {
-            return;
+            return ValueTask.CompletedTask;
         }
 
         ElementCollection headerSource = ((IRestHeader)context.Request).GetHeaders();
@@ -54,6 +55,7 @@ public sealed class RestHeaderComposer<TRestRequest> : IRestRequestComposer<TRes
         {
             foreach (ElementEntry parameter in headerSource)
             {
+                cancellationToken.ThrowIfCancellationRequested();
                 _ = context.Message
                         .Headers
                         .Remove(parameter.Key);
@@ -63,5 +65,6 @@ public sealed class RestHeaderComposer<TRestRequest> : IRestRequestComposer<TRes
                     .Add(parameter.Key, values: parameter.Values);
             }
         }
+        return ValueTask.CompletedTask;
     }
 }

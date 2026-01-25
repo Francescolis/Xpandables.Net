@@ -28,14 +28,15 @@ public sealed class RestFormUrlEncodedComposer<TRestRequest> : IRestRequestCompo
     where TRestRequest : class, IRestFormUrlEncoded
 {
     /// <inheritdoc/>
-    public void Compose(RestRequestContext context)
+    public ValueTask ComposeAsync(RestRequestContext context, CancellationToken cancellationToken = default)
     {
-        ArgumentNullException.ThrowIfNull(context, nameof(context));
+        ArgumentNullException.ThrowIfNull(context);
+        cancellationToken.ThrowIfCancellationRequested();
 
         if ((context.Attribute.Location & Location.Body) != Location.Body
             || context.Attribute.BodyFormat != BodyFormat.FormUrlEncoded)
         {
-            return;
+            return ValueTask.CompletedTask;
         }
 
         FormUrlEncodedContent content = ((IRestFormUrlEncoded)context.Request).GetFormUrlEncodedContent();
@@ -48,5 +49,6 @@ public sealed class RestFormUrlEncodedComposer<TRestRequest> : IRestRequestCompo
         {
             context.Message.Content = content;
         }
+        return ValueTask.CompletedTask;
     }
 }

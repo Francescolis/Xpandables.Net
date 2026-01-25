@@ -30,13 +30,14 @@ public sealed class RestQueryStringComposer<TRestRequest> : IRestRequestComposer
     where TRestRequest : class, IRestQueryString
 {
     /// <inheritdoc/>
-    public void Compose(RestRequestContext context)
+    public ValueTask ComposeAsync(RestRequestContext context, CancellationToken cancellationToken = default)
     {
-        ArgumentNullException.ThrowIfNull(context, nameof(context));
+        ArgumentNullException.ThrowIfNull(context);
+        cancellationToken.ThrowIfCancellationRequested();
 
         if ((context.Attribute.Location & Location.Query) != Location.Query)
         {
-            return;
+            return ValueTask.CompletedTask;
         }
 
         IDictionary<string, string?>? queryString = ((IRestQueryString)context.Request).GetQueryString();
@@ -48,6 +49,7 @@ public sealed class RestQueryStringComposer<TRestRequest> : IRestRequestComposer
         string queryStringPath = basePath.AddQueryString(queryString);
 
         context.Message.RequestUri = new Uri(queryStringPath, UriKind.RelativeOrAbsolute);
+        return ValueTask.CompletedTask;
     }
 }
 

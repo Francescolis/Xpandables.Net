@@ -59,17 +59,6 @@ public sealed class RestResponseContentComposer : IRestResponseComposer
                     .ReadAsStreamAsync(cancellationToken)
                     .ConfigureAwait(false);
 
-                if (stream is null)
-                {
-                    return new RestResponse
-                    {
-                        StatusCode = response.StatusCode,
-                        ReasonPhrase = response.ReasonPhrase,
-                        Headers = response.Headers.ToElementCollection(),
-                        Version = response.Version
-                    };
-                }
-
                 return new RestResponse
                 {
                     StatusCode = response.StatusCode,
@@ -121,7 +110,9 @@ public sealed class RestResponseContentComposer : IRestResponseComposer
             };
         }
         catch (Exception exception)
-            when (exception is not ArgumentNullException)
+            when (exception is not ArgumentNullException
+                and not OperationCanceledException
+                and not InvalidOperationException)
         {
             return new RestResponse
             {

@@ -47,6 +47,7 @@ public sealed class RestResponseBuilder(IEnumerable<IRestResponseComposer> compo
         }
         catch (Exception exception)
             when (exception is not ArgumentNullException
+                      and not OperationCanceledException
                       and not InvalidOperationException)
         {
             throw new InvalidOperationException(

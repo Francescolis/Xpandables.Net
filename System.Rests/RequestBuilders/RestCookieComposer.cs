@@ -28,13 +28,14 @@ public sealed class RestCookieComposer<TRestRequest> : IRestRequestComposer<TRes
     where TRestRequest : class, IRestCookie
 {
     /// <inheritdoc/>
-    public void Compose(RestRequestContext context)
+    public ValueTask ComposeAsync(RestRequestContext context, CancellationToken cancellationToken = default)
     {
-        ArgumentNullException.ThrowIfNull(context, nameof(context));
+        ArgumentNullException.ThrowIfNull(context);
+        cancellationToken.ThrowIfCancellationRequested();
 
         if ((context.Attribute.Location & Location.Cookie) != Location.Cookie)
         {
-            return;
+            return ValueTask.CompletedTask;
         }
 
         IDictionary<string, object?> cookieSource
@@ -42,8 +43,10 @@ public sealed class RestCookieComposer<TRestRequest> : IRestRequestComposer<TRes
 
         foreach (KeyValuePair<string, object?> parameter in cookieSource)
         {
+            cancellationToken.ThrowIfCancellationRequested();
             _ = context.Message.Options
                 .TryAdd(parameter.Key, parameter.Value);
         }
+        return ValueTask.CompletedTask;
     }
 }

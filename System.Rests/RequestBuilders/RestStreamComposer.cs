@@ -28,14 +28,15 @@ public sealed class RestStreamComposer<TRestRequest> : IRestRequestComposer<TRes
     where TRestRequest : class, IRestStream
 {
     /// <inheritdoc/>
-    public void Compose(RestRequestContext context)
+    public ValueTask ComposeAsync(RestRequestContext context, CancellationToken cancellationToken = default)
     {
-        ArgumentNullException.ThrowIfNull(context, nameof(context));
+        ArgumentNullException.ThrowIfNull(context);
+        cancellationToken.ThrowIfCancellationRequested();
 
         if ((context.Attribute.Location & Location.Body) != Location.Body
             || context.Attribute.BodyFormat != BodyFormat.Stream)
         {
-            return;
+            return ValueTask.CompletedTask;
         }
 
         StreamContent streamContent = ((IRestStream)context.Request).GetStreamContent();
@@ -48,5 +49,6 @@ public sealed class RestStreamComposer<TRestRequest> : IRestRequestComposer<TRes
         {
             context.Message.Content = streamContent;
         }
+        return ValueTask.CompletedTask;
     }
 }

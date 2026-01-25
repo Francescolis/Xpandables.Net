@@ -25,22 +25,34 @@ namespace System.Rests.Abstractions;
 /// </summary>
 public static class RestSettings
 {
-    private static JsonSerializerOptions _serializerOptions = new(JsonSerializerDefaults.Web)
+    private static volatile JsonSerializerOptions _serializerOptions = new(JsonSerializerDefaults.Web)
     {
         PropertyNameCaseInsensitive = true,
         PropertyNamingPolicy = null,
         WriteIndented = true
     };
 
+    private static readonly object _lock = new();
+
     /// <summary>
     /// Gets or sets the default options used for JSON serialization and deserialization operations.
     /// </summary>
-    /// <remarks>Changing this property affects how all subsequent JSON serialization and deserialization is
-    /// performed using these options. The property must be set to a non-null value.</remarks>
+    /// <remarks>
+    /// Changing this property affects how all subsequent JSON serialization and deserialization is
+    /// performed using these options. The property must be set to a non-null value.
+    /// This property is thread-safe for both reading and writing.
+    /// </remarks>
     public static JsonSerializerOptions SerializerOptions
     {
         get => _serializerOptions;
-        set => _serializerOptions = value ?? throw new ArgumentNullException(nameof(value));
+        set
+        {
+            ArgumentNullException.ThrowIfNull(value);
+            lock (_lock)
+            {
+                _serializerOptions = value;
+            }
+        }
     }
 
     /// <summary>

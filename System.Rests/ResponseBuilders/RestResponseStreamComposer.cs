@@ -15,7 +15,6 @@
  *
 ********************************************************************************/
 using System.Collections;
-using System.Diagnostics.CodeAnalysis;
 using System.Net.Http.Json;
 using System.Rests.Abstractions;
 using System.Text.Json;
@@ -26,7 +25,10 @@ namespace System.Rests.ResponseBuilders;
 /// <summary>
 /// Composes a stream RestResponse asynchronously using the provided RestResponseContext.
 /// </summary>
-/// <remarks>This implementation returns an <see cref="IAsyncEnumerable{T}"/>.</remarks>
+/// <remarks>
+/// This implementation returns an <see cref="IAsyncEnumerable{T}"/>.
+/// For AOT compatibility, the request should implement <see cref="IRestStreamDeserializer"/>.
+/// </remarks>
 public sealed class RestResponseStreamComposer : IRestResponseComposer
 {
     /// <inheritdoc/>
@@ -57,12 +59,27 @@ public sealed class RestResponseStreamComposer : IRestResponseComposer
         {
             await Task.Yield();
 
-            Type type = ((IRestRequestStream)context.Request).ResultType;
-            JsonTypeInfo? typeInfo = options.TypeInfoResolver?.GetTypeInfo(type, options)
-                ?? throw new InvalidOperationException(
-                    $"{nameof(ComposeAsync)}: The JsonTypeInfo for type {type.Name} could not be resolved.");
+            object? asyncResult;
 
-            var asyncResult = ReadFromJsonAsyncEnumerable(response.Content, typeInfo, cancellationToken);
+            // Use AOT-compatible deserializer if available
+            if (context.Request is IRestStreamDeserializer deserializer)
+            {
+                asyncResult = deserializer.DeserializeAsAsyncEnumerable(
+                    response.Content,
+                    options,
+                    cancellationToken);
+            }
+            else
+            {
+                // Fallback for non-AOT scenarios using JsonTypeInfo
+                Type type = ((IRestRequestStream)context.Request).ResultType;
+                JsonTypeInfo? typeInfo = options.TypeInfoResolver?.GetTypeInfo(type, options)
+                    ?? throw new InvalidOperationException(
+                        $"{nameof(ComposeAsync)}: The JsonTypeInfo for type {type.Name} could not be resolved. " +
+                        $"For AOT compatibility, implement {nameof(IRestStreamDeserializer)} on your request type.");
+
+                asyncResult = ReadFromJsonAsAsyncEnumerableInternal(response.Content, typeInfo, cancellationToken);
+            }
 
             return new RestResponse
             {
@@ -74,7 +91,9 @@ public sealed class RestResponseStreamComposer : IRestResponseComposer
             };
         }
         catch (Exception exception)
-            when (exception is not ArgumentNullException)
+            when (exception is not ArgumentNullException
+                and not OperationCanceledException
+                and not InvalidOperationException)
         {
             return new RestResponse
             {
@@ -87,17 +106,23 @@ public sealed class RestResponseStreamComposer : IRestResponseComposer
         }
     }
 
-    [UnconditionalSuppressMessage("Trimming", "IL2026:Members annotated with 'RequiresUnreferencedCodeAttribute' require dynamic access otherwise can break functionality when trimming application code", Justification = "<Pending>")]
-    [UnconditionalSuppressMessage("AOT", "IL3050:Calling members annotated with 'RequiresDynamicCodeAttribute' may break functionality when AOT compiling.", Justification = "<Pending>")]
-    static object? ReadFromJsonAsyncEnumerable(HttpContent content, JsonTypeInfo jsonTypeInfo, CancellationToken cancellationToken)
+#pragma warning disable IL2026 // Suppress trimming warning for fallback scenario
+#pragma warning disable IL3050 // Suppress AOT warning for fallback scenario
+    private static object? ReadFromJsonAsAsyncEnumerableInternal(
+        HttpContent content,
+        JsonTypeInfo jsonTypeInfo,
+        CancellationToken cancellationToken)
     {
         var method = typeof(HttpContentJsonExtensions)
             .GetMethod(nameof(HttpContentJsonExtensions.ReadFromJsonAsAsyncEnumerable),
             [typeof(HttpContent), typeof(JsonSerializerOptions), typeof(CancellationToken)])
             ?? throw new InvalidOperationException(
-                $"{nameof(ReadFromJsonAsyncEnumerable)}: Could not find method {nameof(HttpContentJsonExtensions.ReadFromJsonAsAsyncEnumerable)}.");
+                $"Could not find method {nameof(HttpContentJsonExtensions.ReadFromJsonAsAsyncEnumerable)}. " +
+                $"For AOT compatibility, implement {nameof(IRestStreamDeserializer)} on your request type.");
 
         var genericMethod = method.MakeGenericMethod(jsonTypeInfo.Type);
         return genericMethod.Invoke(null, [content, jsonTypeInfo.Options, cancellationToken]);
     }
+#pragma warning restore IL3050
+#pragma warning restore IL2026
 }
