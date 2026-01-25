@@ -79,28 +79,61 @@ public static class ResultExtensions
             "ASPNETCORE_ENVIRONMENT") ?? Environments.Development) ==
             Environments.Development;
 
-        int startParameterNameIndex = exception.Message
-            .IndexOf('"', StringComparison.InvariantCulture) + 1;
+        HttpStatusCode statusCode = (HttpStatusCode)exception.StatusCode;
 
-        int endParameterNameIndex = exception.Message
-            .IndexOf('"', startParameterNameIndex);
+        try
+        {
+            int startParameterNameIndex = exception.Message
+                .IndexOf('"', StringComparison.InvariantCulture) + 1;
 
-        string parameterName = exception
-            .Message[startParameterNameIndex..endParameterNameIndex];
+            int endParameterNameIndex = exception.Message
+                .IndexOf('"', startParameterNameIndex);
 
-        parameterName = parameterName.Trim();
+            if (startParameterNameIndex <= 0 || endParameterNameIndex <= startParameterNameIndex)
+            {
+                // Message format doesn't match expected pattern, use fallback
+                return CreateFallbackResult(exception, statusCode, isDevelopment);
+            }
 
-        string errorMessage = exception.Message
-            .Replace("\\", string.Empty, StringComparison.InvariantCulture)
-            .Replace("\"", string.Empty, StringComparison.InvariantCulture);
+            string parameterName = exception
+                .Message[startParameterNameIndex..endParameterNameIndex]
+                .Trim();
 
-        return Result
-            .BadRequest()
-            .WithTitle(((HttpStatusCode)exception.StatusCode).Title)
-            .WithDetail(isDevelopment ? exception.ToString() : ((HttpStatusCode)exception.StatusCode).Detail)
-            .WithStatusCode((HttpStatusCode)exception.StatusCode)
-            .WithError(parameterName, errorMessage)
-            .Build();
+            if (string.IsNullOrWhiteSpace(parameterName))
+            {
+                return CreateFallbackResult(exception, statusCode, isDevelopment);
+            }
+
+            string errorMessage = exception.Message
+                .Replace("\\", string.Empty, StringComparison.InvariantCulture)
+                .Replace("\"", string.Empty, StringComparison.InvariantCulture);
+
+            return Result
+                .BadRequest()
+                .WithTitle(statusCode.Title)
+                .WithDetail(isDevelopment ? exception.ToString() : statusCode.Detail)
+                .WithStatusCode(statusCode)
+                .WithError(parameterName, errorMessage)
+                .Build();
+        }
+        catch (ArgumentOutOfRangeException)
+        {
+            return CreateFallbackResult(exception, statusCode, isDevelopment);
+        }
+
+        static Result CreateFallbackResult(
+            BadHttpRequestException exception,
+            HttpStatusCode statusCode,
+            bool isDevelopment)
+        {
+            return Result
+                .BadRequest()
+                .WithTitle(statusCode.Title)
+                .WithDetail(isDevelopment ? exception.ToString() : statusCode.Detail)
+                .WithStatusCode(statusCode)
+                .WithException(exception)
+                .Build();
+        }
     }
 
     /// <summary>

@@ -14,7 +14,6 @@
  * limitations under the License.
  *
 ********************************************************************************/
-using System.Collections.Immutable;
 using System.ComponentModel.DataAnnotations;
 using System.Results;
 
@@ -40,14 +39,14 @@ public sealed class ResultEndpointValidator(IValidatorProvider validatorProvider
         ArgumentNullException.ThrowIfNull(context);
         ArgumentNullException.ThrowIfNull(nextDelegate);
 
-        ImmutableHashSet<ArgumentDescriptor> arguments = GetArgumentDescriptors(context);
+        List<ArgumentDescriptor> arguments = GetArgumentDescriptors(context);
 
         if (arguments.Count == 0)
         {
             return await nextDelegate(context).ConfigureAwait(false);
         }
 
-        ImmutableHashSet<ValidatorDescriptor> validators = GetAppropriateValidators(arguments, validatorProvider);
+        List<ValidatorDescriptor> validators = GetAppropriateValidators(arguments, validatorProvider);
 
         Result result = await ApplyValidationAsync(validators).ConfigureAwait(false);
 
@@ -59,7 +58,7 @@ public sealed class ResultEndpointValidator(IValidatorProvider validatorProvider
         return await nextDelegate(context).ConfigureAwait(false);
     }
 
-    static async Task<Result> ApplyValidationAsync(ImmutableHashSet<ValidatorDescriptor> validators)
+    static async Task<Result> ApplyValidationAsync(List<ValidatorDescriptor> validators)
     {
         FailureResultBuilder failureBuilder = Result.BadRequest();
 
@@ -99,25 +98,33 @@ public sealed class ResultEndpointValidator(IValidatorProvider validatorProvider
         return failureBuilder.Build();
     }
 
-    static ImmutableHashSet<ArgumentDescriptor> GetArgumentDescriptors(EndpointFilterInvocationContext context)
+    static List<ArgumentDescriptor> GetArgumentDescriptors(EndpointFilterInvocationContext context)
     {
-        List<ArgumentDescriptor> arguments = [.. context
-            .Arguments
-            .OfType<IRequiresValidation>()
-            .Select((parameter, index) => new ArgumentDescriptor
-            {
-                Index = index,
-                Parameter = parameter,
-                ParameterType = parameter.GetType()
-            })];
+        List<ArgumentDescriptor> arguments = [];
+        int index = 0;
 
-        return [.. arguments];
+        foreach (object? arg in context.Arguments)
+        {
+            if (arg is IRequiresValidation parameter)
+            {
+                arguments.Add(new ArgumentDescriptor
+                {
+                    Index = index,
+                    Parameter = parameter,
+                    ParameterType = parameter.GetType()
+                });
+            }
+            index++;
+        }
+
+        return arguments;
     }
 
-    static ImmutableHashSet<ValidatorDescriptor> GetAppropriateValidators(
-        ImmutableHashSet<ArgumentDescriptor> arguments, IValidatorProvider provider)
+    static List<ValidatorDescriptor> GetAppropriateValidators(
+        List<ArgumentDescriptor> arguments, IValidatorProvider provider)
     {
-        List<ValidatorDescriptor> validators = [];
+        List<ValidatorDescriptor> validators = new(arguments.Count);
+
         foreach (ArgumentDescriptor argument in arguments)
         {
             IValidator? validator = provider.TryGetValidator(argument.ParameterType);
@@ -133,7 +140,7 @@ public sealed class ResultEndpointValidator(IValidatorProvider validatorProvider
             }
         }
 
-        return [.. validators];
+        return validators;
     }
 }
 
