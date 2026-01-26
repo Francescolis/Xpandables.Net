@@ -22,15 +22,17 @@ namespace System.Rests.Abstractions;
 public interface IRestRequestBuilder
 {
     /// <summary>
-    /// Asynchronously builds a REST request for the specified request object.
+    /// Asynchronously constructs a REST request based on the specified context information.
     /// </summary>
-    /// <typeparam name="TRestRequest">The type of the request object for which to build the REST request context. 
-    /// Must implement <see cref="IRestRequest"/>.</typeparam>
-    /// <param name="request">The request object for which to build the REST request context. Cannot be null.</param>
-    /// <param name="cancellationToken">A cancellation token that can be used to cancel the asynchronous operation.</param>
-    /// <returns>A value task that represents the asynchronous operation. The result contains a <see
-    /// cref="RestRequestContext"/> representing the context for the specified request.</returns>
-    /// <exception cref="InvalidOperationException">Thrown when the operation fails.</exception>
-    ValueTask<RestRequest> BuildRequestAsync<TRestRequest>(TRestRequest request, CancellationToken cancellationToken = default)
-        where TRestRequest : class, IRestRequest;
+    /// <remarks>This method does not send the request; it only prepares it for further processing. Handle
+    /// cancellation appropriately by monitoring the provided <paramref name="cancellationToken"/>.</remarks>
+    /// <param name="context">The context that provides details required to build the REST request, such as the target endpoint and request
+    /// parameters.</param>
+    /// <param name="cancellationToken">A token that can be used to cancel the asynchronous operation.</param>
+    /// <returns>A task that represents the asynchronous operation. The task result contains a <see cref="RestRequest"/>
+    /// representing the constructed REST request.</returns>
+    /// <exception cref="ArgumentNullException">Thrown when the <paramref name="context"/> is null.</exception>
+    /// <exception cref="OperationCanceledException">Thrown when the operation is canceled via the cancellation token.</exception>
+    /// <exception cref="InvalidOperationException">Thrown when the context cannot be composed into a valid response.</exception>
+    ValueTask<RestRequest> BuildRequestAsync(RestRequestContext context, CancellationToken cancellationToken = default);
 }

@@ -28,9 +28,16 @@ namespace System.Rests.RequestBuilders;
 /// Composes the request content for a REST API call based on the provided context. It serializes string content and adds
 /// it to the request message.
 /// </summary>
-public sealed class RestStringComposer<TRestRequest> : IRestRequestComposer<TRestRequest>
-    where TRestRequest : class, IRestString
+public sealed class RestStringComposer : IRestRequestComposer
 {
+    /// <inheritdoc/>
+    public bool CanCompose(RestRequestContext context)
+    {
+        ArgumentNullException.ThrowIfNull(context);
+        return context.Request is IRestString
+            && (context.Attribute.Location & Location.Body) == Location.Body
+            && context.Attribute.BodyFormat == BodyFormat.String;
+    }
     /// <inheritdoc/>
     [SuppressMessage("Reliability", "CA2000:Dispose objects before losing scope", Justification = "<Pending>")]
     public ValueTask ComposeAsync(RestRequestContext context, CancellationToken cancellationToken = default)
@@ -38,15 +45,15 @@ public sealed class RestStringComposer<TRestRequest> : IRestRequestComposer<TRes
         ArgumentNullException.ThrowIfNull(context);
         cancellationToken.ThrowIfCancellationRequested();
 
-        if ((context.Attribute.Location & Location.Body) != Location.Body
-            || context.Attribute.BodyFormat != BodyFormat.String)
+        if (!CanCompose(context))
         {
-            return ValueTask.CompletedTask;
+            throw new InvalidOperationException("The current composer cannot compose the given request context.");
         }
 
-        JsonTypeInfo<TRestRequest>? jsonTypeInfo = (JsonTypeInfo<TRestRequest>?)context.SerializerOptions.GetTypeInfo(typeof(TRestRequest))
+        Type requestType = context.Request.GetType();
+        JsonTypeInfo? jsonTypeInfo = (JsonTypeInfo?)context.SerializerOptions.GetTypeInfo(requestType)
             ?? throw new InvalidOperationException(
-                $"JsonTypeInfo for type '{typeof(TRestRequest)}' is not registered in the JsonSerializerOptions.");
+                $"JsonTypeInfo for type '{requestType}' is not registered in the JsonSerializerOptions.");
 
         StringContent content = new(
             JsonSerializer.Serialize(((IRestString)context.Request).GetStringContent(), jsonTypeInfo),

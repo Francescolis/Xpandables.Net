@@ -25,18 +25,25 @@ namespace System.Rests.RequestBuilders;
 /// Composes HTTP request headers from a given RestRequestContext. It adds headers based on the request's model name or
 /// directly from the header source.
 /// </summary>
-public sealed class RestHeaderComposer<TRestRequest> : IRestRequestComposer<TRestRequest>
-    where TRestRequest : class, IRestHeader
+public sealed class RestHeaderComposer : IRestRequestComposer
 {
+    /// <inheritdoc/>
+    public bool CanCompose(RestRequestContext context)
+    {
+        ArgumentNullException.ThrowIfNull(context);
+        return context.Request is IRestHeader
+            && context.Attribute.Location.HasFlag(Location.Header);
+    }
+
     /// <inheritdoc/>
     public ValueTask ComposeAsync(RestRequestContext context, CancellationToken cancellationToken = default)
     {
         ArgumentNullException.ThrowIfNull(context);
         cancellationToken.ThrowIfCancellationRequested();
 
-        if ((context.Attribute.Location & Location.Header) != Location.Header)
+        if (!CanCompose(context))
         {
-            return ValueTask.CompletedTask;
+            throw new InvalidOperationException("The current composer cannot compose the given request context.");
         }
 
         ElementCollection headerSource = ((IRestHeader)context.Request).GetHeaders();

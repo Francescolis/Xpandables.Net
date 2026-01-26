@@ -53,33 +53,6 @@ public sealed class RestAttributeProvider(IServiceProvider serviceProvider) : IR
         return GetRestAttributeFromType(request.GetType());
     }
 
-    /// <summary>
-    /// Retrieves the RestAttribute from a request without requiring a service provider.
-    /// </summary>
-    /// <remarks>
-    /// This static method only works for requests decorated with RestAttribute.
-    /// For requests that implement IRestAttributeBuilder, use the instance method instead.
-    /// </remarks>
-    /// <param name="request">The REST request for which to obtain the associated RestAttribute.</param>
-    /// <returns>The RestAttribute associated with the request.</returns>
-    /// <exception cref="InvalidOperationException">
-    /// Thrown if the request is not decorated with a RestAttribute or implements IRestAttributeBuilder
-    /// (which requires a service provider).
-    /// </exception>
-    public static RestAttribute GetRestAttributeFromRequest(IRestRequest request)
-    {
-        ArgumentNullException.ThrowIfNull(request);
-
-        if (request is IRestAttributeBuilder)
-        {
-            throw new InvalidOperationException(
-                $"Request implements {nameof(IRestAttributeBuilder)} and requires a service provider. " +
-                $"Use the instance method {nameof(GetRestAttribute)} instead.");
-        }
-
-        return GetRestAttributeFromType(request.GetType());
-    }
-
     private static RestAttribute GetRestAttributeFromType(Type requestType) =>
         requestType.GetCustomAttribute<RestAttribute>(true)
             ?? throw new InvalidOperationException(

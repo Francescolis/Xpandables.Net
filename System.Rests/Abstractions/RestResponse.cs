@@ -140,6 +140,18 @@ public abstract class Response : IDisposable
 /// exception.</remarks>
 public sealed class RestResponse : Response
 {
+    /// <summary>
+    /// Represents a static, read-only instance of an empty HTTP response with a status code of NoContent (204).
+    /// </summary>
+    /// <remarks>Use this instance as a default response when no content is available to return. The response
+    /// has an empty collection of headers and uses HTTP version 1.1.</remarks>
+    public static readonly RestResponse Empty = new()
+    {
+        StatusCode = HttpStatusCode.NoContent,
+        Headers = [],
+        Version = new Version(1, 1)
+    };
+
     /// <inheritdoc/>
     public sealed override bool IsGeneric => false;
 

@@ -25,35 +25,28 @@ using Microsoft.Extensions.Options;
 namespace System.Rests;
 
 /// <summary>
-/// Provides functionality for sending HTTP requests and receiving responses in a RESTful manner.
+/// Provides a client for sending HTTP requests and receiving HTTP responses from a RESTful service using customizable
+/// request and response builders.
 /// </summary>
-/// <param name="requestBuilder">The builder used to construct REST requests.</param>
-/// <param name="responseBuilder">The builder used to construct REST responses.</param>
-/// <param name="httpClient">The HTTP client used to send requests and receive responses.</param>
-/// <param name="options">The REST client options for timeout, retry, and logging configuration.</param>
-/// <param name="requestInterceptors">Optional collection of request interceptors.</param>
-/// <param name="responseInterceptors">Optional collection of response interceptors.</param>
-/// <param name="logger">Optional logger for request/response logging.</param>
-/// <remarks>
-/// The <see cref="HttpClient"/> is typically managed by the dependency injection container via 
-/// <see cref="IHttpClientFactory"/> and should not be disposed by the consumer.
-/// </remarks>
+/// <remarks>This client is designed for extensibility and can be customized through the use of different request
+/// and response builders, as well as attribute providers. It supports configurable timeouts and integrates with logging
+/// frameworks for monitoring and diagnostics.</remarks>
+/// <param name="requestBuilder">The builder responsible for constructing HTTP requests based on the provided request context.</param>
+/// <param name="responseBuilder">The builder responsible for constructing HTTP responses from the received response context.</param>
+/// <param name="httpClient">The HttpClient instance used to send HTTP requests and receive responses.</param>
+/// <param name="attributeProvider">The provider that supplies REST attributes for the request, influencing how the request is constructed.</param>
+/// <param name="options">Optional settings for configuring the RestClient's behavior, such as request timeouts.</param>
+/// <param name="logger">An optional logger for logging information, warnings, and errors during request processing.</param>
 public sealed partial class RestClient(
     IRestRequestBuilder requestBuilder,
     IRestResponseBuilder responseBuilder,
     HttpClient httpClient,
+    IRestAttributeProvider attributeProvider,
     IOptions<RestClientOptions>? options = null,
-    IEnumerable<IRestRequestInterceptor>? requestInterceptors = null,
-    IEnumerable<IRestResponseInterceptor>? responseInterceptors = null,
     ILogger<RestClient>? logger = null) : IRestClient
 {
+    private readonly IRestAttributeProvider _attributeProvider = attributeProvider;
     private readonly RestClientOptions _options = options?.Value ?? new RestClientOptions();
-    private readonly IRestRequestInterceptor[] _requestInterceptors = (requestInterceptors ?? [])
-        .OrderBy(i => i.Order)
-        .ToArray();
-    private readonly IRestResponseInterceptor[] _responseInterceptors = (responseInterceptors ?? [])
-        .OrderBy(i => i.Order)
-        .ToArray();
     private readonly ILogger<RestClient> _logger = logger ?? NullLogger<RestClient>.Instance;
 
     /// <inheritdoc />
@@ -72,31 +65,34 @@ public sealed partial class RestClient(
 
         try
         {
-            using RestRequest restRequest = await requestBuilder
-                .BuildRequestAsync(request, timeoutCts.Token)
-                .ConfigureAwait(false);
+            RestAttribute attribute = _attributeProvider.GetRestAttribute(request);
 
-            // Create context for interceptors
             RestRequestContext requestContext = new()
             {
-                Attribute = RestAttributeProvider.GetRestAttributeFromRequest(request),
-                Message = restRequest.HttpRequestMessage,
+                Attribute = attribute,
+                Message = new(),
                 Request = request,
-                SerializerOptions = RestSettings.SerializerOptions
+                SerializerOptions = RestSettings.SerializerOptions,
+                IsAborted = false
             };
 
-            // Execute request interceptors
-            RestResponse? shortCircuitResponse = await ExecuteRequestInterceptorsAsync(
-                requestContext, timeoutCts.Token).ConfigureAwait(false);
+            using RestRequest restRequest = await requestBuilder
+                .BuildRequestAsync(requestContext, timeoutCts.Token)
+                .ConfigureAwait(false);
 
-            if (shortCircuitResponse is not null)
+            if (requestContext.IsAborted)
             {
-                LogShortCircuitedResponse(_logger, request.Name, shortCircuitResponse.StatusCode);
-                return await ExecuteResponseInterceptorsAsync(
-                    shortCircuitResponse, request, timeoutCts.Token).ConfigureAwait(false);
+                LogRequestFailed(_logger, new OperationCanceledException("Request was aborted by a request interceptor."), request.Name);
+                return new RestResponse
+                {
+                    StatusCode = HttpStatusCode.RequestTimeout,
+                    Version = httpClient.DefaultRequestVersion,
+                    Headers = httpClient.DefaultRequestHeaders.ToElementCollection(),
+                    Exception = new OperationCanceledException("Request was aborted by a request interceptor.")
+                };
             }
 
-            LogSendingRequest(_logger, restRequest.HttpRequestMessage.Method, 
+            LogSendingRequest(_logger, restRequest.HttpRequestMessage.Method,
                 restRequest.HttpRequestMessage.RequestUri, request.Name);
 
             using HttpResponseMessage response = await httpClient
@@ -107,7 +103,8 @@ public sealed partial class RestClient(
             {
                 Message = response,
                 Request = request,
-                SerializerOptions = RestSettings.SerializerOptions
+                SerializerOptions = RestSettings.SerializerOptions,
+                IsAborted = requestContext.IsAborted
             };
 
             RestResponse restResponse = await responseBuilder
@@ -116,11 +113,10 @@ public sealed partial class RestClient(
 
             LogReceivedResponse(_logger, restResponse.StatusCode, request.Name);
 
-            // Execute response interceptors
-            return await ExecuteResponseInterceptorsAsync(
-                restResponse, request, timeoutCts.Token).ConfigureAwait(false);
+            return restResponse;
         }
-        catch (OperationCanceledException) when (timeoutCts.IsCancellationRequested && !cancellationToken.IsCancellationRequested)
+        catch (OperationCanceledException)
+            when (timeoutCts.IsCancellationRequested && !cancellationToken.IsCancellationRequested)
         {
             // Timeout occurred (not user cancellation)
             LogRequestTimeout(_logger, request.Name, _options.Timeout);
@@ -134,9 +130,7 @@ public sealed partial class RestClient(
             };
         }
         catch (Exception exception)
-            when (exception is not ArgumentNullException
-                and not OperationCanceledException
-                and not InvalidOperationException)
+            when (exception is not ArgumentNullException)
         {
             LogRequestFailed(_logger, exception, request.Name);
 
@@ -150,62 +144,16 @@ public sealed partial class RestClient(
         }
     }
 
-    private async ValueTask<RestResponse?> ExecuteRequestInterceptorsAsync(
-        RestRequestContext context,
-        CancellationToken cancellationToken)
-    {
-        foreach (var interceptor in _requestInterceptors)
-        {
-            cancellationToken.ThrowIfCancellationRequested();
 
-            RestResponse? response = await interceptor
-                .InterceptAsync(context, cancellationToken)
-                .ConfigureAwait(false);
+    [LoggerMessage(EventId = 1, Level = LogLevel.Information, Message = "Sending {Method} request to {Uri} for {RequestName}")]
+    private static partial void LogSendingRequest(ILogger logger, HttpMethod method, Uri? uri, string requestName);
 
-            if (response is not null)
-            {
-                LogInterceptorShortCircuit(_logger, context.Request.Name, interceptor.GetType().Name);
-                return response;
-            }
-        }
+    [LoggerMessage(EventId = 2, Level = LogLevel.Information, Message = "Received {StatusCode} response for {RequestName}")]
+    private static partial void LogReceivedResponse(ILogger logger, HttpStatusCode statusCode, string requestName);
 
-        return null;
-    }
+    [LoggerMessage(EventId = 4, Level = LogLevel.Warning, Message = "Request {RequestName} timed out after {Timeout}")]
+    private static partial void LogRequestTimeout(ILogger logger, string requestName, TimeSpan timeout);
 
-    private async ValueTask<RestResponse> ExecuteResponseInterceptorsAsync(
-        RestResponse response,
-        IRestRequest request,
-        CancellationToken cancellationToken)
-    {
-        RestResponse currentResponse = response;
-
-        foreach (var interceptor in _responseInterceptors)
-        {
-            cancellationToken.ThrowIfCancellationRequested();
-
-            currentResponse = await interceptor
-                .InterceptAsync(currentResponse, request, cancellationToken)
-                .ConfigureAwait(false);
-        }
-
-        return currentResponse;
-    }
-
-        [LoggerMessage(EventId = 1, Level = LogLevel.Information, Message = "Sending {Method} request to {Uri} for {RequestName}")]
-        private static partial void LogSendingRequest(ILogger logger, HttpMethod method, Uri? uri, string requestName);
-
-        [LoggerMessage(EventId = 2, Level = LogLevel.Information, Message = "Received {StatusCode} response for {RequestName}")]
-        private static partial void LogReceivedResponse(ILogger logger, HttpStatusCode statusCode, string requestName);
-
-        [LoggerMessage(EventId = 3, Level = LogLevel.Information, Message = "Request {RequestName} short-circuited with status {StatusCode}")]
-        private static partial void LogShortCircuitedResponse(ILogger logger, string requestName, HttpStatusCode statusCode);
-
-        [LoggerMessage(EventId = 4, Level = LogLevel.Warning, Message = "Request {RequestName} timed out after {Timeout}")]
-        private static partial void LogRequestTimeout(ILogger logger, string requestName, TimeSpan timeout);
-
-        [LoggerMessage(EventId = 5, Level = LogLevel.Error, Message = "Request {RequestName} failed with exception")]
-        private static partial void LogRequestFailed(ILogger logger, Exception exception, string requestName);
-
-        [LoggerMessage(EventId = 6, Level = LogLevel.Debug, Message = "Request {RequestName} short-circuited by interceptor {InterceptorType}")]
-        private static partial void LogInterceptorShortCircuit(ILogger logger, string requestName, string interceptorType);
-    }
+    [LoggerMessage(EventId = 5, Level = LogLevel.Error, Message = "Request {RequestName} failed with exception")]
+    private static partial void LogRequestFailed(ILogger logger, Exception exception, string requestName);
+}

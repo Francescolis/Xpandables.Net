@@ -24,19 +24,26 @@ namespace System.Rests.RequestBuilders;
 /// Composes the HTTP request body as a byte array based on the provided context. It handles both multipart and single
 /// content types.
 /// </summary>
-public sealed class RestByteArrayComposer<TRestRequest> : IRestRequestComposer<TRestRequest>
-    where TRestRequest : class, IRestByteArray
+public sealed class RestByteArrayComposer : IRestRequestComposer
 {
+    /// <inheritdoc/>
+    public bool CanCompose(RestRequestContext context)
+    {
+        ArgumentNullException.ThrowIfNull(context);
+        return context.Request is IRestByteArray
+            && (context.Attribute.Location & Location.Body) == Location.Body
+             && context.Attribute.BodyFormat == BodyFormat.ByteArray;
+    }
+
     /// <inheritdoc/>
     public ValueTask ComposeAsync(RestRequestContext context, CancellationToken cancellationToken = default)
     {
         ArgumentNullException.ThrowIfNull(context);
         cancellationToken.ThrowIfCancellationRequested();
 
-        if ((context.Attribute.Location & Location.Body) != Location.Body
-             || context.Attribute.BodyFormat != BodyFormat.ByteArray)
+        if (!CanCompose(context))
         {
-            return ValueTask.CompletedTask;
+            throw new InvalidOperationException("The current composer cannot compose the given request context.");
         }
 
         ByteArrayContent byteArray = ((IRestByteArray)context.Request).GetByteArrayContent();

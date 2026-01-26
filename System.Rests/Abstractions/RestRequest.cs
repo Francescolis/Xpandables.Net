@@ -24,6 +24,16 @@ namespace System.Rests.Abstractions;
 public sealed class RestRequest : IDisposable
 {
     /// <summary>
+    /// Represents a pre-initialized, empty REST request with a default HTTP request message.
+    /// </summary>
+    /// <remarks>Use this static instance as a placeholder in scenarios where a non-null, empty request is
+    /// required. This can help prevent null reference exceptions when no specific request data is needed.</remarks>
+    public static readonly RestRequest Empty = new()
+    {
+        HttpRequestMessage = new HttpRequestMessage()
+    };
+
+    /// <summary>
     /// Gets the HTTP request message associated with this operation.
     /// </summary>
     /// <remarks>Use this property to access or inspect the underlying HTTP request, including its headers,

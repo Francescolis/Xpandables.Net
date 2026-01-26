@@ -244,17 +244,17 @@ public static class IRestsExtensions
         /// enables further configuration of the service collection.</returns>
         public IServiceCollection AddXRestRequestComposers() =>
             services
-                .AddTransient(typeof(IRestRequestComposer<>), typeof(RestPatchComposer<>))
-                .AddTransient(typeof(IRestRequestComposer<>), typeof(RestQueryStringComposer<>))
-                .AddTransient(typeof(IRestRequestComposer<>), typeof(RestCookieComposer<>))
-                .AddTransient(typeof(IRestRequestComposer<>), typeof(RestHeaderComposer<>))
-                .AddTransient(typeof(IRestRequestComposer<>), typeof(RestBasicAuthComposer<>))
-                .AddTransient(typeof(IRestRequestComposer<>), typeof(RestByteArrayComposer<>))
-                .AddTransient(typeof(IRestRequestComposer<>), typeof(RestFormUrlEncodedComposer<>))
-                .AddTransient(typeof(IRestRequestComposer<>), typeof(RestMultipartComposer<>))
-                .AddTransient(typeof(IRestRequestComposer<>), typeof(RestStreamComposer<>))
-                .AddTransient(typeof(IRestRequestComposer<>), typeof(RestPathStringComposer<>))
-                .AddTransient(typeof(IRestRequestComposer<>), typeof(RestStringComposer<>));
+                .AddTransient<IRestRequestComposer, RestPatchComposer>()
+                .AddTransient<IRestRequestComposer, RestQueryStringComposer>()
+                .AddTransient<IRestRequestComposer, RestCookieComposer>()
+                .AddTransient<IRestRequestComposer, RestHeaderComposer>()
+                .AddTransient<IRestRequestComposer, RestBasicAuthComposer>()
+                .AddTransient<IRestRequestComposer, RestByteArrayComposer>()
+                .AddTransient<IRestRequestComposer, RestFormUrlEncodedComposer>()
+                .AddTransient<IRestRequestComposer, RestMultipartComposer>()
+                .AddTransient<IRestRequestComposer, RestStreamComposer>()
+                .AddTransient<IRestRequestComposer, RestPathStringComposer>()
+                .AddTransient<IRestRequestComposer, RestStringComposer>();
 
         /// <summary>
         /// Registers the default REST response composer services required for XRest in the dependency injection

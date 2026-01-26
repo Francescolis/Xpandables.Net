@@ -24,19 +24,26 @@ namespace System.Rests.RequestBuilders;
 /// Composes the HTTP request body as URL-encoded form data based on the request context. It adds the content to the
 /// message or a multipart form.
 /// </summary>
-public sealed class RestFormUrlEncodedComposer<TRestRequest> : IRestRequestComposer<TRestRequest>
-    where TRestRequest : class, IRestFormUrlEncoded
+public sealed class RestFormUrlEncodedComposer : IRestRequestComposer
 {
+    /// <inheritdoc/>
+    public bool CanCompose(RestRequestContext context)
+    {
+        ArgumentNullException.ThrowIfNull(context);
+        return context.Request is IRestFormUrlEncoded
+            && (context.Attribute.Location & Location.Body) == Location.Body
+            && context.Attribute.BodyFormat == BodyFormat.FormUrlEncoded;
+    }
+
     /// <inheritdoc/>
     public ValueTask ComposeAsync(RestRequestContext context, CancellationToken cancellationToken = default)
     {
         ArgumentNullException.ThrowIfNull(context);
         cancellationToken.ThrowIfCancellationRequested();
 
-        if ((context.Attribute.Location & Location.Body) != Location.Body
-            || context.Attribute.BodyFormat != BodyFormat.FormUrlEncoded)
+        if (!CanCompose(context))
         {
-            return ValueTask.CompletedTask;
+            throw new InvalidOperationException("The current composer cannot compose the given request context.");
         }
 
         FormUrlEncodedContent content = ((IRestFormUrlEncoded)context.Request).GetFormUrlEncodedContent();

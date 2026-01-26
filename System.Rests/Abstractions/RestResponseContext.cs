@@ -39,39 +39,10 @@ public class RestResponseContext
     public required JsonSerializerOptions SerializerOptions { get; init; }
 
     /// <summary>
-    /// Creates a new instance of the generic RestResponseContext with the specified request type, copying relevant data
-    /// from an existing context.
+    /// Gets a value indicating whether the operation was aborted before completion.
     /// </summary>
-    /// <remarks>Use this method when you need to create a strongly-typed response context from an existing
-    /// context with a compatible request type. The method casts the request from the original context to the specified
-    /// type parameter.</remarks>
-    /// <typeparam name="TRequest">The type of the request to associate with the new context. Must implement IRestRequest and cannot be null.</typeparam>
-    /// <param name="context">The existing RestResponseContext instance from which to copy the request, message, and serializer options.
-    /// Cannot be null.</param>
-    /// <returns>A new RestResponseContext instance with the request cast to the specified type and other properties copied from
-    /// the provided context.</returns>
-    public static RestResponseContext<TRequest> Create<TRequest>(RestResponseContext context)
-        where TRequest : notnull, IRestRequest
-    {
-        ArgumentNullException.ThrowIfNull(context);
-
-        return new()
-        {
-            Request = (TRequest)context.Request,
-            Message = context.Message,
-            SerializerOptions = context.SerializerOptions
-        };
-    }
+    /// <remarks>Use this property to determine if the operation did not complete as intended due to an abort
+    /// request. This can be useful for handling cleanup or alternative logic when an operation is
+    /// interrupted.</remarks>
+    public required bool IsAborted { get; init; }
 }
-
-/// <summary>
-/// Provides response context information for a REST operation, including strongly-typed access to the originating
-/// request.
-/// </summary>
-/// <remarks>Use this class to access both generic response context and the specific request that initiated the
-/// REST operation. This is useful when handling responses that require information about the original request, such as
-/// for logging, error handling, or correlation purposes.</remarks>
-/// <typeparam name="TRequest">The type of the REST request associated with the response. Must implement <see cref="IRestRequest"/> and cannot be
-/// null.</typeparam>
-public class RestResponseContext<TRequest> : RestResponseContext
-    where TRequest : notnull, IRestRequest;

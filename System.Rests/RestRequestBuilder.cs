@@ -19,54 +19,58 @@ using System.Globalization;
 using System.Net.Http.Headers;
 using System.Rests.Abstractions;
 
-using Microsoft.Extensions.DependencyInjection;
+using Microsoft.Extensions.Logging;
+using Microsoft.Extensions.Logging.Abstractions;
 
 namespace System.Rests;
 
 /// <summary>
-/// Provides a builder for creating REST requests by composing multiple request composers and applying REST-specific
-/// attributes.
+/// Provides a builder for constructing REST requests using a configurable set of composers and interceptors.
 /// </summary>
-/// <param name="attributeProvider">An object that supplies REST attribute metadata for the request type.</param>
-/// <param name="serviceProvider">The service provider used to resolve dependencies, such as request composers.</param>
-public sealed class RestRequestBuilder(
-    IRestAttributeProvider attributeProvider,
-    IServiceProvider serviceProvider) : IRestRequestBuilder
+/// <remarks>The RestRequestBuilder enables flexible and extensible construction of HTTP requests by applying a
+/// pipeline of composers and interceptors. This design allows for customization of request creation, including
+/// pre-processing, validation, and logging. If no composer is able to handle the provided context, an exception is
+/// thrown. Interceptors can short-circuit the request building process by marking the context as aborted.</remarks>
+/// <param name="composers">An enumerable collection of request composers that define how to construct the REST request based on the provided
+/// context. Cannot be null and must contain at least one composer capable of handling the request context.</param>
+/// <param name="logger">An optional logger used to record informational messages and errors during the request building process. If not
+/// specified, a no-op logger is used.</param>
+/// <param name="requestInterceptors">An optional enumerable collection of request interceptors that can inspect or modify the request context before the
+/// request is built. Interceptors are executed in order of their specified priority.</param>
+public sealed partial class RestRequestBuilder(
+    IEnumerable<IRestRequestComposer> composers,
+    ILogger<RestRequestBuilder>? logger = null,
+    IEnumerable<IRestRequestInterceptor>? requestInterceptors = null) : IRestRequestBuilder
 {
-    private readonly IRestAttributeProvider _attributeProvider = attributeProvider;
+    private readonly IRestRequestInterceptor[] _requestInterceptors = [.. (requestInterceptors ?? []).OrderBy(i => i.Order)];
+    private readonly ILogger<RestRequestBuilder> _logger = logger ?? NullLogger<RestRequestBuilder>.Instance;
 
     /// <inheritdoc />
     [SuppressMessage("Reliability", "CA2000:Dispose objects before losing scope", Justification = "<Pending>")]
-    public async ValueTask<RestRequest> BuildRequestAsync<TRestRequest>(TRestRequest request,
+    public async ValueTask<RestRequest> BuildRequestAsync(
+        RestRequestContext context,
         CancellationToken cancellationToken = default)
-        where TRestRequest : class, IRestRequest
     {
-        ArgumentNullException.ThrowIfNull(request);
+        ArgumentNullException.ThrowIfNull(context);
 
-        RestAttribute attribute = _attributeProvider.GetRestAttribute(request);
-        IEnumerable<IRestRequestComposer<TRestRequest>> composers = [.. serviceProvider.GetServices<IRestRequestComposer<TRestRequest>>()];
-
-        cancellationToken.ThrowIfCancellationRequested();
-
-        if (!composers.Any())
+        await ExecuteRequestInterceptorsAsync(context, cancellationToken).ConfigureAwait(false);
+        if (context.IsAborted)
         {
-            throw new InvalidOperationException(
-                $"No request builder found for the request type {request.GetType()}.");
+            return RestRequest.Empty;
         }
 
-        HttpRequestMessage message = InitializeHttpRequestMessage(attribute);
+        List<IRestRequestComposer> requestComposers = [.. composers.Where(c => c.CanCompose(context))];
 
+        if (requestComposers.Count == 0)
+        {
+            throw new InvalidOperationException(
+                $"No request builder found for the request type {context.Request.GetType()}.");
+        }
+
+        HttpRequestMessage message = InitializeHttpRequestMessage(context.Attribute);
         cancellationToken.ThrowIfCancellationRequested();
 
-        RestRequestContext context = new()
-        {
-            Attribute = attribute,
-            Message = message,
-            Request = request,
-            SerializerOptions = RestSettings.SerializerOptions
-        };
-
-        foreach (IRestRequestComposer<TRestRequest> composer in composers)
+        foreach (IRestRequestComposer composer in requestComposers)
         {
             await composer.ComposeAsync(context, cancellationToken).ConfigureAwait(false);
         }
@@ -141,4 +145,26 @@ public sealed class RestRequestBuilder(
             RestSettings.Method.CONNECT => new HttpMethod(nameof(RestSettings.Method.CONNECT)),
             _ => throw new ArgumentOutOfRangeException(nameof(method), method, "Unsupported HTTP method.")
         };
+
+    private async ValueTask ExecuteRequestInterceptorsAsync(
+         RestRequestContext context,
+         CancellationToken cancellationToken)
+    {
+        foreach (var interceptor in _requestInterceptors)
+        {
+            cancellationToken.ThrowIfCancellationRequested();
+
+            await interceptor
+                .InterceptAsync(context, cancellationToken)
+                .ConfigureAwait(false);
+
+            if (context.IsAborted)
+            {
+                LogInterceptorShortCircuit(_logger, context.Request.Name, interceptor.GetType().Name);
+            }
+        }
+    }
+
+    [LoggerMessage(EventId = 6, Level = LogLevel.Debug, Message = "Request {RequestName} short-circuited by interceptor {InterceptorType}")]
+    private static partial void LogInterceptorShortCircuit(ILogger logger, string requestName, string interceptorType);
 }

@@ -25,19 +25,24 @@ namespace System.Rests.RequestBuilders;
 /// Composes the authorization header for basic authentication in a REST request. It checks the context for basic
 /// authentication location.
 /// </summary>
-public sealed class RestBasicAuthComposer<TRestRequest> : IRestRequestComposer<TRestRequest>
-    where TRestRequest : class, IRestBasicAuthentication
+public sealed class RestBasicAuthComposer : IRestRequestComposer
 {
+    /// <inheritdoc/>
+    public bool CanCompose(RestRequestContext context)
+    {
+        ArgumentNullException.ThrowIfNull(context);
+        return context.Request is IRestBasicAuthentication
+            && (context.Attribute.Location & Location.BasicAuth) == Location.BasicAuth;
+    }
+
     /// <inheritdoc/>
     public ValueTask ComposeAsync(RestRequestContext context, CancellationToken cancellationToken = default)
     {
         ArgumentNullException.ThrowIfNull(context);
         cancellationToken.ThrowIfCancellationRequested();
 
-        if ((context.Attribute.Location & Location.BasicAuth) != Location.BasicAuth)
-        {
-            return ValueTask.CompletedTask;
-        }
+        if (!CanCompose(context))
+            throw new InvalidOperationException("The current composer cannot compose the given request context.");
 
         AuthenticationHeaderValue value = ((IRestBasicAuthentication)context.Request).GetAuthenticationHeaderValue();
 

@@ -28,9 +28,18 @@ namespace System.Rests.RequestBuilders;
 /// Composes the HTTP request body for a PATCH operation based on the provided context. It serializes patch operations
 /// into a StringContent.
 /// </summary>
-public sealed class RestPatchComposer<TRestRequest> : IRestRequestComposer<TRestRequest>
-    where TRestRequest : class, IRestPatch
+public sealed class RestPatchComposer : IRestRequestComposer
 {
+    /// <inheritdoc/>
+    public bool CanCompose(RestRequestContext context)
+    {
+        ArgumentNullException.ThrowIfNull(context);
+        return context.Request is IRestPatch
+            && (context.Attribute.Location & Location.Body) == Location.Body
+            && context.Attribute.BodyFormat == BodyFormat.String
+            && context.Request is IRestPatch;
+    }
+
     /// <inheritdoc/>
     [SuppressMessage("Reliability", "CA2000:Dispose objects before losing scope", Justification = "<Pending>")]
     public ValueTask ComposeAsync(RestRequestContext context, CancellationToken cancellationToken = default)
@@ -38,10 +47,9 @@ public sealed class RestPatchComposer<TRestRequest> : IRestRequestComposer<TRest
         ArgumentNullException.ThrowIfNull(context);
         cancellationToken.ThrowIfCancellationRequested();
 
-        if ((context.Attribute.Location & Location.Body) != Location.Body
-            || context.Attribute.BodyFormat != BodyFormat.String)
+        if (!CanCompose(context))
         {
-            return ValueTask.CompletedTask;
+            throw new InvalidOperationException("The current composer cannot compose the given request context.");
         }
 
         JsonSerializerOptions options = context.SerializerOptions;

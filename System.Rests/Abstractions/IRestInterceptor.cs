@@ -42,7 +42,7 @@ public interface IRestRequestInterceptor
     /// - <c>null</c> to continue with the request pipeline
     /// - A <see cref="RestResponse"/> to short-circuit and skip the actual HTTP request
     /// </returns>
-    ValueTask<RestResponse?> InterceptAsync(RestRequestContext context, CancellationToken cancellationToken = default);
+    ValueTask InterceptAsync(RestRequestContext context, CancellationToken cancellationToken = default);
 }
 
 /// <summary>
@@ -65,14 +65,14 @@ public interface IRestResponseInterceptor
     /// <summary>
     /// Intercepts a REST response after it is received.
     /// </summary>
-    /// <param name="response">The response received from the server or from a previous interceptor.</param>
-    /// <param name="request">The original request that was sent.</param>
+    /// <param name="context">The response context containing the HTTP response message and metadata.</param>
+    /// <param name="response">The original REST response.</param>
     /// <param name="cancellationToken">A cancellation token to observe.</param>
     /// <returns>
     /// A <see cref="ValueTask{RestResponse}"/> containing the potentially modified response.
     /// </returns>
     ValueTask<RestResponse> InterceptAsync(
+        RestResponseContext context,
         RestResponse response,
-        IRestRequest request,
         CancellationToken cancellationToken = default);
 }

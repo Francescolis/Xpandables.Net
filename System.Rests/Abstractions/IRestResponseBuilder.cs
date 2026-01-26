@@ -22,13 +22,15 @@ namespace System.Rests.Abstractions;
 public interface IRestResponseBuilder
 {
     /// <summary>
-    /// Asynchronously builds a response based on the provided HTTP response message.
+    /// Asynchronously constructs and sends a response using the specified context information.
     /// </summary>
-    /// <param name="context"> The REST response context used to create the response.</param>
-    /// <param name="cancellationToken">Used to signal the cancellation of the asynchronous operation.</param>
-    /// <returns>Returns a task that represents the asynchronous operation, containing the constructed response.</returns>
-    /// <exception cref="InvalidOperationException">Thrown when the operation fails.</exception>
-    ValueTask<RestResponse> BuildResponseAsync(
-        RestResponseContext context,
-        CancellationToken cancellationToken = default);
+    /// <remarks>This method may throw exceptions if the provided context is invalid or if the operation is
+    /// canceled via the cancellation token.</remarks>
+    /// <param name="context">The context that provides the data and settings required to build the response. Cannot be null.</param>
+    /// <param name="cancellationToken">A token that can be used to cancel the asynchronous operation.</param>
+    /// <returns>A value task that represents the asynchronous operation of building and sending the response.</returns>
+    /// <exception cref="ArgumentNullException">Thrown when the <paramref name="context"/> is null.</exception>
+    /// <exception cref="OperationCanceledException">Thrown when the operation is canceled via the cancellation token.</exception>
+    /// <exception cref="InvalidOperationException">Thrown when the context cannot be composed into a valid response.</exception>
+    ValueTask<RestResponse> BuildResponseAsync(RestResponseContext context, CancellationToken cancellationToken = default);
 }

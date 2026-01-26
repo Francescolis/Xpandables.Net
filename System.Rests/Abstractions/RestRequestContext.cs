@@ -46,4 +46,12 @@ public sealed class RestRequestContext
     /// It is a required property that must be initialized.
     /// </summary>
     public required JsonSerializerOptions SerializerOptions { get; init; }
+
+    /// <summary>
+    /// Gets or sets a value indicating whether the operation has been aborted.
+    /// </summary>
+    /// <remarks>If set to <see langword="true"/>, the operation was terminated before completion. This
+    /// property can be used to check the current state of the operation and may affect subsequent processing or state
+    /// management.</remarks>
+    public required bool IsAborted { get; set; }
 }

@@ -26,18 +26,25 @@ namespace System.Rests.RequestBuilders;
 /// Composes the query string for a REST request based on the provided context. Updates the request URI with the
 /// constructed query string.
 /// </summary>
-public sealed class RestQueryStringComposer<TRestRequest> : IRestRequestComposer<TRestRequest>
-    where TRestRequest : class, IRestQueryString
+public sealed class RestQueryStringComposer : IRestRequestComposer
 {
+    /// <inheritdoc/>
+    public bool CanCompose(RestRequestContext context)
+    {
+        ArgumentNullException.ThrowIfNull(context);
+        return context.Request is IRestQueryString
+            && (context.Attribute.Location & Location.Query) == Location.Query;
+    }
+
     /// <inheritdoc/>
     public ValueTask ComposeAsync(RestRequestContext context, CancellationToken cancellationToken = default)
     {
         ArgumentNullException.ThrowIfNull(context);
         cancellationToken.ThrowIfCancellationRequested();
 
-        if ((context.Attribute.Location & Location.Query) != Location.Query)
+        if (!CanCompose(context))
         {
-            return ValueTask.CompletedTask;
+            throw new InvalidOperationException("The current composer cannot compose the given request context.");
         }
 
         IDictionary<string, string?>? queryString = ((IRestQueryString)context.Request).GetQueryString();

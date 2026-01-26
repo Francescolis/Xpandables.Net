@@ -24,19 +24,26 @@ namespace System.Rests.RequestBuilders;
 /// Composes the request content for HTTP requests based on the provided context. It handles stream content and multipart
 /// form data.
 /// </summary>
-public sealed class RestStreamComposer<TRestRequest> : IRestRequestComposer<TRestRequest>
-    where TRestRequest : class, IRestStream
+public sealed class RestStreamComposer : IRestRequestComposer
 {
+    /// <inheritdoc/>
+    public bool CanCompose(RestRequestContext context)
+    {
+        ArgumentNullException.ThrowIfNull(context);
+        return context.Request is IRestStream
+            && (context.Attribute.Location & Location.Body) == Location.Body
+            && context.Attribute.BodyFormat == BodyFormat.Stream;
+    }
+
     /// <inheritdoc/>
     public ValueTask ComposeAsync(RestRequestContext context, CancellationToken cancellationToken = default)
     {
         ArgumentNullException.ThrowIfNull(context);
         cancellationToken.ThrowIfCancellationRequested();
 
-        if ((context.Attribute.Location & Location.Body) != Location.Body
-            || context.Attribute.BodyFormat != BodyFormat.Stream)
+        if (!CanCompose(context))
         {
-            return ValueTask.CompletedTask;
+            throw new InvalidOperationException("The current composer cannot compose the given request context.");
         }
 
         StreamContent streamContent = ((IRestStream)context.Request).GetStreamContent();

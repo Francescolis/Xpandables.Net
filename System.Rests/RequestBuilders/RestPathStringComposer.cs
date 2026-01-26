@@ -25,18 +25,25 @@ namespace System.Rests.RequestBuilders;
 /// Composes a request URI by adding path string parameters from the request context. It modifies the base path with
 /// provided parameters.
 /// </summary>
-public sealed class RestPathStringComposer<TRestRequest> : IRestRequestComposer<TRestRequest>
-    where TRestRequest : class, IRestPathString
+public sealed class RestPathStringComposer : IRestRequestComposer
 {
+    /// <inheritdoc/>
+    public bool CanCompose(RestRequestContext context)
+    {
+        ArgumentNullException.ThrowIfNull(context);
+        return context.Request is IRestPathString
+            && (context.Attribute.Location & Location.Path) == Location.Path;
+    }
+
     /// <inheritdoc/>
     public ValueTask ComposeAsync(RestRequestContext context, CancellationToken cancellationToken = default)
     {
         ArgumentNullException.ThrowIfNull(context);
         cancellationToken.ThrowIfCancellationRequested();
 
-        if ((context.Attribute.Location & Location.Path) != Location.Path)
+        if (!CanCompose(context))
         {
-            return ValueTask.CompletedTask;
+            throw new InvalidOperationException("The current composer cannot compose the given request context.");
         }
 
         IDictionary<string, string> pathString = ((IRestPathString)context.Request).GetPathString();

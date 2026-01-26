@@ -24,19 +24,26 @@ namespace System.Rests.RequestBuilders;
 /// Composes a multipart HTTP request body if the context specifies a body location and multipart format. It sets the
 /// request content accordingly.
 /// </summary>
-public sealed class RestMultipartComposer<TRestRequest> : IRestRequestComposer<TRestRequest>
-    where TRestRequest : class, IRestMultipart
+public sealed class RestMultipartComposer : IRestRequestComposer
 {
+    /// <inheritdoc/>
+    public bool CanCompose(RestRequestContext context)
+    {
+        ArgumentNullException.ThrowIfNull(context);
+        return context.Request is IRestMultipart
+            && (context.Attribute.Location & Location.Body) == Location.Body
+            && context.Attribute.BodyFormat == BodyFormat.Multipart;
+    }
+
     /// <inheritdoc/>
     public ValueTask ComposeAsync(RestRequestContext context, CancellationToken cancellationToken = default)
     {
         ArgumentNullException.ThrowIfNull(context);
         cancellationToken.ThrowIfCancellationRequested();
 
-        if ((context.Attribute.Location & Location.Body) != Location.Body
-            || context.Attribute.BodyFormat != BodyFormat.Multipart)
+        if (!CanCompose(context))
         {
-            return ValueTask.CompletedTask;
+            throw new InvalidOperationException("The current composer cannot compose the given request context.");
         }
 
         MultipartFormDataContent content = ((IRestMultipart)context.Request).GetMultipartContent();

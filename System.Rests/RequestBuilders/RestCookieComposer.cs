@@ -24,18 +24,25 @@ namespace System.Rests.RequestBuilders;
 /// Composes cookies from the request context if the location is set to Cookie. 
 /// It adds each cookie to the message options.
 /// </summary>
-public sealed class RestCookieComposer<TRestRequest> : IRestRequestComposer<TRestRequest>
-    where TRestRequest : class, IRestCookie
+public sealed class RestCookieComposer : IRestRequestComposer
 {
+    /// <inheritdoc/>
+    public bool CanCompose(RestRequestContext context)
+    {
+        ArgumentNullException.ThrowIfNull(context);
+        return context.Request is IRestCookie
+            && (context.Attribute.Location & Location.Cookie) == Location.Cookie;
+    }
+
     /// <inheritdoc/>
     public ValueTask ComposeAsync(RestRequestContext context, CancellationToken cancellationToken = default)
     {
         ArgumentNullException.ThrowIfNull(context);
         cancellationToken.ThrowIfCancellationRequested();
 
-        if ((context.Attribute.Location & Location.Cookie) != Location.Cookie)
+        if (!CanCompose(context))
         {
-            return ValueTask.CompletedTask;
+            throw new InvalidOperationException("The current composer cannot compose the given request context.");
         }
 
         IDictionary<string, object?> cookieSource
