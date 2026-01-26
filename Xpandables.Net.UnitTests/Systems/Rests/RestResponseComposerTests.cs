@@ -242,7 +242,8 @@ public sealed class RestResponseComposerTests
     {
         Request = request,
         Message = message,
-        SerializerOptions = options ?? CreateSerializerOptions()
+        SerializerOptions = options ?? CreateSerializerOptions(),
+        IsAborted = false
     };
 
     private static JsonSerializerOptions CreateSerializerOptions() => new(JsonSerializerDefaults.Web)

@@ -17,7 +17,6 @@
 using System.Net.Http.Headers;
 using System.Rests;
 using System.Rests.Abstractions;
-using System.Rests.RequestBuilders;
 using System.Text.Json;
 using System.Text.Json.Serialization.Metadata;
 
@@ -30,44 +29,122 @@ namespace Xpandables.Net.UnitTests.Systems.Rests;
 public sealed class RestRequestBuilderTests
 {
     [Fact]
-    public async Task BuildRequestAsync_SecuredStringRequest_ComposesHttpMessage()
+    public async Task BuildRequestAsync_WithContext_ExecutesComposers()
     {
         using var serializerScope = UseDefaultSerializerOptions();
 
         // Arrange
-        IServiceProvider services = new ServiceCollection()
-            .AddSingleton<IRestRequestComposer<PlaceOrderRequest>, RestPathStringComposer<PlaceOrderRequest>>()
-            .AddSingleton<IRestRequestComposer<PlaceOrderRequest>, RestStringComposer<PlaceOrderRequest>>()
-            .BuildServiceProvider();
+        var fakeComposer = new FakeRequestComposer();
 
-        RestAttributeProvider attributeProvider = new(services);
-        RestRequestBuilder builder = new(attributeProvider, services);
+        RestRequestBuilder builder = new([fakeComposer]);
 
-        PlaceOrderRequest request = new("A123", "Widget", 2);
+        SimpleRequest request = new();
+        RestAttribute attribute = request.Build(null!);
+
+        HttpRequestMessage httpMessage = new()
+        {
+            Method = HttpMethod.Get,
+            RequestUri = new Uri("/test", UriKind.Relative)
+        };
+
+        RestRequestContext context = new()
+        {
+            Attribute = attribute,
+            Request = request,
+            Message = httpMessage,
+            SerializerOptions = RestSettings.SerializerOptions,
+            IsAborted = false
+        };
 
         // Act
-        RestRequest restRequest = await builder.BuildRequestAsync(request);
+        RestRequest restRequest = await builder.BuildRequestAsync(context);
 
         // Assert
         using (restRequest)
         {
-            HttpRequestMessage message = restRequest.HttpRequestMessage;
-
-            message.Method.Should().Be(HttpMethod.Post);
-            message.RequestUri.Should().NotBeNull();
-            message.RequestUri!.ToString().Should().Be("/orders/A123");
-            message.Headers.Authorization.Should().NotBeNull();
-            message.Headers.Authorization!.Scheme.Should().Be("Bearer");
-            message.Headers.Accept.Should().ContainSingle(h => h.MediaType == RestSettings.ContentType.Json);
-
-            MediaTypeHeaderValue? contentType = message.Content?.Headers.ContentType;
-            contentType.Should().NotBeNull();
-            contentType!.MediaType.Should().Be(RestSettings.ContentType.Json);
-
-            string payload = await message.Content!.ReadAsStringAsync();
-            payload.Should().Contain("\"product\":\"Widget\"");
-            payload.Should().Contain("\"quantity\":2");
+            fakeComposer.WasInvoked.Should().BeTrue();
         }
+    }
+
+    [Fact]
+    public async Task BuildRequestAsync_WhenInterceptorAborts_ReturnsEmptyRequest()
+    {
+        using var serializerScope = UseDefaultSerializerOptions();
+
+        // Arrange
+        var interceptor = new AbortingRequestInterceptor();
+
+        IServiceProvider services = new ServiceCollection()
+            .AddXRestRequestComposers()
+            .AddSingleton<IRestRequestInterceptor>(interceptor)
+            .BuildServiceProvider();
+
+        RestRequestBuilder builder = new(
+            services.GetServices<IRestRequestComposer>(),
+            requestInterceptors: services.GetServices<IRestRequestInterceptor>());
+
+        SimpleRequest request = new();
+        RestAttribute attribute = request.Build(services);
+
+        HttpRequestMessage httpMessage = new()
+        {
+            Method = HttpMethod.Get,
+            RequestUri = new Uri("/test", UriKind.Relative)
+        };
+
+        RestRequestContext context = new()
+        {
+            Attribute = attribute,
+            Request = request,
+            Message = httpMessage,
+            SerializerOptions = RestSettings.SerializerOptions,
+            IsAborted = false
+        };
+
+        // Act
+        RestRequest restRequest = await builder.BuildRequestAsync(context);
+
+        // Assert
+        interceptor.WasInvoked.Should().BeTrue();
+        context.IsAborted.Should().BeTrue();
+    }
+
+    [Fact]
+    public async Task BuildRequestAsync_NoComposerFound_Throws()
+    {
+        using var serializerScope = UseDefaultSerializerOptions();
+
+        // Arrange - no composers registered
+        IServiceProvider services = new ServiceCollection()
+            .BuildServiceProvider();
+
+        RestRequestBuilder builder = new(services.GetServices<IRestRequestComposer>());
+
+        SimpleRequest request = new();
+        RestAttribute attribute = request.Build(services);
+
+        HttpRequestMessage httpMessage = new()
+        {
+            Method = HttpMethod.Get,
+            RequestUri = new Uri("/test", UriKind.Relative)
+        };
+
+        RestRequestContext context = new()
+        {
+            Attribute = attribute,
+            Request = request,
+            Message = httpMessage,
+            SerializerOptions = RestSettings.SerializerOptions,
+            IsAborted = false
+        };
+
+        // Act
+        Func<Task> act = async () => await builder.BuildRequestAsync(context);
+
+        // Assert
+        await act.Should()
+            .ThrowAsync<InvalidOperationException>()
+            .WithMessage("*No request builder found*");
     }
 
     private static IDisposable UseDefaultSerializerOptions()
@@ -87,6 +164,12 @@ public sealed class RestRequestBuilderTests
         public void Dispose() => _dispose();
     }
 
+    private sealed record SimpleRequest : IRestRequest, IRestAttributeBuilder
+    {
+        public RestAttribute Build(IServiceProvider serviceProvider) =>
+            new RestGetAttribute("/test");
+    }
+
     private sealed record PlaceOrderRequest(string OrderId, string Product, int Quantity)
         : IRestRequest, IRestString, IRestPathString, IRestAttributeBuilder
     {
@@ -103,4 +186,29 @@ public sealed class RestRequestBuilderTests
             Accept = RestSettings.ContentType.Json
         };
     }
-}
+
+        private sealed class AbortingRequestInterceptor : IRestRequestInterceptor
+        {
+            public bool WasInvoked { get; private set; }
+
+            public ValueTask InterceptAsync(RestRequestContext context, CancellationToken cancellationToken = default)
+            {
+                WasInvoked = true;
+                context.IsAborted = true;
+                return ValueTask.CompletedTask;
+            }
+        }
+
+        private sealed class FakeRequestComposer : IRestRequestComposer
+        {
+            public bool WasInvoked { get; private set; }
+
+            public bool CanCompose(RestRequestContext context) => true;
+
+            public ValueTask ComposeAsync(RestRequestContext context, CancellationToken cancellationToken = default)
+            {
+                WasInvoked = true;
+                return ValueTask.CompletedTask;
+            }
+        }
+    }

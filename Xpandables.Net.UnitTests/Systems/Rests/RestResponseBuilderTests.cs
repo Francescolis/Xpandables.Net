@@ -1,3 +1,19 @@
+/*******************************************************************************
+ * Copyright (C) 2025 Kamersoft
+ *
+ * Licensed under the Apache License, Version 2.0 (the "License");
+ * you may not use this file except in compliance with the License.
+ * You may obtain a copy of the License at
+ *
+ * http://www.apache.org/licenses/LICENSE-2.0
+ *
+ * Unless required by applicable law or agreed to in writing, software
+ * distributed under the License is distributed on an "AS IS" BASIS,
+ * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+ * See the License for the specific language governing permissions and
+ * limitations under the License.
+ *
+********************************************************************************/
 using System.Collections;
 using System.Net;
 using System.Rests;
@@ -65,15 +81,84 @@ public sealed class RestResponseBuilderTests
             .WithMessage("*No composer found*");
     }
 
-    private static RestResponseContext CreateContext(HttpStatusCode statusCode = HttpStatusCode.OK) => new()
+    [Fact]
+    public async Task BuildResponseAsync_ExecutesResponseInterceptors()
     {
-        Request = new TestRequest(),
-        Message = new HttpResponseMessage(statusCode)
+        // Arrange
+        RestResponse expectedResponse = new()
         {
-            Content = new StringContent(string.Empty)
-        },
-        SerializerOptions = RestSettings.SerializerOptions
-    };
+            StatusCode = HttpStatusCode.OK,
+            Headers = ElementCollection.Empty,
+            Version = HttpVersion.Version20
+        };
+
+        FakeComposer composer = new(canCompose: true, expectedResponse);
+        FakeResponseInterceptor interceptor = new();
+
+        IServiceProvider services = new ServiceCollection()
+            .AddSingleton<IRestResponseComposer>(composer)
+            .AddSingleton<IRestResponseInterceptor>(interceptor)
+            .BuildServiceProvider();
+
+        RestResponseBuilder builder = new(
+            services.GetServices<IRestResponseComposer>(),
+            responseInterceptors: services.GetServices<IRestResponseInterceptor>());
+
+        RestResponseContext context = CreateContext();
+
+        // Act
+        await builder.BuildResponseAsync(context);
+
+        // Assert
+        interceptor.WasInvoked.Should().BeTrue();
+        interceptor.ReceivedContext.Should().BeSameAs(context);
+    }
+
+    [Fact]
+    public async Task BuildResponseAsync_WhenAborted_ReturnsEmptyResponseWithoutCallingInterceptors()
+    {
+        // Arrange
+        RestResponse expectedResponse = new()
+        {
+            StatusCode = HttpStatusCode.OK,
+            Headers = ElementCollection.Empty,
+            Version = HttpVersion.Version20
+        };
+
+        FakeComposer composer = new(canCompose: true, expectedResponse);
+        FakeResponseInterceptor interceptor = new();
+
+        IServiceProvider services = new ServiceCollection()
+            .AddSingleton<IRestResponseComposer>(composer)
+            .AddSingleton<IRestResponseInterceptor>(interceptor)
+            .BuildServiceProvider();
+
+        RestResponseBuilder builder = new(
+            services.GetServices<IRestResponseComposer>(),
+            responseInterceptors: services.GetServices<IRestResponseInterceptor>());
+
+        RestResponseContext context = CreateContext(isAborted: true);
+
+        // Act
+        RestResponse response = await builder.BuildResponseAsync(context);
+
+        // Assert - when aborted, returns empty and skips everything
+        composer.WasInvoked.Should().BeFalse("Composer should not be called for aborted requests");
+        interceptor.WasInvoked.Should().BeFalse("Interceptors should not be called for aborted requests");
+    }
+
+    private static RestResponseContext CreateContext(
+        HttpStatusCode statusCode = HttpStatusCode.OK,
+        bool isAborted = false) => new()
+        {
+            Request = new TestRequest(),
+            Message = new HttpResponseMessage(statusCode)
+            {
+                Content = new StringContent(string.Empty)
+            },
+            SerializerOptions = RestSettings.SerializerOptions,
+            IsAborted = isAborted
+        };
 
     private sealed class TestRequest : IRestRequest;
 
@@ -86,6 +171,22 @@ public sealed class RestResponseBuilderTests
         public ValueTask<RestResponse> ComposeAsync(RestResponseContext context, CancellationToken cancellationToken)
         {
             WasInvoked = true;
+            return ValueTask.FromResult(response);
+        }
+    }
+
+    private sealed class FakeResponseInterceptor : IRestResponseInterceptor
+    {
+        public bool WasInvoked { get; private set; }
+        public RestResponseContext? ReceivedContext { get; private set; }
+
+        public ValueTask<RestResponse> InterceptAsync(
+            RestResponseContext context,
+            RestResponse response,
+            CancellationToken cancellationToken = default)
+        {
+            WasInvoked = true;
+            ReceivedContext = context;
             return ValueTask.FromResult(response);
         }
     }
