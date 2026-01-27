@@ -20,7 +20,7 @@ namespace System.Rests.Abstractions;
 /// Defines a builder for creating <see cref="RestAttribute"/> at runtime.
 /// </summary>
 /// <remarks>This interface take priority over the static <see cref="RestAttribute"/>.</remarks>
-public interface IRestAttributeBuilder
+public interface IRestAttributeBuilder : IRestRequest
 {
     /// <summary>
     /// Creates a RestAttribute instance using the provided service provider.
