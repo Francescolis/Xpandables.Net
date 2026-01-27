@@ -1,86 +1,94 @@
-﻿# 📬 System.Events
+﻿# System.Events
 
-[![NuGet](https://img.shields.io/badge/NuGet-10.0.0-blue.svg)](https://www.nuget.org/packages/System.Events)
-[![.NET](https://img.shields.io/badge/.NET-10.0-purple.svg)](https://dotnet.microsoft.com/)
+[![NuGet](https://img.shields.io/nuget/v/Xpandables.Events.svg)](https://www.nuget.org/packages/Xpandables.Events)
+[![.NET](https://img.shields.io/badge/.NET-10.0+-purple.svg)](https://dotnet.microsoft.com/)
 [![License](https://img.shields.io/badge/License-Apache%202.0-green.svg)](LICENSE)
 
-> **Event Sourcing & Domain Events Infrastructure** — Aggregates, event stores, domain events, integration events, outbox pattern, and publisher/subscriber for building event-driven applications.
+Event sourcing and domain events infrastructure for building event-driven applications.
 
----
+## Overview
 
-## 📋 Overview
+`System.Events` is the core package for building event-sourced, event-driven applications. It provides aggregates with uncommitted event queues, domain and integration events, publisher/subscriber abstractions, outbox/inbox patterns, and correlation/causation propagation.
 
-`System.Events` is the core package for building event-sourced, event-driven applications.
+Built for .NET 10 with full async support.
 
-It provides:
+## Features
 
-- aggregate base types (`Aggregate`) with uncommitted event queues
-- domain events (`IDomainEvent` / `DomainEvent`) and integration events (`IIntegrationEvent` / `IntegrationEvent`)
-- publisher/subscriber abstractions (`IEventPublisher`, `IEventHandler<T>`) with registry modes
-- outbox/scheduler contracts (persistence lives in `System.Events.Data`)
-- **correlation/causation propagation** via `EventContext`, `IEventContextAccessor`, and scope management (`BeginScope`)
+### Core Events
+- **`IEvent`** — Base event interface with `EventId`, `OccurredOn`, `CausationId`, `CorrelationId`
+- **`IDomainEvent`** — Domain events with `StreamId`, `StreamVersion`, `StreamName`, metadata
+- **`IIntegrationEvent`** — Integration events for cross-service communication
+- **`ISnapshotEvent`** — Snapshot events for aggregate state
 
-Built for **.NET 10** and **C# 14**.
+### Aggregates
+- **`Aggregate`** — Base class for event-sourced aggregates with event replay
+- **`IAggregateFactory<T>`** — Factory interface for aggregate creation
+- **`IAggregateStore`** — Load and save aggregates with event persistence
+- **`SnapshotStore`** — Snapshot management for aggregates
+- **`SnapshotOptions`** — Configure snapshot frequency and storage
 
-### ✨ Key Features
+### Event Stores
+- **`IEventStore`** — Event store abstraction (append, read, subscribe, truncate, delete)
+- **`ISnapshotEventStore`** — Snapshot-specific event store operations
+- **`IEventSubscriber`** — Subscribe to event streams
 
-- 🏗️ **`Aggregate`** — Base class for event-sourced aggregates with event replay and uncommitted events
-- 📦 **`IEventStore`** — Event store abstraction with append, read, subscribe, and snapshot support
-- 📨 **`IDomainEvent`** — Domain events with stream versioning, causation/correlation, and metadata
-- 🔗 **`IIntegrationEvent`** — Integration events for cross-service communication
-- 📤 **`IOutboxStore`** — Transactional outbox pattern for reliable event delivery
-- 📥 **`IInboxStore`** — Inbox pattern for exactly-once event consumption (idempotency)
-- 📢 **`IEventPublisher`** — Publish/subscribe with multiple registry modes (Static, Dynamic, Composite)
-- ⏰ **`IScheduler`** — Background scheduler for processing pending events
-- 🌐 **W3C Compatible IDs** — `CorrelationId` and `CausationId` are `string?` for W3C trace context support
-- 🔍 **GUID Parsing Helpers** — `TryGetCausationGuidId()` and `TryGetCorrelationGuidId()` for GUID conversion
+### Publisher/Subscriber
+- **`IEventPublisher`** — Publish events to handlers
+- **`IEventHandler<TEvent>`** — Handle specific event types
+- **`IEventHandlerRegistry`** — Registry for event handlers
+- **`EventBusPublisher`** — Event bus implementation
+- **`CompositeEventPublisher`** — Combine multiple publishers
 
----
+### Outbox/Inbox Patterns
+- **`IOutboxStore`** — Transactional outbox for reliable delivery
+- **`IInboxStore`** — Inbox for exactly-once consumption (idempotency)
+- **`InboxEventHandlerDecorator`** — Decorator for inbox processing
 
-## 📦 Installation
+### Scheduling
+- **`IScheduler`** — Background scheduler for pending events
+- **`HostedScheduler`** — Background service for scheduled processing
+- **`SchedulerOptions`** — Configure scheduler behavior
+
+### Event Context
+- **`EventContext`** — Current correlation/causation context
+- **`IEventContextAccessor`** — Access current event context
+- **`AsyncLocalEventContextAccessor`** — AsyncLocal-based accessor
+
+### Data Entities
+- **`IEntityEvent`** — Base entity event interface
+- **`IEntityEventDomain`** — Domain event entity
+- **`IEntityEventSnapshot`** — Snapshot event entity
+- **`IEntityEventOutbox`** — Outbox event entity
+- **`IEntityEventInbox`** — Inbox event entity
+- **`IEventConverter`** — Convert between events and entities
+- **`IEventConverterFactory`** — Factory for event converters
+
+### Enrichers
+- **`IDomainEventEnricher`** — Enrich domain events with metadata
+- **`IIntegrationEventEnricher`** — Enrich integration events
+- **`IPendingDomainEventsBuffer`** — Buffer pending domain events
+- **`IPendingIntegrationEventsBuffer`** — Buffer pending integration events
+
+## Installation
 
 ```bash
-dotnet add package System.Events
+dotnet add package Xpandables.Events
 ```
 
-Or via NuGet Package Manager:
+## Quick Start
 
-```powershell
-Install-Package System.Events
-```
-
----
-
-## 🚀 Quick Start
-
-### Register services
+### Register Services
 
 ```csharp
 using Microsoft.Extensions.DependencyInjection;
 
-var builder = WebApplication.CreateBuilder(args);
-
-// Event publisher with handler registry
-builder.Services.AddXEventPublisher(EventRegistryMode.Static);
-
-// Register event handlers from assemblies
-builder.Services.AddXEventHandlers(typeof(Program).Assembly);
-
-// Register aggregate store
-builder.Services.AddXAggregateStore<OrderAggregate>();
-
-// Hosted scheduler for background event processing (for outbox processing)
-builder.Services.AddXHostedScheduler();
-
-var app = builder.Build();
-app.Run();
+services.AddXEventPublisher(EventRegistryMode.Static);
+services.AddXEventHandlers(typeof(Program).Assembly);
+services.AddXAggregateStore<OrderAggregate>();
+services.AddXHostedScheduler();
 ```
 
----
-
-## 🏗️ Aggregates & Event Sourcing
-
-### Define an aggregate
+### Define an Aggregate
 
 ```csharp
 using System.Events.Aggregates;
@@ -90,29 +98,17 @@ public sealed class OrderAggregate : Aggregate, IAggregateFactory<OrderAggregate
 {
     public Guid CustomerId { get; private set; }
     public decimal Total { get; private set; }
-    public OrderStatus Status { get; private set; }
-    public IReadOnlyList<OrderItem> Items => _items.AsReadOnly();
-    
-    private readonly List<OrderItem> _items = [];
 
     public OrderAggregate()
     {
-        // Register event handlers
         On<OrderCreated>(Apply);
         On<OrderItemAdded>(Apply);
-        On<OrderConfirmed>(Apply);
-        On<OrderCancelled>(Apply);
     }
 
-    // Factory method required by IAggregateFactory<T>
     public static OrderAggregate Create() => new();
 
-    // Command methods that raise events
     public void CreateOrder(Guid orderId, Guid customerId)
     {
-        if (!IsEmpty)
-            throw new InvalidOperationException("Order already created");
-
         PushEvent(new OrderCreated
         {
             StreamId = orderId,
@@ -120,90 +116,82 @@ public sealed class OrderAggregate : Aggregate, IAggregateFactory<OrderAggregate
         });
     }
 
-    public void AddItem(Guid productId, string productName, decimal price, int quantity)
+    private void Apply(OrderCreated e)
     {
-        if (Status != OrderStatus.Draft)
-            throw new InvalidOperationException("Cannot add items to confirmed order");
-
-        PushVersioningEvent(version => new OrderItemAdded
-        {
-            StreamId = StreamId,
-            StreamVersion = version,
-            ProductId = productId,
-            ProductName = productName,
-            Price = price,
-            Quantity = quantity
-        });
+        StreamId = e.StreamId;
+        CustomerId = e.CustomerId;
     }
 
-    public void Confirm()
+    private void Apply(OrderItemAdded e)
     {
-        if (Status != OrderStatus.Draft)
-            throw new InvalidOperationException("Order is not in draft status");
-
-        if (_items.Count == 0)
-            throw new InvalidOperationException("Cannot confirm empty order");
-
-        PushEvent(new OrderConfirmed { StreamId = StreamId });
-    }
-
-    public void Cancel(string reason)
-    {
-        if (Status == OrderStatus.Cancelled)
-            throw new InvalidOperationException("Order already cancelled");
-
-        PushEvent(new OrderCancelled { StreamId = StreamId, Reason = reason });
-    }
-
-    // Event application methods
-    private void Apply(OrderCreated @event)
-    {
-        StreamId = @event.StreamId;
-        CustomerId = @event.CustomerId;
-        Status = OrderStatus.Draft;
-    }
-
-    private void Apply(OrderItemAdded @event)
-    {
-        _items.Add(new OrderItem(@event.ProductId, @event.ProductName, @event.Price, @event.Quantity));
-        Total = _items.Sum(i => i.Price * i.Quantity);
-    }
-
-    private void Apply(OrderConfirmed @event)
-    {
-        Status = OrderStatus.Confirmed;
-    }
-
-    private void Apply(OrderCancelled @event)
-    {
-        Status = OrderStatus.Cancelled;
+        Total += e.Price * e.Quantity;
     }
 }
-
-public enum OrderStatus { Draft, Confirmed, Shipped, Cancelled }
-public record OrderItem(Guid ProductId, string ProductName, decimal Price, int Quantity);
 ```
 
-### Define domain events
+### Define Domain Events
 
 ```csharp
-using System.Events.Domain;
-
-public record OrderCreated : DomainEvent
+public sealed record OrderCreated : IDomainEvent
 {
+    public required Guid StreamId { get; init; }
     public required Guid CustomerId { get; init; }
+    public Guid EventId { get; init; } = Guid.NewGuid();
+    public DateTimeOffset OccurredOn { get; init; } = DateTimeOffset.UtcNow;
+    public long StreamVersion { get; init; }
+    // ... other required properties
 }
+```
 
-public record OrderItemAdded : DomainEvent
+### Handle Events
+
+```csharp
+public sealed class OrderCreatedHandler : IEventHandler<OrderCreated>
 {
-    public required Guid ProductId { get; init; }
-    public required string ProductName { get; init; }
-    public required decimal Price { get; init; }
-    public required int Quantity { get; init; }
+    public async ValueTask HandleAsync(OrderCreated @event, CancellationToken ct)
+    {
+        // Handle the event
+    }
 }
+```
 
-public record OrderConfirmed : DomainEvent;
+### Use Aggregate Store
 
+```csharp
+public class OrderService(IAggregateStore aggregateStore)
+{
+    public async Task CreateOrderAsync(Guid orderId, Guid customerId, CancellationToken ct)
+    {
+        var aggregate = OrderAggregate.Create();
+        aggregate.CreateOrder(orderId, customerId);
+        await aggregateStore.SaveAsync(aggregate, ct);
+    }
+
+    public async Task<OrderAggregate> GetOrderAsync(Guid orderId, CancellationToken ct)
+    {
+        return await aggregateStore.LoadAsync<OrderAggregate>(orderId, ct);
+    }
+}
+```
+
+## Core Types
+
+| Type | Description |
+|------|-------------|
+| `IEvent` | Base event interface |
+| `IDomainEvent` | Domain event with stream info |
+| `IIntegrationEvent` | Cross-service event |
+| `Aggregate` | Event-sourced aggregate base |
+| `IAggregateStore` | Aggregate persistence |
+| `IEventStore` | Event stream storage |
+| `IEventPublisher` | Event publishing |
+| `IEventHandler<T>` | Event handling |
+| `IOutboxStore` | Transactional outbox |
+| `IInboxStore` | Idempotent inbox |
+
+## License
+
+Apache License 2.0
 public record OrderCancelled : DomainEvent
 {
     public required string Reason { get; init; }

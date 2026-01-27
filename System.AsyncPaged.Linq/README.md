@@ -1,61 +1,84 @@
-﻿# 📊 Xpandables.AsyncPaged.Linq
+﻿# System.AsyncPaged.Linq
 
-[![NuGet](https://img.shields.io/badge/NuGet-10.0.1-blue.svg)](https://www.nuget.org/packages/Xpandables.AsyncPaged.Linq)
+[![NuGet](https://img.shields.io/nuget/v/Xpandables.AsyncPaged.Linq.svg)](https://www.nuget.org/packages/Xpandables.AsyncPaged.Linq)
 [![.NET](https://img.shields.io/badge/.NET-10.0+-purple.svg)](https://dotnet.microsoft.com/)
 [![License](https://img.shields.io/badge/License-Apache%202.0-green.svg)](LICENSE)
 
-> **Comprehensive LINQ Operators for Async Pagination** — Full-featured, composable LINQ extensions for `IAsyncPagedEnumerable<T>` with projection, filtering, aggregation, and materialization support.
+Comprehensive LINQ operators for `IAsyncPagedEnumerable<T>` with projection, filtering, aggregation, and materialization support.
 
----
+## Overview
 
-## 🎯 Overview
+`System.AsyncPaged.Linq` extends `IAsyncPagedEnumerable<T>` with a complete suite of LINQ operators specifically designed for async pagination scenarios. All operators preserve pagination metadata throughout the query chain.
 
-`Xpandables.AsyncPaged.Linq` extends `IAsyncPagedEnumerable<T>` with a complete suite of LINQ operators specifically designed for async pagination scenarios. It provides projection, filtering, aggregation, ordering, grouping, and materialization methods that preserve pagination metadata throughout the query chain.
+Built for .NET 10 with AOT compatibility.
 
-Built for .NET 10 with AOT compatibility, this library seamlessly integrates with LINQ queries while maintaining the performance and memory efficiency benefits of async enumeration.
+## Features
 
-### ✨ Key Features
+### Projection (ProjectionExtensions)
+- `SelectPaged` — Synchronous projection with optional index
+- `SelectPagedAsync` — Async projection
+- `SelectManyPaged` — Flatten nested enumerables
+- `SelectManyPagedAsync` — Async flatten
 
-- **🔄 Projection Operators** — `SelectPaged`, `SelectPagedAsync` with sync and async selectors
-- **🔍 Filtering Operations** — `WherePaged` with predicate-based filtering  
-- **📋 Ordering** — `OrderByPaged`, `ThenByPaged`, `ReversePaged` with ascending/descending support
-- **⚙️ Set Operations** — `DistinctPaged`, `DistinctByPaged`, `UnionPaged`, `IntersectPaged`, `ExceptPaged`
-- **🔗 Joining** — `JoinPaged`, `GroupJoinPaged` for cross-sequence operations
-- **📑 Grouping** — `GroupByPaged` for partitioning sequences while preserving pagination
-- **💾 Materialization** — `ToListPagedAsync`, `ToArrayPagedAsync`, `MaterializeAsync`, `PrecomputePaginationAsync`
-- **🪟 Windowing & Partitioning** — `TakePaged`, `SkipPaged`, `TakeLastPaged`, `SkipLastPaged`, `TakeWhilePaged`, `SkipWhilePaged`, `ChunkPaged`
-- **🔬 Analytical Operations** — `WindowPaged`, `WindowedSumPaged`, `WindowedAveragePaged`, `WindowedMinPaged`, `WindowedMaxPaged`, `PairwisePaged`, `ScanPaged`
-- **📦 Flattening** — `SelectManyPaged`, `SelectManyPagedAsync` for nested enumerable composition
-- **Pagination Preservation** — All operators preserve pagination metadata for accurate page tracking
+### Set Operations (SetExtensions)
+- `DistinctPaged` — Remove duplicates
+- `DistinctByPaged` — Remove duplicates by key
+- `UnionPaged` — Combine sequences
+- `IntersectPaged` — Common elements
+- `ExceptPaged` — Exclude elements
 
----
+### Ordering (OrderingExtensions)
+- `OrderByPaged` / `OrderByPagedDescending` — Primary ordering
+- `ThenByPaged` / `ThenByPagedDescending` — Secondary ordering
+- `ReversePaged` — Reverse sequence order
 
-## 📦 Installation
+### Grouping (GroupingExtensions)
+- `GroupByPaged` — Partition by key with optional element and result selectors
+
+### Joining (JoinExtensions)
+- `JoinPaged` — Inner join sequences
+- `GroupJoinPaged` — Group join for one-to-many relationships
+
+### Windowing & Partitioning (WindowingExtensions)
+- `TakePaged` / `TakeLastPaged` — Take elements from start/end
+- `SkipPaged` / `SkipLastPaged` — Skip elements from start/end
+- `TakeWhilePaged` / `SkipWhilePaged` — Conditional take/skip
+- `ChunkPaged` — Split into fixed-size chunks
+- `WindowPaged` — Sliding window of elements
+- `WindowedSumPaged` / `WindowedAveragePaged` — Windowed aggregates
+- `WindowedMinPaged` / `WindowedMaxPaged` — Windowed min/max
+- `PairwisePaged` — Process consecutive pairs
+- `ScanPaged` — Running accumulator
+
+### Transformation (TransformationExtensions)
+- `WherePaged` — Filter with predicate
+- `CastPaged` — Type cast elements
+- `OfTypePaged` — Filter by type
+
+### Materialization (MaterializationExtensions)
+- `ToListPagedAsync` — Materialize to list
+- `ToArrayPagedAsync` — Materialize to array
+- `MaterializeAsync` — Materialize with custom collection
+- `PrecomputePaginationAsync` — Compute pagination upfront
+
+### Pagination (PaginationExtensions)
+- `ToAsyncPagedEnumerable` — Convert `IQueryable<T>` or `IAsyncEnumerable<T>`
+
+## Installation
 
 ```bash
 dotnet add package Xpandables.AsyncPaged.Linq
 ```
 
-Or via NuGet Package Manager:
+**Dependency:** `Xpandables.AsyncPaged` (installed automatically)
 
-```powershell
-Install-Package Xpandables.AsyncPaged.Linq
-```
+## Quick Start
 
-### Prerequisites
-
-- `Xpandables.AsyncPaged` (automatically installed as a dependency)
-
----
-
-## 🚀 Quick Start
-
-### 📋 Basic LINQ Operations
+### Basic LINQ Operations
 
 ```csharp
 using System.Linq;
 
-// Get paged products from database
 IAsyncPagedEnumerable<Product> products = GetProductsAsync();
 
 // Projection
@@ -64,152 +87,56 @@ var productNames = products.SelectPaged(p => p.Name);
 // Filtering
 var activeProducts = products.WherePaged(p => p.IsActive);
 
-// Aggregation
-int totalProducts = await products.CountAsync();
+// Ordering
+var sorted = products.OrderByPaged(p => p.Name);
 
-// Enumeration
-await foreach (var product in products)
+// Enumerate
+await foreach (var product in activeProducts)
 {
     Console.WriteLine(product.Name);
 }
 
-// Get pagination info
+// Pagination metadata
 var pagination = await products.GetPaginationAsync();
 Console.WriteLine($"Page {pagination.CurrentPage} of {pagination.TotalPages}");
 ```
 
-### 🔄 Async Projection
+### Async Projection
 
 ```csharp
-// Project with async operations (e.g., fetching related data)
 var enrichedProducts = products.SelectPagedAsync(async product =>
 {
     var reviews = await _reviewService.GetReviewsAsync(product.Id);
-    return new EnrichedProduct
-    {
-        Product = product,
-        ReviewCount = reviews.Count,
-        AverageRating = reviews.Average(r => r.Rating)
-    };
+    return new { product.Name, ReviewCount = reviews.Count };
 });
-
-await foreach (var item in enrichedProducts)
-{
-    Console.WriteLine($"{item.Product.Name} - {item.AverageRating:F1} stars");
-}
 ```
 
-### 📊 Composition Chain
+### Windowed Analysis
 
 ```csharp
-// Build complex queries while preserving pagination
-var results = _context.Orders
-    .ToAsyncPagedEnumerable()
-    .WherePaged(o => o.CreatedAt.Year == DateTime.Now.Year)
-    .SelectPaged(o => new OrderSummary
-    {
-        Id = o.Id,
-        Total = o.Items.Sum(i => i.Price * i.Quantity),
-        ItemCount = o.Items.Count
-    })
-    .OrderByPagedDescending(o => o.Total);
-
-// Enumerate and access pagination
-await foreach (var order in results)
-{
-    Console.WriteLine($"Order {order.Id}: ${order.Total} ({order.ItemCount} items)");
-}
-
-var pagination = await results.GetPaginationAsync();
-Console.WriteLine($"Total orders: {pagination.TotalCount}");
-```
-
-### 🔬 Analytical Operations
-
-```csharp
-// Sliding window analysis
+// 7-day moving average
 var movingAverages = products
-    .OrderBy(p => p.CreatedAt)
-    .ToAsyncPagedEnumerable()
+    .OrderByPaged(p => p.CreatedAt)
     .WindowedAveragePaged(windowSize: 7, p => p.Price);
-
-await foreach (var avg in movingAverages)
-{
-    Console.WriteLine($"7-day moving average: ${avg:F2}");
-}
 
 // Pairwise comparison
 var priceChanges = products
-    .OrderBy(p => p.Date)
-    .ToAsyncPagedEnumerable()
-    .PairwisePaged((prev, curr) => new
-    {
-        Date = curr.Date,
-        Change = curr.Price - prev.Price,
-        PercentChange = ((curr.Price - prev.Price) / prev.Price) * 100
-    });
-
-await foreach (var change in priceChanges)
-{
-    Console.WriteLine($"{change.Date}: {change.PercentChange:F2}% change");
-}
-
-// Running totals with Scan
-var runningTotals = sales
-    .ToAsyncPagedEnumerable()
-    .ScanPaged(0m, (total, sale) => total + sale.Amount);
-
-await foreach (var total in runningTotals)
-{
-    Console.WriteLine($"Running total: ${total:N2}");
-}
-```
----
-
-## 📚 Core Concepts
-
-### 🧩 Extension Method Naming Convention
-
-All LINQ extensions for `IAsyncPagedEnumerable<T>` follow a consistent naming pattern:
-- **`XxxPaged`** — Async methods returning `IAsyncPagedEnumerable<T>` (e.g., `SelectPaged`, `WherePaged`)
-- **`XxxPagedAsync`** — Async methods returning `ValueTask<T>` or `Task<T>` (e.g., `CountPagedAsync`, `FirstPagedAsync`)
-
-This naming distinguishes paged operations from standard LINQ and makes intent clear.
-
-### 🔄 Pagination Preservation
-
-All operator implementations preserve the source's pagination metadata:
-
-```csharp
-var pagination = Pagination.Create(pageSize: 20, currentPage: 2, totalCount: 500);
-var paged = source.ToAsyncPagedEnumerable(pagination);
-
-// Projection preserves pagination
-var projected = paged.SelectPaged(x => x.Name);
-var projectedPagination = await projected.GetPaginationAsync();
-// projectedPagination == pagination (same metadata)
-
-// Filtering preserves pagination
-var filtered = paged.WherePaged(x => x.IsActive);
-var filteredPagination = await filtered.GetPaginationAsync();
-// filteredPagination == pagination (same metadata, but note: item count may differ)
+    .PairwisePaged((prev, curr) => curr.Price - prev.Price);
 ```
 
----
-
-## 💡 Common Patterns
-
-### 🛍️ Product Search with Pagination
+### Materialization
 
 ```csharp
-public async Task<IAsyncPagedEnumerable<ProductDto>> SearchAsync(
-    string? searchTerm,
-    decimal? minPrice,
-    decimal? maxPrice,
-    int pageNumber = 1,
-    int pageSize = 20)
-{
-    var products = _context.Products
+// Materialize to list with pagination preserved
+var list = await products.ToListPagedAsync();
+
+// Precompute pagination for multiple enumerations
+var precomputed = await products.PrecomputePaginationAsync();
+```
+
+## License
+
+Apache License 2.0
         .Where(p => p.IsActive)
         .ToAsyncPagedEnumerable();
 

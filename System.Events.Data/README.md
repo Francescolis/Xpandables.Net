@@ -1,213 +1,144 @@
-﻿# 🗄️ System.Events.Data
+﻿# System.Events.Data
 
-[![NuGet](https://img.shields.io/badge/NuGet-10.x-blue.svg)](https://www.nuget.org/packages/System.Events.Data)
-[![.NET](https://img.shields.io/badge/.NET-10.0-purple.svg)](https://dotnet.microsoft.com/)
+[![NuGet](https://img.shields.io/nuget/v/Xpandables.Events.Data.svg)](https://www.nuget.org/packages/Xpandables.Events.Data)
+[![.NET](https://img.shields.io/badge/.NET-10.0+-purple.svg)](https://dotnet.microsoft.com/)
+[![License](https://img.shields.io/badge/License-Apache%202.0-green.svg)](LICENSE)
 
-> **EF Core Persistence for Event Sourcing** — Event store + snapshot store + transactional outbox for `System.Events`.
+Entity Framework Core persistence for event sourcing with `System.Events`.
 
----
+## Overview
 
-## 📋 Overview
+`System.Events.Data` provides EF Core implementations for the event store abstractions in `System.Events`. It includes `EventDataContext` for storing domain events, snapshots, outbox, and inbox entities, along with type configurations and value converters.
 
-`System.Events.Data` provides EF Core implementations for the abstractions in `System.Events`:
+Built for .NET 10 with Entity Framework Core 10.
 
-- `EventStoreDataContext` (domain events + snapshots)
-- `OutboxStoreDataContext` (integration events for outbox pattern)
-- `InboxStoreDataContext` (integration events for inbox pattern)
-- `EventStore` (`IEventStore`) append/read/stream management
-- `OutboxStore` (`IOutboxStore`) enqueue/dequeue/complete/fail
-- `InboxStore` (`IInboxStore`) receive/complete/fail for exactly-once consumption
+## Features
 
-Targeted for **.NET 10** and intended to be used together with SQL Server (or other EF Core providers).
+### EventDataContext
+- **`EventDataContext`** — EF Core DbContext for event storage
+- `Domains` — DbSet for domain events (`EntityEventDomain`)
+- `Snapshots` — DbSet for snapshot events (`EntityEventSnapshot`)
+- `OutboxEvents` — DbSet for outbox events (`EntityEventOutbox`)
+- `InboxEvents` — DbSet for inbox events (`EntityEventInbox`)
+- Default schema: `Events`
 
-### ✨ Key Features
+### Repository
+- **`EventRepository<TEntityEvent>`** — Generic repository for event entities
 
-- **Event store tables** for domain events and snapshots
-- **Outbox table** for integration events and reliable delivery (at-least-once publishing)
-- **Inbox table** for integration events and exactly-once consumption (idempotency)
-- **Event converters** for translating between stored entities and runtime events
-- **Stream operations**: read/append, stream existence/version, subscriptions
-- **Transactional flush**: commit event store + outbox consistently (via the store APIs)
+### Type Configurations
+- **`EntityDomainEventTypeConfiguration`** — Domain event table configuration
+- **`EntitySnapShotEventTypeConfiguration`** — Snapshot event table configuration
+- **`EntityEventOutboxTypeConfiguration`** — Outbox event table configuration
+- **`EntityEventInboxTypeConfiguration`** — Inbox event table configuration
 
----
+### Value Converters
+- **`EventJsonDocumentValueConverter`** — Convert event data to/from JSON
 
-## 📦 Installation
+### Model Customizer
+- **`EventStoreSqlServerModelCustomizer`** — SQL Server specific customizations
+
+## Installation
 
 ```bash
-dotnet add package System.Events.Data
+dotnet add package Xpandables.Events.Data
 dotnet add package Microsoft.EntityFrameworkCore.SqlServer
 ```
 
----
+**Dependencies:** `System.Events`, `System.Entities.Data`, `Microsoft.EntityFrameworkCore`
 
-## 🚀 Quick Start
+## Quick Start
 
-### Service registration
+### Register Services
 
 ```csharp
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.EntityFrameworkCore;
 
-var builder = WebApplication.CreateBuilder(args);
+services.AddDbContext<EventDataContext>(options =>
+    options.UseSqlServer(connectionString, sql =>
+        sql.MigrationsHistoryTable("__EventStoreMigrations", "Events")));
 
-// Event store (domain events + snapshots)
-builder.Services.AddXEventStoreDataContext(options =>
-    options.UseSqlServer(
-        builder.Configuration.GetConnectionString("EventStoreDb"),
-        sql => sql.MigrationsHistoryTable("__EventStoreMigrations")));
-
-// Outbox store (integration events for reliable publishing)
-builder.Services.AddXOutboxStoreDataContext(options =>
-    options.UseSqlServer(
-        builder.Configuration.GetConnectionString("EventStoreDb"),
-        sql => sql.MigrationsHistoryTable("__OutboxStoreMigrations")));
-
-// Inbox store (integration events for exactly-once consumption)
-builder.Services.AddXInboxStoreDataContext(options =>
-    options.UseSqlServer(
-        builder.Configuration.GetConnectionString("EventStoreDb"),
-        sql => sql.MigrationsHistoryTable("__InboxStoreMigrations")));
-
-// Stores + converters
-builder.Services.AddXEventStore();
-builder.Services.AddXOutboxStore();
-builder.Services.AddXInboxStore();
-builder.Services.AddXEventConverterFactory();
-
-// Optional: Inbox decorator for handlers implementing IInboxConsumer
-builder.Services.AddXEventHandlerInboxDecorator();
-
-// Optional but recommended for correlation/causation enrichment
-builder.Services.AddXEventContext();
+services.AddScoped<IEventStore, EventStore>();
+services.AddScoped<IOutboxStore, OutboxStore>();
+services.AddScoped<IInboxStore, InboxStore>();
+services.AddXEventConverterFactory();
 ```
 
-### Using the event store
+### Use the Event Store
 
 ```csharp
-using System.Events.Data;
 using System.Events.Domain;
 
-public sealed class OrderService
+public class OrderService(IEventStore eventStore)
 {
-    private readonly IEventStore _eventStore;
-
-    public OrderService(IEventStore eventStore)
-        => _eventStore = eventStore;
-
-    public async Task CreateOrderAsync(Guid orderId, string customerId, CancellationToken ct)
+    public async Task CreateOrderAsync(Guid orderId, CancellationToken ct)
     {
         var events = new IDomainEvent[]
         {
-            new OrderCreatedEvent { StreamId = orderId, CustomerId = customerId },
-            new OrderItemAddedEvent { StreamId = orderId, ProductId = "PROD-1", Quantity = 2 }
+            new OrderCreated { StreamId = orderId }
         };
 
         var request = new AppendRequest
         {
             StreamId = orderId,
             Events = events,
-            ExpectedVersion = null // no optimistic concurrency for new stream
+            ExpectedVersion = null
         };
 
-        AppendResult result = await _eventStore.AppendToStreamAsync(request, ct);
-        Console.WriteLine($"Appended to version {result.NextExpectedVersion}");
-
-        // Persist batched changes
-        await _eventStore.FlushEventsAsync(ct);
+        await eventStore.AppendToStreamAsync(request, ct);
+        await eventStore.FlushEventsAsync(ct);
     }
 
-    public async Task<Order> GetOrderAsync(Guid orderId, CancellationToken ct)
+    public async Task<IList<IDomainEvent>> GetEventsAsync(Guid streamId, CancellationToken ct)
     {
-        var order = new Order();
-
         var request = new ReadStreamRequest
         {
-            StreamId = orderId,
-            FromVersion = 0,
-            MaxCount = 1000
+            StreamId = streamId,
+            FromVersion = 0
         };
 
-        await foreach (var envelope in _eventStore.ReadStreamAsync(request, ct))
+        var events = new List<IDomainEvent>();
+        await foreach (var envelope in eventStore.ReadStreamAsync(request, ct))
         {
-            order.Apply(envelope.Event);
+            events.Add(envelope.Event);
         }
-
-        return order;
+        return events;
     }
 }
 ```
 
----
+### Database Tables
 
-## Core components
+The `EventDataContext` creates the following tables in the `Events` schema:
 
-### `EventStoreDataContext`
+| Table | Description |
+|-------|-------------|
+| `Domains` | Domain events with stream versioning |
+| `Snapshots` | Aggregate snapshot events |
+| `OutboxEvents` | Integration events for outbox pattern |
+| `InboxEvents` | Integration events for inbox pattern |
 
-The EF Core DbContext for storing domain events and snapshots:
+### Apply Migrations
 
-```csharp
-using System.Events.Data;
-using Microsoft.EntityFrameworkCore;
-
-// The context is pre-configured with:
-// - EntityDomainEvent entity for domain events
-// - EntitySnapshotEvent entity for snapshots
-// - Default schema "Events"
-
-// Access via DI
-public class MyService
-{
-    private readonly EventStoreDataContext _context;
-
-    public MyService(EventStoreDataContext context)
-        => _context = context;
-
-    public async Task<int> GetEventCountAsync(Guid streamId)
-    {
-        return await _context.Domains
-            .CountAsync(e => e.StreamId == streamId);
-    }
-}
+```bash
+dotnet ef migrations add InitialEventStore --context EventDataContext
+dotnet ef database update --context EventDataContext
 ```
 
-### `OutboxStoreDataContext`
+## Core Types
 
-The EF Core DbContext for the outbox pattern (integration events):
+| Type | Description |
+|------|-------------|
+| `EventDataContext` | EF Core DbContext for events |
+| `EventRepository<T>` | Generic event entity repository |
+| `EntityEventDomain` | Domain event entity |
+| `EntityEventSnapshot` | Snapshot event entity |
+| `EntityEventOutbox` | Outbox event entity |
+| `EntityEventInbox` | Inbox event entity |
 
-```csharp
-using System.Events.Data;
+## License
 
-// The context stores integration events for reliable publishing
-// Events are marked as processed after successful delivery
-
-public sealed class IntegrationEventPublisher
-{
-    private readonly OutboxStoreDataContext _outbox;
-    private readonly IEventConverter _converter;
-
-    public async Task PublishPendingEventsAsync(CancellationToken cancellationToken)
-    {
-        var pending = await _outbox.Set<EntityIntegrationEvent>()
-            .Where(e => e.Status == EventStatus.PENDING)
-            .ToListAsync(cancellationToken);
-
-        foreach (var entity in pending)
-        {
-            var @event = _converter.ConvertEntityToEvent(entity);
-            await PublishToMessageBusAsync(@event, cancellationToken);
-            entity.SetStatus(EventStatus.PROCESSED);
-        }
-
-        await _outbox.SaveChangesAsync(cancellationToken);
-    }
-
-    private static Task PublishToMessageBusAsync(IIntegrationEvent @event, CancellationToken ct)
-    {
-        // Publish to your broker (Azure Service Bus, Kafka, etc.)
-        // @event.EventId for idempotency
-        // @event.CorrelationId (W3C trace ID) for distributed tracing
-        // @event.CausationId for event causation tracking
-        return Task.CompletedTask;
+Apache License 2.0
     }
 }
 ```

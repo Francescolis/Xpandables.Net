@@ -1,53 +1,53 @@
-﻿# 🗃️ Xpandables.Entities.Data
+﻿# System.Entities.Data
 
-[![NuGet](https://img.shields.io/badge/NuGet-10.0.1-blue.svg)](https://www.nuget.org/packages/Xpandables.Entities.Data)
-[![.NET](https://img.shields.io/badge/.NET-10.0-purple.svg)](https://dotnet.microsoft.com/)
+[![NuGet](https://img.shields.io/nuget/v/Xpandables.Entities.Data.svg)](https://www.nuget.org/packages/Xpandables.Entities.Data)
+[![.NET](https://img.shields.io/badge/.NET-10.0+-purple.svg)](https://dotnet.microsoft.com/)
 [![License](https://img.shields.io/badge/License-Apache%202.0-green.svg)](LICENSE)
 
-> **Entity Framework Core Repository & Unit of Work** — Production-ready EF Core implementation with `DataContext`, automatic entity lifecycle tracking, `EntityUpdater` bulk operations, and transaction management.
+Entity Framework Core implementation of Repository and Unit of Work patterns with automatic entity lifecycle tracking.
 
----
+## Overview
 
-## 📋 Overview
+`System.Entities.Data` provides Entity Framework Core implementations for the repository and unit of work patterns defined in `System.Entities`. It includes `DataContext` with automatic entity lifecycle tracking, `Repository<TEntity>` for data access, and `UnitOfWork<TDataContext>` for transaction management.
 
-`Xpandables.Entities.Data` provides a complete Entity Framework Core implementation of the repository and unit of work patterns. The library includes `DataContext` with automatic entity lifecycle tracking (`CreatedOn`, `UpdatedOn`, `DeletedOn`), `Repository` for CRUD operations, `UnitOfWork` for transaction management, and `EntityUpdater` for efficient bulk updates using EF Core 10's `ExecuteUpdate` API.
+Built for .NET 10 with Entity Framework Core 10.
 
-Built for .NET 10 with C# 14 extension members, this package simplifies data access while maintaining full control over database operations.
+## Features
 
-### ✨ Key Features
+### DataContext
+- **`DataContext`** — Extended `DbContext` with automatic entity lifecycle tracking
+- Automatically sets `CreatedOn` when entities are added
+- Automatically sets `UpdatedOn` when entities are modified
+- Automatically sets `DeletedOn` and `Status` when entities are deleted
 
-- 🗄️ **`DataContext`** — Extended `DbContext` with automatic entity lifecycle tracking
-- 📦 **`Repository<TDataContext>`** — Generic EF Core repository with async LINQ support
-- 🔄 **`UnitOfWork<TDataContext>`** — Transaction management with repository coordination
-- ⚡ **`EntityUpdater<T>`** — Fluent API for bulk updates using `ExecuteUpdate`/`ExecuteDelete`
-- 📅 **Entity Lifecycle** — Automatic `CreatedOn`/`UpdatedOn`/`DeletedOn` timestamps via `IEntity`
-- 🔧 **Value Converters** — `JsonDocument` and `ReadOnlyMemory<byte>` EF Core converters
-- 🎯 **Type Safe** — Full `DynamicallyAccessedMembers` attribute support for trimming
+### Repository
+- **`Repository<TEntity>`** — Generic EF Core repository implementing `IRepository<TEntity>`
+- Implements `IAmbientContextReceiver<DataContext>` for context injection
+- Full async CRUD with `IAsyncPagedEnumerable<T>` results
 
----
+### Unit of Work
+- **`UnitOfWork<TDataContext>`** — Transaction management implementing `IUnitOfWork<TDataContext>`
+- **`UnitOfWorkTransaction`** — Transaction wrapper with commit/rollback
 
-## 📦 Installation
+### Value Converters
+- **`JsonDocumentValueConverter`** — Convert `JsonDocument` to/from string
+- **`ReadOnlyMemoryToByteArrayConverter`** — Convert `ReadOnlyMemory<byte>` to/from byte array
+- **`ConverterExtensions`** — Helpers for converter registration
 
-```bash
-dotnet add package System.Entities.Data
-dotnet add package Microsoft.EntityFrameworkCore.SqlServer
-```
+### Extensions
+- **`EntityUpdaterExtensions`** — Build EF Core `ExecuteUpdate` expressions from `EntityUpdater<T>`
+- **`IEntityPropertyUpdateExtensions`** — Convert property updates to EF Core setters
+
+## Installation
 
 ```bash
 dotnet add package Xpandables.Entities.Data
 dotnet add package Microsoft.EntityFrameworkCore.SqlServer
 ```
 
-Or via NuGet Package Manager:
+**Dependencies:** `System.Entities`, `Microsoft.EntityFrameworkCore`
 
-```powershell
-Install-Package Xpandables.Entities.Data
-Install-Package Microsoft.EntityFrameworkCore.SqlServer
-```
-
----
-
-## 🚀 Quick Start
+## Quick Start
 
 ### Define Your DataContext
 
@@ -62,67 +62,17 @@ public class AppDataContext : DataContext
 
     public DbSet<User> Users => Set<User>();
     public DbSet<Order> Orders => Set<Order>();
-    public DbSet<Product> Products => Set<Product>();
 
     protected override void OnModelCreating(ModelBuilder modelBuilder)
     {
         base.OnModelCreating(modelBuilder);
-        
+
         modelBuilder.Entity<User>(entity =>
         {
-            entity.HasKey(e => e.Id);
+            entity.HasKey(e => e.KeyId);
             entity.Property(e => e.Name).IsRequired().HasMaxLength(200);
-            entity.HasIndex(e => e.Email).IsUnique();
-        });
-
-        modelBuilder.Entity<Order>(entity =>
-        {
-            entity.HasKey(e => e.Id);
-            entity.HasOne(e => e.User)
-                .WithMany(u => u.Orders)
-                .HasForeignKey(e => e.UserId);
         });
     }
-}
-```
-
-### Define Entities with IEntity
-
-```csharp
-using System.Entities;
-
-public class User : IEntity
-{
-    public Guid Id { get; set; }
-    public string Name { get; set; } = string.Empty;
-    public string Email { get; set; } = string.Empty;
-    public bool IsActive { get; set; } = true;
-    
-    // Automatic tracking properties from IEntity
-    public DateTime CreatedOn { get; set; }
-    public DateTime? UpdatedOn { get; set; }
-    public DateTime? DeletedOn { get; set; }
-    public EntityStatus Status { get; set; }
-    
-    // Navigation
-    public ICollection<Order> Orders { get; set; } = [];
-}
-
-public class Order : IEntity
-{
-    public Guid Id { get; set; }
-    public Guid UserId { get; set; }
-    public decimal Total { get; set; }
-    public OrderStatus OrderStatus { get; set; }
-    
-    // IEntity properties
-    public DateTime CreatedOn { get; set; }
-    public DateTime? UpdatedOn { get; set; }
-    public DateTime? DeletedOn { get; set; }
-    public EntityStatus Status { get; set; }
-    
-    // Navigation
-    public User User { get; set; } = null!;
 }
 ```
 
@@ -131,24 +81,132 @@ public class Order : IEntity
 ```csharp
 using Microsoft.Extensions.DependencyInjection;
 
-var builder = WebApplication.CreateBuilder(args);
-
 // Register DataContext
-builder.Services.AddXDataContext<AppDataContext>(options =>
-    options.UseSqlServer(builder.Configuration.GetConnectionString("DefaultConnection")));
+services.AddXDataContext<AppDataContext>(options =>
+    options.UseSqlServer(connectionString));
 
-// Register Repository and UnitOfWork
-builder.Services.AddXEntityFrameworkRepositories<AppDataContext>();
+// Register UnitOfWork
+services.AddXUnitOfWork<AppDataContext>();
 
-var app = builder.Build();
-app.Run();
+// Register Repository
+services.AddXRepository();
 ```
 
----
+### Use the Repository
 
-## 📦 Repository Operations
+```csharp
+using System.Entities;
 
-### Query Operations
+public class UserService(IRepository<User> repository, IUnitOfWork unitOfWork)
+{
+    public IAsyncPagedEnumerable<UserDto> GetUsers()
+    {
+        var spec = QuerySpecification
+            .For<User>()
+            .Where(u => u.IsActive)
+            .Select(u => new UserDto(u.KeyId, u.Name));
+
+        return repository.FetchAsync(spec);
+    }
+
+    public async Task<User?> GetByIdAsync(Guid id, CancellationToken ct)
+    {
+        var spec = QuerySpecification
+            .For<User>()
+            .Where(u => u.KeyId == id)
+            .Select(u => u);
+
+        return await repository.FetchSingleOrDefaultAsync(spec, ct);
+    }
+
+    public async Task CreateUserAsync(User user, CancellationToken ct)
+    {
+        await repository.AddAsync([user], ct);
+        await unitOfWork.SaveChangesAsync(ct);
+    }
+}
+```
+
+### Bulk Updates with EntityUpdater
+
+```csharp
+using System.Entities;
+
+// Create update specification
+var spec = QuerySpecification
+    .For<Product>()
+    .Where(p => p.IsActive)
+    .Select(p => p);
+
+// Build updater using fluent API
+var updater = EntityUpdater
+    .For<Product>()
+    .SetProperty(e => e.Price, e => e.Price * 1.1m)
+    .SetProperty(e => e.LastUpdated, DateTime.UtcNow);
+
+// Execute bulk update
+int updated = await repository.UpdateAsync(spec, updater, ct);
+```
+
+### Transactions
+
+```csharp
+await using var transaction = await unitOfWork.BeginTransactionAsync(ct);
+
+try
+{
+    await orderRepository.AddAsync([order], ct);
+    await unitOfWork.SaveChangesAsync(ct);
+
+    await transaction.CommitAsync(ct);
+}
+catch
+{
+    await transaction.RollbackAsync(ct);
+    throw;
+}
+```
+
+### Value Converters
+
+```csharp
+using System.Entities.Data.Converters;
+
+protected override void OnModelCreating(ModelBuilder modelBuilder)
+{
+    modelBuilder.Entity<Document>()
+        .Property(e => e.Metadata)
+        .HasConversion<JsonDocumentValueConverter>();
+
+    modelBuilder.Entity<File>()
+        .Property(e => e.Content)
+        .HasConversion<ReadOnlyMemoryToByteArrayConverter>();
+}
+```
+
+## Core Types
+
+| Type | Description |
+|------|-------------|
+| `DataContext` | Extended DbContext with lifecycle tracking |
+| `Repository<TEntity>` | EF Core repository implementation |
+| `UnitOfWork<TDataContext>` | Transaction coordinator |
+| `UnitOfWorkTransaction` | Transaction wrapper |
+| `JsonDocumentValueConverter` | JsonDocument EF converter |
+| `ReadOnlyMemoryToByteArrayConverter` | Memory EF converter |
+
+## DI Extension Methods
+
+| Method | Description |
+|--------|-------------|
+| `AddXDataContext<T>()` | Register DataContext with options |
+| `AddXDataContextFactory<T>()` | Register DataContext factory |
+| `AddXUnitOfWork<T>()` | Register UnitOfWork for DataContext |
+| `AddXRepository()` | Register generic Repository |
+
+## License
+
+Apache License 2.0
 
 ```csharp
 using System.Entities;

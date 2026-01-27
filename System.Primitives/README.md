@@ -1,49 +1,80 @@
-﻿# 🔧 Xpandables.Primitives
+﻿# System.Primitives
 
-[![NuGet](https://img.shields.io/badge/NuGet-10.0.1-blue.svg)](https://www.nuget.org/packages/Xpandables.Primitives)
-[![.NET](https://img.shields.io/badge/.NET-10.0-purple.svg)](https://dotnet.microsoft.com/)
+[![NuGet](https://img.shields.io/nuget/v/Xpandables.Primitives.svg)](https://www.nuget.org/packages/Xpandables.Primitives)
+[![.NET](https://img.shields.io/badge/.NET-10.0+-purple.svg)](https://dotnet.microsoft.com/)
+[![License](https://img.shields.io/badge/License-Apache%202.0-green.svg)](LICENSE)
 
-> **Core Primitives & Utilities** - Strongly-typed primitive wrappers (Value Objects), extension methods, state patterns, caching, and foundational utilities.
+Core primitives and utilities for .NET applications. Zero dependencies, foundational abstractions.
 
----
+## Overview
 
-## 🎯 Overview
+`System.Primitives` provides foundational abstractions and utilities used throughout the Xpandables.Net ecosystem. It includes strongly-typed primitive wrappers (Value Objects), state management patterns, memory-aware caching, element collections, and essential extension methods.
 
-`Xpandables.Primitives` provides the foundational abstractions and utilities used throughout the Xpandables.Net ecosystem. It includes the Value Object pattern via `IPrimitive<T>`, state management patterns, memory-aware caching, element collections, and essential extension methods.
+Built for .NET 10 with zero external dependencies.
 
-This library has **zero dependencies** and serves as the base for all other Xpandables.Net packages.
+## Features
 
-### ✨ Key Features
+### Primitives (Value Objects)
+- **`IPrimitive`** — Base primitive interface
+- **`IPrimitive<TValue>`** — Typed primitive with value
+- **`IPrimitive<TPrimitive, TValue>`** — Strongly-typed primitive with factory methods
+- **`PrimitiveJsonConverterAttribute`** — JSON serialization support for primitives
 
-- 🎯 **Strongly-Typed Primitives** - Value Object pattern with `IPrimitive<TPrimitive, TValue>`
-- 🔄 **State Pattern** - `IState`, `IStateContext`, `IMemento` implementations
-- 💾 **Memory-Aware Cache** - Intelligent caching with GC pressure monitoring
-- 📦 **Element Collections** - Flexible key-value collections with JSON support
-- 🧩 **Extension Methods** - String, Object, HttpStatusCode, Exception utilities
-- 🔧 **Disposable Helpers** - Base classes for IDisposable/IAsyncDisposable
-- 🌐 **HTTP Utilities** - Status code helpers and extensions
-- ⚙️ **Service Decorators** - DI composition and decorator patterns
+### Collections
+- **`ElementCollection`** — Key-value collection with O(1) lookup
+- **`ElementEntry`** — Single entry with key and values
+- **`ElementCollectionExtensions`** — Extension methods for collections
+- **`EnumerableExtensions`** — LINQ extensions
+- **`QueryableEmpty<T>`** — Empty queryable implementation
+- **`ValidationResultExtensions`** — Convert validation results to collections
+- **`HttpHeadersExtensions`** — Convert HTTP headers to collections
 
----
+### State Pattern
+- **`IState`** — State interface
+- **`IStateContext`** — State context for state machines
+- **`IMemento`** — Memento pattern for state snapshots
+- **`IOriginator`** — Originator for memento pattern
+- **`StateContext`** — Default state context implementation
+- **`State`** — Base state implementation
 
-## 📥 Installation
+### Caching
+- **`MemoryAwareCache<TKey, TValue>`** — Cache with GC pressure monitoring
+- **`WeakCacheEntry<T>`** — Weak reference cache entry
+- **`ICacheTypeResolver`** — Type resolver for cached items
+- **`CacheTypeResolver`** — Default type resolver
+
+### Disposable Helpers
+- **`Disposable`** — Base class for IDisposable
+- **`DisposableAsync`** — Base class for IAsyncDisposable
+
+### Extension Methods
+- **`StringExtensions`** — String manipulation utilities
+- **`ObjectExtensions`** — Object utilities
+- **`ExceptionExtensions`** — Exception utilities
+- **`HttpStatusCodeExtensions`** — HTTP status helpers
+- **`JsonSerializerExtensions`** — JSON serialization helpers
+- **`ThrowExceptionExtensions`** — Fluent exception throwing
+
+### Dependency Injection
+- **`IAddService`** — Service registration interface
+- **`IServiceDecoratorExtensions`** — Decorator pattern for DI
+- **`ExportOptions`** — MEF-style export options
+- **`StaticConfiguration`** — Static configuration utilities
+- **`LazyResolved<T>`** — Lazy service resolution
+
+## Installation
 
 ```bash
 dotnet add package Xpandables.Primitives
 ```
 
----
+## Quick Start
 
-## 🚀 Quick Start
-
-### Strongly-Typed Primitives (Value Objects)
-
-Define domain primitives with built-in validation and type safety:
+### Strongly-Typed Primitives
 
 ```csharp
 using System;
 
-// Email primitive with validation
 [PrimitiveJsonConverter<Email, string>]
 public readonly record struct Email : IPrimitive<Email, string>
 {
@@ -52,10 +83,8 @@ public readonly record struct Email : IPrimitive<Email, string>
     public static Email Create(string value)
     {
         ArgumentException.ThrowIfNullOrWhiteSpace(value);
-        
         if (!value.Contains('@'))
             throw new ArgumentException("Invalid email format");
-
         return new Email { Value = value.ToLower() };
     }
 
@@ -63,168 +92,86 @@ public readonly record struct Email : IPrimitive<Email, string>
 
     public static implicit operator string(Email email) => email.Value;
     public static implicit operator Email(string value) => Create(value);
-    
-    public static bool operator ==(Email left, Email right) => 
-        left.Value == right.Value;
-    public static bool operator !=(Email left, Email right) => 
-        !(left == right);
+
+    public static bool operator ==(Email left, Email right) => left.Value == right.Value;
+    public static bool operator !=(Email left, Email right) => !(left == right);
 }
 
 // Usage
 Email email = "john@example.com";  // Implicit conversion + validation
-string emailStr = email;            // Implicit back to string
-Console.WriteLine($"Email: {email}");  // john@example.com
-
-// Validation happens at construction
-try
-{
-    Email invalid = "notanemail";  // Throws ArgumentException
-}
-catch (ArgumentException ex)
-{
-    Console.WriteLine($"Error: {ex.Message}");
-}
-
-// JSON serialization automatically works
-var json = JsonSerializer.Serialize(email);  // "john@example.com"
-var deserialized = JsonSerializer.Deserialize<Email>(json);
+string emailStr = email;           // Implicit back to string
 ```
 
-### Money Primitive
+### Element Collections
 
 ```csharp
-[PrimitiveJsonConverter<Money, decimal>]
-public readonly record struct Money : IPrimitive<Money, decimal>
+using System.Collections;
+
+// Create a collection
+var collection = ElementCollection.Create("key1", "value1", "value2")
+    .Add("key2", "value3");
+
+// Access entries
+foreach (var entry in collection)
 {
-    public required decimal Value { get; init; }
-
-    public static Money Create(decimal value)
-    {
-        if (value < 0)
-            throw new ArgumentException("Money cannot be negative");
-
-        return new Money { Value = Math.Round(value, 2) };
-    }
-
-    public static decimal DefaultValue => 0m;
-
-    public static implicit operator decimal(Money money) => money.Value;
-    public static implicit operator Money(decimal value) => Create(value);
-
-    public static bool operator ==(Money left, Money right) => 
-        left.Value == right.Value;
-    public static bool operator !=(Money left, Money right) => 
-        !(left == right);
-
-    // Domain operations
-    public Money Add(Money other) => Value + other.Value;
-    public Money Subtract(Money other) => Value - other.Value;
-    public Money Multiply(decimal factor) => Value * factor;
+    Console.WriteLine($"{entry.Key}: {string.Join(", ", entry.Values)}");
 }
 
-// Usage
-Money price = 19.99m;
-Money tax = 2.00m;
-Money total = price.Add(tax);  // 21.99
-
-Console.WriteLine($"Total: ${total}");  // Total: $21.99
+// Lookup by key (O(1))
+if (collection.TryGetValue("key1", out var values))
+{
+    Console.WriteLine($"Found: {values}");
+}
 ```
 
----
+### State Pattern
 
-## 💡 Why Use Primitives?
-
-### Before (Raw Types)
 ```csharp
-public class User
+using System.States;
+
+public class TrafficLight : StateContext<TrafficLightState>
 {
-    public string Email { get; set; }  // ❌ No validation
-    public string PhoneNumber { get; set; }  // ❌ Can mix up with email
-    public decimal Balance { get; set; }  // ❌ Can be negative
+    public TrafficLight() : base(new RedState()) { }
+
+    public void Next() => State.Handle(this);
 }
 
-// Easy to make mistakes
-user.Email = user.PhoneNumber;  // ❌ Compiles but wrong!
-user.Balance = -100m;  // ❌ Invalid but allowed
+public abstract class TrafficLightState : State
+{
+    public abstract void Handle(TrafficLight context);
+}
+
+public class RedState : TrafficLightState
+{
+    public override void Handle(TrafficLight context) => context.SetState(new GreenState());
+}
 ```
 
-### After (Strongly-Typed Primitives)
-```csharp
-public class User
-{
-    public Email Email { get; init; }  // ✅ Type-safe
-    public PhoneNumber PhoneNumber { get; init; }  // ✅ Cannot mix up
-    public Money Balance { get; init; }  // ✅ Validated at construction
-}
+### Memory-Aware Cache
 
-// Type safety prevents errors
-user.Email = user.PhoneNumber;  // ✅ Compile error!
-user.Balance = Money.Create(-100);  // ✅ Throws at runtime
+```csharp
+using System.Cache;
+
+var cache = new MemoryAwareCache<string, ExpensiveObject>();
+
+cache.GetOrAdd("key", () => new ExpensiveObject());
+
+// Cache automatically evicts under memory pressure
 ```
 
----
+## Core Types
 
-## 📦 Element Collections
+| Type | Description |
+|------|-------------|
+| `IPrimitive<TPrimitive, TValue>` | Strongly-typed value object |
+| `ElementCollection` | Key-value collection |
+| `IStateContext` | State machine context |
+| `MemoryAwareCache<K, V>` | GC-aware cache |
+| `Disposable` | IDisposable base class |
 
-Flexible key-value collections for errors, headers, metadata:
+## License
 
-```csharp
-// Create element collection
-var errors = ElementCollection.With([
-    new ElementEntry("Email", "Email is required"),
-    new ElementEntry("Password", ["Password too short", "Password needs uppercase"])
-]);
-
-// Iterate
-foreach (var entry in errors)
-{
-    Console.WriteLine($"{entry.Key}:");
-    foreach (var value in entry.Values)
-    {
-        Console.WriteLine($"  - {value}");
-    }
-}
-
-// Convert to dictionary
-Dictionary<string, object> dict = errors.ToDictionaryObject();
-
-// JSON serialization
-string json = JsonSerializer.Serialize(errors);
-// Output: [{"key":"Email","values":["Email is required"]},...]
-```
-
----
-
-## 🔄 State Pattern
-
-Implement state machines with the State pattern:
-
-```csharp
-// Define states
-public abstract class OrderState : State<Order>
-{
-    protected OrderState(string name) : base(name) { }
-
-    public static OrderState Pending => new PendingState();
-    public static OrderState Confirmed => new ConfirmedState();
-    public static OrderState Shipped => new ShippedState();
-    public static OrderState Delivered => new DeliveredState();
-}
-
-public class PendingState : OrderState
-{
-    public PendingState() : base("Pending") { }
-
-    public override void Handle(IStateContext<Order> context)
-    {
-        // Business logic here
-        context.Order.ConfirmOrder();
-        context.SetState(OrderState.Confirmed);
-    }
-}
-
-// Use state context
-var order = new Order();
+Apache License 2.0
 var context = new StateContext<Order>(order, OrderState.Pending);
 
 context.Request();  // Transitions to Confirmed

@@ -1,224 +1,233 @@
-﻿# 🌐 System.Rests
+﻿# System.Rests
 
-[![NuGet](https://img.shields.io/badge/NuGet-10.0.0-blue.svg)](https://www.nuget.org/packages/System.Rests)
-[![.NET](https://img.shields.io/badge/.NET-10.0-purple.svg)](https://dotnet.microsoft.com/)
+[![NuGet](https://img.shields.io/nuget/v/Xpandables.Rests.svg)](https://www.nuget.org/packages/Xpandables.Rests)
+[![.NET](https://img.shields.io/badge/.NET-10.0+-purple.svg)](https://dotnet.microsoft.com/)
+[![License](https://img.shields.io/badge/License-Apache%202.0-green.svg)](LICENSE)
 
-> **REST Client** - Type-safe, attribute-based HTTP client with automatic serialization, request composition, and response handling.
+Type-safe, attribute-based REST client with automatic request composition, response handling, and interceptors.
 
----
+## Overview
 
-## 📋 Overview
+`System.Rests` provides a type-safe, attribute-based HTTP client for building RESTful API clients. It uses attributes to define endpoints and request types, with automatic request composition, response handling, request/response interceptors, and resilience options.
 
-`System.Rests` provides a type-safe, attribute-based HTTP client for building RESTful API clients. It uses attributes to define endpoints and request types, with automatic request composition and response handling.
+Built for .NET 10 with full async support.
 
-### 🎯 Key Features
+## Features
 
-- 🌐 **IRestClient** - Core HTTP client interface with async support
-- 🏷️ **REST Attributes** - RestGet, RestPost, RestPut, RestDelete, RestPatch
-- 📦 **Request Types** - IRestString, IRestQueryString, IRestFormUrlEncoded, IRestMultipart
-- 🔐 **Authentication** - Built-in Basic Auth and Bearer token support
-- 📤 **Request Composition** - Automatic query string, headers, cookies, path parameters
-- 📥 **Response Handling** - JSON deserialization with RestResponse
-- 🌊 **Streaming** - IRestRequestStream for async enumerable responses
-- ⚙️ **Extensible** - Custom request/response composers
+### Core Client
+- **`IRestClient`** — Core HTTP client interface with async support
+- **`RestClient`** — Default implementation with interceptor pipeline
 
----
-
-## 🚀 Quick Start
-
-### Installation
-
-```bash
-dotnet add package System.Rests
-```
-
-### Define a REST Request
-
-```csharp
-using System.Rests.Abstractions;
-
-// GET request with query parameters
-[RestGet("/api/users/{id}")]
-public sealed record GetUserRequest(Guid Id) : IRestRequest<User>, IRestPathString;
-
-// POST request with JSON body
-[RestPost("/api/users")]
-public sealed record CreateUserRequest(string Name, string Email) : IRestRequest<User>, IRestString;
-
-// PUT request with JSON body
-[RestPut("/api/users/{id}")]
-public sealed record UpdateUserRequest(Guid Id, string Name, string Email) : IRestRequest<User>, IRestString, IRestPathString;
-
-// DELETE request
-[RestDelete("/api/users/{id}")]
-public sealed record DeleteUserRequest(Guid Id) : IRestRequest, IRestPathString;
-```
-
-### Use the REST Client
-
-```csharp
-using System.Rests.Abstractions;
-
-public class UserService
-{
-    private readonly IRestClient _restClient;
-
-    public UserService(IRestClient restClient)
-        => _restClient = restClient;
-
-    public async Task<User?> GetUserAsync(Guid userId, CancellationToken cancellationToken)
-    {
-        using var response = await _restClient.SendAsync(
-            new GetUserRequest(userId),
-            cancellationToken);
-
-        if (response.IsSuccess)
-        {
-            return response.GetResult<User>();
-        }
-
-        return null;
-    }
-
-    public async Task<User?> CreateUserAsync(string name, string email, CancellationToken cancellationToken)
-    {
-        using var response = await _restClient.SendAsync(
-            new CreateUserRequest(name, email),
-            cancellationToken);
-
-        return response.IsSuccess ? response.GetResult<User>() : null;
-    }
-}
-```
-
----
-
-## 🧩 Core Concepts
+### Request/Response Building
+- **`IRestRequestBuilder`** — Build HTTP requests from context
+- **`IRestResponseBuilder`** — Build responses from HTTP messages
+- **`RestRequestBuilder`** — Default request builder with interceptors
+- **`RestResponseBuilder`** — Default response builder with interceptors
 
 ### REST Attributes
-
-```csharp
-// HTTP GET - query parameters by default
-[RestGet("/api/products")]
-public sealed record GetProductsRequest : IRestRequest<Product[]>, IRestQueryString;
-
-// HTTP POST - JSON body by default, secured
-[RestPost("/api/products")]
-public sealed record CreateProductRequest(string Name, decimal Price) : IRestRequest<Product>, IRestString;
-
-// HTTP PUT - JSON body, secured
-[RestPut("/api/products/{id}")]
-public sealed record UpdateProductRequest(Guid Id, string Name, decimal Price) : IRestRequest<Product>, IRestString, IRestPathString;
-
-// HTTP DELETE - secured
-[RestDelete("/api/products/{id}")]
-public sealed record DeleteProductRequest(Guid Id) : IRestRequest, IRestPathString;
-
-// HTTP PATCH - for partial updates
-[RestPatch("/api/products/{id}")]
-public sealed record PatchProductRequest(Guid Id, IEnumerable<IPatchOperation> Operations) : IRestRequest<Product>, IRestPatch, IRestPathString;
-```
+- **`RestGetAttribute`** — HTTP GET requests
+- **`RestPostAttribute`** — HTTP POST requests
+- **`RestPutAttribute`** — HTTP PUT requests
+- **`RestDeleteAttribute`** — HTTP DELETE requests
+- **`RestPatchAttribute`** — HTTP PATCH requests
+- **`IRestAttributeBuilder`** — Dynamic attribute building
 
 ### Request Types
+- **`IRestRequest`** — Base request interface
+- **`IRestString`** — JSON body requests
+- **`IRestQueryString`** — Query parameter requests
+- **`IRestPathString`** — URL path parameter requests
+- **`IRestFormUrlEncoded`** — Form data requests
+- **`IRestMultipart`** — File upload requests
+- **`IRestByteArray`** — Binary data requests
+- **`IRestStream`** — Stream data requests
+- **`IRestHeader`** — Custom header requests
+- **`IRestCookie`** — Cookie requests
+- **`IRestBasicAuthentication`** — Basic auth requests
+- **`IRestPatch`** — JSON Patch requests
+- **`IRestMime`** — MIME type support
 
-```csharp
-// IRestString - JSON body
-[RestPost("/api/users")]
-public sealed record CreateUserRequest(string Name) : IRestRequest<User>, IRestString;
+### Interceptors
+- **`IRestRequestInterceptor`** — Intercept requests before sending
+- **`IRestResponseInterceptor`** — Intercept responses after receiving
+- **`Order`** — Control interceptor execution order
 
-// IRestQueryString - Query parameters
-[RestGet("/api/users")]
-public sealed record SearchUsersRequest(string? Name, int? Page) : IRestRequest<User[]>, IRestQueryString;
+### Resilience Options
+- **`RestClientOptions`** — Configure timeout, retry, circuit breaker, logging
+- **`RestRetryOptions`** — Retry policy configuration
+- **`RestCircuitBreakerOptions`** — Circuit breaker configuration
+- **`RestLogLevel`** — Logging levels
 
-// IRestPathString - URL path parameters
-[RestGet("/api/users/{id}")]
-public sealed record GetUserRequest(Guid Id) : IRestRequest<User>, IRestPathString;
+### Request Composers
+- **`IRestRequestComposer`** — Compose HTTP request messages
+- **`RestStringComposer`** — JSON body composition
+- **`RestQueryStringComposer`** — Query string composition
+- **`RestPathStringComposer`** — Path parameter composition
+- **`RestFormUrlEncodedComposer`** — Form data composition
+- **`RestMultipartComposer`** — Multipart composition
+- **`RestHeaderComposer`** — Header composition
+- **`RestCookieComposer`** — Cookie composition
+- **`RestBasicAuthComposer`** — Basic auth composition
+- **`RestByteArrayComposer`** — Binary composition
+- **`RestStreamComposer`** — Stream composition
+- **`RestPatchComposer`** — JSON Patch composition
 
-// IRestFormUrlEncoded - Form data
-[RestPost("/api/login")]
-public sealed record LoginRequest(string Username, string Password) : IRestRequest<Token>, IRestFormUrlEncoded;
+### Response Composers
+- **`IRestResponseComposer`** — Compose REST responses
+- **`RestResponseResultComposer`** — Typed result responses
+- **`RestResponseContentComposer`** — Content responses
+- **`RestResponseStreamComposer`** — Stream responses
+- **`RestResponseStreamPagedComposer`** — Paged stream responses
+- **`RestResponseNoContentComposer`** — No content responses
+- **`RestResponseFailureComposer`** — Error responses
 
-// IRestMultipart - File uploads
-[RestPost("/api/files")]
-public sealed record UploadFileRequest(Stream FileContent, string FileName) : IRestRequest<FileInfo>, IRestMultipart;
+### Other Types
+- **`RestRequest`** — Request wrapper
+- **`RestResponse`** — Response wrapper with typed result
+- **`RestRequestContext`** — Request building context
+- **`RestResponseContext`** — Response building context
+- **`RestSettings`** — Global settings
+- **`RestAttributeProvider`** — Attribute resolution
+- **`RestAuthorizationHandler`** — Authorization handling
 
-// IRestHeader - Custom headers
-[RestGet("/api/secure")]
-public sealed record SecureRequest : IRestRequest<Data>, IRestHeader
-{
-    public IDictionary<string, string> GetHeaders() => new Dictionary<string, string>
-    {
-        ["X-Custom-Header"] = "value"
-    };
-}
+## Installation
 
-// IRestCookie - Cookies
-[RestGet("/api/session")]
-public sealed record SessionRequest : IRestRequest<Session>, IRestCookie
-{
-    public IDictionary<string, string> GetCookies() => new Dictionary<string, string>
-    {
-        ["session_id"] = "abc123"
-    };
-}
-
-// IRestBasicAuthentication - Basic auth
-[RestGet("/api/secure")]
-public sealed record BasicAuthRequest : IRestRequest<Data>, IRestBasicAuthentication
-{
-    public string Username => "user";
-    public string Password => "pass";
-}
+```bash
+dotnet add package Xpandables.Rests
 ```
 
-### Streaming Responses
+## Quick Start
 
-```csharp
-// For async enumerable responses
-[RestGet("/api/events")]
-public sealed record GetEventsRequest : IRestRequestStream<Event>;
-
-// Usage
-public async IAsyncEnumerable<Event> GetEventsAsync(CancellationToken cancellationToken)
-{
-    using var response = await _restClient.SendAsync(
-        new GetEventsRequest(),
-        cancellationToken);
-
-    await foreach (var evt in response.GetResultStream<Event>(cancellationToken))
-    {
-        yield return evt;
-    }
-}
-```
-
----
-
-## ⚙️ Configuration
-
-### Service Registration
+### Register Services
 
 ```csharp
 using Microsoft.Extensions.DependencyInjection;
 
-var builder = WebApplication.CreateBuilder(args);
-
-// Register REST client
-builder.Services.AddXRestClient(options =>
+services.AddXRestAttributeProvider();
+services.AddXRestRequestComposers();
+services.AddXRestResponseComposers();
+services.AddXRestRequestBuilder();
+services.AddXRestResponseBuilder();
+services.AddXRestClient((sp, client) =>
 {
-    options.BaseAddress = new Uri("https://api.example.com");
-    options.Timeout = TimeSpan.FromSeconds(30);
+    client.BaseAddress = new Uri("https://api.example.com");
 });
-
-// With authentication handler
-builder.Services.AddXRestClient(options =>
-{
-    options.BaseAddress = new Uri("https://api.example.com");
-})
-.ConfigurePrimaryHttpMessageHandler<BearerTokenHandler>();
 ```
 
----
+### Define REST Requests
+
+```csharp
+using System.Rests.Abstractions;
+
+// GET with path parameters
+public sealed record GetUserRequest(Guid Id) 
+    : IRestRequest<User>, IRestPathString, IRestAttributeBuilder
+{
+    public IDictionary<string, string> GetPathString() => 
+        new Dictionary<string, string> { ["id"] = Id.ToString() };
+
+    public RestAttribute Build(IServiceProvider sp) => 
+        new RestGetAttribute("/api/users/{id}");
+}
+
+// POST with JSON body
+public sealed record CreateUserRequest(string Name, string Email) 
+    : IRestRequest<User>, IRestString, IRestAttributeBuilder
+{
+    public RestAttribute Build(IServiceProvider sp) => 
+        new RestPostAttribute("/api/users");
+}
+```
+
+### Use the Client
+
+```csharp
+public class UserService(IRestClient client)
+{
+    public async Task<User?> GetUserAsync(Guid id, CancellationToken ct)
+    {
+        RestResponse response = await client.SendAsync(new GetUserRequest(id), ct);
+
+        if (response.IsSuccess)
+        {
+            return response.ToRestResponse<User>().Result;
+        }
+
+        return null;
+    }
+}
+```
+
+### Add Request Interceptor
+
+```csharp
+public class LoggingInterceptor : IRestRequestInterceptor
+{
+    public int Order => 0;
+
+    public ValueTask InterceptAsync(RestRequestContext context, CancellationToken ct)
+    {
+        Console.WriteLine($"Sending: {context.Message.RequestUri}");
+        return ValueTask.CompletedTask;
+    }
+}
+
+// Register
+services.AddSingleton<IRestRequestInterceptor, LoggingInterceptor>();
+```
+
+### Add Response Interceptor
+
+```csharp
+public class MetricsInterceptor : IRestResponseInterceptor
+{
+    public int Order => 0;
+
+    public ValueTask<RestResponse> InterceptAsync(
+        RestResponseContext context, 
+        RestResponse response, 
+        CancellationToken ct)
+    {
+        Console.WriteLine($"Status: {response.StatusCode}");
+        return ValueTask.FromResult(response);
+    }
+}
+```
+
+### Configure Resilience
+
+```csharp
+services.ConfigureXRestClientOptions(options =>
+{
+    options.Timeout = TimeSpan.FromSeconds(30);
+    options.Retry = new RestRetryOptions
+    {
+        MaxRetryAttempts = 3,
+        UseExponentialBackoff = true
+    };
+    options.CircuitBreaker = new RestCircuitBreakerOptions
+    {
+        FailureThreshold = 5,
+        BreakDuration = TimeSpan.FromSeconds(30)
+    };
+});
+```
+
+## Core Types
+
+| Type | Description |
+|------|-------------|
+| `IRestClient` | HTTP client interface |
+| `IRestRequest` | Base request interface |
+| `RestAttribute` | Endpoint attribute |
+| `IRestRequestInterceptor` | Request interceptor |
+| `IRestResponseInterceptor` | Response interceptor |
+| `RestResponse` | Response wrapper |
+| `RestClientOptions` | Resilience configuration |
+
+## License
+
+Apache License 2.0
 
 ## ✅ Best Practices
 
