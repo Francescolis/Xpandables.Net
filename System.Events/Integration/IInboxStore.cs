@@ -57,9 +57,7 @@ public interface IInboxStore
     /// <param name="visibilityTimeout">Optional lease duration used when reclaiming failed events via dequeue.</param>
     /// <returns>An <see cref="InboxReceiveResult"/> indicating whether processing should proceed.</returns>
     Task<InboxReceiveResult> ReceiveAsync(
-#pragma warning disable CA1716 // Identifiers should not match keywords
         IIntegrationEvent @event,
-#pragma warning restore CA1716 // Identifiers should not match keywords
         string consumer,
         TimeSpan? visibilityTimeout = default,
         CancellationToken cancellationToken = default);

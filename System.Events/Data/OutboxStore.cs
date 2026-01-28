@@ -188,7 +188,14 @@ public sealed class OutboxStore<[DynamicallyAccessedMembers(DynamicallyAccessedM
                     .SetProperty(e => e.Status, EntityStatus.ONERROR.Value)
                     .SetProperty(e => e.ErrorMessage, failure.Error)
                     .SetProperty(e => e.AttemptCount, e => e.AttemptCount + 1)
-                    .SetProperty(e => e.NextAttemptOn, e => now.AddSeconds(Math.Min(600, 10 * Math.Pow(2, Math.Min(10, e.AttemptCount)))))
+                    .SetProperty(e => e.NextAttemptOn, e => now.AddSeconds(
+                        e.AttemptCount < 1 ? 10 :
+                        e.AttemptCount < 2 ? 20 :
+                        e.AttemptCount < 3 ? 40 :
+                        e.AttemptCount < 4 ? 80 :
+                        e.AttemptCount < 5 ? 160 :
+                        e.AttemptCount < 6 ? 320 :
+                        600))
                     .SetProperty(e => e.ClaimId, (Guid?)null)
                     .SetProperty(e => e.UpdatedOn, now);
 
