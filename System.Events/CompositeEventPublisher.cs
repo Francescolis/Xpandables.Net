@@ -28,10 +28,10 @@ public sealed class CompositeEventPublisher(IEnumerable<IEventPublisher> publish
         .Where(static p => p is not CompositeEventPublisher)];
 
     /// <inheritdoc/>
-    public async Task PublishAsync<TEvent>(TEvent eventInstance, CancellationToken cancellationToken = default)
+    public async Task PublishAsync<TEvent>(TEvent @event, CancellationToken cancellationToken = default)
         where TEvent : class, IEvent
     {
-        ArgumentNullException.ThrowIfNull(eventInstance);
+        ArgumentNullException.ThrowIfNull(@event);
 
         if (_publishers.Length == 0)
         {
@@ -42,7 +42,7 @@ public sealed class CompositeEventPublisher(IEnumerable<IEventPublisher> publish
 
         for (int i = 0; i < _publishers.Length; i++)
         {
-            tasks[i] = _publishers[i].PublishAsync(eventInstance, cancellationToken);
+            tasks[i] = _publishers[i].PublishAsync(@event, cancellationToken);
         }
 
         await Task.WhenAll(tasks).ConfigureAwait(false);

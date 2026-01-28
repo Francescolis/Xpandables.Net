@@ -39,9 +39,9 @@ public sealed partial class InboxEventHandlerDecorator<TEvent, TEventHandler>(
 
     /// <inheritdoc />
     [Diagnostics.CodeAnalysis.SuppressMessage("Design", "CA1031:Do not catch general exception types", Justification = "Must catch all to record failure in inbox before rethrowing")]
-    public async Task HandleAsync(TEvent eventInstance, CancellationToken cancellationToken = default)
+    public async Task HandleAsync(TEvent @event, CancellationToken cancellationToken = default)
     {
-        ArgumentNullException.ThrowIfNull(eventInstance);
+        ArgumentNullException.ThrowIfNull(@event);
 
         var consumer = _inner.Consumer;
 
@@ -51,7 +51,7 @@ public sealed partial class InboxEventHandlerDecorator<TEvent, TEventHandler>(
         }
 
         var receiveResult = await _inbox.ReceiveAsync(
-            eventInstance,
+            @event,
             consumer,
             visibilityTimeout: null,
             cancellationToken).ConfigureAwait(false);
@@ -59,17 +59,17 @@ public sealed partial class InboxEventHandlerDecorator<TEvent, TEventHandler>(
         if (receiveResult.Status == EntityStatus.DUPLICATE ||
             receiveResult.Status == EntityStatus.PROCESSING)
         {
-            LogInboxSkipped(_logger, eventInstance.EventId, consumer, receiveResult.Status);
+            LogInboxSkipped(_logger, @event.EventId, consumer, receiveResult.Status);
             return;
         }
 
         try
         {
-            await _inner.HandleAsync(eventInstance, cancellationToken).ConfigureAwait(false);
+            await _inner.HandleAsync(@event, cancellationToken).ConfigureAwait(false);
 
             await _inbox.CompleteAsync(
                 cancellationToken,
-                new CompletedInboxEvent(eventInstance.EventId, consumer)).ConfigureAwait(false);
+                new CompletedInboxEvent(@event.EventId, consumer)).ConfigureAwait(false);
         }
         catch (Exception exception)
         {
@@ -77,11 +77,11 @@ public sealed partial class InboxEventHandlerDecorator<TEvent, TEventHandler>(
             {
                 await _inbox.FailAsync(
                     cancellationToken,
-                    new FailedInboxEvent(eventInstance.EventId, consumer, exception.ToString())).ConfigureAwait(false);
+                    new FailedInboxEvent(@event.EventId, consumer, exception.ToString())).ConfigureAwait(false);
             }
             catch (Exception failException)
             {
-                LogInboxFailError(_logger, failException, eventInstance.EventId, consumer);
+                LogInboxFailError(_logger, failException, @event.EventId, consumer);
             }
 
             throw;

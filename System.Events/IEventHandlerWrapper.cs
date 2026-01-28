@@ -34,10 +34,10 @@ public interface IEventHandlerWrapper
     /// <summary>
     /// Processes the specified instance asynchronously, allowing cancellation via a token.
     /// </summary>
-    /// <param name="instance">The object instance to be handled. Cannot be null.</param>
+    /// <param name="event">The object instance to be handled. Cannot be null.</param>
     /// <param name="cancellationToken">A token that can be used to request cancellation of the asynchronous operation.</param>
     /// <returns>A task that represents the asynchronous handling operation.</returns>
-    Task HandleAsync(object instance, CancellationToken cancellationToken = default);
+    Task HandleAsync(object @event, CancellationToken cancellationToken = default);
 }
 
 /// <summary>
@@ -52,13 +52,13 @@ public sealed class EventHandlerWrapper<TEvent>(IEnumerable<IEventHandler<TEvent
     public Type EventType => typeof(TEvent);
 
     /// <inheritdoc />
-    public async Task HandleAsync(object instance, CancellationToken cancellationToken = default)
+    public async Task HandleAsync(object @event, CancellationToken cancellationToken = default)
     {
-        ArgumentNullException.ThrowIfNull(instance);
+        ArgumentNullException.ThrowIfNull(@event);
 
-        if (instance is not TEvent @event)
+        if (@event is not TEvent instance)
         {
-            throw new ArgumentException($"Invalid event type. Expected {typeof(TEvent).Name}, but got {instance.GetType().Name}.", nameof(instance));
+            throw new ArgumentException($"Invalid event type. Expected {typeof(TEvent).Name}, but got {@event.GetType().Name}.", nameof(@event));
         }
 
         if (!handlers.Any())
@@ -68,7 +68,7 @@ public sealed class EventHandlerWrapper<TEvent>(IEnumerable<IEventHandler<TEvent
 
         foreach (var handler in handlers)
         {
-            await handler.HandleAsync(@event, cancellationToken).ConfigureAwait(false);
+            await handler.HandleAsync(instance, cancellationToken).ConfigureAwait(false);
         }
     }
 }

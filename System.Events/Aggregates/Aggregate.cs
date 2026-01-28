@@ -98,52 +98,52 @@ public abstract class Aggregate : IAggregate
     }
 
     /// <inheritdoc />
-    public void LoadFromHistory(IDomainEvent domainEvent)
+    public void LoadFromHistory(IDomainEvent @event)
     {
-        ArgumentNullException.ThrowIfNull(domainEvent);
+        ArgumentNullException.ThrowIfNull(@event);
 
-        Mutate(domainEvent);
-        StreamVersion = domainEvent.StreamVersion;
-        UpdateBusinessVersionFromEvent(domainEvent);
+        Mutate(@event);
+        StreamVersion = @event.StreamVersion;
+        UpdateBusinessVersionFromEvent(@event);
     }
 
     /// <inheritdoc />
     public void MarkEventsAsCommitted() => _uncommittedEvents.Clear();
 
     /// <inheritdoc />
-    public void AppendEvent(IDomainEvent domainEvent)
+    public void AppendEvent(IDomainEvent @event)
     {
-        ArgumentNullException.ThrowIfNull(domainEvent);
-        AppendVersioningEvent(domainEvent);
+        ArgumentNullException.ThrowIfNull(@event);
+        AppendVersioningEvent(@event);
     }
 
     /// <inheritdoc />
-    public void AppendVersioningEvent(IDomainEvent domainEvent)
+    public void AppendVersioningEvent(IDomainEvent @event)
     {
-        ArgumentNullException.ThrowIfNull(domainEvent);
+        ArgumentNullException.ThrowIfNull(@event);
 
         long nextStreamVersion = StreamVersion + 1;
 
         // Enforce identity for the very first event.
-        if (domainEvent.StreamId == Guid.Empty && StreamId == Guid.Empty)
+        if (@event.StreamId == Guid.Empty && StreamId == Guid.Empty)
         {
             throw new InvalidOperationException(
                 "Aggregate is not initialized. The first event must carry a non-empty StreamId.");
         }
 
         // Propagate existing StreamId when event didn't carry one.
-        if (domainEvent.StreamId == Guid.Empty && StreamId != Guid.Empty)
+        if (@event.StreamId == Guid.Empty && StreamId != Guid.Empty)
         {
-            domainEvent = domainEvent.WithStreamId(StreamId);
+            @event = @event.WithStreamId(StreamId);
         }
 
-        if (string.IsNullOrWhiteSpace(domainEvent.StreamName))
+        if (string.IsNullOrWhiteSpace(@event.StreamName))
         {
-            domainEvent = domainEvent.WithStreamName(StreamName);
+            @event = @event.WithStreamName(StreamName);
         }
 
-        domainEvent = domainEvent.WithStreamVersion(nextStreamVersion);
-        Apply(domainEvent);
+        @event = @event.WithStreamVersion(nextStreamVersion);
+        Apply(@event);
     }
 
     /// <inheritdoc />
@@ -221,12 +221,12 @@ public abstract class Aggregate : IAggregate
     /// <summary>
     /// Override to implement custom business version logic based on events.
     /// </summary>
-    /// <param name="domainEvent">The domain event being applied.</param>
-    protected virtual void UpdateBusinessVersionFromEvent(IDomainEvent domainEvent)
+    /// <param name="event">The domain event being applied.</param>
+    protected virtual void UpdateBusinessVersionFromEvent(IDomainEvent @event)
     {
-        ArgumentNullException.ThrowIfNull(domainEvent);
+        ArgumentNullException.ThrowIfNull(@event);
 
-        if (IsSignificantBusinessEvent(domainEvent))
+        if (IsSignificantBusinessEvent(@event))
         {
             BusinessVersion++;
         }
@@ -235,45 +235,45 @@ public abstract class Aggregate : IAggregate
     /// <summary>
     /// Determines if an event represents a significant business change.
     /// </summary>
-    /// <param name="domainEvent">The domain event to evaluate.</param>
-    protected virtual bool IsSignificantBusinessEvent(IDomainEvent domainEvent) => false;
+    /// <param name="event">The domain event to evaluate.</param>
+    protected virtual bool IsSignificantBusinessEvent(IDomainEvent @event) => false;
 
-    private void Apply(IDomainEvent domainEvent)
+    private void Apply(IDomainEvent @event)
     {
         // Idempotency for current unit: ignore duplicate event Ids.
-        if (_uncommittedEvents.Any(e => e.EventId == domainEvent.EventId))
+        if (_uncommittedEvents.Any(e => e.EventId == @event.EventId))
         {
             return;
         }
 
         // Ensure monotonic versioning for newly raised events.
-        if (domainEvent.StreamVersion <= StreamVersion)
+        if (@event.StreamVersion <= StreamVersion)
         {
             long nextStreamVersion = StreamVersion + 1;
-            domainEvent = domainEvent.WithStreamVersion(nextStreamVersion);
+            @event = @event.WithStreamVersion(nextStreamVersion);
         }
 
-        Mutate(domainEvent);
-        StreamVersion = domainEvent.StreamVersion;
-        _uncommittedEvents.Enqueue(domainEvent);
+        Mutate(@event);
+        StreamVersion = @event.StreamVersion;
+        _uncommittedEvents.Enqueue(@event);
     }
 
-    private void Mutate(IDomainEvent domainEvent)
+    private void Mutate(IDomainEvent @event)
     {
-        if (_eventHandlers.TryGetValue(domainEvent.GetType(), out Delegate? handler))
+        if (_eventHandlers.TryGetValue(@event.GetType(), out Delegate? handler))
         {
             // Capture identity at first application.
-            if (StreamId == Guid.Empty && domainEvent.StreamId != Guid.Empty)
+            if (StreamId == Guid.Empty && @event.StreamId != Guid.Empty)
             {
-                StreamId = domainEvent.StreamId;
+                StreamId = @event.StreamId;
             }
 
-            _ = handler.DynamicInvoke(domainEvent);
+            _ = handler.DynamicInvoke(@event);
         }
         else
         {
             throw new UnauthorizedAccessException(
-                $"The submitted event {domainEvent.GetType().Name} is not authorized.");
+                $"The submitted event {@event.GetType().Name} is not authorized.");
         }
     }
 }

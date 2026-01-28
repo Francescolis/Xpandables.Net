@@ -28,6 +28,5 @@ public interface IEventBus
     /// </summary>
     /// <param name="event">The integration event to publish.</param>
     /// <param name="cancellationToken">A token to monitor for cancellation requests.</param>
-    [Diagnostics.CodeAnalysis.SuppressMessage("Naming", "CA1716:Identifiers should not match keywords", Justification = "<Pending>")]
     Task PublishAsync(IIntegrationEvent @event, CancellationToken cancellationToken = default);
 }

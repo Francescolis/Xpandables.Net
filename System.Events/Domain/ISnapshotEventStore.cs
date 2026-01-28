@@ -39,8 +39,8 @@ public interface ISnapshotEventStore
     /// <summary>
     /// Asynchronously appends a snapshot event to the store.
     /// </summary>
-    /// <param name="snapshotEvent">The snapshot event to be saved. Cannot be null.</param>
+    /// <param name="event">The snapshot event to be saved. Cannot be null.</param>
     /// <param name="cancellationToken">A cancellation token that can be used to cancel the asynchronous save operation.</param>
     /// <returns>A task that represents the asynchronous save operation.</returns>
-    Task AppendSnapshotAsync(ISnapshotEvent snapshotEvent, CancellationToken cancellationToken = default);
+    Task AppendSnapshotAsync(ISnapshotEvent @event, CancellationToken cancellationToken = default);
 }

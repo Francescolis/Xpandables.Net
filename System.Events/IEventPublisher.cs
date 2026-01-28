@@ -57,13 +57,13 @@ public interface IEventPublisher
     /// Publishes an event asynchronously to all subscribed handlers.
     /// </summary>
     /// <typeparam name="TEvent">The type of the event being published.</typeparam>
-    /// <param name="eventInstance">The event to be published.</param>
+    /// <param name="event">The event to be published.</param>
     /// <param name="cancellationToken">The token to monitor for cancellation requests.</param>
     /// <returns>A task that represents the asynchronous publishing operation.</returns>
     /// <exception cref="InvalidOperationException">
     /// Thrown when publishing the event fails. See inner exception for additional details.
     /// </exception>
-    Task PublishAsync<TEvent>(TEvent eventInstance, CancellationToken cancellationToken = default)
+    Task PublishAsync<TEvent>(TEvent @event, CancellationToken cancellationToken = default)
         where TEvent : class, IEvent;
 }
 

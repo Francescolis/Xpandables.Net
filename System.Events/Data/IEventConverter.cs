@@ -14,8 +14,6 @@
  * limitations under the License.
  *
 ********************************************************************************/
-using System.Diagnostics.CodeAnalysis;
-
 namespace System.Events.Data;
 
 /// <summary>
@@ -37,7 +35,6 @@ public interface IEventConverter<TEntityEvent, TEvent>
     /// <param name="event">The event to convert. Cannot be null.</param>
     /// <param name="context">The context that provides additional information required for the conversion process. Cannot be null.</param>
     /// <returns>An entity representation of the specified event.</returns>
-    [SuppressMessage("Naming", "CA1716:Identifiers should not match keywords", Justification = "<Pending>")]
     TEntityEvent ConvertEventToEntity(TEvent @event, IEventConverterContext context);
 
     /// <summary>
@@ -46,6 +43,5 @@ public interface IEventConverter<TEntityEvent, TEvent>
     /// <param name="event">The entity event to convert. Cannot be null.</param>
     /// <param name="context">The context that provides additional information required for the conversion. Cannot be null.</param>
     /// <returns>An event of type TEvent that represents the converted entity event.</returns>
-    [SuppressMessage("Naming", "CA1716:Identifiers should not match keywords", Justification = "<Pending>")]
     TEvent ConvertEntityToEvent(TEntityEvent @event, IEventConverterContext context);
 }

@@ -54,20 +54,20 @@ public interface IEventSourcing
     /// <summary>
     /// Replays the specified domain event to restore the object's state from its event history.
     /// </summary>
-    /// <param name="domainEvent">The domain event to apply. Cannot be null.</param>
-    void LoadFromHistory(IDomainEvent domainEvent);
+    /// <param name="event">The domain event to apply. Cannot be null.</param>
+    void LoadFromHistory(IDomainEvent @event);
 
     /// <summary>
     /// Appends a domain event to the event stream.
     /// </summary>
-    /// <param name="domainEvent">The domain event to be appended. Cannot be null.</param>
-    void AppendEvent(IDomainEvent domainEvent);
+    /// <param name="event">The domain event to be appended. Cannot be null.</param>
+    void AppendEvent(IDomainEvent @event);
 
     /// <summary>
     /// Appends a versioning domain event to the event stream.
     /// </summary>
-    /// <param name="domainEvent">The domain event to be appended. Cannot be null.</param>
-    void AppendVersioningEvent(IDomainEvent domainEvent);
+    /// <param name="event">The domain event to be appended. Cannot be null.</param>
+    void AppendVersioningEvent(IDomainEvent @event);
 
     /// <summary>
     /// Appends a versioning event to the event stream using the specified event factory.

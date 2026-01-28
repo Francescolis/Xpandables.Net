@@ -29,11 +29,11 @@ namespace System.Events.Aggregates;
 /// <typeparam name="TAggregate">The type of aggregate managed by the store. Must implement <see cref="IAggregate"/> and have a parameterless
 /// constructor.</typeparam>
 /// <param name="eventStore">The event store used to persist and retrieve aggregate events.</param>
-/// <param name="domainEvents">The collection used to track and dispatch pending domain events after aggregates are saved.</param>
+/// <param name="events">The collection used to track and dispatch pending domain events after aggregates are saved.</param>
 /// <param name="eventEnricher">The event enricher used to augment domain events with additional data.</param>
 public sealed class AggregateStore<TAggregate>(
     IEventStore eventStore,
-    IPendingDomainEventsBuffer domainEvents,
+    IPendingDomainEventsBuffer events,
     IDomainEventEnricher eventEnricher) : IAggregateStore<TAggregate>
     where TAggregate : class, IAggregate, IAggregateFactory<TAggregate>
 {
@@ -100,6 +100,6 @@ public sealed class AggregateStore<TAggregate>(
 
         await _eventStore.AppendToStreamAsync(request, cancellationToken).ConfigureAwait(false);
 
-        domainEvents.AddRange(enriched, aggregate.MarkEventsAsCommitted);
+        events.AddRange(enriched, aggregate.MarkEventsAsCommitted);
     }
 }

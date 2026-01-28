@@ -40,6 +40,4 @@ public interface IScheduler : IDisposable
 /// <remarks>Implementations of this interface combine scheduling capabilities with hosted service lifecycle
 /// management, allowing scheduled tasks to be started and stopped in coordination with the application's host. This is
 /// typically used in environments such as ASP.NET Core, where background services are managed by the host.</remarks>
-public interface IHostedScheduler : IScheduler, IHostedService
-{
-}
+public interface IHostedScheduler : IScheduler, IHostedService;

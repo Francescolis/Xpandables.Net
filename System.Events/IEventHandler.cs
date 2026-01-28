@@ -24,16 +24,15 @@ namespace System.Events;
 /// This interface is typically used in event-driven architectures to decouple event publishing from handling
 /// logic.</remarks>
 /// <typeparam name="TEvent">The type of event to handle. Must implement <see cref="IEvent"/>.</typeparam>
-[Diagnostics.CodeAnalysis.SuppressMessage("Naming", "CA1711:Identifiers should not have incorrect suffix", Justification = "<Pending>")]
 public interface IEventHandler<in TEvent>
     where TEvent : class, IEvent
 {
     /// <summary>
     /// Handles the specified event asynchronously, allowing for cancellation via a token.
     /// </summary>
-    /// <param name="eventInstance">The event instance to be processed. Cannot be null.</param>
+    /// <param name="event">The event instance to be processed. Cannot be null.</param>
     /// <param name="cancellationToken">A token that can be used to request cancellation of the operation. The default value is <see
     /// cref="CancellationToken.None"/>.</param>
     /// <returns>A task that represents the asynchronous handling operation.</returns>
-    Task HandleAsync(TEvent eventInstance, CancellationToken cancellationToken = default);
+    Task HandleAsync(TEvent @event, CancellationToken cancellationToken = default);
 }

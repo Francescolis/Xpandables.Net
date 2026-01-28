@@ -26,15 +26,15 @@ public sealed class EventBusPublisher(IEventBus eventBus) : IEventPublisher
     private readonly IEventBus _eventBus = eventBus ?? throw new ArgumentNullException(nameof(eventBus));
 
     /// <inheritdoc/>
-    public Task PublishAsync<TEvent>(TEvent eventInstance, CancellationToken cancellationToken = default)
+    public Task PublishAsync<TEvent>(TEvent @event, CancellationToken cancellationToken = default)
         where TEvent : class, IEvent
     {
-        ArgumentNullException.ThrowIfNull(eventInstance);
+        ArgumentNullException.ThrowIfNull(@event);
 
-        if (eventInstance is not IIntegrationEvent integrationEvent)
+        if (@event is not IIntegrationEvent integrationEvent)
         {
             throw new InvalidOperationException(
-                $"Cannot publish event type '{eventInstance.GetType().FullName}'. " +
+                $"Cannot publish event type '{@event.GetType().FullName}'. " +
                 $"'{nameof(EventBusPublisher)}' only supports '{nameof(IIntegrationEvent)}'.");
         }
 

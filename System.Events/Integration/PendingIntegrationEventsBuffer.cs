@@ -28,10 +28,10 @@ public sealed class PendingIntegrationEventsBuffer : IPendingIntegrationEventsBu
     private readonly ConcurrentQueue<IIntegrationEvent> _queue = new();
 
     /// <inheritdoc/>
-    public void Add(IIntegrationEvent eventInstance)
+    public void Add(IIntegrationEvent @event)
     {
-        ArgumentNullException.ThrowIfNull(eventInstance);
-        _queue.Enqueue(eventInstance);
+        ArgumentNullException.ThrowIfNull(@event);
+        _queue.Enqueue(@event);
     }
 
     /// <inheritdoc/>

@@ -25,8 +25,8 @@ public interface IPendingIntegrationEventsBuffer
     /// <summary>
     /// Adds the specified integration event to the system for processing.
     /// </summary>
-    /// <param name="eventInstance">The integration event to be added. This parameter cannot be null.</param>
-    void Add(IIntegrationEvent eventInstance);
+    /// <param name="event">The integration event to be added. This parameter cannot be null.</param>
+    void Add(IIntegrationEvent @event);
 
     /// <summary>
     /// Adds a collection of integration events to the current instance.

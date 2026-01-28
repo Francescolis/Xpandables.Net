@@ -107,12 +107,12 @@ public sealed class EventStore<[DynamicallyAccessedMembers(DynamicallyAccessedMe
 
     ///<inheritdoc/>
     public async Task AppendSnapshotAsync(
-        ISnapshotEvent snapshotEvent,
+        ISnapshotEvent @event,
         CancellationToken cancellationToken = default)
     {
-        ArgumentNullException.ThrowIfNull(snapshotEvent);
+        ArgumentNullException.ThrowIfNull(@event);
 
-        var entity = _snapshotConverter.ConvertEventToEntity(snapshotEvent, _converterFactory.ConverterContext);
+        var entity = _snapshotConverter.ConvertEventToEntity(@event, _converterFactory.ConverterContext);
 
         await _snapshotRepository.AddAsync([entity], cancellationToken).ConfigureAwait(false);
         // defer SaveChanges to FlushEventsAsync
