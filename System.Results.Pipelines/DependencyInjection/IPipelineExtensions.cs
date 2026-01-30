@@ -1,4 +1,4 @@
-﻿/*******************************************************************************
+/*******************************************************************************
  * Copyright (C) 2025 Kamersoft
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
@@ -40,16 +40,16 @@ public static class IPipelineExtensions
     extension(IServiceCollection services)
     {
         /// <summary>
-        /// Registers the PipelineUnitOfWorkDecorator for all pipeline handlers in the service collection, enabling
+        /// Registers the PipelineEntityUnitOfWorkDecorator for all pipeline handlers in the service collection, enabling
         /// unit-of-work behavior within the pipeline execution.
         /// </summary>
         /// <remarks>Use this method to ensure that each pipeline handler is executed within a
         /// unit-of-work scope, which can help manage transactional consistency and resource cleanup. This method should
         /// be called during application startup as part of dependency injection configuration.</remarks>
-        /// <returns>The IServiceCollection instance with the PipelineUnitOfWorkDecorator registered. This enables further
+        /// <returns>The IServiceCollection instance with the PipelineEntityUnitOfWorkDecorator registered. This enables further
         /// chaining of service registrations.</returns>
-        public IServiceCollection AddXPipelineUnitOfWorkDecorator() =>
-            services.AddXPipelineDecorator(typeof(PipelineUnitOfWorkDecorator<>));
+        public IServiceCollection AddXPipelineEntityUnitOfWorkDecorator() =>
+            services.AddXPipelineDecorator(typeof(PipelineEntityUnitOfWorkDecorator<>));
 
         /// <summary>
         /// Registers the PipelineDataUnitOfWorkDecorator for all pipeline handlers, enabling ADO.NET
@@ -61,7 +61,7 @@ public static class IPipelineExtensions
         /// The transaction will be committed on success or rolled back on failure.
         /// </para>
         /// <para>
-        /// This is the ADO.NET equivalent of <see cref="AddXPipelineUnitOfWorkDecorator"/> which is used
+        /// This is the ADO.NET equivalent of <see cref="AddXPipelineEntityUnitOfWorkDecorator"/> which is used
         /// for Entity Framework Core persistence.
         /// </para>
         /// </remarks>

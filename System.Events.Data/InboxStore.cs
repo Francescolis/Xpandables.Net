@@ -32,7 +32,7 @@ namespace System.Events.Data;
 /// </para>
 /// </remarks>
 [RequiresDynamicCode("Expression compilation requires dynamic code generation.")]
-public sealed class DataInboxStore<
+public sealed class InboxStore<
     [DynamicallyAccessedMembers(DynamicallyAccessedMemberTypes.PublicProperties)] TEntityEventInbox> : IInboxStore
     where TEntityEventInbox : class, IEntityEventInbox
 {
@@ -46,7 +46,7 @@ public sealed class DataInboxStore<
     /// </summary>
     /// <param name="unitOfWork">The ADO.NET unit of work.</param>
     /// <param name="converterFactory">The event converter factory.</param>
-    public DataInboxStore(
+    public InboxStore(
         IDataUnitOfWork unitOfWork,
         IEventConverterFactory converterFactory)
     {

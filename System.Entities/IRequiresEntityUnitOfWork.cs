@@ -25,5 +25,5 @@ namespace System.Entities;
 /// pattern. This interface does not define any members and serves as a semantic indicator for dependency injection or
 /// other framework-specific behaviors.</remarks>
 #pragma warning disable CA1040 // Avoid empty interfaces
-public interface IRequiresUnitOfWork;
+public interface IRequiresEntityUnitOfWork;
 #pragma warning restore CA1040 // Avoid empty interfaces

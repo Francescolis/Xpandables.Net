@@ -26,7 +26,7 @@ namespace System.Entities;
 /// /// <para> For best practices, consider using directly the target data access technology (e.g., Entity Framework Core,
 /// Hibernate, Dapper) to leverage its full capabilities and optimizations).</para>
 /// </summary>
-public interface IUnitOfWork : IDisposable, IAsyncDisposable
+public interface IEntityUnitOfWork : IDisposable, IAsyncDisposable
 {
     /// <summary>
     /// Returns the repository of the specified type.
@@ -34,7 +34,7 @@ public interface IUnitOfWork : IDisposable, IAsyncDisposable
     /// <typeparam name="TRepository">The type of the repository.</typeparam>
     /// <returns>The repository instance.</returns>
     TRepository GetRepository<[DynamicallyAccessedMembers(DynamicallyAccessedMemberTypes.PublicConstructors | DynamicallyAccessedMemberTypes.PublicParameterlessConstructor)] TRepository>()
-       where TRepository : class, IRepository;
+       where TRepository : class, IEntityRepository;
 
     /// <summary>
     /// Begins a new transaction asynchronously.
@@ -43,19 +43,19 @@ public interface IUnitOfWork : IDisposable, IAsyncDisposable
     /// <remarks>The transaction must be disposed of using the returned <see cref="IAsyncDisposable"/> object
     /// to ensure that resources are released properly. This method is typically used to group a series of operations
     /// that should be executed as a single unit of work.</remarks>
-    /// <returns>An <see cref="IUnitOfWorkTransaction"/> that represents the transaction. 
+    /// <returns>An <see cref="IEntityUnitOfWorkTransaction"/> that represents the transaction. 
     /// Dispose of this object to commit or roll back the transaction.</returns>
-    Task<IUnitOfWorkTransaction> BeginTransactionAsync(CancellationToken cancellationToken = default);
+    Task<IEntityUnitOfWorkTransaction> BeginTransactionAsync(CancellationToken cancellationToken = default);
 
     /// <summary>
     /// Begins a new transaction within the current unit of work.
     /// </summary>
     /// <remarks>The returned transaction must be disposed to either commit or roll back the changes.  Ensure
     /// that only one transaction is active at a time within the same unit of work.</remarks>
-    /// <returns>An <see cref="IUnitOfWorkTransaction"/> instance representing the transaction.
+    /// <returns>An <see cref="IEntityUnitOfWorkTransaction"/> instance representing the transaction.
     /// Use this object to manage the transaction's lifecycle.
     /// Dispose of this object to commit or roll back the transaction.</returns>
-    IUnitOfWorkTransaction BeginTransaction();
+    IEntityUnitOfWorkTransaction BeginTransaction();
 
     /// <summary>
     /// Associates the specified transaction with the current database context for asynchronous operations.
@@ -66,9 +66,9 @@ public interface IUnitOfWork : IDisposable, IAsyncDisposable
     /// <param name="transaction">The <see cref="IDbTransaction"/> to be used for database operations.</param>
     /// <param name="cancellationToken">A token to monitor for cancellation requests. 
     /// The default value is <see cref="CancellationToken.None"/>.</param>
-    /// <returns>An <see cref="IUnitOfWorkTransaction"/> that represents the transaction. 
+    /// <returns>An <see cref="IEntityUnitOfWorkTransaction"/> that represents the transaction. 
     /// Dispose of this object to commit or roll back the transaction.</returns>
-    Task<IUnitOfWorkTransaction> UseTransactionAsync(
+    Task<IEntityUnitOfWorkTransaction> UseTransactionAsync(
         DbTransaction transaction,
         CancellationToken cancellationToken = default);
 
@@ -79,9 +79,9 @@ public interface IUnitOfWork : IDisposable, IAsyncDisposable
     /// transaction. The caller is responsible for managing the lifecycle of the provided transaction, including
     /// committing or rolling it back.</remarks>
     /// <param name="transaction">The <see cref="DbTransaction"/> to be used by the unit of work. Cannot be <see langword="null"/>.</param>
-    /// <returns>An <see cref="IUnitOfWorkTransaction"/> instance that represents the scope of the transaction.
+    /// <returns>An <see cref="IEntityUnitOfWorkTransaction"/> instance that represents the scope of the transaction.
     /// Dispose of this object to commit or roll back the transaction.</returns>
-    IUnitOfWorkTransaction UseTransaction(DbTransaction transaction);
+    IEntityUnitOfWorkTransaction UseTransaction(DbTransaction transaction);
 
     /// <summary>
     /// Saves all changes made in this unit of work.
@@ -106,5 +106,5 @@ public interface IUnitOfWork : IDisposable, IAsyncDisposable
 /// be performed as a single transaction with a specific context.
 /// </summary>
 /// <typeparam name="TContext">The type of the context.</typeparam>
-public interface IUnitOfWork<TContext> : IUnitOfWork
+public interface IEntityUnitOfWork<TContext> : IEntityUnitOfWork
     where TContext : class;

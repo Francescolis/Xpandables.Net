@@ -23,12 +23,12 @@ namespace Microsoft.Extensions.DependencyInjection;
 /// <summary>
 /// Provides extension methods for repository types to enable ambient context injection.
 /// </summary>
-public static class IRepositoryExtensions
+public static class IEntityRepositoryExtensions
 {
     /// <summary>
-    /// <see cref="IRepository"/> extensions.
+    /// <see cref="IEntityRepository"/> extensions.
     /// </summary>
-    extension(IRepository repository)
+    extension(IEntityRepository repository)
     {
         /// <summary>
         /// Injects the specified ambient <typeparamref name="TContext"/> into the repository instance,

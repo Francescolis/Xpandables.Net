@@ -1,5 +1,5 @@
 /*******************************************************************************
- * Copyright (C) 2024 Francis-Black EWANE
+ * Copyright (C) 2025 Kamersoft
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -14,7 +14,6 @@
  * limitations under the License.
  *
 ********************************************************************************/
-
 using System.Data.Common;
 using System.Diagnostics.CodeAnalysis;
 
@@ -31,12 +30,12 @@ namespace System.Entities.EntityFramework;
 /// It manages the DbContext lifecycle and ensures that all operations within a unit of work are executed within
 /// the same transaction context.</remarks>
 /// <remarks>
-/// Initializes a new instance of the <see cref="UnitOfWork{TDataContext}"/> class.
+/// Initializes a new instance of the <see cref="EntityUnitOfWork{TDataContext}"/> class.
 /// </remarks>
 /// <param name="context">The Entity Framework DbContext to use for database operations.</param>
 /// <param name="serviceProvider">service provider for dependency injection of repositories.</param>
 /// <exception cref="ArgumentNullException">Thrown when context is null.</exception>
-public class UnitOfWork<TContext>(TContext context, IServiceProvider serviceProvider) : IUnitOfWork<TContext>
+public class EntityUnitOfWork<TContext>(TContext context, IServiceProvider serviceProvider) : IEntityUnitOfWork<TContext>
     where TContext : DataContext
 {
     [SuppressMessage("Usage", "CA2213:Disposable fields should be disposed", Justification = "<Pending>")]
@@ -51,7 +50,7 @@ public class UnitOfWork<TContext>(TContext context, IServiceProvider serviceProv
 
     /// <inheritdoc />
     public virtual TRepository GetRepository<[DynamicallyAccessedMembers(DynamicallyAccessedMemberTypes.PublicConstructors | DynamicallyAccessedMemberTypes.PublicParameterlessConstructor)] TRepository>()
-        where TRepository : class, IRepository
+        where TRepository : class, IEntityRepository
     {
         ThrowIfDisposed();
 
@@ -82,7 +81,7 @@ public class UnitOfWork<TContext>(TContext context, IServiceProvider serviceProv
     }
 
     /// <inheritdoc />
-    public virtual async Task<IUnitOfWorkTransaction> BeginTransactionAsync(CancellationToken cancellationToken = default)
+    public virtual async Task<IEntityUnitOfWorkTransaction> BeginTransactionAsync(CancellationToken cancellationToken = default)
     {
         ThrowIfDisposed();
 
@@ -90,20 +89,20 @@ public class UnitOfWork<TContext>(TContext context, IServiceProvider serviceProv
             .BeginTransactionAsync(cancellationToken)
             .ConfigureAwait(false);
 
-        return new UnitOfWorkTransaction(transaction);
+        return new EntityUnitOfWorkTransaction(transaction);
     }
 
     /// <inheritdoc />
-    public virtual IUnitOfWorkTransaction BeginTransaction()
+    public virtual IEntityUnitOfWorkTransaction BeginTransaction()
     {
         ThrowIfDisposed();
 
         var transaction = _context.Database.BeginTransaction();
-        return new UnitOfWorkTransaction(transaction);
+        return new EntityUnitOfWorkTransaction(transaction);
     }
 
     /// <inheritdoc />
-    public virtual async Task<IUnitOfWorkTransaction> UseTransactionAsync(
+    public virtual async Task<IEntityUnitOfWorkTransaction> UseTransactionAsync(
         DbTransaction transaction,
         CancellationToken cancellationToken = default)
     {
@@ -115,11 +114,11 @@ public class UnitOfWork<TContext>(TContext context, IServiceProvider serviceProv
             .ConfigureAwait(false)
             ?? throw new InvalidOperationException("Failed to use transaction.");
 
-        return new UnitOfWorkTransaction(efTransaction);
+        return new EntityUnitOfWorkTransaction(efTransaction);
     }
 
     /// <inheritdoc />
-    public virtual IUnitOfWorkTransaction UseTransaction(DbTransaction transaction)
+    public virtual IEntityUnitOfWorkTransaction UseTransaction(DbTransaction transaction)
     {
         ThrowIfDisposed();
         ArgumentNullException.ThrowIfNull(transaction);
@@ -127,7 +126,7 @@ public class UnitOfWork<TContext>(TContext context, IServiceProvider serviceProv
         var efTransaction = _context.Database.UseTransaction(transaction)
             ?? throw new InvalidOperationException("Failed to use transaction.");
 
-        return new UnitOfWorkTransaction(efTransaction);
+        return new EntityUnitOfWorkTransaction(efTransaction);
     }
 
     /// <inheritdoc />

@@ -28,8 +28,7 @@ namespace System.Results.Pipelines;
 /// all pending changes are saved to the event store, and committed domain events are notified. 
 /// The decorator is thread-safe and intended for use in event-driven architectures.</remarks>
 /// <typeparam name="TRequest">The type of request being handled. Must implement <see cref="IRequest"/> and <see cref="IRequiresEventStorage"/>.</typeparam>
-/// <param name="eventStore">The event store used to flush events.</param>
-public sealed class PipelineEventStoreEventDecorator<TRequest>(IEventStore eventStore) :
+public sealed class PipelineEventStoreEventDecorator<TRequest>() :
     IPipelineDecorator<TRequest>
     where TRequest : class, IRequest, IRequiresEventStorage
 {
@@ -50,10 +49,6 @@ public sealed class PipelineEventStoreEventDecorator<TRequest>(IEventStore event
         }
         finally
         {
-            await eventStore
-                .FlushEventsAsync(cancellationToken)
-                .ConfigureAwait(false);
-
             foreach (var batch in PipelineDomainEventsDecorator<TRequest>.DomainEventCommitBuffer.Drain())
             {
                 batch.OnCommitted();

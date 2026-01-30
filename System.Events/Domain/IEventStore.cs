@@ -137,12 +137,4 @@ public interface IEventStore : ISnapshotEventStore
     /// resources.</returns>
     IAsyncDisposable SubscribeToAllStreams(SubscribeToAllStreamsRequest request, CancellationToken cancellationToken = default);
 
-    /// <summary>
-    /// Asynchronously flushes all pending events to the underlying storage or destination.
-    /// </summary>
-    /// <param name="cancellationToken">A cancellation token that can be used to cancel the flush operation. The default value is <see
-    /// cref="CancellationToken.None"/>.</param>
-    /// <returns>A task that represents the asynchronous flush operation.</returns>
-    /// <exception cref="InvalidOperationException">The process fails to flush the events.</exception>
-    Task FlushEventsAsync(CancellationToken cancellationToken = default);
 }

@@ -7,7 +7,7 @@
 		<Platforms>x64</Platforms>
 		<LangVersion>latest</LangVersion>
 		<Title>Xpandables.Events.Data</Title>
-		<Description>Events EntityFramework implementation.</Description>
+		<Description>Events ADO.NET implementation.</Description>
 		<Company>Kamersoft</Company>
 		<Authors>Francescolis</Authors>
 
@@ -30,7 +30,7 @@
 		<PackageIcon>Xpandables.Net.png</PackageIcon>
 		<ApplicationIcon>Xpandables.Net.ico</ApplicationIcon>
 		<PackageReadmeFile>README.md</PackageReadmeFile>
-		<PackageTags>EventStore, EventDataContext, OutboxStore</PackageTags>
+		<PackageTags>EventStore, OutboxStore, InboxStore, ADO.NET</PackageTags>
 		<NeutralLanguage>en-US</NeutralLanguage>
 		<PackageLicenseExpression>Apache-2.0</PackageLicenseExpression>
 		<PackageRequireLicenseAcceptance>true</PackageRequireLicenseAcceptance>
@@ -83,12 +83,15 @@
 	</ItemGroup>
 
 	<ItemGroup>
-		<PackageReference Include="Microsoft.EntityFrameworkCore" Version="10.0.2" />
-		<PackageReference Include="Microsoft.EntityFrameworkCore.Relational" Version="10.0.2" />
+		<EmbeddedResource Include="Scripts\*.cs" />
 	</ItemGroup>
 
 	<ItemGroup>
-	  <ProjectReference Include="..\System.Entities.EntityFramework\System.Entities.EntityFramework.csproj" />
+	  <Compile Remove="Scripts\EventTableScriptProviders.cs" />
+	</ItemGroup>
+
+	<ItemGroup>
+	  <ProjectReference Include="..\System.Entities\System.Entities.csproj" />
 	  <ProjectReference Include="..\System.Events\System.Events.csproj" />
 	</ItemGroup>
 

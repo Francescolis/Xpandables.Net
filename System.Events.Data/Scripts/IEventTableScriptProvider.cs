@@ -14,23 +14,24 @@
  * limitations under the License.
  *
 ********************************************************************************/
-namespace System.Entities.Data;
+namespace System.Events.Data.Scripts;
 
 /// <summary>
-/// Marker interface to indicate that a request requires automatic 
-/// ADO.NET unit of work transaction management.
+/// Provides SQL scripts for creating and dropping event store tables.
 /// </summary>
-/// <remarks>
-/// <para>
-/// Implement this interface to signal that the implementing request should be executed
-/// within an ADO.NET transaction scope. The transaction will be committed on success
-/// or rolled back on failure.
-/// </para>
-/// <para>
-/// This is the ADO.NET equivalent of <see cref="IRequiresEntityUnitOfWork"/> which is used
-/// for Entity Framework Core persistence.
-/// </para>
-/// </remarks>
-#pragma warning disable CA1040 // Avoid empty interfaces
-public interface IRequiresDataUnitOfWork;
-#pragma warning restore CA1040 // Avoid empty interfaces
+public interface IEventTableScriptProvider
+{
+    /// <summary>
+    /// Gets the SQL script to create all event tables.
+    /// </summary>
+    /// <param name="schema">Schema name for the tables.</param>
+    /// <returns>The SQL script.</returns>
+    string GetCreateAllTablesScript(string schema = "Events");
+
+    /// <summary>
+    /// Gets the SQL script to drop all event tables.
+    /// </summary>
+    /// <param name="schema">Schema name for the tables.</param>
+    /// <returns>The SQL script.</returns>
+    string GetDropAllTablesScript(string schema = "Events");
+}

@@ -1,5 +1,5 @@
 /*******************************************************************************
- * Copyright (C) 2024 Francis-Black EWANE
+ * Copyright (C) 2025 Kamersoft
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -14,7 +14,6 @@
  * limitations under the License.
  *
 ********************************************************************************/
-
 using System.Data.Common;
 
 using Microsoft.EntityFrameworkCore.Storage;
@@ -29,7 +28,7 @@ namespace System.Entities.EntityFramework;
 /// underlying database transaction. Instances of this class are intended to be used within a single transaction scope
 /// and should be disposed when no longer needed.</remarks>
 /// <param name="transaction">The underlying Entity Framework database transaction to be managed by this unit of work transaction. Cannot be null.</param>
-public sealed class UnitOfWorkTransaction(IDbContextTransaction transaction) : IUnitOfWorkTransaction
+public sealed class EntityUnitOfWorkTransaction(IDbContextTransaction transaction) : IEntityUnitOfWorkTransaction
 {
     private readonly IDbContextTransaction _transaction = transaction;
 

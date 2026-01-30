@@ -26,7 +26,7 @@ namespace System.Entities;
 /// proper transactional behavior. It also implements asynchronous disposal to  ensure that resources are released
 /// properly in both synchronous and asynchronous contexts.</remarks>
 /// <param name="dbTransaction"></param>
-public sealed class UnitOfWorkDbTransaction(DbTransaction dbTransaction) : IUnitOfWorkTransaction
+public sealed class EntityUnitOfWorkDbTransaction(DbTransaction dbTransaction) : IEntityUnitOfWorkTransaction
 {
     private readonly DbTransaction _dbTransaction = dbTransaction;
     private bool _committed;

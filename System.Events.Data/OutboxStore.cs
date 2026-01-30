@@ -27,7 +27,7 @@ namespace System.Events.Data;
 /// <typeparam name="TEntityEventOutbox">The type of the entity outbox event.</typeparam>
 /// <remarks>
 /// <para>
-/// The <see cref="DataOutboxStore{TEntityEventOutbox}"/> class implements the outbox pattern using
+/// The <see cref="OutboxStore{TEntityEventOutbox}"/> class implements the outbox pattern using
 /// raw ADO.NET (not Entity Framework Core). It ensures that integration events are stored, claimed, 
 /// and processed in a consistent and fault-tolerant manner.
 /// </para>
@@ -37,7 +37,7 @@ namespace System.Events.Data;
 /// </para>
 /// </remarks>
 [RequiresDynamicCode("Expression compilation requires dynamic code generation.")]
-public sealed class DataOutboxStore<
+public sealed class OutboxStore<
     [DynamicallyAccessedMembers(DynamicallyAccessedMemberTypes.PublicProperties)] TEntityEventOutbox> : IOutboxStore
     where TEntityEventOutbox : class, IEntityEventOutbox
 {
@@ -53,7 +53,7 @@ public sealed class DataOutboxStore<
     /// <param name="unitOfWork">The ADO.NET unit of work.</param>
     /// <param name="converterFactory">The factory used to obtain event converters.</param>
     /// <param name="eventEnricher">The enricher used to enrich integration events before processing.</param>
-    public DataOutboxStore(
+    public OutboxStore(
         IDataUnitOfWork unitOfWork,
         IEventConverterFactory converterFactory,
         IIntegrationEventEnricher eventEnricher)
@@ -121,7 +121,7 @@ public sealed class DataOutboxStore<
             candidates.Add(entity.KeyId);
         }
 
-        if (candidates.Count == 0) 
+        if (candidates.Count == 0)
             return [];
 
         // Step 2: Claim the events atomically
@@ -142,7 +142,7 @@ public sealed class DataOutboxStore<
             .UpdateAsync(updateSpec, updater, cancellationToken)
             .ConfigureAwait(false);
 
-        if (updated == 0) 
+        if (updated == 0)
             return [];
 
         // Step 3: Fetch the claimed events

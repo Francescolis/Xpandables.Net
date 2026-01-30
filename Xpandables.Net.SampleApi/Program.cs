@@ -1,7 +1,9 @@
-using System.Events.Data.Configurations;
+using System.Entities;
+using System.Entities.EntityFramework;
 
 using Microsoft.AspNetCore.Http.Json;
 using Microsoft.EntityFrameworkCore;
+using Microsoft.Extensions.DependencyInjection;
 using Microsoft.EntityFrameworkCore.Infrastructure;
 using Microsoft.OpenApi;
 
@@ -22,18 +24,6 @@ builder.Services.AddCors(options =>
             .AllowAnyMethod()
             .AllowAnyHeader()
             .AllowCredentials()));
-
-// Configure SqlServer database for event sourcing
-builder.Services.AddXEventDataContext(options =>
-    options
-        .UseSqlServer(builder.Configuration.GetConnectionString("EventStoreDb"),
-        options => options
-            .EnableRetryOnFailure()
-            .UseQuerySplittingBehavior(QuerySplittingBehavior.SplitQuery))
-        .EnableDetailedErrors()
-        .EnableSensitiveDataLogging()
-        .EnableServiceProviderCaching()
-        .ReplaceService<IModelCustomizer, EventStoreSqlServerModelCustomizer>());
 
 builder.Services.AddXDataContext<BankAccountDataContext>(options =>
     options
@@ -60,8 +50,7 @@ builder.Services
     .AddXEventStore()
     .AddXOutboxStore()
     .AddMemoryCache()
-    .AddXEventRepositories()
-    .AddXUnitOfWork<EventDataContext>()
+    .AddXEventStores()
     .AddXEventConverterFactory()
     .AddXCacheTypeResolver([typeof(BankAccount).Assembly])
     .AddXResultMiddleware()

@@ -14,23 +14,25 @@
  * limitations under the License.
  *
 ********************************************************************************/
-namespace System.Entities.Data;
+namespace System.Events.Data.Scripts;
 
 /// <summary>
-/// Marker interface to indicate that a request requires automatic 
-/// ADO.NET unit of work transaction management.
+/// Provides access to built-in event table script providers.
 /// </summary>
-/// <remarks>
-/// <para>
-/// Implement this interface to signal that the implementing request should be executed
-/// within an ADO.NET transaction scope. The transaction will be committed on success
-/// or rolled back on failure.
-/// </para>
-/// <para>
-/// This is the ADO.NET equivalent of <see cref="IRequiresEntityUnitOfWork"/> which is used
-/// for Entity Framework Core persistence.
-/// </para>
-/// </remarks>
-#pragma warning disable CA1040 // Avoid empty interfaces
-public interface IRequiresDataUnitOfWork;
-#pragma warning restore CA1040 // Avoid empty interfaces
+public static class EventTableScriptProviders
+{
+    /// <summary>
+    /// Gets SQL Server event table scripts.
+    /// </summary>
+    public static IEventTableScriptProvider SqlServer { get; } = new SqlServerEventTableScripts();
+
+    /// <summary>
+    /// Gets PostgreSQL event table scripts.
+    /// </summary>
+    public static IEventTableScriptProvider PostgreSql { get; } = new PostgreSqlEventTableScripts();
+
+    /// <summary>
+    /// Gets SQLite event table scripts.
+    /// </summary>
+    public static IEventTableScriptProvider Sqlite { get; } = new SqliteEventTableScripts();
+}

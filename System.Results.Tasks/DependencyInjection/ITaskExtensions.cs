@@ -82,7 +82,7 @@ public static class ITaskExtensions
                 .AddXMediator()
                 .AddXPipelinePreDecorator()
                 .AddXPipelinePostDecorator()
-                .AddXPipelineUnitOfWorkDecorator()
+                .AddXPipelineEntityUnitOfWorkDecorator()
                 .AddXPipelineValidationDecorator()
                 .AddXPipelineExceptionDecorator();
 
@@ -104,7 +104,7 @@ public static class ITaskExtensions
                 .AddXPipelineIntegrationOutboxDecorator()
                 .AddXPipelinePreDecorator()
                 .AddXPipelinePostDecorator()
-                .AddXPipelineUnitOfWorkDecorator()
+                .AddXPipelineEntityUnitOfWorkDecorator()
                 .AddXPipelineEventStoreEventDecorator()
                 .AddXPipelineValidationDecorator()
                 .AddXPipelineExceptionDecorator();

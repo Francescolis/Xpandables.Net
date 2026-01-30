@@ -26,7 +26,7 @@ namespace System.Entities;
 /// pattern.  It ensures that all operations performed within the transaction scope are either committed as a single
 /// unit  or rolled back in case of failure. Implementations of this interface should guarantee proper disposal of 
 /// resources by implementing both <see cref="IDisposable"/> and <see cref="IAsyncDisposable"/>.</remarks>
-public interface IUnitOfWorkTransaction : IDisposable, IAsyncDisposable
+public interface IEntityUnitOfWorkTransaction : IDisposable, IAsyncDisposable
 {
     /// <summary>
     /// Gets the underlying database transaction.

@@ -38,29 +38,29 @@ public static class IEntityExtensions
         /// Adds the specified implementation of the unit of work pattern to the service collection with a scoped
         /// lifetime.
         /// </summary>
-        /// <remarks>This method registers TUnitOfWork as the implementation for IUnitOfWork using scoped
+        /// <remarks>This method registers TUnitOfWork as the implementation for IEntityUnitOfWork using scoped
         /// lifetime. Each scope (such as a web request) will receive its own instance of TUnitOfWork.</remarks>
         /// <typeparam name="TUnitOfWork">The type that implements the IUnitOfWork interface to be registered. Must be a class with a public
         /// constructor.</typeparam>
         /// <returns>The IServiceCollection instance with the unit of work service registered. This enables method chaining.</returns>
-        public IServiceCollection AddXUnitOfWork<[DynamicallyAccessedMembers(DynamicallyAccessedMemberTypes.PublicConstructors)] TUnitOfWork>()
-            where TUnitOfWork : class, IUnitOfWork =>
-            services.AddScoped<IUnitOfWork, TUnitOfWork>();
+        public IServiceCollection AddXEntityUnitOfWork<[DynamicallyAccessedMembers(DynamicallyAccessedMemberTypes.PublicConstructors)] TUnitOfWork>()
+            where TUnitOfWork : class, IEntityUnitOfWork =>
+            services.AddScoped<IEntityUnitOfWork, TUnitOfWork>();
 
         /// <summary>
         /// Adds a keyed scoped registration of the specified unit of work implementation to the service collection.
         /// </summary>
-        /// <remarks>Use this method to register multiple IUnitOfWork implementations distinguished by a
+        /// <remarks>Use this method to register multiple IEntityUnitOfWork implementations distinguished by a
         /// key. This enables resolving different unit of work types by key at runtime.</remarks>
         /// <typeparam name="TUnitOfWork">The type of the unit of work to register. Must implement the IUnitOfWork interface and have a public
         /// constructor.</typeparam>
         /// <param name="key">The unique key that identifies the unit of work registration. Cannot be null.</param>
         /// <returns>The IServiceCollection instance with the new keyed unit of work registration added.</returns>
-        public IServiceCollection AddXUnitOfWorkKeyed<[DynamicallyAccessedMembers(DynamicallyAccessedMemberTypes.PublicConstructors)] TUnitOfWork>(string key)
-            where TUnitOfWork : class, IUnitOfWork
+        public IServiceCollection AddXEntityUnitOfWorkKeyed<[DynamicallyAccessedMembers(DynamicallyAccessedMemberTypes.PublicConstructors)] TUnitOfWork>(string key)
+            where TUnitOfWork : class, IEntityUnitOfWork
         {
             ArgumentNullException.ThrowIfNull(key);
-            return services.AddKeyedScoped<IUnitOfWork, TUnitOfWork>(key);
+            return services.AddKeyedScoped<IEntityUnitOfWork, TUnitOfWork>(key);
         }
 
         /// <summary>
@@ -73,8 +73,8 @@ public static class IEntityExtensions
         /// <typeparam name="TInterface">The interface type that represents the unit of work contract. Must implement IUnitOfWork.</typeparam>
         /// <typeparam name="TImplementation">The concrete type that implements the unit of work interface. Must have a public constructor.</typeparam>
         /// <returns>The IServiceCollection instance for chaining additional service registrations.</returns>
-        public IServiceCollection AddXUnitOfWork<TInterface, [DynamicallyAccessedMembers(DynamicallyAccessedMemberTypes.PublicConstructors)] TImplementation>()
-            where TInterface : class, IUnitOfWork
+        public IServiceCollection AddXEntityUnitOfWork<TInterface, [DynamicallyAccessedMembers(DynamicallyAccessedMemberTypes.PublicConstructors)] TImplementation>()
+            where TInterface : class, IEntityUnitOfWork
             where TImplementation : class, TInterface =>
             services.AddScoped<TInterface, TImplementation>();
 
@@ -83,15 +83,15 @@ public static class IEntityExtensions
         /// dependency injection container.
         /// </summary>
         /// <remarks>Use this method to register multiple unit of work implementations under different
-        /// keys, allowing keyed resolution of IUnitOfWork services. This is useful when your application requires more
+        /// keys, allowing keyed resolution of IEntityUnitOfWork services. This is useful when your application requires more
         /// than one unit of work implementation to be resolved by key.</remarks>
         /// <typeparam name="TInterface">The interface type of the unit of work to register. Must implement IUnitOfWork.</typeparam>
         /// <typeparam name="TImplementation">The concrete implementation type of the unit of work to register. Must implement TInterface and have a
         /// public constructor.</typeparam>
         /// <param name="key">The unique key that identifies the registration. Cannot be null.</param>
         /// <returns>The IServiceCollection instance for chaining additional service registrations.</returns>
-        public IServiceCollection AddXUnitOfWorkKeyed<TInterface, [DynamicallyAccessedMembers(DynamicallyAccessedMemberTypes.PublicConstructors)] TImplementation>(string key)
-            where TInterface : class, IUnitOfWork
+        public IServiceCollection AddXEntityUnitOfWorkKeyed<TInterface, [DynamicallyAccessedMembers(DynamicallyAccessedMemberTypes.PublicConstructors)] TImplementation>(string key)
+            where TInterface : class, IEntityUnitOfWork
             where TImplementation : class, TInterface
         {
             ArgumentNullException.ThrowIfNull(key);
@@ -106,9 +106,9 @@ public static class IEntityExtensions
         /// <param name="lifetime">The service lifetime.</param>
         /// <returns>The service collection so that additional calls can be chained.</returns>
         /// <exception cref="ArgumentNullException">Thrown when services is null.</exception>
-        public IServiceCollection AddXRepository<TRepository, [DynamicallyAccessedMembers(DynamicallyAccessedMemberTypes.PublicConstructors)] TImplementation>(
+        public IServiceCollection AddXEntityRepository<TRepository, [DynamicallyAccessedMembers(DynamicallyAccessedMemberTypes.PublicConstructors)] TImplementation>(
             ServiceLifetime lifetime = ServiceLifetime.Scoped)
-            where TRepository : class, IRepository
+            where TRepository : class, IEntityRepository
             where TImplementation : class, TRepository
         {
             ArgumentNullException.ThrowIfNull(services);
@@ -119,13 +119,13 @@ public static class IEntityExtensions
         }
 
         /// <summary>
-        /// Adds multiple repositories that implement <see cref="IRepository"/> interface to the service collection.
+        /// Adds multiple repositories that implement <see cref="IEntityRepository"/> interface to the service collection.
         /// </summary>
         /// <param name="repositoryRegistrations">The repository registrations containing interface and implementation types.</param>
         /// <param name="lifetime">The service lifetime.</param>
         /// <returns>The service collection so that additional calls can be chained.</returns>
         /// <exception cref="ArgumentNullException">Thrown when services or repositoryRegistrations is null.</exception>
-        public IServiceCollection AddXRepositories(
+        public IServiceCollection AddXEntityRepositories(
             ServiceLifetime lifetime,
             params (Type InterfaceType, Type ImplementationType)[] repositoryRegistrations)
         {
@@ -135,9 +135,9 @@ public static class IEntityExtensions
 
             foreach (var (interfaceType, implementationType) in repositoryRegistrations)
             {
-                if (!typeof(IRepository).IsAssignableFrom(interfaceType))
+                if (!typeof(IEntityRepository).IsAssignableFrom(interfaceType))
                 {
-                    throw new ArgumentException($"Interface type {interfaceType.Name} must implement IRepository.", nameof(repositoryRegistrations));
+                    throw new ArgumentException($"Interface type {interfaceType.Name} must implement IEntityRepository.", nameof(repositoryRegistrations));
                 }
 
                 if (!interfaceType.IsAssignableFrom(implementationType))
@@ -155,8 +155,8 @@ public static class IEntityExtensions
         /// Registers repository implementations found in the specified assemblies with the provided service lifetime.
         /// </summary>
         /// <remarks>This method scans the given assemblies for sealed, non-abstract classes that
-        /// implement IRepository and registers them with the dependency injection container using their implemented
-        /// interfaces. Only interfaces derived from IRepository are registered. Ensure that the assemblies contain the
+        /// implement IEntityRepository and registers them with the dependency injection container using their implemented
+        /// interfaces. Only interfaces derived from IEntityRepository are registered. Ensure that the assemblies contain the
         /// desired repository implementations before calling this method.</remarks>
         /// <param name="lifetime">The lifetime to use when registering repository services. Determines how long each service instance is
         /// retained by the dependency injection container.</param>
@@ -164,7 +164,7 @@ public static class IEntityExtensions
         /// assembly is used by default.</param>
         /// <returns>The IServiceCollection instance that can be used to further configure services.</returns>
         [RequiresUnreferencedCode("Requires unreferenced code.")]
-        public IServiceCollection AddXRepositories(
+        public IServiceCollection AddXEntityRepositories(
             ServiceLifetime lifetime,
             params Assembly[] assemblies)
         {
@@ -177,12 +177,12 @@ public static class IEntityExtensions
             {
                 var types = assembly.GetTypes();
                 var repositoryTypes = types
-                    .Where(t => t.IsClass && t.IsSealed && !t.IsAbstract && typeof(IRepository).IsAssignableFrom(t));
+                    .Where(t => t.IsClass && t.IsSealed && !t.IsAbstract && typeof(IEntityRepository).IsAssignableFrom(t));
 
                 foreach (var implementationType in repositoryTypes)
                 {
                     var interfaceTypes = implementationType.GetInterfaces()
-                        .Where(i => i != typeof(IRepository) && typeof(IRepository).IsAssignableFrom(i));
+                        .Where(i => i != typeof(IEntityRepository) && typeof(IEntityRepository).IsAssignableFrom(i));
                     foreach (var interfaceType in interfaceTypes)
                     {
                         services.TryAdd(new ServiceDescriptor(interfaceType, implementationType, lifetime));

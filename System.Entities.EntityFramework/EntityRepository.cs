@@ -22,7 +22,7 @@ using Microsoft.EntityFrameworkCore;
 namespace System.Entities.EntityFramework;
 
 /// <summary>
-/// Entity Framework Core implementation of the IRepository interface.
+/// Entity Framework Core implementation of the IEntityRepository interface.
 /// </summary>
 /// <remarks>This implementation provides Entity Framework Core specific operations for managing entities
 /// in a relational database. It uses <see cref="DataContext"/> to interact with the database and supports all standard
@@ -34,7 +34,7 @@ namespace System.Entities.EntityFramework;
 /// <exception cref="ArgumentNullException">Thrown when context is null.</exception>
 /// <typeparam name="TEntity">The type of the entity to query from the data source. Must be a reference type.</typeparam>
 public class EntityRepository<[DynamicallyAccessedMembers(DynamicallyAccessedMemberTypes.All)] TEntity>(DataContext context) :
-    IRepository<TEntity>, IAmbientContextReceiver<DataContext>
+    IEntityRepository<TEntity>, IAmbientContextReceiver<DataContext>
     where TEntity : class
 {
     [SuppressMessage("Usage", "CA2213:Disposable fields should be disposed", Justification = "<Pending>")]

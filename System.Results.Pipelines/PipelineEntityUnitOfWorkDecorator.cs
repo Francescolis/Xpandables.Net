@@ -14,21 +14,20 @@
  * limitations under the License.
  *
 ********************************************************************************/
-
 using System.Entities;
 using System.Results.Requests;
 
 namespace System.Results.Pipelines;
 
 /// <summary>
-/// The PipelineUnitOfWorkDecorator class is a pipeline decorator that ensures
-/// changes are saved to the database context via the <see cref="IUnitOfWork"/>
+/// The PipelineEntityUnitOfWorkDecorator class is a pipeline decorator that ensures
+/// changes are saved to the database context via the <see cref="IEntityUnitOfWork"/>
 /// after processing the request and response in a pipeline execution.
 /// </summary>
-/// <typeparam name="TRequest">The type of the request object that must implement <see cref="IRequiresUnitOfWork"/>.</typeparam>
-public sealed class PipelineUnitOfWorkDecorator<TRequest>(IUnitOfWork? unitOfWork = default) :
+/// <typeparam name="TRequest">The type of the request object that must implement <see cref="IRequiresEntityUnitOfWork"/>.</typeparam>
+public sealed class PipelineEntityUnitOfWorkDecorator<TRequest>(IEntityUnitOfWork? unitOfWork = default) :
     IPipelineDecorator<TRequest>
-    where TRequest : class, IRequest, IRequiresUnitOfWork
+    where TRequest : class, IRequest, IRequiresEntityUnitOfWork
 {
     /// <inheritdoc/>
     public async Task<Result> HandleAsync(

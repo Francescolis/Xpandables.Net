@@ -36,7 +36,7 @@ namespace System.Events.Data;
 /// </para>
 /// </remarks>
 [RequiresDynamicCode("Expression compilation requires dynamic code generation.")]
-public sealed class DataEventStore<
+public sealed class EventStore<
     [DynamicallyAccessedMembers(DynamicallyAccessedMemberTypes.PublicProperties)] TEntityEventDomain,
     [DynamicallyAccessedMembers(DynamicallyAccessedMemberTypes.PublicProperties)] TEntityEventSnapshot> : IEventStore
     where TEntityEventDomain : class, IEntityEventDomain
@@ -54,7 +54,7 @@ public sealed class DataEventStore<
     /// </summary>
     /// <param name="unitOfWork">The ADO.NET unit of work used to manage repositories and transactions.</param>
     /// <param name="converterFactory">The factory used to obtain event converters for domain and snapshot events.</param>
-    public DataEventStore(IDataUnitOfWork unitOfWork, IEventConverterFactory converterFactory)
+    public EventStore(IDataUnitOfWork unitOfWork, IEventConverterFactory converterFactory)
     {
         ArgumentNullException.ThrowIfNull(unitOfWork);
         ArgumentNullException.ThrowIfNull(converterFactory);
@@ -287,7 +287,7 @@ public sealed class DataEventStore<
     {
         // ADO.NET doesn't support change notifications natively
         // Return a polling-based subscription
-        return new DataStreamSubscription<TEntityEventDomain>(
+        return new StreamSubscription<TEntityEventDomain>(
             _domainRepository,
             request,
             _converterFactory,
@@ -300,20 +300,12 @@ public sealed class DataEventStore<
         SubscribeToAllStreamsRequest request,
         CancellationToken cancellationToken = default)
     {
-        return new DataAllStreamsSubscription<TEntityEventDomain>(
+        return new AllStreamsSubscription<TEntityEventDomain>(
             _domainRepository,
-                        request,
-                        _converterFactory,
-                        _domainConverter,
-                        cancellationToken);
-    }
-
-    /// <inheritdoc/>
-    public Task FlushEventsAsync(CancellationToken cancellationToken = default)
-    {
-        // ADO.NET executes operations immediately - no deferred SaveChanges like EF Core
-        // Return completed task as all operations are already persisted
-        return Task.CompletedTask;
+            request,
+            _converterFactory,
+            _domainConverter,
+            cancellationToken);
     }
 
     private async Task<long> GetStreamVersionCoreAsync(Guid streamId, CancellationToken cancellationToken)
@@ -338,24 +330,87 @@ public sealed class DataEventStore<
 /// </summary>
 [RequiresDynamicCode("Expression compilation requires dynamic code generation.")]
 #pragma warning disable CA1812 // Avoid uninstantiated internal classes
-internal sealed class DataStreamSubscription<
+internal sealed class StreamSubscription<
     [DynamicallyAccessedMembers(DynamicallyAccessedMemberTypes.PublicProperties)] TEntityEventDomain>
     : IAsyncDisposable
     where TEntityEventDomain : class, IEntityEventDomain
 #pragma warning restore CA1812
 {
-    public DataStreamSubscription(
+    private readonly IDataRepository<TEntityEventDomain> _domainRepository;
+    private readonly SubscribeToStreamRequest _request;
+    private readonly IEventConverterFactory _converterFactory;
+    private readonly IEventConverter<TEntityEventDomain, IDomainEvent> _domainConverter;
+    private readonly CancellationTokenSource _cts;
+    private readonly Task _subscriptionTask;
+
+    public StreamSubscription(
         IDataRepository<TEntityEventDomain> repository,
         SubscribeToStreamRequest request,
         IEventConverterFactory converterFactory,
         IEventConverter<TEntityEventDomain, IDomainEvent> converter,
         CancellationToken cancellationToken)
     {
-        // Subscriptions are placeholders - ADO.NET doesn't support push notifications
-        // Use ReadStreamAsync for polling-based consumption
+        _domainRepository = repository ?? throw new ArgumentNullException(nameof(repository));
+        _request = request;
+        _converterFactory = converterFactory ?? throw new ArgumentNullException(nameof(converterFactory));
+        _domainConverter = converter ?? throw new ArgumentNullException(nameof(converter));
+        _cts = CancellationTokenSource.CreateLinkedTokenSource(cancellationToken);
+        _subscriptionTask = RunSubscriptionAsync();
     }
 
-    public ValueTask DisposeAsync() => ValueTask.CompletedTask;
+    private async Task RunSubscriptionAsync()
+    {
+        long lastProcessedVersion = _request.FromVersion - 1;
+
+        try
+        {
+            while (!_cts.Token.IsCancellationRequested)
+            {
+                var specification = QuerySpecification
+                    .For<TEntityEventDomain>()
+                    .Where(e => e.StreamId == _request.StreamId && e.StreamVersion > lastProcessedVersion)
+                    .OrderBy(e => e.StreamVersion)
+                    .Take(100)
+                    .Build();
+
+                var events = new List<TEntityEventDomain>();
+                await foreach (var entity in _domainRepository.QueryAsync(specification, _cts.Token).ConfigureAwait(false))
+                {
+                    events.Add(entity);
+                }
+
+                foreach (var entity in events)
+                {
+                    var domainEvent = _domainConverter.ConvertEntityToEvent(entity, _converterFactory.ConverterContext);
+                    await _request.OnEvent(domainEvent).ConfigureAwait(false);
+                    lastProcessedVersion = entity.StreamVersion;
+                }
+
+                if (events.Count == 0)
+                {
+                    await Task.Delay(_request.PollingInterval, _cts.Token).ConfigureAwait(false);
+                }
+            }
+        }
+        catch (OperationCanceledException)
+        {
+            // Expected when disposed
+        }
+    }
+
+    public async ValueTask DisposeAsync()
+    {
+        await _cts.CancelAsync().ConfigureAwait(false);
+        try
+        {
+            await _subscriptionTask.ConfigureAwait(false);
+        }
+        catch (OperationCanceledException)
+        {
+            // Expected
+        }
+        _cts.Dispose();
+    }
 }
 
 /// <summary>
@@ -363,22 +418,85 @@ internal sealed class DataStreamSubscription<
 /// </summary>
 [RequiresDynamicCode("Expression compilation requires dynamic code generation.")]
 #pragma warning disable CA1812 // Avoid uninstantiated internal classes
-internal sealed class DataAllStreamsSubscription<
+internal sealed class AllStreamsSubscription<
     [DynamicallyAccessedMembers(DynamicallyAccessedMemberTypes.PublicProperties)] TEntityEventDomain>
     : IAsyncDisposable
     where TEntityEventDomain : class, IEntityEventDomain
 #pragma warning restore CA1812
 {
-    public DataAllStreamsSubscription(
+    private readonly IDataRepository<TEntityEventDomain> _domainRepository;
+    private readonly SubscribeToAllStreamsRequest _request;
+    private readonly IEventConverter<TEntityEventDomain, IDomainEvent> _domainConverter;
+    private readonly IEventConverterFactory _converterFactory;
+    private readonly CancellationTokenSource _cts;
+    private readonly Task _subscriptionTask;
+
+    public AllStreamsSubscription(
         IDataRepository<TEntityEventDomain> repository,
         SubscribeToAllStreamsRequest request,
         IEventConverterFactory converterFactory,
         IEventConverter<TEntityEventDomain, IDomainEvent> converter,
         CancellationToken cancellationToken)
     {
-        // Subscriptions are placeholders - ADO.NET doesn't support push notifications
-        // Use ReadAllStreamsAsync for polling-based consumption
+        _domainRepository = repository ?? throw new ArgumentNullException(nameof(repository));
+        _request = request;
+        _domainConverter = converter ?? throw new ArgumentNullException(nameof(converter));
+        _converterFactory = converterFactory ?? throw new ArgumentNullException(nameof(converterFactory));
+        _cts = CancellationTokenSource.CreateLinkedTokenSource(cancellationToken);
+        _subscriptionTask = RunSubscriptionAsync();
     }
 
-    public ValueTask DisposeAsync() => ValueTask.CompletedTask;
+    private async Task RunSubscriptionAsync()
+    {
+        long lastProcessedSequence = _request.FromPosition - 1;
+
+        try
+        {
+            while (!_cts.Token.IsCancellationRequested)
+            {
+                var specification = QuerySpecification
+                    .For<TEntityEventDomain>()
+                    .Where(e => e.Sequence > lastProcessedSequence)
+                    .OrderBy(e => e.Sequence)
+                    .Take(100)
+                    .Build();
+
+                var events = new List<TEntityEventDomain>();
+                await foreach (var entity in _domainRepository.QueryAsync(specification, _cts.Token).ConfigureAwait(false))
+                {
+                    events.Add(entity);
+                }
+
+                foreach (var entity in events)
+                {
+                    var domainEvent = _domainConverter.ConvertEntityToEvent(entity, _converterFactory.ConverterContext);
+                    await _request.OnEvent(domainEvent).ConfigureAwait(false);
+                    lastProcessedSequence = entity.Sequence;
+                }
+
+                if (events.Count == 0)
+                {
+                    await Task.Delay(_request.PollingInterval, _cts.Token).ConfigureAwait(false);
+                }
+            }
+        }
+        catch (OperationCanceledException)
+        {
+            // Expected when disposed
+        }
+    }
+
+    public async ValueTask DisposeAsync()
+    {
+        await _cts.CancelAsync().ConfigureAwait(false);
+        try
+        {
+            await _subscriptionTask.ConfigureAwait(false);
+        }
+        catch (OperationCanceledException)
+        {
+            // Expected
+        }
+        _cts.Dispose();
+    }
 }

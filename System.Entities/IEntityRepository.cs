@@ -24,10 +24,10 @@ namespace System.Entities;
 /// and type discovery of repository implementations.
 /// </summary>
 /// <remarks>
-/// This interface serves as a base for <see cref="IRepository{TEntity}"/> and allows
+/// This interface serves as a base for <see cref="IEntityRepository{TEntity}"/> and allows
 /// dependency injection containers to discover and register repository implementations.
 /// </remarks>
-public interface IRepository : IDisposable, IAsyncDisposable;
+public interface IEntityRepository : IDisposable, IAsyncDisposable;
 
 /// <summary>
 /// Defines a generic repository interface for performing asynchronous CRUD operations on entities.
@@ -38,7 +38,7 @@ public interface IRepository : IDisposable, IAsyncDisposable;
 /// store. It supports asynchronous operations and allows for query customization through the use of query specifications.
 /// Implementations of this interface should handle the underlying data access logic.</remarks>
 /// <typeparam name="TEntity">The type of the entity to query from the data source. Must be a reference type.</typeparam>
-public interface IRepository<[DynamicallyAccessedMembers(DynamicallyAccessedMemberTypes.All)] TEntity> : IRepository
+public interface IEntityRepository<[DynamicallyAccessedMembers(DynamicallyAccessedMemberTypes.All)] TEntity> : IEntityRepository
     where TEntity : class
 {
     /// <summary>

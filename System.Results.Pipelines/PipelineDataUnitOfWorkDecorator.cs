@@ -28,7 +28,7 @@ namespace System.Results.Pipelines;
 /// operations performed during the request are either committed on success or rolled back on failure.
 /// </para>
 /// <para>
-/// Unlike the EF Core <see cref="PipelineUnitOfWorkDecorator{TRequest}"/> which uses SaveChangesAsync,
+/// Unlike the EF Core <see cref="PipelineEntityUnitOfWorkDecorator{TRequest}"/> which uses SaveChangesAsync,
 /// this decorator explicitly manages transactions since ADO.NET operations execute immediately.
 /// </para>
 /// </remarks>
