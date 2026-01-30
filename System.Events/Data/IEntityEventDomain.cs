@@ -39,4 +39,9 @@ public interface IEntityEventDomain : IEntityEvent
     /// Gets the name of the stream associated with this instance.
     /// </summary>
     string StreamName { get; init; }
+
+    /// <summary>
+    /// Gets the JSON data associated with this instance.
+    /// </summary>
+    string EventData { get; }
 }

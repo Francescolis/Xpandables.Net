@@ -37,7 +37,6 @@ public sealed class EventConverterInbox : IEventConverter<EntityEventInbox, IInt
                 EventName = @event.GetEventName(),
                 CorrelationId = @event.CorrelationId,
                 CausationId = @event.CausationId,
-                EventData = default!,
                 Consumer = string.Empty
             };
         }

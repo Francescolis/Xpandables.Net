@@ -16,9 +16,7 @@
 ********************************************************************************/
 using System.ComponentModel.DataAnnotations;
 using System.ComponentModel.DataAnnotations.Schema;
-using System.Diagnostics.CodeAnalysis;
 using System.Entities;
-using System.Text.Json;
 
 namespace System.Events.Data;
 
@@ -89,41 +87,6 @@ public abstract class EntityEvent : IEntityEvent
     public required string EventName { get; init; }
 
     /// <inheritdoc />
-    [Column("EventData")]
-    public required JsonDocument EventData { get; init; }
-
-    /// <inheritdoc />
     [Column("Sequence")]
     public long Sequence { get; init; }
-
-    /// <inheritdoc />
-    public void Dispose()
-    {
-        Dispose(true);
-        GC.SuppressFinalize(this);
-    }
-
-    /// <summary>
-    /// Disposes the resources used by the event entity.
-    /// </summary>
-    /// <param name="disposing">
-    /// True if the method is called directly or indirectly by user code; false if called by the
-    /// runtime from within the finalizer.
-    /// </param>
-    protected virtual void Dispose(bool disposing)
-    {
-        if (disposing)
-        {
-            EventData?.Dispose();
-        }
-    }
-
-    internal const DynamicallyAccessedMemberTypes DynamicallyAccessedMemberTypes =
-         System.Diagnostics.CodeAnalysis.DynamicallyAccessedMemberTypes.PublicConstructors
-         | System.Diagnostics.CodeAnalysis.DynamicallyAccessedMemberTypes.NonPublicConstructors
-         | System.Diagnostics.CodeAnalysis.DynamicallyAccessedMemberTypes.PublicProperties
-         | System.Diagnostics.CodeAnalysis.DynamicallyAccessedMemberTypes.PublicFields
-         | System.Diagnostics.CodeAnalysis.DynamicallyAccessedMemberTypes.NonPublicProperties
-         | System.Diagnostics.CodeAnalysis.DynamicallyAccessedMemberTypes.NonPublicFields
-         | System.Diagnostics.CodeAnalysis.DynamicallyAccessedMemberTypes.Interfaces;
 }

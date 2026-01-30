@@ -42,4 +42,9 @@ public interface IEntityEventOutbox : IEntityEvent
     /// Identifier of the scheduler instance that claims the event for processing.
     /// </summary>
     Guid? ClaimId { get; set; }
+
+    /// <summary>
+    /// Gets the JSON data associated with this instance.
+    /// </summary>
+    string EventData { get; }
 }

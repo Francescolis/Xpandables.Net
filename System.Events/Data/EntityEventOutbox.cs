@@ -50,4 +50,8 @@ public sealed class EntityEventOutbox : EntityEvent, IEntityEventOutbox
     /// <inheritdoc/>
     [Column("ClaimId")]
     public Guid? ClaimId { get; set; }
+
+    /// <inheritdoc />
+    [Column("EventData")]
+    public required string EventData { get; init; }
 }

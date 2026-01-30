@@ -25,4 +25,9 @@ public interface IEntityEventSnapshot : IEntityEvent
     /// Gets the owner of the event entity snapshot.
     /// </summary>
     Guid OwnerId { get; }
+
+    /// <summary>
+    /// Gets the JSON data associated with this instance.
+    /// </summary>
+    string EventData { get; }
 }

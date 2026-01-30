@@ -29,4 +29,8 @@ public sealed class EntityEventSnapshot : EntityEvent, IEntityEventSnapshot
     /// </summary>
     [Column("OwnerId")]
     public required Guid OwnerId { get; init; }
+
+    /// <inheritdoc />
+    [Column("EventData")]
+    public required string EventData { get; init; }
 }

@@ -14,8 +14,6 @@
  * limitations under the License.
  *
 ********************************************************************************/
-using System.Text.Json;
-
 namespace System.Events.Data;
 
 /// <summary>
@@ -25,7 +23,7 @@ namespace System.Events.Data;
 /// qualified name, sequence number, and associated data. The interface inherits from <see cref="IDisposable"/>,
 /// indicating that resources associated with the event may need to be released when the event is no longer
 /// needed.</remarks>
-public interface IEntityEvent : IDisposable
+public interface IEntityEvent
 {
     /// <summary>
     /// Gets the object unique identity.
@@ -83,9 +81,4 @@ public interface IEntityEvent : IDisposable
     /// Gets the current sequence number associated with the instance, which is used to track the order of events.
     /// </summary>
     long Sequence { get; }
-
-    /// <summary>
-    /// Gets the JSON data associated with this instance.
-    /// </summary>
-    JsonDocument EventData { get; }
 }

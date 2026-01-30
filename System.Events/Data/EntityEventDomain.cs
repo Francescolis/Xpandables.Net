@@ -37,4 +37,8 @@ public sealed class EntityEventDomain : EntityEvent, IEntityEventDomain
     [Column("StreamName")]
     [StringLength(500)]
     public required string StreamName { get; init; }
+
+    /// <inheritdoc />
+    [Column("EventData")]
+    public required string EventData { get; init; }
 }

@@ -38,7 +38,7 @@ public sealed class EventConverterSnapshot(ICacheTypeResolver typeResolver) : IE
         try
         {
             JsonTypeInfo typeInfo = context.ResolveJsonTypeInfo(@event.GetType());
-            JsonDocument data = JsonSerializer.SerializeToDocument(@event, typeInfo);
+            string data = JsonSerializer.Serialize(@event, typeInfo);
 
             return new EntityEventSnapshot
             {
@@ -70,7 +70,7 @@ public sealed class EventConverterSnapshot(ICacheTypeResolver typeResolver) : IE
             Type targetType = _typeResolver.Resolve(entity.EventName);
             JsonTypeInfo typeInfo = context.ResolveJsonTypeInfo(targetType);
 
-            object? @event = entity.EventData.Deserialize(typeInfo)
+            object? @event = JsonSerializer.Deserialize(entity.EventData, typeInfo)
                 ?? throw new InvalidOperationException(
                     $"Failed to deserialize the event data to {typeInfo.Type.Name}.");
 
