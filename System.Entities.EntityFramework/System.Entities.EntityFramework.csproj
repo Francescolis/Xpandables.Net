@@ -71,10 +71,6 @@
 	</PropertyGroup>
 
 	<ItemGroup>
-	  <Compile Remove="DependencyInjection\IEntityDataExtensions.cs" />
-	</ItemGroup>
-
-	<ItemGroup>
 		<Content Include="Xpandables.Net.ico" />
 	</ItemGroup>
 

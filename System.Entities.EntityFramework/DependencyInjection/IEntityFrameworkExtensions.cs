@@ -92,19 +92,19 @@ public static class IEntityFrameworkExtensions
             return services;
         }
 
-                /// <summary>
-                /// Adds the default repository implementation to the service collection.
-                /// </summary>
-                /// <param name="lifetime">The service lifetime.</param>
-                /// <returns>The service collection so that additional calls can be chained.</returns>
-                /// <exception cref="ArgumentNullException">Thrown when services is null.</exception>
-                public IServiceCollection AddXRepository(ServiceLifetime lifetime = ServiceLifetime.Scoped)
-                {
-                    ArgumentNullException.ThrowIfNull(services);
+        /// <summary>
+        /// Adds the default repository implementation to the service collection.
+        /// </summary>
+        /// <param name="lifetime">The service lifetime.</param>
+        /// <returns>The service collection so that additional calls can be chained.</returns>
+        /// <exception cref="ArgumentNullException">Thrown when services is null.</exception>
+        public IServiceCollection AddXRepository(ServiceLifetime lifetime = ServiceLifetime.Scoped)
+        {
+            ArgumentNullException.ThrowIfNull(services);
 
-                    services.TryAdd(new ServiceDescriptor(typeof(IRepository<>), typeof(EntityRepository<>), lifetime));
+            services.TryAdd(new ServiceDescriptor(typeof(IRepository<>), typeof(EntityRepository<>), lifetime));
 
-                    return services;
-                }
-            }
+            return services;
         }
+    }
+}

@@ -306,79 +306,79 @@ public sealed class DataEventStore<
                         _converterFactory,
                         _domainConverter,
                         cancellationToken);
-                }
+    }
 
-                /// <inheritdoc/>
-                public Task FlushEventsAsync(CancellationToken cancellationToken = default)
-                {
-                    // ADO.NET executes operations immediately - no deferred SaveChanges like EF Core
-                    // Return completed task as all operations are already persisted
-                    return Task.CompletedTask;
-                }
+    /// <inheritdoc/>
+    public Task FlushEventsAsync(CancellationToken cancellationToken = default)
+    {
+        // ADO.NET executes operations immediately - no deferred SaveChanges like EF Core
+        // Return completed task as all operations are already persisted
+        return Task.CompletedTask;
+    }
 
-                private async Task<long> GetStreamVersionCoreAsync(Guid streamId, CancellationToken cancellationToken)
-                {
-                    var specification = QuerySpecification
-                        .For<TEntityEventDomain>()
-                        .Where(e => e.StreamId == streamId)
-                        .OrderByDescending(e => e.StreamVersion)
-                        .Take(1)
-                        .Select(e => e.StreamVersion);
+    private async Task<long> GetStreamVersionCoreAsync(Guid streamId, CancellationToken cancellationToken)
+    {
+        var specification = QuerySpecification
+            .For<TEntityEventDomain>()
+            .Where(e => e.StreamId == streamId)
+            .OrderByDescending(e => e.StreamVersion)
+            .Take(1)
+            .Select(e => e.StreamVersion);
 
-                    var version = await _domainRepository
-                        .QueryFirstOrDefaultAsync(specification, cancellationToken)
-                                                .ConfigureAwait(false);
+        var version = await _domainRepository
+            .QueryFirstOrDefaultAsync(specification, cancellationToken)
+                                    .ConfigureAwait(false);
 
-                                            return version == 0 ? -1 : version;
-                                        }
-                                    }
+        return version == 0 ? -1 : version;
+    }
+}
 
-                        /// <summary>
-                        /// Polling-based stream subscription for ADO.NET.
-                        /// </summary>
-                        [RequiresDynamicCode("Expression compilation requires dynamic code generation.")]
-                        #pragma warning disable CA1812 // Avoid uninstantiated internal classes
-                        internal sealed class DataStreamSubscription<
-                            [DynamicallyAccessedMembers(DynamicallyAccessedMemberTypes.PublicProperties)] TEntityEventDomain>
-                            : IAsyncDisposable
-                            where TEntityEventDomain : class, IEntityEventDomain
-                        #pragma warning restore CA1812
-                        {
-                            public DataStreamSubscription(
-                                IDataRepository<TEntityEventDomain> repository,
-                                SubscribeToStreamRequest request,
-                                IEventConverterFactory converterFactory,
-                                IEventConverter<TEntityEventDomain, IDomainEvent> converter,
-                                CancellationToken cancellationToken)
-                            {
-                                // Subscriptions are placeholders - ADO.NET doesn't support push notifications
-                                // Use ReadStreamAsync for polling-based consumption
-                            }
+/// <summary>
+/// Polling-based stream subscription for ADO.NET.
+/// </summary>
+[RequiresDynamicCode("Expression compilation requires dynamic code generation.")]
+#pragma warning disable CA1812 // Avoid uninstantiated internal classes
+internal sealed class DataStreamSubscription<
+    [DynamicallyAccessedMembers(DynamicallyAccessedMemberTypes.PublicProperties)] TEntityEventDomain>
+    : IAsyncDisposable
+    where TEntityEventDomain : class, IEntityEventDomain
+#pragma warning restore CA1812
+{
+    public DataStreamSubscription(
+        IDataRepository<TEntityEventDomain> repository,
+        SubscribeToStreamRequest request,
+        IEventConverterFactory converterFactory,
+        IEventConverter<TEntityEventDomain, IDomainEvent> converter,
+        CancellationToken cancellationToken)
+    {
+        // Subscriptions are placeholders - ADO.NET doesn't support push notifications
+        // Use ReadStreamAsync for polling-based consumption
+    }
 
-                            public ValueTask DisposeAsync() => ValueTask.CompletedTask;
-                        }
+    public ValueTask DisposeAsync() => ValueTask.CompletedTask;
+}
 
-                        /// <summary>
-                        /// Polling-based all-streams subscription for ADO.NET.
-                        /// </summary>
-                        [RequiresDynamicCode("Expression compilation requires dynamic code generation.")]
-                        #pragma warning disable CA1812 // Avoid uninstantiated internal classes
-                        internal sealed class DataAllStreamsSubscription<
-                            [DynamicallyAccessedMembers(DynamicallyAccessedMemberTypes.PublicProperties)] TEntityEventDomain>
-                            : IAsyncDisposable
-                            where TEntityEventDomain : class, IEntityEventDomain
-                        #pragma warning restore CA1812
-                        {
-                            public DataAllStreamsSubscription(
-                                IDataRepository<TEntityEventDomain> repository,
-                                SubscribeToAllStreamsRequest request,
-                                IEventConverterFactory converterFactory,
-                                IEventConverter<TEntityEventDomain, IDomainEvent> converter,
-                                CancellationToken cancellationToken)
-                            {
-                                // Subscriptions are placeholders - ADO.NET doesn't support push notifications
-                                // Use ReadAllStreamsAsync for polling-based consumption
-                            }
+/// <summary>
+/// Polling-based all-streams subscription for ADO.NET.
+/// </summary>
+[RequiresDynamicCode("Expression compilation requires dynamic code generation.")]
+#pragma warning disable CA1812 // Avoid uninstantiated internal classes
+internal sealed class DataAllStreamsSubscription<
+    [DynamicallyAccessedMembers(DynamicallyAccessedMemberTypes.PublicProperties)] TEntityEventDomain>
+    : IAsyncDisposable
+    where TEntityEventDomain : class, IEntityEventDomain
+#pragma warning restore CA1812
+{
+    public DataAllStreamsSubscription(
+        IDataRepository<TEntityEventDomain> repository,
+        SubscribeToAllStreamsRequest request,
+        IEventConverterFactory converterFactory,
+        IEventConverter<TEntityEventDomain, IDomainEvent> converter,
+        CancellationToken cancellationToken)
+    {
+        // Subscriptions are placeholders - ADO.NET doesn't support push notifications
+        // Use ReadAllStreamsAsync for polling-based consumption
+    }
 
-                            public ValueTask DisposeAsync() => ValueTask.CompletedTask;
-                        }
+    public ValueTask DisposeAsync() => ValueTask.CompletedTask;
+}
