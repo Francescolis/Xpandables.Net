@@ -16,8 +16,6 @@
 ********************************************************************************/
 using System.Diagnostics.CodeAnalysis;
 using System.Events.Data;
-using System.Events.Domain;
-using System.Events.Integration;
 
 #pragma warning disable IDE0130 // Namespace does not match folder structure
 namespace Microsoft.Extensions.DependencyInjection;
@@ -42,7 +40,7 @@ public static class IEventDataExtensions
         public IServiceCollection AddXEventStore()
         {
             ArgumentNullException.ThrowIfNull(services);
-            return services.AddXEventStore<System.Events.Data.EventStore<EntityEventDomain, EntityEventSnapshot>>();
+            return services.AddXEventStore<EventStore<EntityEventDomain, EntityEventSnapshot>>();
         }
 
         /// <summary>
@@ -54,7 +52,7 @@ public static class IEventDataExtensions
         public IServiceCollection AddXOutboxStore()
         {
             ArgumentNullException.ThrowIfNull(services);
-            return services.AddXOutboxStore<System.Events.Data.OutboxStore<EntityEventOutbox>>();
+            return services.AddXOutboxStore<OutboxStore<EntityEventOutbox>>();
         }
 
         /// <summary>
@@ -66,7 +64,7 @@ public static class IEventDataExtensions
         public IServiceCollection AddXInboxStore()
         {
             ArgumentNullException.ThrowIfNull(services);
-            return services.AddXInboxStore<System.Events.Data.InboxStore<EntityEventInbox>>();
+            return services.AddXInboxStore<InboxStore<EntityEventInbox>>();
         }
 
         /// <summary>

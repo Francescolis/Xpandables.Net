@@ -1,10 +1,8 @@
-using System.Entities;
-using System.Entities.EntityFramework;
+using System.Data.Common;
+using System.Entities.Data;
 
 using Microsoft.AspNetCore.Http.Json;
 using Microsoft.EntityFrameworkCore;
-using Microsoft.Extensions.DependencyInjection;
-using Microsoft.EntityFrameworkCore.Infrastructure;
 using Microsoft.OpenApi;
 
 using Swashbuckle.AspNetCore.SwaggerUI;
@@ -24,6 +22,11 @@ builder.Services.AddCors(options =>
             .AllowAnyMethod()
             .AllowAnyHeader()
             .AllowCredentials()));
+
+builder.Services.AddXDbConnectionMsSqlServer(builder.Configuration.GetConnectionString("EventStoreDb")!);
+DbProviderFactories.RegisterFactory(
+    DbProviders.MsSqlServer.InvariantName,
+    Microsoft.Data.SqlClient.SqlClientFactory.Instance);
 
 builder.Services.AddXDataContext<BankAccountDataContext>(options =>
     options
@@ -49,6 +52,10 @@ builder.Services
     .AddXAggregateStore()
     .AddXEventStore()
     .AddXOutboxStore()
+    .AddXDataUnitOfWork()
+    .AddXSlqBuilderMsSqlServer()
+    .AddXDbConnectionScopeFactory()
+    .AddXDbConnectionScope()
     .AddMemoryCache()
     .AddXEventStores()
     .AddXEventConverterFactory()
