@@ -14,19 +14,27 @@
  * limitations under the License.
  *
 ********************************************************************************/
+using System.ComponentModel.DataAnnotations;
+using System.ComponentModel.DataAnnotations.Schema;
+
 namespace System.Events.Data;
 
 /// <summary>
 /// Represents a class for event entities in a domain context.
 /// </summary>
+[Table("DomainEvents")]
 public sealed class EntityEventDomain : EntityEvent, IEntityEventDomain
 {
     /// <inheritdoc />
+    [Column("StreamId")]
     public required Guid StreamId { get; init; }
 
     /// <inheritdoc />
+    [Column("StreamVersion")]
     public required long StreamVersion { get; init; }
 
     /// <inheritdoc />
+    [Column("StreamName")]
+    [StringLength(500)]
     public required string StreamName { get; init; }
 }

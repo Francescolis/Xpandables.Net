@@ -1,4 +1,4 @@
-﻿
+
 /*******************************************************************************
  * Copyright (C) 2024 Francis-Black EWANE
  *
@@ -20,7 +20,7 @@ using System.Diagnostics.CodeAnalysis;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore.ChangeTracking;
 
-namespace System.Entities.Data;
+namespace System.Entities.EntityFramework;
 
 /// <summary>
 /// Represents a custom database context that extends <see cref="DbContext"/> to manage entity tracking and state

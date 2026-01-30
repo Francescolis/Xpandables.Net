@@ -1,6 +1,5 @@
-﻿
 /*******************************************************************************
- * Copyright (C) 2024 Francis-Black EWANE
+ * Copyright (C) 2025 Kamersoft
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -15,20 +14,23 @@
  * limitations under the License.
  *
 ********************************************************************************/
-
-using Microsoft.EntityFrameworkCore.Storage.ValueConversion;
-
-namespace System.Entities.Data.Converters;
+namespace System.Entities.Data;
 
 /// <summary>
-/// Converts a <see cref="ReadOnlyMemory{T}"/> of byte to a byte array and vice versa.
+/// Marker interface to indicate that a request requires automatic 
+/// ADO.NET unit of work transaction management.
 /// </summary>
 /// <remarks>
-/// Initializes a new instance of the <see cref="ReadOnlyMemoryToByteArrayConverter"/> class.
+/// <para>
+/// Implement this interface to signal that the implementing request should be executed
+/// within an ADO.NET transaction scope. The transaction will be committed on success
+/// or rolled back on failure.
+/// </para>
+/// <para>
+/// This is the ADO.NET equivalent of <see cref="IRequiresUnitOfWork"/> which is used
+/// for Entity Framework Core persistence.
+/// </para>
 /// </remarks>
-public sealed class ReadOnlyMemoryToByteArrayConverter() :
-    ValueConverter<ReadOnlyMemory<byte>, byte[]>(
-        v => v.ToArray(),
-        v => new ReadOnlyMemory<byte>(v))
-{
-}
+#pragma warning disable CA1040 // Avoid empty interfaces
+public interface IRequiresDataUnitOfWork;
+#pragma warning restore CA1040 // Avoid empty interfaces

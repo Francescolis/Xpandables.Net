@@ -1,4 +1,4 @@
-﻿
+
 /*******************************************************************************
  * Copyright (C) 2024 Francis-Black EWANE
  *
@@ -20,7 +20,7 @@ using System.Text.Json;
 using Microsoft.EntityFrameworkCore.ChangeTracking;
 using Microsoft.EntityFrameworkCore.Storage.ValueConversion;
 
-namespace System.Entities.Data.Converters;
+namespace System.Entities.EntityFramework.Converters;
 
 /// <summary>
 /// Converts a <see cref="JsonDocument"/> to a <see cref="string"/> and vice versa.

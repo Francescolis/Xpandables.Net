@@ -27,7 +27,7 @@
     <ProjectReference Include="..\AspNetCore.Events\AspNetCore.Events.csproj" />
     <ProjectReference Include="..\AspNetCore.Net\AspNetCore.Net.csproj" />
     <ProjectReference Include="..\AspNetCore.Results\AspNetCore.Results.csproj" />
-    <ProjectReference Include="..\System.Entities.Data\System.Entities.Data.csproj" />
+    <ProjectReference Include="..\System.Entities.EntityFramework\System.Entities.EntityFramework.csproj" />
     <ProjectReference Include="..\System.Events.Data\System.Events.Data.csproj" />
     <ProjectReference Include="..\System.AsyncPaged.Linq\System.AsyncPaged.Linq.csproj" />
     <ProjectReference Include="..\System.Results.Tasks\System.Results.Tasks.csproj" />
@@ -36,7 +36,7 @@
   <ItemGroup>
     <Using Include="System.Events" />
     <Using Include="System.Events.Data" />
-    <Using Include="System.Entities.Data" />
+    <Using Include="System.Entities.EntityFramework" />
     <Using Include="System.Entities" />
     <Using Include="System.Events.Aggregates" />
     <Using Include="System.Events.Domain" />

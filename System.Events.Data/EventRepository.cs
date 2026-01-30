@@ -15,7 +15,7 @@
  *
 ********************************************************************************/
 using System.Diagnostics.CodeAnalysis;
-using System.Entities.Data;
+using System.Entities.EntityFramework;
 
 namespace System.Events.Data;
 
@@ -26,5 +26,5 @@ namespace System.Events.Data;
 /// IEntityEvent, enabling flexible event management within the data context.</remarks>
 /// <typeparam name="TEntityEvent">The type of event entity managed by the repository. Must implement the IEntityEvent interface.</typeparam>
 /// <param name="context">The event data context that supplies access to the underlying data store for event entities.</param>
-public sealed class EventRepository<[DynamicallyAccessedMembers(DynamicallyAccessedMemberTypes.All)] TEntityEvent>(EventDataContext context) : Repository<TEntityEvent>(context)
+public sealed class EventRepository<[DynamicallyAccessedMembers(DynamicallyAccessedMemberTypes.All)] TEntityEvent>(EventDataContext context) : EntityRepository<TEntityEvent>(context)
     where TEntityEvent : class, IEntityEvent;

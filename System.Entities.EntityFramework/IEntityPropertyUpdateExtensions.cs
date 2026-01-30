@@ -1,4 +1,4 @@
-﻿/*******************************************************************************
+/*******************************************************************************
  * Copyright (C) 2024 Francis-Black EWANE
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
@@ -18,7 +18,7 @@ using System.Linq.Expressions;
 
 using Microsoft.EntityFrameworkCore.Query;
 
-namespace System.Entities.Data;
+namespace System.Entities.EntityFramework;
 
 /// <summary>
 /// EF Core implementation of <see cref="IPropertyUpdateApplicator{TSource, TBuilder}"/>.

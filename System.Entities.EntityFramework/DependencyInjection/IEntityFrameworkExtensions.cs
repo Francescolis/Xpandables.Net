@@ -1,5 +1,5 @@
 /*******************************************************************************
- * Copyright (C) 2024 Francis-Black EWANE
+ * Copyright (C) 2025 Kamersoft
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -14,10 +14,9 @@
  * limitations under the License.
  *
 ********************************************************************************/
-
 using System.Diagnostics.CodeAnalysis;
 using System.Entities;
-using System.Entities.Data;
+using System.Entities.EntityFramework;
 
 using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.DependencyInjection.Extensions;
@@ -29,7 +28,7 @@ namespace Microsoft.Extensions.DependencyInjection;
 /// <summary>
 /// Extension methods for registering Entity Framework repository services.
 /// </summary>
-public static class IEntityDataExtensions
+public static class IEntityFrameworkExtensions
 {
     /// <summary>
     /// </summary>
@@ -93,19 +92,19 @@ public static class IEntityDataExtensions
             return services;
         }
 
-        /// <summary>
-        /// Adds the default repository implementation to the service collection.
-        /// </summary>
-        /// <param name="lifetime">The service lifetime.</param>
-        /// <returns>The service collection so that additional calls can be chained.</returns>
-        /// <exception cref="ArgumentNullException">Thrown when services is null.</exception>
-        public IServiceCollection AddXRepository(ServiceLifetime lifetime = ServiceLifetime.Scoped)
-        {
-            ArgumentNullException.ThrowIfNull(services);
+                /// <summary>
+                /// Adds the default repository implementation to the service collection.
+                /// </summary>
+                /// <param name="lifetime">The service lifetime.</param>
+                /// <returns>The service collection so that additional calls can be chained.</returns>
+                /// <exception cref="ArgumentNullException">Thrown when services is null.</exception>
+                public IServiceCollection AddXRepository(ServiceLifetime lifetime = ServiceLifetime.Scoped)
+                {
+                    ArgumentNullException.ThrowIfNull(services);
 
-            services.TryAdd(new ServiceDescriptor(typeof(IRepository<>), typeof(Repository<>), lifetime));
+                    services.TryAdd(new ServiceDescriptor(typeof(IRepository<>), typeof(EntityRepository<>), lifetime));
 
-            return services;
+                    return services;
+                }
+            }
         }
-    }
-}

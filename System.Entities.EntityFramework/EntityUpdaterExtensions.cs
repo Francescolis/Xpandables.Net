@@ -1,4 +1,4 @@
-﻿/*******************************************************************************
+/*******************************************************************************
  * Copyright (C) 2024 Francis-Black EWANE
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
@@ -17,7 +17,7 @@
 
 using Microsoft.EntityFrameworkCore.Query;
 
-namespace System.Entities.Data;
+namespace System.Entities.EntityFramework;
 
 /// <summary>
 /// Provides extension methods for the EntityUpdater type to facilitate dynamic property update operations.

@@ -52,6 +52,24 @@ public static class IPipelineExtensions
             services.AddXPipelineDecorator(typeof(PipelineUnitOfWorkDecorator<>));
 
         /// <summary>
+        /// Registers the PipelineDataUnitOfWorkDecorator for all pipeline handlers, enabling ADO.NET
+        /// transaction management within the pipeline execution.
+        /// </summary>
+        /// <remarks>
+        /// <para>
+        /// Use this method to ensure that each pipeline handler is executed within an ADO.NET transaction scope.
+        /// The transaction will be committed on success or rolled back on failure.
+        /// </para>
+        /// <para>
+        /// This is the ADO.NET equivalent of <see cref="AddXPipelineUnitOfWorkDecorator"/> which is used
+        /// for Entity Framework Core persistence.
+        /// </para>
+        /// </remarks>
+        /// <returns>The IServiceCollection instance with the PipelineDataUnitOfWorkDecorator registered.</returns>
+        public IServiceCollection AddXPipelineDataUnitOfWorkDecorator() =>
+            services.AddXPipelineDecorator(typeof(PipelineDataUnitOfWorkDecorator<>));
+
+        /// <summary>
         /// Adds the default post-processing decorator to the pipeline configuration for all registered pipeline
         /// handlers.
         /// </summary>

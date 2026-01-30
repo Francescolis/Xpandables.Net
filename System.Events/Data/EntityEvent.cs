@@ -15,6 +15,7 @@
  *
 ********************************************************************************/
 using System.ComponentModel.DataAnnotations;
+using System.ComponentModel.DataAnnotations.Schema;
 using System.Diagnostics.CodeAnalysis;
 using System.Entities;
 using System.Text.Json;
@@ -38,29 +39,40 @@ public abstract class EntityEvent : IEntityEvent
     protected EntityEvent() { }
 
     /// <inheritdoc />
+    [Column("Status")]
+    [StringLength(50)]
     [EntityStatusValidation(allowCustomStatuses: true)]
     public string Status { get; set; } = EntityStatus.ACTIVE.Value;
 
     /// <inheritdoc/>
+    [Column("CausationId")]
+    [StringLength(100)]
     public string? CausationId { get; init; }
 
     /// <inheritdoc/>
+    [Column("CorrelationId")]
+    [StringLength(100)]
     public string? CorrelationId { get; init; }
 
     /// <inheritdoc />
+    [Column("CreatedOn")]
     public DateTime CreatedOn { get; set; } = DateTime.UtcNow;
 
     /// <inheritdoc />
+    [Column("UpdatedOn")]
     public DateTime? UpdatedOn { get; set; }
 
     /// <inheritdoc />
+    [Column("DeletedOn")]
     public DateTime? DeletedOn { get; set; }
 
     /// <inheritdoc/>
+    [NotMapped]
     public bool IsDeleted => Status == EntityStatus.DELETED.Value;
 
     /// <inheritdoc />
     [Key]
+    [Column("KeyId")]
     public required Guid KeyId { get; init; }
 
     /// <inheritdoc />
@@ -72,12 +84,16 @@ public abstract class EntityEvent : IEntityEvent
             : null;
     }
     /// <inheritdoc />
+    [Column("EventName")]
+    [StringLength(500)]
     public required string EventName { get; init; }
 
     /// <inheritdoc />
+    [Column("EventData")]
     public required JsonDocument EventData { get; init; }
 
     /// <inheritdoc />
+    [Column("Sequence")]
     public long Sequence { get; init; }
 
     /// <inheritdoc />

@@ -1,4 +1,4 @@
-﻿
+
 /*******************************************************************************
  * Copyright (C) 2024 Francis-Black EWANE
  *
@@ -19,7 +19,7 @@ using System.Text.Json;
 
 using Microsoft.EntityFrameworkCore.Metadata.Builders;
 
-namespace System.Entities.Data.Converters;
+namespace System.Entities.EntityFramework.Converters;
 
 /// <summary>
 /// Provides extension methods for configuring property conversions.

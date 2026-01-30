@@ -14,6 +14,8 @@
  * limitations under the License.
  *
 ********************************************************************************/
+using System.ComponentModel.DataAnnotations;
+using System.ComponentModel.DataAnnotations.Schema;
 using System.Entities;
 
 namespace System.Events.Data;
@@ -24,6 +26,7 @@ namespace System.Events.Data;
 /// <remarks>Use this type to track events that require guaranteed delivery or retry logic. The outbox pattern
 /// helps ensure that events are not lost and are processed even in the presence of failures. This class includes
 /// properties for tracking delivery attempts, scheduling retries, and recording error information.</remarks>
+[Table("OutboxEvents")]
 public sealed class EntityEventOutbox : EntityEvent, IEntityEventOutbox
 {
     /// <summary>
@@ -32,14 +35,19 @@ public sealed class EntityEventOutbox : EntityEvent, IEntityEventOutbox
     public EntityEventOutbox() => SetStatus(EntityStatus.PENDING.Value);
 
     /// <inheritdoc/>
+    [Column("ErrorMessage")]
+    [StringLength(4000)]
     public string? ErrorMessage { get; set; }
 
     /// <inheritdoc/>
+    [Column("AttemptCount")]
     public int AttemptCount { get; set; }
 
     /// <inheritdoc/>
+    [Column("NextAttemptOn")]
     public DateTime? NextAttemptOn { get; set; }
 
     /// <inheritdoc/>
+    [Column("ClaimId")]
     public Guid? ClaimId { get; set; }
 }

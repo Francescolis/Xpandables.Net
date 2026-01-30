@@ -19,7 +19,7 @@ using System.Linq.Expressions;
 
 using Microsoft.EntityFrameworkCore;
 
-namespace System.Entities.Data;
+namespace System.Entities.EntityFramework;
 
 /// <summary>
 /// Entity Framework Core implementation of the IRepository interface.
@@ -28,12 +28,12 @@ namespace System.Entities.Data;
 /// in a relational database. It uses <see cref="DataContext"/> to interact with the database and supports all standard
 /// repository operations including querying, adding, updating, and deleting entities asynchronously.</remarks>
 /// <remarks>
-/// Initializes a new instance of the <see cref="Repository{TEntity}"/> class.
+/// Initializes a new instance of the <see cref="EntityRepository{TEntity}"/> class.
 /// </remarks>
 /// <param name="context">The Entity Framework DbContext to use for database operations.</param>
 /// <exception cref="ArgumentNullException">Thrown when context is null.</exception>
 /// <typeparam name="TEntity">The type of the entity to query from the data source. Must be a reference type.</typeparam>
-public class Repository<[DynamicallyAccessedMembers(DynamicallyAccessedMemberTypes.All)] TEntity>(DataContext context) :
+public class EntityRepository<[DynamicallyAccessedMembers(DynamicallyAccessedMemberTypes.All)] TEntity>(DataContext context) :
     IRepository<TEntity>, IAmbientContextReceiver<DataContext>
     where TEntity : class
 {

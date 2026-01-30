@@ -22,7 +22,7 @@ using Microsoft.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore.Storage;
 using Microsoft.Extensions.DependencyInjection;
 
-namespace System.Entities.Data;
+namespace System.Entities.EntityFramework;
 
 /// <summary>
 /// Entity Framework Core implementation of the Unit of Work pattern.

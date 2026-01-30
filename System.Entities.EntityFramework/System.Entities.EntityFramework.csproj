@@ -6,14 +6,14 @@
 		<Nullable>enable</Nullable>
 		<Platforms>x64</Platforms>
 		<LangVersion>latest</LangVersion>
-		<Title>Xpandables.Entities.Data</Title>
+		<Title>Xpandables.Entities.EntityFramework</Title>
 		<Description>IRepository EntityFramework implementation.</Description>
 		<Company>Kamersoft</Company>
 		<Authors>Francescolis</Authors>
 
-		<AssemblyName>Xpandables.Entities.Data</AssemblyName>
-		<RootNamespace>System.Entities.Data</RootNamespace>
-		<PackageId>Xpandables.Entities.Data</PackageId>
+		<AssemblyName>Xpandables.Entities.EntityFramework</AssemblyName>
+		<RootNamespace>System.Entities.EntityFramework</RootNamespace>
+		<PackageId>Xpandables.Entities.EntityFramework</PackageId>
 		<PackageProjectUrl>https://github.com/Francescolis/Xpandables.Net</PackageProjectUrl>
 		<RepositoryUrl>https://github.com/Francescolis/Xpandables.Net</RepositoryUrl>
 		<RepositoryType>git</RepositoryType>
@@ -69,6 +69,10 @@
 		<NoWarn>1701;1702;CA1034;</NoWarn>
 		<IsAotCompatible>True</IsAotCompatible>
 	</PropertyGroup>
+
+	<ItemGroup>
+	  <Compile Remove="DependencyInjection\IEntityDataExtensions.cs" />
+	</ItemGroup>
 
 	<ItemGroup>
 		<Content Include="Xpandables.Net.ico" />

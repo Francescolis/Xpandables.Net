@@ -15,6 +15,7 @@
  *
 ********************************************************************************/
 using System.Diagnostics.CodeAnalysis;
+using System.Entities.Data;
 using System.Events;
 using System.Events.Aggregates;
 using System.Events.Data;
@@ -774,23 +775,101 @@ public static class IEventExtensions
             return services.AddXInboxStore<InboxStore<TEntityEventInbox>>();
         }
 
-        /// <summary>
-        /// Adds the default inbox store for handling integration event idempotency to the service collection.
-        /// </summary>
-        /// <remarks>
-        /// This method registers the inbox store using the default event type <see cref="EntityEventInbox"/>.
-        /// The inbox pattern ensures exactly-once delivery by deduplicating incoming events based on 
-        /// (EventId, Consumer) composite key.
-        /// </remarks>
-        /// <returns>The <see cref="IServiceCollection"/> instance with the inbox store services registered.</returns>
-        public IServiceCollection AddXInboxStore()
-        {
-            ArgumentNullException.ThrowIfNull(services);
-            return services.AddXInboxStoreOfType<EntityEventInbox>();
-        }
-    }
+                /// <summary>
+                /// Adds the default inbox store for handling integration event idempotency to the service collection.
+                /// </summary>
+                /// <remarks>
+                /// This method registers the inbox store using the default event type <see cref="EntityEventInbox"/>.
+                /// The inbox pattern ensures exactly-once delivery by deduplicating incoming events based on 
+                /// (EventId, Consumer) composite key.
+                /// </remarks>
+                /// <returns>The <see cref="IServiceCollection"/> instance with the inbox store services registered.</returns>
+                public IServiceCollection AddXInboxStore()
+                {
+                    ArgumentNullException.ThrowIfNull(services);
+                    return services.AddXInboxStoreOfType<EntityEventInbox>();
+                }
 
-    internal readonly record struct HandlerType(
-        Type Type,
-        IEnumerable<Type> Interfaces);
-}
+                /// <summary>
+                /// Adds the ADO.NET event store implementation for the specified entity types.
+                /// </summary>
+                /// <typeparam name="TEntityDomainEvent">The domain event entity type.</typeparam>
+                /// <typeparam name="TEntitySnapShotEvent">The snapshot event entity type.</typeparam>
+                /// <returns>The <see cref="IServiceCollection"/> instance with the data event store registered.</returns>
+                [RequiresDynamicCode("Expression compilation requires dynamic code generation.")]
+                public IServiceCollection AddXDataEventStoreOfType<
+                    [DynamicallyAccessedMembers(DynamicallyAccessedMemberTypes.PublicProperties)] TEntityDomainEvent,
+                    [DynamicallyAccessedMembers(DynamicallyAccessedMemberTypes.PublicProperties)] TEntitySnapShotEvent>()
+                    where TEntityDomainEvent : class, IEntityEventDomain
+                    where TEntitySnapShotEvent : class, IEntityEventSnapshot
+                {
+                    ArgumentNullException.ThrowIfNull(services);
+                    return services.AddXEventStore<DataEventStore<TEntityDomainEvent, TEntitySnapShotEvent>>();
+                }
+
+                /// <summary>
+                /// Adds the default ADO.NET event store using the default entity types.
+                /// </summary>
+                /// <returns>The <see cref="IServiceCollection"/> instance with the data event store registered.</returns>
+                [RequiresDynamicCode("Expression compilation requires dynamic code generation.")]
+                public IServiceCollection AddXDataEventStore()
+                {
+                    ArgumentNullException.ThrowIfNull(services);
+                    return services.AddXDataEventStoreOfType<EntityEventDomain, EntityEventSnapshot>();
+                }
+
+                /// <summary>
+                /// Adds the ADO.NET outbox store implementation for the specified entity type.
+                /// </summary>
+                /// <typeparam name="TEntityEventOutbox">The outbox event entity type.</typeparam>
+                /// <returns>The <see cref="IServiceCollection"/> instance with the data outbox store registered.</returns>
+                [RequiresDynamicCode("Expression compilation requires dynamic code generation.")]
+                public IServiceCollection AddXDataOutboxStoreOfType<
+                    [DynamicallyAccessedMembers(DynamicallyAccessedMemberTypes.PublicProperties)] TEntityEventOutbox>()
+                    where TEntityEventOutbox : class, IEntityEventOutbox
+                {
+                    ArgumentNullException.ThrowIfNull(services);
+                    return services.AddXOutboxStore<DataOutboxStore<TEntityEventOutbox>>();
+                }
+
+                /// <summary>
+                /// Adds the default ADO.NET outbox store using the default entity type.
+                /// </summary>
+                /// <returns>The <see cref="IServiceCollection"/> instance with the data outbox store registered.</returns>
+                [RequiresDynamicCode("Expression compilation requires dynamic code generation.")]
+                public IServiceCollection AddXDataOutboxStore()
+                {
+                    ArgumentNullException.ThrowIfNull(services);
+                    return services.AddXDataOutboxStoreOfType<EntityEventOutbox>();
+                }
+
+                /// <summary>
+                /// Adds the ADO.NET inbox store implementation for the specified entity type.
+                /// </summary>
+                /// <typeparam name="TEntityEventInbox">The inbox event entity type.</typeparam>
+                        /// <returns>The <see cref="IServiceCollection"/> instance with the data inbox store registered.</returns>
+                        [RequiresDynamicCode("Expression compilation requires dynamic code generation.")]
+                        public IServiceCollection AddXDataInboxStoreOfType<
+                            [DynamicallyAccessedMembers(DynamicallyAccessedMemberTypes.PublicProperties)] TEntityEventInbox>()
+                            where TEntityEventInbox : class, IEntityEventInbox
+                        {
+                            ArgumentNullException.ThrowIfNull(services);
+                            return services.AddXInboxStore<DataInboxStore<TEntityEventInbox>>();
+                        }
+
+                        /// <summary>
+                        /// Adds the default ADO.NET inbox store using the default entity type.
+                        /// </summary>
+                        /// <returns>The <see cref="IServiceCollection"/> instance with the data inbox store registered.</returns>
+                        [RequiresDynamicCode("Expression compilation requires dynamic code generation.")]
+                        public IServiceCollection AddXDataInboxStore()
+                        {
+                            ArgumentNullException.ThrowIfNull(services);
+                            return services.AddXDataInboxStoreOfType<EntityEventInbox>();
+                        }
+                    }
+
+                    internal readonly record struct HandlerType(
+                        Type Type,
+                        IEnumerable<Type> Interfaces);
+                }

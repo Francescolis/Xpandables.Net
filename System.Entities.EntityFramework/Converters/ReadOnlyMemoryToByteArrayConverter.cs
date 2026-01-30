@@ -1,5 +1,6 @@
-﻿/*******************************************************************************
- * Copyright (C) 2025 Kamersoft
+
+/*******************************************************************************
+ * Copyright (C) 2024 Francis-Black EWANE
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -14,19 +15,20 @@
  * limitations under the License.
  *
 ********************************************************************************/
-using System.ComponentModel.DataAnnotations.Schema;
 
-namespace System.Events.Data;
+using Microsoft.EntityFrameworkCore.Storage.ValueConversion;
+
+namespace System.Entities.EntityFramework.Converters;
 
 /// <summary>
-/// Represents a snapshot of an event entity.
+/// Converts a <see cref="ReadOnlyMemory{T}"/> of byte to a byte array and vice versa.
 /// </summary>
-[Table("SnapshotEvents")]
-public sealed class EntityEventSnapshot : EntityEvent, IEntityEventSnapshot
+/// <remarks>
+/// Initializes a new instance of the <see cref="ReadOnlyMemoryToByteArrayConverter"/> class.
+/// </remarks>
+public sealed class ReadOnlyMemoryToByteArrayConverter() :
+    ValueConverter<ReadOnlyMemory<byte>, byte[]>(
+        v => v.ToArray(),
+        v => new ReadOnlyMemory<byte>(v))
 {
-    /// <summary>
-    /// Gets the owner of the event entity snapshot.
-    /// </summary>
-    [Column("OwnerId")]
-    public required Guid OwnerId { get; init; }
 }

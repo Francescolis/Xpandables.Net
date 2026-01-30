@@ -14,6 +14,8 @@
  * limitations under the License.
  *
 ********************************************************************************/
+using System.ComponentModel.DataAnnotations;
+using System.ComponentModel.DataAnnotations.Schema;
 using System.Entities;
 
 namespace System.Events.Data;
@@ -25,6 +27,7 @@ namespace System.Events.Data;
 /// <remarks>Use this class to monitor and manage the lifecycle of entity events that require reliable processing,
 /// including retry attempts and error handling. This type is typically used in scenarios where event delivery
 /// guarantees and processing status tracking are required.</remarks>
+[Table("InboxEvents")]
 public sealed class EntityEventInbox : EntityEvent, IEntityEventInbox
 {
     /// <summary>
@@ -33,17 +36,24 @@ public sealed class EntityEventInbox : EntityEvent, IEntityEventInbox
     public EntityEventInbox() => SetStatus(EntityStatus.PROCESSING.Value);
 
     /// <inheritdoc/>
+    [Column("ErrorMessage")]
+    [StringLength(4000)]
     public string? ErrorMessage { get; set; }
 
     /// <inheritdoc/>
+    [Column("AttemptCount")]
     public int AttemptCount { get; set; }
 
     /// <inheritdoc/>
+    [Column("NextAttemptOn")]
     public DateTime? NextAttemptOn { get; set; }
 
     /// <inheritdoc/>
+    [Column("ClaimId")]
     public Guid? ClaimId { get; set; }
 
     /// <inheritdoc/>
+    [Column("Consumer")]
+    [StringLength(500)]
     public string Consumer { get; set; } = string.Empty;
 }

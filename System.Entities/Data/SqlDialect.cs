@@ -1,4 +1,4 @@
-﻿/*******************************************************************************
+/*******************************************************************************
  * Copyright (C) 2025 Kamersoft
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
@@ -14,19 +14,25 @@
  * limitations under the License.
  *
 ********************************************************************************/
-using System.ComponentModel.DataAnnotations.Schema;
-
-namespace System.Events.Data;
+namespace System.Entities.Data;
 
 /// <summary>
-/// Represents a snapshot of an event entity.
+/// Specifies the SQL dialect to use for query generation.
 /// </summary>
-[Table("SnapshotEvents")]
-public sealed class EntityEventSnapshot : EntityEvent, IEntityEventSnapshot
+public enum SqlDialect
 {
     /// <summary>
-    /// Gets the owner of the event entity snapshot.
+    /// Microsoft SQL Server dialect (T-SQL).
     /// </summary>
-    [Column("OwnerId")]
-    public required Guid OwnerId { get; init; }
+    SqlServer,
+
+    /// <summary>
+    /// PostgreSQL dialect.
+    /// </summary>
+    PostgreSql,
+
+    /// <summary>
+    /// MySQL dialect.
+    /// </summary>
+    MySql
 }

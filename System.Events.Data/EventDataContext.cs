@@ -15,7 +15,7 @@
  *
 ********************************************************************************/
 using System.Diagnostics.CodeAnalysis;
-using System.Entities.Data;
+using System.Entities.EntityFramework;
 using System.Events.Data.Configurations;
 
 using Microsoft.EntityFrameworkCore;
