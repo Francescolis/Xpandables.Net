@@ -87,6 +87,6 @@ public abstract class EntityEvent : IEntityEvent
     public required string EventName { get; init; }
 
     /// <inheritdoc />
-    [Column("Sequence")]
+    [Column("Sequence"), DatabaseGenerated(DatabaseGeneratedOption.Identity)]
     public long Sequence { get; init; }
 }

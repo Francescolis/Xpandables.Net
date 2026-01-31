@@ -210,7 +210,9 @@ public abstract class SqlBuilderBase : ISqlBuilder
             if (property == null || !property.CanRead)
                 continue;
 
-            // Skip auto-generated columns (could be enhanced with attributes)
+            if (IsDatabaseGeneratedIdentity(property))
+                continue;
+
             var value = property.GetValue(entity);
             var paramName = NextParameterName();
 
@@ -255,7 +257,7 @@ public abstract class SqlBuilderBase : ISqlBuilder
         // Get property info once
         var properties = columnMappings
             .Select(m => (Mapping: m, Property: type.GetProperty(m.Key)))
-            .Where(p => p.Property?.CanRead == true)
+            .Where(p => p.Property?.CanRead == true && !IsDatabaseGeneratedIdentity(p.Property))
             .ToList();
 
         var columns = properties.Select(p => QuoteIdentifier(p.Mapping.Value));
@@ -355,6 +357,22 @@ public abstract class SqlBuilderBase : ISqlBuilder
     }
 
     /// <summary>
+    /// Determines whether the specified property is configured to have a database-generated identity value.
+    /// </summary>
+    /// <remarks>This method inspects the DatabaseGeneratedAttribute applied to the property to determine its
+    /// configuration. It specifically checks if the DatabaseGeneratedOption is set to Identity, which indicates that
+    /// the database will generate the value for this property.</remarks>
+    /// <param name="property">The property to check for database generation configuration. This should be a valid PropertyInfo object
+    /// representing a property of an entity.</param>
+    /// <returns>true if the property is configured to use a database-generated identity; otherwise, false.</returns>
+    protected virtual bool IsDatabaseGeneratedIdentity(PropertyInfo property)
+    {
+        ArgumentNullException.ThrowIfNull(property);
+        var attribute = property.GetCustomAttribute<DatabaseGeneratedAttribute>();
+        return attribute?.DatabaseGeneratedOption == DatabaseGeneratedOption.Identity;
+    }
+
+    /// <summary>
     /// Appends the paging clause (OFFSET/FETCH or LIMIT/OFFSET) to the SQL.
     /// </summary>
     /// <param name="sql">The SQL builder.</param>
@@ -408,7 +426,7 @@ public abstract class SqlBuilderBase : ISqlBuilder
     /// <summary>
     /// Builds an ORDER BY clause from an order specification.
     /// </summary>
-    [UnconditionalSuppressMessage("Trimming", "IL2075:Value passed to parameter is not compatible with target parameter", 
+    [UnconditionalSuppressMessage("Trimming", "IL2075:Value passed to parameter is not compatible with target parameter",
         Justification = "IOrderSpecification implementations are expected to have KeySelector property.")]
     protected virtual string BuildOrderClause<TEntity>(
         IOrderSpecification<TEntity> orderSpec,

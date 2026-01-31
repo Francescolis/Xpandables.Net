@@ -1,16 +1,18 @@
-using System.Entities;
-using System.Entities.EntityFramework;
-using System.Events.Data;
+using System.Data.Common;
+using System.Entities.Data;
 
 using Microsoft.AspNetCore.Http.Json;
-using Microsoft.Extensions.DependencyInjection;
 using Microsoft.EntityFrameworkCore;
-using Microsoft.EntityFrameworkCore.Infrastructure;
 
 using Xpandables.Net.Worker.ReadStorage;
 
 
 var builder = Host.CreateApplicationBuilder(args);
+
+builder.Services.AddXDbConnectionMsSqlServer(builder.Configuration.GetConnectionString("EventStoreDb")!);
+DbProviderFactories.RegisterFactory(
+    DbProviders.MsSqlServer.InvariantName,
+    Microsoft.Data.SqlClient.SqlClientFactory.Instance);
 
 builder.Services.AddXDataContext<BankAccountDataContext>(options =>
     options
@@ -26,6 +28,19 @@ builder.Services.AddXDataContext<BankAccountDataContext>(options =>
 
 builder.Services
     .AddXJsonSerializerOptions()
+    .AddXScheduler()
+    .AddXHostedScheduler()
+    .AddXEventConverterFactory()
+    .AddXCacheTypeResolver([typeof(Program).Assembly])
+    .AddXEventHandlers()
+    .AddXEventPublisher()
+    .AddXEventConverterContext()
+    .AddXIntegrationEventEnricher()
+    .AddXDataUnitOfWork()
+    .AddXSlqBuilderMsSqlServer()
+    .AddXDbConnectionScopeFactory()
+    .AddXDbConnectionScope()
+    .AddXEventContextAccessor()
     .AddXEventStores();
 
 builder.Services.Configure<JsonOptions>(options =>

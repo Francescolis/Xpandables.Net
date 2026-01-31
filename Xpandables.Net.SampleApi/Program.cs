@@ -50,8 +50,6 @@ builder.Services
     .AddXCompositeValidator()
     .AddXEventPublisher()
     .AddXAggregateStore()
-    .AddXEventStore()
-    .AddXOutboxStore()
     .AddXDataUnitOfWork()
     .AddXSlqBuilderMsSqlServer()
     .AddXDbConnectionScopeFactory()
