@@ -83,7 +83,7 @@ public sealed class OutboxStore<
         foreach (var @event in enriched)
         {
             var entity = _converter.ConvertEventToEntity(@event, _converterFactory.ConverterContext);
-            entity.SetStatus(EntityStatus.PENDING.Value);
+            entity.SetStatus(EventStatus.PENDING.Value);
             list.Add(entity);
         }
 
@@ -108,8 +108,8 @@ public sealed class OutboxStore<
         var specification = QuerySpecification
             .For<TEntityEventOutbox>()
             .Where(e =>
-                (e.Status == EntityStatus.PENDING.Value) ||
-                (e.Status == EntityStatus.ONERROR.Value && (e.NextAttemptOn == null || e.NextAttemptOn <= now)))
+                (e.Status == EventStatus.PENDING.Value) ||
+                (e.Status == EventStatus.ONERROR.Value && (e.NextAttemptOn == null || e.NextAttemptOn <= now)))
             .Where(e => e.ClaimId == null)
             .OrderBy(e => e.Sequence)
             .Take(Math.Max(1, maxEvents))
@@ -127,7 +127,7 @@ public sealed class OutboxStore<
         // Step 2: Claim the events atomically
         var updater = EntityUpdater
             .For<TEntityEventOutbox>()
-            .SetProperty(e => e.Status, EntityStatus.PROCESSING.Value)
+            .SetProperty(e => e.Status, EventStatus.PROCESSING.Value)
             .SetProperty(e => e.ClaimId, claimId)
             .SetProperty(e => e.ErrorMessage, (string?)null)
             .SetProperty(e => e.NextAttemptOn, now.Add(lease))
@@ -180,7 +180,7 @@ public sealed class OutboxStore<
 
         var updater = EntityUpdater
             .For<TEntityEventOutbox>()
-            .SetProperty(e => e.Status, EntityStatus.PUBLISHED.Value)
+            .SetProperty(e => e.Status, EventStatus.PUBLISHED.Value)
             .SetProperty(e => e.ErrorMessage, (string?)null)
             .SetProperty(e => e.NextAttemptOn, (DateTime?)null)
             .SetProperty(e => e.ClaimId, (Guid?)null)
@@ -227,7 +227,7 @@ public sealed class OutboxStore<
 
             var updater = EntityUpdater
                 .For<TEntityEventOutbox>()
-                .SetProperty(e => e.Status, EntityStatus.ONERROR.Value)
+                .SetProperty(e => e.Status, EventStatus.ONERROR.Value)
                 .SetProperty(e => e.ErrorMessage, failure.Error)
                 .SetProperty(e => e.AttemptCount, nextAttempt)
                 .SetProperty(e => e.NextAttemptOn, now.AddSeconds(backoffSeconds))

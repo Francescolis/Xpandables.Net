@@ -14,7 +14,7 @@
  * limitations under the License.
  *
 ********************************************************************************/
-using System.Entities;
+using System.Events.Data;
 using System.Events.Integration;
 
 using Microsoft.Extensions.Logging;
@@ -56,8 +56,8 @@ public sealed partial class InboxEventHandlerDecorator<TEvent, TEventHandler>(
             visibilityTimeout: null,
             cancellationToken).ConfigureAwait(false);
 
-        if (receiveResult.Status == EntityStatus.DUPLICATE ||
-            receiveResult.Status == EntityStatus.PROCESSING)
+        if (receiveResult.Status == EventStatus.DUPLICATE ||
+            receiveResult.Status == EventStatus.PROCESSING)
         {
             LogInboxSkipped(_logger, @event.EventId, consumer, receiveResult.Status);
             return;
@@ -89,7 +89,7 @@ public sealed partial class InboxEventHandlerDecorator<TEvent, TEventHandler>(
     }
 
     [LoggerMessage(Level = LogLevel.Debug, Message = "Inbox skipped handling for event {EventId} (consumer {Consumer}) with status {Status}")]
-    private static partial void LogInboxSkipped(ILogger logger, Guid eventId, string consumer, EntityStatus status);
+    private static partial void LogInboxSkipped(ILogger logger, Guid eventId, string consumer, EventStatus status);
 
     [LoggerMessage(Level = LogLevel.Error, Message = "Failed to mark inbox event {EventId} as failed for consumer {Consumer}")]
     private static partial void LogInboxFailError(ILogger logger, Exception exception, Guid eventId, string consumer);

@@ -142,7 +142,7 @@ public sealed class EventStore<
         {
             var updater = EntityUpdater
                 .For<TEntityEventDomain>()
-                .SetProperty(e => e.Status, EntityStatus.DELETED.Value);
+                .SetProperty(e => e.Status, EventStatus.DELETED.Value);
 
             await _domainRepository
                 .UpdateAsync(specification, updater, cancellationToken)

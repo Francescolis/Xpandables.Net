@@ -15,7 +15,6 @@
  *
 ********************************************************************************/
 using System.Diagnostics.CodeAnalysis;
-using System.Entities.Data;
 using System.Events;
 using System.Events.Aggregates;
 using System.Events.Data;
@@ -704,9 +703,9 @@ public static class IEventExtensions
             return services;
         }
 
-                    }
+    }
 
-                    internal readonly record struct HandlerType(
-                        Type Type,
-                        IEnumerable<Type> Interfaces);
-                }
+    internal readonly record struct HandlerType(
+        Type Type,
+        IEnumerable<Type> Interfaces);
+}

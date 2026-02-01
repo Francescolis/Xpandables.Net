@@ -87,7 +87,7 @@
 	</ItemGroup>
 
 	<ItemGroup>
-	  <ProjectReference Include="..\System.Entities\System.Entities.csproj" />
+	  <ProjectReference Include="..\System.Primitives\System.Primitives.csproj" />
 	</ItemGroup>
 
 

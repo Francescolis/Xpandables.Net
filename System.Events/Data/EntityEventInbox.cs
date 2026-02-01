@@ -16,7 +16,6 @@
 ********************************************************************************/
 using System.ComponentModel.DataAnnotations;
 using System.ComponentModel.DataAnnotations.Schema;
-using System.Entities;
 
 namespace System.Events.Data;
 
@@ -33,7 +32,7 @@ public sealed class EntityEventInbox : EntityEvent, IEntityEventInbox
     /// <summary>
     /// Constructs a new instance of the <see cref="EntityEventInbox" /> class.
     /// </summary>
-    public EntityEventInbox() => SetStatus(EntityStatus.PROCESSING.Value);
+    public EntityEventInbox() => SetStatus(EventStatus.PROCESSING.Value);
 
     /// <inheritdoc/>
     [Column("ErrorMessage")]

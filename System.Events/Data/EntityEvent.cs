@@ -16,7 +16,6 @@
 ********************************************************************************/
 using System.ComponentModel.DataAnnotations;
 using System.ComponentModel.DataAnnotations.Schema;
-using System.Entities;
 
 namespace System.Events.Data;
 
@@ -40,7 +39,7 @@ public abstract class EntityEvent : IEntityEvent
     [Column("Status")]
     [StringLength(50)]
     [EntityStatusValidation(allowCustomStatuses: true)]
-    public string Status { get; set; } = EntityStatus.ACTIVE.Value;
+    public string Status { get; set; } = EventStatus.ACTIVE.Value;
 
     /// <inheritdoc/>
     [Column("CausationId")]
@@ -66,7 +65,7 @@ public abstract class EntityEvent : IEntityEvent
 
     /// <inheritdoc/>
     [NotMapped]
-    public bool IsDeleted => Status == EntityStatus.DELETED.Value;
+    public bool IsDeleted => Status == EventStatus.DELETED.Value;
 
     /// <inheritdoc />
     [Key]
@@ -77,7 +76,7 @@ public abstract class EntityEvent : IEntityEvent
     public void SetStatus(string status)
     {
         Status = status;
-        DeletedOn = status == EntityStatus.DELETED.Value
+        DeletedOn = status == EventStatus.DELETED.Value
             ? DateTime.UtcNow
             : null;
     }

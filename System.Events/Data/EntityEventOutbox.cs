@@ -16,7 +16,6 @@
 ********************************************************************************/
 using System.ComponentModel.DataAnnotations;
 using System.ComponentModel.DataAnnotations.Schema;
-using System.Entities;
 
 namespace System.Events.Data;
 
@@ -32,7 +31,7 @@ public sealed class EntityEventOutbox : EntityEvent, IEntityEventOutbox
     /// <summary>
     /// Constructs a new instance of the <see cref="EntityEventOutbox" /> class.
     /// </summary>
-    public EntityEventOutbox() => SetStatus(EntityStatus.PENDING.Value);
+    public EntityEventOutbox() => SetStatus(EventStatus.PENDING.Value);
 
     /// <inheritdoc/>
     [Column("ErrorMessage")]

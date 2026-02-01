@@ -14,7 +14,7 @@
  * limitations under the License.
  *
 ********************************************************************************/
-using System.Entities;
+using System.Events.Data;
 
 namespace System.Events.Integration;
 
@@ -39,7 +39,7 @@ public readonly record struct CompletedInboxEvent(Guid EventId, string Consumer)
 /// </summary>
 /// <param name="EventId">The unique identifier of the event associated with this status.</param>
 /// <param name="Status">The current processing status of the event.</param>
-public readonly record struct InboxReceiveResult(Guid EventId, EntityStatus Status);
+public readonly record struct InboxReceiveResult(Guid EventId, EventStatus Status);
 
 /// <summary>
 /// Represents a contract for storing and retrieving inbox messages.

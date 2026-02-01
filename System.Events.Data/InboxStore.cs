@@ -81,36 +81,36 @@ public sealed class InboxStore<
 
         if (existing is not null)
         {
-            if (existing.Status == EntityStatus.PUBLISHED.Value)
+            if (existing.Status == EventStatus.PUBLISHED.Value)
             {
-                return new InboxReceiveResult(@event.EventId, EntityStatus.DUPLICATE);
+                return new InboxReceiveResult(@event.EventId, EventStatus.DUPLICATE);
             }
 
-            if (existing.Status == EntityStatus.PROCESSING.Value)
+            if (existing.Status == EventStatus.PROCESSING.Value)
             {
-                return new InboxReceiveResult(@event.EventId, EntityStatus.PROCESSING);
+                return new InboxReceiveResult(@event.EventId, EventStatus.PROCESSING);
             }
 
-            if (existing.Status == EntityStatus.ONERROR.Value)
+            if (existing.Status == EventStatus.ONERROR.Value)
             {
                 // Allow retry only if lease expired
                 if (existing.NextAttemptOn is not null && existing.NextAttemptOn > DateTime.UtcNow)
                 {
-                    return new InboxReceiveResult(@event.EventId, EntityStatus.PROCESSING);
+                    return new InboxReceiveResult(@event.EventId, EventStatus.PROCESSING);
                 }
             }
         }
 
         // Insert new inbox entry
         TEntityEventInbox entity = _converter.ConvertEventToEntity(@event, _converterFactory.ConverterContext);
-        entity.SetStatus(EntityStatus.PROCESSING.Value);
+        entity.SetStatus(EventStatus.PROCESSING.Value);
         entity.Consumer = consumer;
         entity.ClaimId = Guid.NewGuid();
         entity.NextAttemptOn = DateTime.UtcNow.Add(visibilityTimeout ?? TimeSpan.FromMinutes(5));
 
         await _inboxRepository.InsertAsync(entity, cancellationToken).ConfigureAwait(false);
 
-        return new InboxReceiveResult(@event.EventId, EntityStatus.ACCEPTED);
+        return new InboxReceiveResult(@event.EventId, EventStatus.ACCEPTED);
     }
 
     /// <inheritdoc />
@@ -132,7 +132,7 @@ public sealed class InboxStore<
 
             var updater = EntityUpdater
                 .For<TEntityEventInbox>()
-                .SetProperty(e => e.Status, EntityStatus.PUBLISHED.Value)
+                .SetProperty(e => e.Status, EventStatus.PUBLISHED.Value)
                 .SetProperty(e => e.ErrorMessage, (string?)null)
                 .SetProperty(e => e.NextAttemptOn, (DateTime?)null)
                 .SetProperty(e => e.ClaimId, (Guid?)null)
@@ -180,7 +180,7 @@ public sealed class InboxStore<
 
             var updater = EntityUpdater
                 .For<TEntityEventInbox>()
-                .SetProperty(e => e.Status, EntityStatus.ONERROR.Value)
+                .SetProperty(e => e.Status, EventStatus.ONERROR.Value)
                 .SetProperty(e => e.ErrorMessage, failure.Error)
                 .SetProperty(e => e.AttemptCount, nextAttempt)
                 .SetProperty(e => e.NextAttemptOn, now.AddSeconds(backoffSeconds))
