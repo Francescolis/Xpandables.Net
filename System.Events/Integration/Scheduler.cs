@@ -237,44 +237,70 @@ public sealed class Scheduler : Disposable, IScheduler
 
         try
         {
-            using var serviceScope = _serviceScopeFactory.CreateAsyncScope();
-            var eventPublisher = serviceScope.ServiceProvider.GetRequiredService<IEventPublisher>();
-            var outbox = serviceScope.ServiceProvider.GetRequiredService<IOutboxStore>();
-
-            // Claim a batch directly from the outbox (multi-instance safe)
-            var claimed = await outbox.DequeueAsync(cancellationToken, _options.BatchSize, visibilityTimeout: null).ConfigureAwait(false);
-            if (claimed.Count == 0)
+            var serviceScope = _serviceScopeFactory.CreateAsyncScope();
+            await using (serviceScope.ConfigureAwait(false))
             {
-                LogNoEventsToSchedule(_logger, null);
-                ResetBackoffDelay();
-                HandleCircuitBreakerSuccess();
-                return;
-            }
+                var outbox = serviceScope.ServiceProvider.GetRequiredService<IOutboxStore>();
 
-            // Partition into batches for parallel processing
-            var eventBatches = CreateBatches(claimed);
-            LogProcessingBatches(_logger, eventBatches.Sum(b => b.Count), eventBatches.Count, null);
+                // Claim a batch directly from the outbox (multi-instance safe)
+                var claimed = await outbox.DequeueAsync(cancellationToken, _options.BatchSize, visibilityTimeout: null).ConfigureAwait(false);
+                if (claimed.Count == 0)
+                {
+                    LogNoEventsToSchedule(_logger, null);
+                    ResetBackoffDelay();
+                    HandleCircuitBreakerSuccess();
+                    return;
+                }
 
-            var processingTasks = eventBatches.Select(batch =>
-                ProcessEventBatchAsync(batch, eventPublisher, outbox, cancellationToken));
+                // Partition into batches for parallel processing
+                var eventBatches = CreateBatches(claimed);
+                LogProcessingBatches(_logger, eventBatches.Sum(b => b.Count), eventBatches.Count, null);
 
-            var batchResults = await Task.WhenAll(processingTasks).ConfigureAwait(false);
+                var processingTasks = eventBatches.Select(batch =>
+                    ProcessEventBatchAsync(batch, cancellationToken));
 
-            processedCount = batchResults.Sum(r => r.ProcessedCount);
-            errorCount = batchResults.Sum(r => r.ErrorCount);
+                var batchResults = await Task.WhenAll(processingTasks).ConfigureAwait(false);
 
-            UpdateMetrics(processedCount, errorCount, stopwatch.Elapsed);
+                processedCount = batchResults.Sum(r => r.ProcessedCount);
+                errorCount = batchResults.Sum(r => r.ErrorCount);
 
-            if (errorCount == 0)
-            {
-                ResetBackoffDelay();
-                HandleCircuitBreakerSuccess();
-                LogSuccessfulProcessing(_logger, processedCount, stopwatch.ElapsedMilliseconds, null);
-            }
-            else
-            {
-                LogProcessingWithErrors(_logger, processedCount, errorCount, stopwatch.ElapsedMilliseconds, null);
-                HandlePartialFailure(errorCount);
+                var successIds = batchResults.SelectMany(r => r.SuccessIds).ToList();
+                var failures = batchResults.SelectMany(r => r.Failures).ToList();
+
+#pragma warning disable CA1031 // Do not catch general exception types
+                try
+                {
+                    if (successIds.Count > 0)
+                    {
+                        await outbox.CompleteAsync(cancellationToken, [.. successIds]).ConfigureAwait(false);
+                    }
+                    if (failures.Count > 0)
+                    {
+                        await outbox.FailAsync(cancellationToken, [.. failures]).ConfigureAwait(false);
+                    }
+                }
+                catch (Exception exception)
+                {
+                    LogOutboxBatchUpdateFailed(_logger, successIds.Count + failures.Count, exception);
+
+                    // All would be retried later when lease expires; count successful publishes as errors
+                    errorCount += successIds.Count;
+                }
+#pragma warning restore CA1031 // Do not catch general exception types
+
+                UpdateMetrics(processedCount, errorCount, stopwatch.Elapsed);
+
+                if (errorCount == 0)
+                {
+                    ResetBackoffDelay();
+                    HandleCircuitBreakerSuccess();
+                    LogSuccessfulProcessing(_logger, processedCount, stopwatch.ElapsedMilliseconds, null);
+                }
+                else
+                {
+                    LogProcessingWithErrors(_logger, processedCount, errorCount, stopwatch.ElapsedMilliseconds, null);
+                    HandlePartialFailure(errorCount);
+                }
             }
         }
         catch (Exception exception) when (exception is not OperationCanceledException)
@@ -303,8 +329,6 @@ public sealed class Scheduler : Disposable, IScheduler
 
     private async Task<BatchProcessingResult> ProcessEventBatchAsync(
         List<IIntegrationEvent> events,
-        IEventPublisher eventPublisher,
-        IOutboxStore outbox,
         CancellationToken cancellationToken)
     {
         var processedCount = 0;
@@ -313,54 +337,39 @@ public sealed class Scheduler : Disposable, IScheduler
         var successIds = new List<Guid>(events.Count);
         var failures = new List<FailedOutboxEvent>(events.Count);
 
-        foreach (var @event in events)
+        // Create a dedicated scope for this batch to isolate connections and avoid MARS issues
+        var batchScope = _serviceScopeFactory.CreateAsyncScope();
+        await using (batchScope.ConfigureAwait(false))
         {
-            if (cancellationToken.IsCancellationRequested)
-                break;
+            var eventPublisher = batchScope.ServiceProvider.GetRequiredService<IEventPublisher>();
 
-            try
+            foreach (var @event in events)
             {
-                using var timeoutCts = CancellationTokenSource.CreateLinkedTokenSource(cancellationToken);
-                timeoutCts.CancelAfter(TimeSpan.FromMilliseconds(_options.EventProcessingTimeout));
+                if (cancellationToken.IsCancellationRequested)
+                    break;
 
-                await eventPublisher.PublishAsync(@event, timeoutCts.Token).ConfigureAwait(false);
-                successIds.Add(@event.EventId);
-                processedCount++;
-            }
-            catch (Exception exception) when (exception is not OperationCanceledException)
-            {
-                errorCount++;
-                var errorMessage = exception is TimeoutException
-                    ? "Event processing timeout exceeded"
-                    : exception.ToString();
-                failures.Add(new(@event.EventId, errorMessage));
-                LogEventProcessingFailed(_logger, @event.EventId, @event.GetType().Name, exception);
+                try
+                {
+                    using var timeoutCts = CancellationTokenSource.CreateLinkedTokenSource(cancellationToken);
+                    timeoutCts.CancelAfter(TimeSpan.FromMilliseconds(_options.EventProcessingTimeout));
+
+                    await eventPublisher.PublishAsync(@event, timeoutCts.Token).ConfigureAwait(false);
+                    successIds.Add(@event.EventId);
+                    processedCount++;
+                }
+                catch (Exception exception) when (exception is not OperationCanceledException)
+                {
+                    errorCount++;
+                    var errorMessage = exception is TimeoutException
+                        ? "Event processing timeout exceeded"
+                        : exception.ToString();
+                    failures.Add(new(@event.EventId, errorMessage));
+                    LogEventProcessingFailed(_logger, @event.EventId, @event.GetType().Name, exception);
+                }
             }
         }
 
-        // Update outbox for the batch
-#pragma warning disable CA1031 // Do not catch general exception types
-        try
-        {
-            if (successIds.Count > 0)
-            {
-                await outbox.CompleteAsync(cancellationToken, [.. successIds]).ConfigureAwait(false);
-            }
-            if (failures.Count > 0)
-            {
-                await outbox.FailAsync(cancellationToken, [.. failures]).ConfigureAwait(false);
-            }
-        }
-        catch (Exception exception)
-        {
-            LogOutboxBatchUpdateFailed(_logger, successIds.Count + failures.Count, exception);
-
-            // All would be retried later when lease expires; count successful publishes as errors
-            errorCount += successIds.Count;
-        }
-#pragma warning restore CA1031 // Do not catch general exception types
-
-        return new BatchProcessingResult(processedCount, errorCount);
+        return new BatchProcessingResult(processedCount, errorCount, successIds, failures);
     }
 
     [MethodImpl(MethodImplOptions.AggressiveInlining)]
@@ -508,7 +517,11 @@ public sealed class Scheduler : Disposable, IScheduler
         HalfOpen
     }
 
-    private readonly record struct BatchProcessingResult(int ProcessedCount, int ErrorCount);
+    private readonly record struct BatchProcessingResult(
+        int ProcessedCount,
+        int ErrorCount,
+        IReadOnlyList<Guid> SuccessIds,
+        IReadOnlyList<FailedOutboxEvent> Failures);
 
     private sealed class SchedulerMetrics
     {
