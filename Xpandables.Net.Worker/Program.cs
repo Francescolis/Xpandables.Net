@@ -33,6 +33,7 @@ builder.Services
     .AddXEventConverterFactory()
     .AddXCacheTypeResolver([typeof(Program).Assembly])
     .AddXEventHandlers()
+    .AddXEventHandlerInboxDecorator()
     .AddXEventPublisher()
     .AddXEventConverterContext()
     .AddXIntegrationEventEnricher()

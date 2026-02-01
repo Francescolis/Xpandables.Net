@@ -314,14 +314,13 @@ public sealed class EventStore<
             .For<TEntityEventDomain>()
             .Where(e => e.StreamId == streamId)
             .OrderByDescending(e => e.StreamVersion)
-            .Take(1)
-            .Select(e => e.StreamVersion);
+            .Build();
 
-        var version = await _domainRepository
+        var @event = await _domainRepository
             .QueryFirstOrDefaultAsync(specification, cancellationToken)
-                                    .ConfigureAwait(false);
+            .ConfigureAwait(false);
 
-        return version == 0 ? -1 : version;
+        return @event?.StreamVersion ?? -1;
     }
 }
 

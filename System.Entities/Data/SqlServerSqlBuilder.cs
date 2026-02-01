@@ -91,8 +91,9 @@ public sealed class SqlServerSqlBuilder : SqlBuilderBase
         IReadOnlyDictionary<string, string> columnMappings,
         List<SqlParameter> parameters)
     {
-        var column = TranslateExpression(methodCall.Object!, columnMappings, parameters);
-        var value = ExtractConstantValue(methodCall.Arguments[0]);
+        var (columnExpr, valueExpr) = GetStringMethodOperands(methodCall);
+        var column = TranslateExpression(columnExpr, columnMappings, parameters);
+        var value = ExtractConstantValue(valueExpr);
         var escapedValue = EscapeLikePattern(value?.ToString() ?? string.Empty);
         var paramName = NextParameterName();
         parameters.Add(new SqlParameter(paramName, $"%{escapedValue}%"));
@@ -107,8 +108,9 @@ public sealed class SqlServerSqlBuilder : SqlBuilderBase
         IReadOnlyDictionary<string, string> columnMappings,
         List<SqlParameter> parameters)
     {
-        var column = TranslateExpression(methodCall.Object!, columnMappings, parameters);
-        var value = ExtractConstantValue(methodCall.Arguments[0]);
+        var (columnExpr, valueExpr) = GetStringMethodOperands(methodCall);
+        var column = TranslateExpression(columnExpr, columnMappings, parameters);
+        var value = ExtractConstantValue(valueExpr);
         var escapedValue = EscapeLikePattern(value?.ToString() ?? string.Empty);
         var paramName = NextParameterName();
         parameters.Add(new SqlParameter(paramName, $"{escapedValue}%"));
@@ -123,8 +125,9 @@ public sealed class SqlServerSqlBuilder : SqlBuilderBase
         IReadOnlyDictionary<string, string> columnMappings,
         List<SqlParameter> parameters)
     {
-        var column = TranslateExpression(methodCall.Object!, columnMappings, parameters);
-        var value = ExtractConstantValue(methodCall.Arguments[0]);
+        var (columnExpr, valueExpr) = GetStringMethodOperands(methodCall);
+        var column = TranslateExpression(columnExpr, columnMappings, parameters);
+        var value = ExtractConstantValue(valueExpr);
         var escapedValue = EscapeLikePattern(value?.ToString() ?? string.Empty);
         var paramName = NextParameterName();
         parameters.Add(new SqlParameter(paramName, $"%{escapedValue}"));

@@ -619,6 +619,9 @@ public abstract class SqlBuilderBase : ISqlBuilder
     {
         var methodName = methodCall.Method.Name;
 
+        if (methodName == "Contains" && methodCall.Method.DeclaringType != typeof(string))
+            return TranslateCollectionContains(methodCall, columnMappings, parameters);
+
         // String methods
         if (methodCall.Method.DeclaringType == typeof(string))
         {
@@ -637,6 +640,69 @@ public abstract class SqlBuilderBase : ISqlBuilder
     }
 
     /// <summary>
+    /// Translates collection Contains to SQL IN clause.
+    /// </summary>
+    protected virtual string TranslateCollectionContains(
+        MethodCallExpression methodCall,
+        IReadOnlyDictionary<string, string> columnMappings,
+        List<SqlParameter> parameters)
+    {
+        var (collectionExpr, itemExpr) = GetCollectionContainsOperands(methodCall);
+        var unwrappedItem = UnwrapConversion(itemExpr);
+
+        if (!IsEntityMemberExpression(unwrappedItem))
+            throw new NotSupportedException("Collection Contains expects an entity member as the item expression.");
+
+        var column = TranslateExpression(unwrappedItem, columnMappings, parameters);
+        var values = ExtractCollectionValues(collectionExpr);
+
+        if (values.Count == 0)
+            return "(1 = 0)";
+
+        var placeholders = new List<string>(values.Count);
+        foreach (var value in values)
+        {
+            var paramName = NextParameterName();
+            parameters.Add(new SqlParameter(paramName, value));
+            placeholders.Add($"{ParameterPrefix}{paramName}");
+        }
+
+        return $"({column} IN ({string.Join(", ", placeholders)}))";
+    }
+
+    private static (Expression Collection, Expression Item) GetCollectionContainsOperands(MethodCallExpression methodCall)
+    {
+        if (methodCall.Object != null && methodCall.Arguments.Count == 1)
+            return (methodCall.Object, methodCall.Arguments[0]);
+
+        if (methodCall.Object == null && methodCall.Arguments.Count == 2)
+            return (methodCall.Arguments[0], methodCall.Arguments[1]);
+
+        throw new NotSupportedException("Unsupported Contains signature for collection translation.");
+    }
+
+    /// <summary>
+    /// Gets the column/value expressions for string method translations.
+    /// </summary>
+    protected virtual (Expression ColumnExpression, Expression ValueExpression) GetStringMethodOperands(
+        MethodCallExpression methodCall)
+    {
+        var objectExpr = methodCall.Object ?? throw new NotSupportedException("String methods must be instance calls.");
+        var argumentExpr = methodCall.Arguments[0];
+
+        var unwrappedObject = UnwrapConversion(objectExpr);
+        var unwrappedArgument = UnwrapConversion(argumentExpr);
+
+        if (IsEntityMemberExpression(unwrappedObject))
+            return (unwrappedObject, argumentExpr);
+
+        if (IsEntityMemberExpression(unwrappedArgument))
+            return (unwrappedArgument, objectExpr);
+
+        return (objectExpr, argumentExpr);
+    }
+
+    /// <summary>
     /// Translates string.Contains to LIKE '%value%'.
     /// </summary>
     protected virtual string TranslateStringContains(
@@ -644,8 +710,9 @@ public abstract class SqlBuilderBase : ISqlBuilder
         IReadOnlyDictionary<string, string> columnMappings,
         List<SqlParameter> parameters)
     {
-        var column = TranslateExpression(methodCall.Object!, columnMappings, parameters);
-        var value = ExtractConstantValue(methodCall.Arguments[0]);
+        var (columnExpr, valueExpr) = GetStringMethodOperands(methodCall);
+        var column = TranslateExpression(columnExpr, columnMappings, parameters);
+        var value = ExtractConstantValue(valueExpr);
         var paramName = NextParameterName();
         parameters.Add(new SqlParameter(paramName, $"%{value}%"));
         return $"({column} LIKE {ParameterPrefix}{paramName})";
@@ -659,8 +726,9 @@ public abstract class SqlBuilderBase : ISqlBuilder
         IReadOnlyDictionary<string, string> columnMappings,
         List<SqlParameter> parameters)
     {
-        var column = TranslateExpression(methodCall.Object!, columnMappings, parameters);
-        var value = ExtractConstantValue(methodCall.Arguments[0]);
+        var (columnExpr, valueExpr) = GetStringMethodOperands(methodCall);
+        var column = TranslateExpression(columnExpr, columnMappings, parameters);
+        var value = ExtractConstantValue(valueExpr);
         var paramName = NextParameterName();
         parameters.Add(new SqlParameter(paramName, $"{value}%"));
         return $"({column} LIKE {ParameterPrefix}{paramName})";
@@ -674,12 +742,127 @@ public abstract class SqlBuilderBase : ISqlBuilder
         IReadOnlyDictionary<string, string> columnMappings,
         List<SqlParameter> parameters)
     {
-        var column = TranslateExpression(methodCall.Object!, columnMappings, parameters);
-        var value = ExtractConstantValue(methodCall.Arguments[0]);
+        var (columnExpr, valueExpr) = GetStringMethodOperands(methodCall);
+        var column = TranslateExpression(columnExpr, columnMappings, parameters);
+        var value = ExtractConstantValue(valueExpr);
         var paramName = NextParameterName();
         parameters.Add(new SqlParameter(paramName, $"%{value}"));
         return $"({column} LIKE {ParameterPrefix}{paramName})";
     }
+
+    /// <summary>
+    /// Extracts values from a constant enumerable expression for IN clause usage.
+    /// </summary>
+    protected virtual IReadOnlyList<object?> ExtractCollectionValues(Expression expression)
+    {
+        var values = ExtractCollectionValuesInternal(UnwrapConversion(expression));
+
+        if (values.Count == 0)
+            return values;
+
+        if (values.Count == 1 && values[0] is string)
+            throw new NotSupportedException("String values are not supported for collection Contains translation.");
+
+        return values;
+    }
+
+    private IReadOnlyList<object?> ExtractCollectionValuesInternal(Expression expression)
+    {
+        return expression switch
+        {
+            ConstantExpression constant => ExtractEnumerableValues(constant.Value),
+            MemberExpression member => ExtractEnumerableValues(ExtractValueFromMemberExpression(member)),
+            NewArrayExpression newArray => newArray.Expressions.Select(ExtractConstantValue).ToList(),
+            ListInitExpression listInit => listInit.Initializers
+                .SelectMany(init => init.Arguments)
+                .Select(ExtractConstantValue)
+                .ToList(),
+            MethodCallExpression methodCall when IsReadOnlySpanImplicitConversion(methodCall)
+                => ExtractCollectionValuesInternal(methodCall.Arguments[0]),
+            MethodCallExpression methodCall when !ContainsEntityParameter(methodCall)
+                => ExtractEnumerableValues(EvaluateExpression(methodCall)),
+            UnaryExpression { NodeType: ExpressionType.Convert or ExpressionType.Quote } unary
+                => ExtractCollectionValuesInternal(unary.Operand),
+            _ => throw new NotSupportedException("Contains requires a constant enumerable collection expression.")
+        };
+    }
+
+    private static bool IsReadOnlySpanImplicitConversion(MethodCallExpression methodCall)
+    {
+        return methodCall.Method.Name == "op_Implicit"
+            && methodCall.Method.ReturnType.IsGenericType
+            && methodCall.Method.ReturnType.GetGenericTypeDefinition() == typeof(ReadOnlySpan<>)
+            && methodCall.Arguments.Count == 1;
+    }
+
+    private static object? EvaluateExpression(Expression expression)
+    {
+        try
+        {
+            return Expression.Lambda(expression).Compile().DynamicInvoke();
+        }
+        catch (Exception exception)
+        {
+            throw new NotSupportedException("Contains requires a constant enumerable collection expression.", exception);
+        }
+    }
+
+    private static bool ContainsEntityParameter(Expression expression)
+        => new ParameterExpressionVisitor().HasParameter(expression);
+
+    private sealed class ParameterExpressionVisitor : ExpressionVisitor
+    {
+        private bool _hasParameter;
+
+        public bool HasParameter(Expression expression)
+        {
+            _hasParameter = false;
+            Visit(expression);
+            return _hasParameter;
+        }
+
+        public override Expression? Visit(Expression? node)
+        {
+            if (node is ParameterExpression)
+                _hasParameter = true;
+
+            return base.Visit(node);
+        }
+    }
+
+    [SuppressMessage("Performance", "CA1859:Use concrete types when possible for improved performance", Justification = "<Pending>")]
+    private static IReadOnlyList<object?> ExtractEnumerableValues(object? value)
+    {
+        if (value == null)
+            return [];
+
+        if (value is string)
+            return [value];
+
+        if (value is System.Collections.IEnumerable enumerable)
+        {
+            var list = new List<object?>();
+            foreach (var item in enumerable)
+                list.Add(item);
+            return list;
+        }
+
+        throw new NotSupportedException("Contains requires an enumerable collection value.");
+    }
+
+    private static Expression UnwrapConversion(Expression expression)
+    {
+        while (expression is UnaryExpression unary
+               && (unary.NodeType == ExpressionType.Convert || unary.NodeType == ExpressionType.Quote))
+        {
+            expression = unary.Operand;
+        }
+
+        return expression;
+    }
+
+    private static bool IsEntityMemberExpression(Expression expression)
+        => expression is MemberExpression { Expression: ParameterExpression };
 
     /// <summary>
     /// Translates string.ToLower to LOWER(column).
