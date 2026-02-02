@@ -14,7 +14,7 @@
  * limitations under the License.
  *
 ********************************************************************************/
-using System.Entities.Data;
+using System.Data;
 using System.Results.Requests;
 
 namespace System.Results.Pipelines;

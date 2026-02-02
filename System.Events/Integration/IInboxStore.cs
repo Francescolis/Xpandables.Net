@@ -14,8 +14,6 @@
  * limitations under the License.
  *
 ********************************************************************************/
-using System.Events.Data;
-
 namespace System.Events.Integration;
 
 /// <summary>

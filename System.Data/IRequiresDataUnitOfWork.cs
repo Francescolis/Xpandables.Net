@@ -1,4 +1,4 @@
-﻿/*******************************************************************************
+/*******************************************************************************
  * Copyright (C) 2025 Kamersoft
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
@@ -14,11 +14,19 @@
  * limitations under the License.
  *
 ********************************************************************************/
-using Microsoft.EntityFrameworkCore;
+namespace System.Data;
 
-namespace Xpandables.Net.SampleApi.ReadStorage;
-
-public sealed class BankAccountDataContext(DbContextOptions<BankAccountDataContext> options) : DataContext(options)
-{
-    public DbSet<BankAccountEntity> BankAccounts { get; set; } = default!;
-}
+/// <summary>
+/// Marker interface to indicate that a request requires automatic 
+/// ADO.NET unit of work transaction management.
+/// </summary>
+/// <remarks>
+/// <para>
+/// Implement this interface to signal that the implementing request should be executed
+/// within an ADO.NET transaction scope. The transaction will be committed on success
+/// or rolled back on failure.
+/// </para>
+/// </remarks>
+#pragma warning disable CA1040 // Avoid empty interfaces
+public interface IRequiresDataUnitOfWork;
+#pragma warning restore CA1040 // Avoid empty interfaces

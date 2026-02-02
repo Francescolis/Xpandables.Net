@@ -14,11 +14,31 @@
  * limitations under the License.
  *
 ********************************************************************************/
-using Microsoft.EntityFrameworkCore;
+using System.ComponentModel.DataAnnotations;
+using System.ComponentModel.DataAnnotations.Schema;
 
-namespace Xpandables.Net.SampleApi.ReadStorage;
+namespace System.Events.Data;
 
-public sealed class BankAccountDataContext(DbContextOptions<BankAccountDataContext> options) : DataContext(options)
+/// <summary>
+/// Represents a class for event data in a domain context.
+/// </summary>
+[Table("DomainEvents")]
+public sealed class DataEventDomain : DataEvent, IDataEventDomain
 {
-    public DbSet<BankAccountEntity> BankAccounts { get; set; } = default!;
+    /// <inheritdoc />
+    [Column("StreamId")]
+    public required Guid StreamId { get; init; }
+
+    /// <inheritdoc />
+    [Column("StreamVersion")]
+    public required long StreamVersion { get; init; }
+
+    /// <inheritdoc />
+    [Column("StreamName")]
+    [StringLength(500)]
+    public required string StreamName { get; init; }
+
+    /// <inheritdoc />
+    [Column("EventData")]
+    public required string EventData { get; init; }
 }

@@ -14,7 +14,6 @@
  * limitations under the License.
  *
 ********************************************************************************/
-using System.Events.Data;
 using System.Events.Integration;
 
 using Microsoft.Extensions.Logging;

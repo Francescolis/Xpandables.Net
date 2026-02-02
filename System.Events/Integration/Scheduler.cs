@@ -243,7 +243,7 @@ public sealed class Scheduler : Disposable, IScheduler
                 var outbox = serviceScope.ServiceProvider.GetRequiredService<IOutboxStore>();
 
                 // Claim a batch directly from the outbox (multi-instance safe)
-                var claimed = await outbox.DequeueAsync(cancellationToken, _options.BatchSize, visibilityTimeout: null).ConfigureAwait(false);
+                var claimed = await outbox.DequeueAsync(_options.BatchSize, visibilityTimeout: null, cancellationToken: cancellationToken).ConfigureAwait(false);
                 if (claimed.Count == 0)
                 {
                     LogNoEventsToSchedule(_logger, null);
@@ -264,7 +264,7 @@ public sealed class Scheduler : Disposable, IScheduler
                 processedCount = batchResults.Sum(r => r.ProcessedCount);
                 errorCount = batchResults.Sum(r => r.ErrorCount);
 
-                var successIds = batchResults.SelectMany(r => r.SuccessIds).ToList();
+                var successIds = batchResults.SelectMany(r => r.Successes).ToList();
                 var failures = batchResults.SelectMany(r => r.Failures).ToList();
 
 #pragma warning disable CA1031 // Do not catch general exception types
@@ -272,11 +272,11 @@ public sealed class Scheduler : Disposable, IScheduler
                 {
                     if (successIds.Count > 0)
                     {
-                        await outbox.CompleteAsync(cancellationToken, [.. successIds]).ConfigureAwait(false);
+                        await outbox.CompleteAsync(successIds, cancellationToken).ConfigureAwait(false);
                     }
                     if (failures.Count > 0)
                     {
-                        await outbox.FailAsync(cancellationToken, [.. failures]).ConfigureAwait(false);
+                        await outbox.FailAsync(failures, cancellationToken).ConfigureAwait(false);
                     }
                 }
                 catch (Exception exception)
@@ -334,7 +334,7 @@ public sealed class Scheduler : Disposable, IScheduler
         var processedCount = 0;
         var errorCount = 0;
 
-        var successIds = new List<Guid>(events.Count);
+        var successIds = new List<CompletedOutboxEvent>(events.Count);
         var failures = new List<FailedOutboxEvent>(events.Count);
 
         // Create a dedicated scope for this batch to isolate connections and avoid MARS issues
@@ -354,7 +354,7 @@ public sealed class Scheduler : Disposable, IScheduler
                     timeoutCts.CancelAfter(TimeSpan.FromMilliseconds(_options.EventProcessingTimeout));
 
                     await eventPublisher.PublishAsync(@event, timeoutCts.Token).ConfigureAwait(false);
-                    successIds.Add(@event.EventId);
+                    successIds.Add(new(@event.EventId));
                     processedCount++;
                 }
                 catch (Exception exception) when (exception is not OperationCanceledException)
@@ -520,7 +520,7 @@ public sealed class Scheduler : Disposable, IScheduler
     private readonly record struct BatchProcessingResult(
         int ProcessedCount,
         int ErrorCount,
-        IReadOnlyList<Guid> SuccessIds,
+        IReadOnlyList<CompletedOutboxEvent> Successes,
         IReadOnlyList<FailedOutboxEvent> Failures);
 
     private sealed class SchedulerMetrics

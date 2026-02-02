@@ -52,6 +52,9 @@
   <Project Path="System.Composition/System.Composition.csproj" Id="6c66642b-ffdb-4002-8e91-fe35aa18dd38">
     <Platform Project="x64" />
   </Project>
+  <Project Path="System.Data/System.Data.csproj" Id="84cacdfd-d82a-40f6-930d-b0783125ce9c">
+    <Platform Project="x64" />
+  </Project>
   <Project Path="System.Entities.EntityFramework/System.Entities.EntityFramework.csproj">
     <Platform Project="x64" />
   </Project>

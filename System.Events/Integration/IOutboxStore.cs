@@ -25,6 +25,12 @@ namespace System.Events.Integration;
 public readonly record struct FailedOutboxEvent(Guid EventId, string Error);
 
 /// <summary>
+/// Represents an event that indicates the completion of an outbox operation, identified by a unique event ID.
+/// </summary>
+/// <param name="EventId">The unique identifier for the completed outbox event.</param>
+public readonly record struct CompletedOutboxEvent(Guid EventId);
+
+/// <summary>
 /// Defines a contract for an outbox store that manages the reliable enqueueing, retrieval, and state tracking of
 /// integration events for eventual processing.
 /// </summary>
@@ -41,7 +47,7 @@ public interface IOutboxStore
     /// <param name="cancellationToken">A cancellation token that can be used to cancel the enqueue operation.</param>
     /// <param name="events">An array of integration events to enqueue. Cannot be null or contain null elements.</param>
     /// <returns>A task that represents the asynchronous enqueue operation.</returns>
-    Task EnqueueAsync(CancellationToken cancellationToken, params IIntegrationEvent[] events);
+    Task EnqueueAsync(IEnumerable<IIntegrationEvent> events, CancellationToken cancellationToken = default);
 
     /// <summary>
     /// Asynchronously removes and returns up to a specified number of integration events from the queue, making them
@@ -50,24 +56,24 @@ public interface IOutboxStore
     /// <remarks>If the operation is cancelled via the provided cancellation token, the returned task is
     /// canceled. The visibility timeout ensures that dequeued events are not processed by other consumers for the
     /// specified duration, after which they may become available again if not acknowledged.</remarks>
-    /// <param name="cancellationToken">A cancellation token that can be used to cancel the dequeue operation.</param>
     /// <param name="maxEvents">The maximum number of events to dequeue in a single operation. Must be greater than zero. The default is 10.</param>
     /// <param name="visibilityTimeout">An optional duration specifying how long the dequeued events remain invisible to other consumers. If not
     /// specified, a default timeout is used.</param>
+    /// <param name="cancellationToken">A cancellation token that can be used to cancel the dequeue operation.</param>
     /// <returns>A task that represents the asynchronous operation. The task result contains a read-only list of integration
     /// events that were dequeued. The list will be empty if no events are available.</returns>
     Task<IReadOnlyList<IIntegrationEvent>> DequeueAsync(
-        CancellationToken cancellationToken,
         int maxEvents = 10,
-        TimeSpan? visibilityTimeout = default);
+        TimeSpan? visibilityTimeout = default,
+        CancellationToken cancellationToken = default);
 
     /// <summary>
     /// Marks the specified <see cref="IIntegrationEvent"/>s as completed asynchronously.
     /// </summary>
     /// <param name="cancellationToken">A cancellation token that can be used to cancel the operation.</param>
-    /// <param name="eventIds">An array of event identifiers to mark as completed. Cannot be null or empty.</param>
+    /// <param name="successes">An array of event identifiers to mark as completed. Cannot be null or empty.</param>
     /// <returns>A task that represents the asynchronous completion operation.</returns>
-    Task CompleteAsync(CancellationToken cancellationToken, params Guid[] eventIds);
+    Task CompleteAsync(IEnumerable<CompletedOutboxEvent> successes, CancellationToken cancellationToken = default);
 
     /// <summary>
     /// Marks the specified <see cref="IIntegrationEvent"/> id as failure with the error message.
@@ -75,5 +81,5 @@ public interface IOutboxStore
     /// <param name="failures">A read-only span containing the failed events to be recorded. The span must not be empty.</param>
     /// <param name="cancellationToken">A cancellation token that can be used to cancel the operation.</param>
     /// <returns>A task that represents the asynchronous operation.</returns>
-    Task FailAsync(CancellationToken cancellationToken, params FailedOutboxEvent[] failures);
+    Task FailAsync(IEnumerable<FailedOutboxEvent> failures, CancellationToken cancellationToken = default);
 }

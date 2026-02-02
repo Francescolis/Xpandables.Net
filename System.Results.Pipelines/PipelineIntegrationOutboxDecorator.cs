@@ -53,7 +53,7 @@ public sealed class PipelineIntegrationOutboxDecorator<TRequest>(
         if (result.IsSuccess)
         {
             foreach (var @event in _pending.Drain())
-                await _outbox.EnqueueAsync(cancellationToken, @event).ConfigureAwait(false);
+                await _outbox.EnqueueAsync([@event], cancellationToken).ConfigureAwait(false);
         }
 
         return result;

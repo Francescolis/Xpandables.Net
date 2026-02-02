@@ -1,5 +1,5 @@
+using System.Data;
 using System.Data.Common;
-using System.Entities.Data;
 
 using Microsoft.AspNetCore.Http.Json;
 using Microsoft.EntityFrameworkCore;
@@ -51,7 +51,7 @@ builder.Services
     .AddXEventPublisher()
     .AddXAggregateStore()
     .AddXDataUnitOfWork()
-    .AddXSlqBuilderMsSqlServer()
+    .AddXMsSqlBuilder()
     .AddXDbConnectionScopeFactory()
     .AddXDbConnectionScope()
     .AddMemoryCache()

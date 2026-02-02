@@ -6,14 +6,14 @@
 		<Nullable>enable</Nullable>
 		<Platforms>x64</Platforms>
 		<LangVersion>latest</LangVersion>
-		<Title>Xpandables.Events.Data</Title>
-		<Description>Events ADO.NET implementation.</Description>
+		<Title>Xpandables.Data</Title>
+		<Description>IDataRepository implementation.</Description>
 		<Company>Kamersoft</Company>
 		<Authors>Francescolis</Authors>
 
-		<AssemblyName>Xpandables.Events.Data</AssemblyName>
-		<RootNamespace>System.Events.Data</RootNamespace>
-		<PackageId>Xpandables.Events.Data</PackageId>
+		<AssemblyName>Xpandables.Data</AssemblyName>
+		<RootNamespace>System.Data</RootNamespace>
+		<PackageId>Xpandables.Data</PackageId>
 		<PackageProjectUrl>https://github.com/Francescolis/Xpandables.Net</PackageProjectUrl>
 		<RepositoryUrl>https://github.com/Francescolis/Xpandables.Net</RepositoryUrl>
 		<RepositoryType>git</RepositoryType>
@@ -30,7 +30,7 @@
 		<PackageIcon>Xpandables.Net.png</PackageIcon>
 		<ApplicationIcon>Xpandables.Net.ico</ApplicationIcon>
 		<PackageReadmeFile>README.md</PackageReadmeFile>
-		<PackageTags>EventStore, OutboxStore, InboxStore, ADO.NET</PackageTags>
+		<PackageTags>IDataRepository, IDataUnitOfWork</PackageTags>
 		<NeutralLanguage>en-US</NeutralLanguage>
 		<PackageLicenseExpression>Apache-2.0</PackageLicenseExpression>
 		<PackageRequireLicenseAcceptance>true</PackageRequireLicenseAcceptance>
@@ -83,16 +83,8 @@
 	</ItemGroup>
 
 	<ItemGroup>
-		<EmbeddedResource Include="Scripts\*.cs" />
+	  <ProjectReference Include="..\System.AsyncPaged\System.AsyncPaged.csproj" />
 	</ItemGroup>
 
-	<ItemGroup>
-	  <Compile Remove="Scripts\EventTableScriptProviders.cs" />
-	</ItemGroup>
-
-	<ItemGroup>
-	  <ProjectReference Include="..\System.Data\System.Data.csproj" />
-	  <ProjectReference Include="..\System.Events\System.Events.csproj" />
-	</ItemGroup>
 
 </Project>

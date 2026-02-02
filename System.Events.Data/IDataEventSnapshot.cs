@@ -14,11 +14,20 @@
  * limitations under the License.
  *
 ********************************************************************************/
-using Microsoft.EntityFrameworkCore;
+namespace System.Events.Data;
 
-namespace Xpandables.Net.SampleApi.ReadStorage;
-
-public sealed class BankAccountDataContext(DbContextOptions<BankAccountDataContext> options) : DataContext(options)
+/// <summary>
+/// Represents a snapshot of an entity event, providing access to the event's owner information.
+/// </summary>
+public interface IDataEventSnapshot : IDataEvent
 {
-    public DbSet<BankAccountEntity> BankAccounts { get; set; } = default!;
+    /// <summary>
+    /// Gets the owner of the event entity snapshot.
+    /// </summary>
+    Guid OwnerId { get; }
+
+    /// <summary>
+    /// Gets the JSON data associated with this instance.
+    /// </summary>
+    string EventData { get; }
 }

@@ -1,5 +1,5 @@
+using System.Data;
 using System.Data.Common;
-using System.Entities.Data;
 
 using Microsoft.AspNetCore.Http.Json;
 using Microsoft.EntityFrameworkCore;
@@ -38,7 +38,7 @@ builder.Services
     .AddXEventConverterContext()
     .AddXIntegrationEventEnricher()
     .AddXDataUnitOfWork()
-    .AddXSlqBuilderMsSqlServer()
+    .AddXMsSqlBuilder()
     .AddXDbConnectionScopeFactory()
     .AddXDbConnectionScope()
     .AddXEventContextAccessor()

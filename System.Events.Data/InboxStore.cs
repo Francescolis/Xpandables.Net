@@ -14,9 +14,8 @@
  * limitations under the License.
  *
 ********************************************************************************/
+using System.Data;
 using System.Diagnostics.CodeAnalysis;
-using System.Entities;
-using System.Entities.Data;
 using System.Events.Integration;
 
 namespace System.Events.Data;
@@ -34,7 +33,7 @@ namespace System.Events.Data;
 [RequiresDynamicCode("Expression compilation requires dynamic code generation.")]
 public sealed class InboxStore<
     [DynamicallyAccessedMembers(DynamicallyAccessedMemberTypes.PublicProperties)] TEntityEventInbox> : IInboxStore
-    where TEntityEventInbox : class, IEntityEventInbox
+    where TEntityEventInbox : class, IDataEventInbox
 {
     private readonly IDataRepository<TEntityEventInbox> _inboxRepository;
     private readonly IDataUnitOfWork _unitOfWork;
@@ -70,7 +69,7 @@ public sealed class InboxStore<
         ArgumentException.ThrowIfNullOrWhiteSpace(consumer);
 
         // Check for existing entry
-        var specification = QuerySpecification
+        var specification = DataSpecification
             .For<TEntityEventInbox>()
             .Where(e => e.KeyId == @event.EventId && e.Consumer == consumer)
             .Build();
@@ -125,12 +124,12 @@ public sealed class InboxStore<
 
         foreach (var evt in events)
         {
-            var specification = QuerySpecification
+            var specification = DataSpecification
                 .For<TEntityEventInbox>()
                 .Where(e => e.KeyId == evt.EventId && e.Consumer == evt.Consumer)
                 .Build();
 
-            var updater = EntityUpdater
+            var updater = DataUpdater
                 .For<TEntityEventInbox>()
                 .SetProperty(e => e.Status, EventStatus.PUBLISHED.Value)
                 .SetProperty(e => e.ErrorMessage, (string?)null)
@@ -157,7 +156,7 @@ public sealed class InboxStore<
         foreach (var failure in failures)
         {
             // Get current attempt count
-            var getSpec = QuerySpecification
+            var getSpec = DataSpecification
                 .For<TEntityEventInbox>()
                 .Where(e => e.KeyId == failure.EventId && e.Consumer == failure.Consumer)
                 .Select(e => e.AttemptCount);
@@ -173,12 +172,12 @@ public sealed class InboxStore<
                                  nextAttempt < 4 ? 80 :
                                  nextAttempt < 5 ? 160 : 320;
 
-            var specification = QuerySpecification
+            var specification = DataSpecification
                 .For<TEntityEventInbox>()
                 .Where(e => e.KeyId == failure.EventId && e.Consumer == failure.Consumer)
                 .Build();
 
-            var updater = EntityUpdater
+            var updater = DataUpdater
                 .For<TEntityEventInbox>()
                 .SetProperty(e => e.Status, EventStatus.ONERROR.Value)
                 .SetProperty(e => e.ErrorMessage, failure.Error)

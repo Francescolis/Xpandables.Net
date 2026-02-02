@@ -14,9 +14,8 @@
  * limitations under the License.
  *
 ********************************************************************************/
+using System.Data;
 using System.Diagnostics.CodeAnalysis;
-using System.Entities;
-using System.Entities.Data;
 using System.Events.Domain;
 using System.Runtime.CompilerServices;
 
@@ -39,8 +38,8 @@ namespace System.Events.Data;
 public sealed class EventStore<
     [DynamicallyAccessedMembers(DynamicallyAccessedMemberTypes.PublicProperties)] TEntityEventDomain,
     [DynamicallyAccessedMembers(DynamicallyAccessedMemberTypes.PublicProperties)] TEntityEventSnapshot> : IEventStore
-    where TEntityEventDomain : class, IEntityEventDomain
-    where TEntityEventSnapshot : class, IEntityEventSnapshot
+    where TEntityEventDomain : class, IDataEventDomain
+    where TEntityEventSnapshot : class, IDataEventSnapshot
 {
     private readonly IDataRepository<TEntityEventDomain> _domainRepository;
     private readonly IDataRepository<TEntityEventSnapshot> _snapshotRepository;
@@ -127,7 +126,7 @@ public sealed class EventStore<
         DeleteStreamRequest request,
         CancellationToken cancellationToken = default)
     {
-        var specification = QuerySpecification
+        var specification = DataSpecification
             .For<TEntityEventDomain>()
             .Where(e => e.StreamId == request.StreamId)
             .Build();
@@ -140,7 +139,7 @@ public sealed class EventStore<
         }
         else
         {
-            var updater = EntityUpdater
+            var updater = DataUpdater
                 .For<TEntityEventDomain>()
                 .SetProperty(e => e.Status, EventStatus.DELETED.Value);
 
@@ -155,7 +154,7 @@ public sealed class EventStore<
         Guid ownerId,
         CancellationToken cancellationToken = default)
     {
-        var specification = QuerySpecification
+        var specification = DataSpecification
             .For<TEntityEventSnapshot>()
             .Where(e => e.OwnerId == ownerId)
             .OrderByDescending(e => e.Sequence)
@@ -191,7 +190,7 @@ public sealed class EventStore<
         ReadAllStreamsRequest request,
         [EnumeratorCancellation] CancellationToken cancellationToken = default)
     {
-        var specification = QuerySpecification
+        var specification = DataSpecification
             .For<TEntityEventDomain>()
             .Where(e => e.Sequence > request.FromPosition)
             .OrderBy(e => e.Sequence)
@@ -221,7 +220,7 @@ public sealed class EventStore<
         ReadStreamRequest request,
         [EnumeratorCancellation] CancellationToken cancellationToken = default)
     {
-        var specification = QuerySpecification
+        var specification = DataSpecification
             .For<TEntityEventDomain>()
             .Where(e => e.StreamId == request.StreamId && e.StreamVersion > request.FromVersion)
             .OrderBy(e => e.StreamVersion)
@@ -249,7 +248,7 @@ public sealed class EventStore<
     /// <inheritdoc/>
     public async Task<bool> StreamExistsAsync(Guid streamId, CancellationToken cancellationToken = default)
     {
-        var specification = QuerySpecification
+        var specification = DataSpecification
             .For<TEntityEventDomain>()
             .Where(e => e.StreamId == streamId)
             .Build();
@@ -270,7 +269,7 @@ public sealed class EventStore<
         if (currentVersion == -1)
             return;
 
-        var specification = QuerySpecification
+        var specification = DataSpecification
             .For<TEntityEventDomain>()
             .Where(e => e.StreamId == request.StreamId && e.StreamVersion < request.TruncateBeforeVersion)
             .Build();
@@ -310,7 +309,7 @@ public sealed class EventStore<
 
     private async Task<long> GetStreamVersionCoreAsync(Guid streamId, CancellationToken cancellationToken)
     {
-        var specification = QuerySpecification
+        var specification = DataSpecification
             .For<TEntityEventDomain>()
             .Where(e => e.StreamId == streamId)
             .OrderByDescending(e => e.StreamVersion)
@@ -332,7 +331,7 @@ public sealed class EventStore<
 internal sealed class StreamSubscription<
     [DynamicallyAccessedMembers(DynamicallyAccessedMemberTypes.PublicProperties)] TEntityEventDomain>
     : IAsyncDisposable
-    where TEntityEventDomain : class, IEntityEventDomain
+    where TEntityEventDomain : class, IDataEventDomain
 #pragma warning restore CA1812
 {
     private readonly IDataRepository<TEntityEventDomain> _domainRepository;
@@ -365,7 +364,7 @@ internal sealed class StreamSubscription<
         {
             while (!_cts.Token.IsCancellationRequested)
             {
-                var specification = QuerySpecification
+                var specification = DataSpecification
                     .For<TEntityEventDomain>()
                     .Where(e => e.StreamId == _request.StreamId && e.StreamVersion > lastProcessedVersion)
                     .OrderBy(e => e.StreamVersion)
@@ -420,7 +419,7 @@ internal sealed class StreamSubscription<
 internal sealed class AllStreamsSubscription<
     [DynamicallyAccessedMembers(DynamicallyAccessedMemberTypes.PublicProperties)] TEntityEventDomain>
     : IAsyncDisposable
-    where TEntityEventDomain : class, IEntityEventDomain
+    where TEntityEventDomain : class, IDataEventDomain
 #pragma warning restore CA1812
 {
     private readonly IDataRepository<TEntityEventDomain> _domainRepository;
@@ -453,7 +452,7 @@ internal sealed class AllStreamsSubscription<
         {
             while (!_cts.Token.IsCancellationRequested)
             {
-                var specification = QuerySpecification
+                var specification = DataSpecification
                     .For<TEntityEventDomain>()
                     .Where(e => e.Sequence > lastProcessedSequence)
                     .OrderBy(e => e.Sequence)

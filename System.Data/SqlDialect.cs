@@ -1,4 +1,4 @@
-﻿/*******************************************************************************
+/*******************************************************************************
  * Copyright (C) 2025 Kamersoft
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
@@ -14,11 +14,25 @@
  * limitations under the License.
  *
 ********************************************************************************/
-using Microsoft.EntityFrameworkCore;
+namespace System.Data;
 
-namespace Xpandables.Net.SampleApi.ReadStorage;
-
-public sealed class BankAccountDataContext(DbContextOptions<BankAccountDataContext> options) : DataContext(options)
+/// <summary>
+/// Specifies the SQL dialect to use for query generation.
+/// </summary>
+public enum SqlDialect
 {
-    public DbSet<BankAccountEntity> BankAccounts { get; set; } = default!;
+    /// <summary>
+    /// Microsoft SQL Server dialect (T-SQL).
+    /// </summary>
+    SqlServer,
+
+    /// <summary>
+    /// PostgreSQL dialect.
+    /// </summary>
+    PostgreSql,
+
+    /// <summary>
+    /// MySQL dialect.
+    /// </summary>
+    MySql
 }

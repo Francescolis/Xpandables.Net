@@ -14,9 +14,8 @@
  * limitations under the License.
  *
 ********************************************************************************/
+using System.Data;
 using System.Diagnostics.CodeAnalysis;
-using System.Entities;
-using System.Entities.Data;
 using System.Events.Integration;
 
 namespace System.Events.Data;
@@ -39,7 +38,7 @@ namespace System.Events.Data;
 [RequiresDynamicCode("Expression compilation requires dynamic code generation.")]
 public sealed class OutboxStore<
     [DynamicallyAccessedMembers(DynamicallyAccessedMemberTypes.PublicProperties)] TEntityEventOutbox> : IOutboxStore
-    where TEntityEventOutbox : class, IEntityEventOutbox
+    where TEntityEventOutbox : class, IDataEventOutbox
 {
     private readonly IDataRepository<TEntityEventOutbox> _outboxRepository;
     private readonly IDataUnitOfWork _unitOfWork;
@@ -71,14 +70,15 @@ public sealed class OutboxStore<
 
     /// <inheritdoc />
     public async Task EnqueueAsync(
-        CancellationToken cancellationToken,
-        params IIntegrationEvent[] events)
+        IEnumerable<IIntegrationEvent> events,
+        CancellationToken cancellationToken = default)
     {
         ArgumentNullException.ThrowIfNull(events);
-        ArgumentOutOfRangeException.ThrowIfEqual(events.Length, 0);
+        var countEvents = events.ToList();
+        ArgumentOutOfRangeException.ThrowIfEqual(countEvents.Count, 0);
 
-        var list = new List<TEntityEventOutbox>(events.Length);
-        var enriched = events.Select(_eventEnricher.Enrich).ToArray();
+        var list = new List<TEntityEventOutbox>(countEvents.Count);
+        var enriched = countEvents.Select(_eventEnricher.Enrich).ToArray();
 
         foreach (var @event in enriched)
         {
@@ -94,9 +94,9 @@ public sealed class OutboxStore<
 
     /// <inheritdoc />
     public async Task<IReadOnlyList<IIntegrationEvent>> DequeueAsync(
-        CancellationToken cancellationToken,
         int maxEvents = 10,
-        TimeSpan? visibilityTimeout = default)
+        TimeSpan? visibilityTimeout = default,
+        CancellationToken cancellationToken = default)
     {
         ArgumentOutOfRangeException.ThrowIfNegativeOrZero(maxEvents);
 
@@ -105,7 +105,7 @@ public sealed class OutboxStore<
         var claimId = Guid.NewGuid();
 
         // Step 1: Find candidate events
-        var specification = QuerySpecification
+        var specification = DataSpecification
             .For<TEntityEventOutbox>()
             .Where(e =>
                 (e.Status == EventStatus.PENDING.Value) ||
@@ -125,7 +125,7 @@ public sealed class OutboxStore<
             return [];
 
         // Step 2: Claim the events atomically
-        var updater = EntityUpdater
+        var updater = DataUpdater
             .For<TEntityEventOutbox>()
             .SetProperty(e => e.Status, EventStatus.PROCESSING.Value)
             .SetProperty(e => e.ClaimId, claimId)
@@ -133,7 +133,7 @@ public sealed class OutboxStore<
             .SetProperty(e => e.NextAttemptOn, now.Add(lease))
             .SetProperty(e => e.UpdatedOn, now);
 
-        var updateSpec = QuerySpecification
+        var updateSpec = DataSpecification
             .For<TEntityEventOutbox>()
             .Where(e => candidates.Contains(e.KeyId) && e.ClaimId == null)
             .Build();
@@ -146,7 +146,7 @@ public sealed class OutboxStore<
             return [];
 
         // Step 3: Fetch the claimed events
-        var selectSpec = QuerySpecification
+        var selectSpec = DataSpecification
             .For<TEntityEventOutbox>()
             .Where(e => e.ClaimId == claimId)
             .OrderBy(e => e.Sequence)
@@ -166,19 +166,21 @@ public sealed class OutboxStore<
 
     /// <inheritdoc />
     public async Task CompleteAsync(
-        CancellationToken cancellationToken,
-        params Guid[] eventIds)
+        IEnumerable<CompletedOutboxEvent> successes,
+        CancellationToken cancellationToken = default)
     {
-        ArgumentNullException.ThrowIfNull(eventIds);
-        ArgumentOutOfRangeException.ThrowIfEqual(eventIds.Length, 0);
+        ArgumentNullException.ThrowIfNull(successes);
+        var countSuccesses = successes.ToList();
+        ArgumentOutOfRangeException.ThrowIfEqual(countSuccesses.Count, 0);
 
+        var eventIds = countSuccesses.Select(e => e.EventId).ToList();
         var now = DateTime.UtcNow;
-        var specification = QuerySpecification
+        var specification = DataSpecification
             .For<TEntityEventOutbox>()
             .Where(e => eventIds.Contains(e.KeyId))
             .Build();
 
-        var updater = EntityUpdater
+        var updater = DataUpdater
             .For<TEntityEventOutbox>()
             .SetProperty(e => e.Status, EventStatus.PUBLISHED.Value)
             .SetProperty(e => e.ErrorMessage, (string?)null)
@@ -193,18 +195,19 @@ public sealed class OutboxStore<
 
     /// <inheritdoc />
     public async Task FailAsync(
-        CancellationToken cancellationToken,
-        params FailedOutboxEvent[] failures)
+        IEnumerable<FailedOutboxEvent> failures,
+        CancellationToken cancellationToken = default)
     {
         ArgumentNullException.ThrowIfNull(failures);
-        ArgumentOutOfRangeException.ThrowIfEqual(failures.Length, 0);
+        var failuresList = failures.ToList();
+        ArgumentOutOfRangeException.ThrowIfEqual(failuresList.Count, 0);
 
         var now = DateTime.UtcNow;
 
-        foreach (var failure in failures)
+        foreach (var failure in failuresList)
         {
             // Get current attempt count
-            var getSpec = QuerySpecification
+            var getSpec = DataSpecification
                 .For<TEntityEventOutbox>()
                 .Where(e => e.KeyId == failure.EventId)
                 .Select(e => e.AttemptCount);
@@ -220,12 +223,12 @@ public sealed class OutboxStore<
                                  nextAttempt < 4 ? 80 :
                                  nextAttempt < 5 ? 160 : 320;
 
-            var specification = QuerySpecification
+            var specification = DataSpecification
                 .For<TEntityEventOutbox>()
                 .Where(e => e.KeyId == failure.EventId)
                 .Build();
 
-            var updater = EntityUpdater
+            var updater = DataUpdater
                 .For<TEntityEventOutbox>()
                 .SetProperty(e => e.Status, EventStatus.ONERROR.Value)
                 .SetProperty(e => e.ErrorMessage, failure.Error)

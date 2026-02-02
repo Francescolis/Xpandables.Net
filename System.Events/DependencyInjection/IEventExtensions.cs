@@ -17,7 +17,6 @@
 using System.Diagnostics.CodeAnalysis;
 using System.Events;
 using System.Events.Aggregates;
-using System.Events.Data;
 using System.Events.Domain;
 using System.Events.Integration;
 using System.Reflection;
@@ -43,70 +42,6 @@ public static class IEventExtensions
 
     extension(IServiceCollection services)
     {
-        /// <summary>
-        /// Registers the specified event converter factory type as a singleton implementation of <see
-        /// cref="IEventConverterFactory"/> in the service collection.
-        /// </summary>
-        /// <remarks>If an <see cref="IEventConverterFactory"/> service is already registered, this method
-        /// does not overwrite the existing registration. This method is typically used to enable custom event
-        /// conversion logic in applications that consume event data.</remarks>
-        /// <typeparam name="TEventConverterFactory">The type of the event converter factory to register. Must be a class that implements <see
-        /// cref="IEventConverterFactory"/> and has a public constructor.</typeparam>
-        /// <returns>The <see cref="IServiceCollection"/> instance with the event converter factory registration added.</returns>
-        public IServiceCollection AddXEventConverterFactory<[DynamicallyAccessedMembers(DynamicallyAccessedMemberTypes.PublicConstructors)] TEventConverterFactory>()
-            where TEventConverterFactory : class, IEventConverterFactory
-        {
-            ArgumentNullException.ThrowIfNull(services);
-            services.TryAddSingleton<IEventConverterFactory, TEventConverterFactory>();
-            return services;
-        }
-
-        /// <summary>
-        /// Adds a singleton implementation of IEventConverterContext to the service collection using the specified
-        /// context type.
-        /// </summary>
-        /// <remarks>If an IEventConverterContext service is already registered, this method does not
-        /// overwrite the existing registration. This method is typically used during application startup to configure
-        /// event conversion services for dependency injection.</remarks>
-        /// <typeparam name="TEventConverterContext">The type that implements IEventConverterContext to be registered as a singleton. Must have a public
-        /// constructor.</typeparam>
-        /// <returns>The IServiceCollection instance with the IEventConverterContext service registered.</returns>
-        public IServiceCollection AddXEventConverterContext<[DynamicallyAccessedMembers(DynamicallyAccessedMemberTypes.PublicConstructors)] TEventConverterContext>()
-            where TEventConverterContext : class, IEventConverterContext
-        {
-            ArgumentNullException.ThrowIfNull(services);
-            services.TryAddSingleton<IEventConverterContext, TEventConverterContext>();
-            return services;
-        }
-
-        /// <summary>
-        /// Adds the default implementation of the event converter context to the service collection.
-        /// </summary>
-        /// <remarks>This method registers <see cref="IEventConverterContext"/> as a singleton service if
-        /// it has not already been registered. Call this method during application startup to enable event conversion
-        /// features.</remarks>
-        /// <returns>The current <see cref="IServiceCollection"/> instance for method chaining.</returns>
-        public IServiceCollection AddXEventConverterContext()
-        {
-            ArgumentNullException.ThrowIfNull(services);
-            services.AddXEventConverterContext<DefaultEventConverterContext>();
-            return services;
-        }
-
-        /// <summary>
-        /// Adds the default Event converter factory to the service collection.
-        /// </summary>
-        /// <remarks>Use this method to enable Event conversion capabilities in the application's
-        /// dependency injection container. This is typically required for components that process or convert Event
-        /// data.</remarks>
-        /// <returns>The updated service collection with the Event converter factory registered.</returns>
-        public IServiceCollection AddXEventConverterFactory() =>
-            services.AddXEventConverterFactory<EventConverterFactory>()
-                .AddSingleton<IEventConverter<EntityEventDomain, IDomainEvent>, EventConverterDomain>()
-                .AddSingleton<IEventConverter<EntityEventOutbox, IIntegrationEvent>, EventConverterOutbox>()
-                .AddSingleton<IEventConverter<EntityEventInbox, IIntegrationEvent>, EventConverterInbox>()
-                .AddSingleton<IEventConverter<EntityEventSnapshot, ISnapshotEvent>, EventConverterSnapshot>();
-
         /// <summary>
         /// Adds services required for event context propagation and enrichment to the dependency injection container.
         /// <code>
@@ -241,47 +176,6 @@ public static class IEventExtensions
                         provider.GetRequiredService(
                             typeof(ILogger<>).MakeGenericType(closedDecorator)));
                 });
-            //return services.DecorateDescriptors(
-            //    typeof(IEventHandler<>),
-            //    descriptor =>
-            //    {
-            //        var eventType = descriptor.ServiceType.GenericTypeArguments[0];
-
-            //        // TEvent : class, IIntegrationEvent
-            //        if (!typeof(IIntegrationEvent).IsAssignableFrom(eventType))
-            //        {
-            //            return descriptor;
-            //        }
-
-            //        // Resolve the concrete handler type from the descriptor.
-            //        // Factory-based descriptors without a known implementation type cannot be decorated.
-            //        var handlerType = descriptor.ImplementationType
-            //            ?? descriptor.ImplementationInstance?.GetType();
-
-            //        // TEventHandler : class, IEventHandler<TEvent>, IInboxConsumer
-            //        if (handlerType is null
-            //            || !handlerType.IsClass
-            //            || !typeof(IInboxConsumer).IsAssignableFrom(handlerType))
-            //        {
-            //            return descriptor;
-            //        }
-
-            //        var closedDecorator = typeof(InboxEventHandlerDecorator<,>)
-            //            .MakeGenericType(eventType, handlerType);
-
-            //        return descriptor.WithFactory(provider =>
-            //        {
-            //            var handlerInstance = provider.GetInstance(descriptor);
-            //            var loggerType = typeof(ILogger<>).MakeGenericType(closedDecorator);
-
-            //            return ActivatorUtilities.CreateInstance(
-            //                provider,
-            //                closedDecorator,
-            //                handlerInstance,
-            //                provider.GetRequiredService<IInboxStore>(),
-            //                provider.GetRequiredService(loggerType));
-            //        });
-            //    });
         }
 
         /// <summary>
