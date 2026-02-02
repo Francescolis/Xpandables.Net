@@ -177,8 +177,8 @@ public sealed class AsyncPagedEnumerable<T> : IAsyncPagedEnumerable<T>, IAsyncDi
                 int currentState = _paginationState;
                 if (currentState >= 2 && existing is null)
                 {
-                    return currentState == 2 
-                        ? Task.FromResult(_pagination) 
+                    return currentState == 2
+                        ? Task.FromResult(_pagination)
                         : Task.FromException<Pagination>(_paginationError ?? new InvalidOperationException("Pagination computation failed."));
                 }
             } while (existing is null);
@@ -352,7 +352,7 @@ internal sealed class AsyncPagedFactoryEnumerable<T> : IAsyncPagedEnumerable<T>,
         private readonly AsyncPagedFactoryEnumerable<T> _parent;
         private readonly CancellationToken _token;
         private IAsyncPagedEnumerator<T>? _inner;
-        private Pagination _fallbackPagination = Pagination.Empty;
+        private readonly Pagination _fallbackPagination = Pagination.Empty;
 
         public Enumerator(AsyncPagedFactoryEnumerable<T> parent, CancellationToken token)
         {

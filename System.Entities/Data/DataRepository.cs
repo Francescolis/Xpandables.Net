@@ -87,6 +87,115 @@ public class DataRepository<[DynamicallyAccessedMembers(DynamicallyAccessedMembe
         }
     }
 
+    /// <inheritdoc/>
+    public virtual IAsyncPagedEnumerable<TResult> QueryPagedAsync<[DynamicallyAccessedMembers(DynamicallyAccessedMemberTypes.PublicProperties | DynamicallyAccessedMemberTypes.PublicParameterlessConstructor)] TResult>(
+        IQuerySpecification<TEntity, TResult> specification,
+        CancellationToken cancellationToken = default)
+    {
+        ThrowIfDisposed();
+        ArgumentNullException.ThrowIfNull(specification);
+        var selectResult = _sqlBuilder.BuildSelect(specification);
+        var countResult = _sqlBuilder.BuildCount(specification);
+        var paginationTcs = new TaskCompletionSource<int>(TaskCreationOptions.RunContinuationsAsynchronously);
+
+        async IAsyncEnumerable<TResult> ReadPagedAsync(
+            [EnumeratorCancellation] CancellationToken ct = default)
+        {
+            var command = _connectionScope.CreateCommand();
+            command.CommandText = $"{selectResult.Sql};{countResult.Sql}";
+
+            foreach (var param in MergeParameters(selectResult.Parameters, countResult.Parameters))
+            {
+                var dbParam = command.CreateParameter();
+                dbParam.ParameterName = param.Name;
+                dbParam.Value = param.Value ?? DBNull.Value;
+                command.Parameters.Add(dbParam);
+            }
+
+            await using (command.ConfigureAwait(false))
+            {
+                var reader = await command.ExecuteReaderAsync(ct).ConfigureAwait(false);
+                await using (reader.ConfigureAwait(false))
+                {
+                    try
+                    {
+                        while (await reader.ReadAsync(ct).ConfigureAwait(false))
+                        {
+                            yield return MapToResult<TResult>(reader);
+                        }
+
+                        if (await reader.NextResultAsync(ct).ConfigureAwait(false) &&
+                            await reader.ReadAsync(ct).ConfigureAwait(false))
+                        {
+                            var totalCount = Convert.ToInt64(reader.GetValue(0), CultureInfo.InvariantCulture);
+                            paginationTcs.TrySetResult(checked((int)totalCount));
+                        }
+                        else
+                        {
+                            paginationTcs.TrySetResult(0);
+                        }
+                    }
+                    finally
+                    {
+                        if (!paginationTcs.Task.IsCompleted)
+                        {
+                            if (ct.IsCancellationRequested)
+                            {
+                                paginationTcs.TrySetCanceled(ct);
+                            }
+                            else
+                            {
+                                paginationTcs.TrySetException(
+                                    new InvalidOperationException("Pagination metadata could not be resolved."));
+                            }
+                        }
+                    }
+                }
+            }
+        }
+
+        return AsyncPagedEnumerable.Create(
+            ReadPagedAsync(cancellationToken),
+            async ct =>
+            {
+                if (!paginationTcs.Task.IsCompleted)
+                {
+                    var count = await CountAsync(specification, ct).ConfigureAwait(false);
+                    paginationTcs.TrySetResult(checked((int)count));
+                }
+
+                var totalCount = await paginationTcs.Task.WaitAsync(ct).ConfigureAwait(false);
+                var pageSize = specification.Take ?? totalCount;
+                var currentPage = pageSize > 0 && specification.Skip.HasValue
+                    ? (specification.Skip.Value / pageSize) + 1
+                    : pageSize > 0 ? 1 : 0;
+
+                return Pagination.Create(
+                    pageSize: pageSize,
+                    currentPage: currentPage,
+                    totalCount: totalCount);
+            });
+
+        static IEnumerable<SqlParameter> MergeParameters(
+            IReadOnlyList<SqlParameter> first,
+            IReadOnlyList<SqlParameter> second)
+        {
+            var merged = new Dictionary<string, SqlParameter>(StringComparer.OrdinalIgnoreCase);
+
+            foreach (var param in first)
+            {
+                merged[param.Name] = param;
+            }
+
+            foreach (var param in second)
+            {
+                merged.TryAdd(param.Name, param);
+            }
+
+            return merged.Values;
+        }
+    }
+
     /// <inheritdoc />
     public virtual async Task<TResult> QuerySingleAsync<TResult>(
         IQuerySpecification<TEntity, TResult> specification,

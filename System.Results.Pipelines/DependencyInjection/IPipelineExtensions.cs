@@ -172,13 +172,9 @@ public static class IPipelineExtensions
 
             var handlerInterface = type.GetInterfaces().FirstOrDefault(i =>
                 i.IsGenericType &&
-                i.GetGenericTypeDefinition() == typeof(IPipelineRequestHandler<>));
-
-            if (handlerInterface is null)
-            {
-                throw new InvalidOperationException(
+                i.GetGenericTypeDefinition() == typeof(IPipelineRequestHandler<>))
+                ?? throw new InvalidOperationException(
                     $"{type.Name} does not implement IPipelineRequestHandler<> interface.");
-            }
 
             // If `type` is open generic (or implements handler as open generic), register open generic service.
             if (type.ContainsGenericParameters || handlerInterface.ContainsGenericParameters)

@@ -39,7 +39,7 @@ public interface IDataRepository : IDisposable, IAsyncDisposable;
 /// </para>
 /// </remarks>
 /// <typeparam name="TEntity">The type of entity to manage. Must be a class with public properties.</typeparam>
-public interface IDataRepository<[DynamicallyAccessedMembers(DynamicallyAccessedMemberTypes.PublicProperties)] TEntity> 
+public interface IDataRepository<[DynamicallyAccessedMembers(DynamicallyAccessedMemberTypes.PublicProperties)] TEntity>
     : IDataRepository
     where TEntity : class
 {
@@ -51,6 +51,21 @@ public interface IDataRepository<[DynamicallyAccessedMembers(DynamicallyAccessed
     /// <param name="cancellationToken">A token to cancel the operation.</param>
     /// <returns>An async enumerable of matching results.</returns>
     IAsyncEnumerable<TResult> QueryAsync<TResult>(
+        IQuerySpecification<TEntity, TResult> specification,
+        CancellationToken cancellationToken = default);
+
+    /// <summary>
+    /// Executes an asynchronous, paged query using the specified query specification and returns a sequence of results.
+    /// </summary>
+    /// <remarks>Use this method to efficiently retrieve large datasets in pages without loading all results
+    /// into memory at once. The returned enumerable supports asynchronous iteration and paging, which is suitable for
+    /// scenarios where data volume may be significant.</remarks>
+    /// <typeparam name="TResult">The type of the result elements returned by the query.</typeparam>
+    /// <param name="specification">The query specification that defines the criteria and projection for the query operation.</param>
+    /// <param name="cancellationToken">A cancellation token that can be used to cancel the asynchronous query operation.</param>
+    /// <returns>An asynchronous paged enumerable that yields result elements of type TResult according to the specified query
+    /// specification.</returns>
+    IAsyncPagedEnumerable<TResult> QueryPagedAsync<[DynamicallyAccessedMembers(DynamicallyAccessedMemberTypes.PublicProperties | DynamicallyAccessedMemberTypes.PublicParameterlessConstructor)] TResult>(
         IQuerySpecification<TEntity, TResult> specification,
         CancellationToken cancellationToken = default);
 
