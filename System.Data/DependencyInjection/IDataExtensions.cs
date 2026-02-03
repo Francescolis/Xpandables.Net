@@ -18,6 +18,7 @@ using System.Data;
 using System.Diagnostics.CodeAnalysis;
 using System.Reflection;
 
+using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection.Extensions;
 
 #pragma warning disable IDE0130 // Namespace does not match folder structure
@@ -38,6 +39,37 @@ public static class IDataExtensions
 {
     extension(IServiceCollection services)
     {
+        /// <summary>
+        /// Registers the database connection factory and scope factory providers in the service collection using the
+        /// specified configuration.
+        /// <code language="csharp">
+        ///     You can use the registered providers in your services as shown below:
+        ///     public sealed class ReportingRepository(IDbConnectionScopeFactoryProvider provider)
+        ///     {
+        ///         private readonly IDbConnectionScope _scope = provider.CreateScope("Reporting");
+        ///         public Task OpenReporting()
+        ///         {
+        ///             var command = _scope.Connection.CreateCommand();
+        ///         }
+        ///     }
+        /// </code>
+        /// </summary>
+        /// <remarks>This method is typically used in the startup configuration of an application to set
+        /// up database connection management services.</remarks>
+        /// <param name="configuration">The configuration settings used to initialize the database connection factory provider. Must not be null.</param>
+        /// <returns>The updated IServiceCollection instance, allowing for method chaining.</returns>
+        public IServiceCollection AddXDbConnectionFactoryProviders(IConfiguration configuration)
+        {
+            ArgumentNullException.ThrowIfNull(services);
+            ArgumentNullException.ThrowIfNull(configuration);
+
+            services.TryAddSingleton<IDbConnectionFactoryProvider>(
+                _ => new DbConnectionFactoryProvider(configuration));
+            services.TryAddSingleton<IDbConnectionScopeFactoryProvider, DbConnectionScopeFactoryProvider>();
+
+            return services;
+        }
+
         /// <summary>
         /// Registers a SQL Server database connection factory with the specified connection string in the service
         /// collection.
