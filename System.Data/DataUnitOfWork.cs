@@ -38,6 +38,7 @@ public class DataUnitOfWork : IDataUnitOfWork
 {
     private readonly IDbConnectionScope _connectionScope;
     private readonly ISqlBuilder _sqlBuilder;
+    private readonly ISqlMapper _sqlMapper;
     private readonly ConcurrentDictionary<Type, object> _repositories = new();
     private bool _isDisposed;
 
@@ -46,10 +47,12 @@ public class DataUnitOfWork : IDataUnitOfWork
     /// </summary>
     /// <param name="connectionScope">The connection scope to use.</param>
     /// <param name="sqlBuilder">The SQL builder for generating queries.</param>
-    public DataUnitOfWork(IDbConnectionScope connectionScope, ISqlBuilder sqlBuilder)
+    /// <param name="sqlMapper">The SQL mapper for mapping data.</param>
+    public DataUnitOfWork(IDbConnectionScope connectionScope, ISqlBuilder sqlBuilder, ISqlMapper sqlMapper)
     {
         _connectionScope = connectionScope ?? throw new ArgumentNullException(nameof(connectionScope));
         _sqlBuilder = sqlBuilder ?? throw new ArgumentNullException(nameof(sqlBuilder));
+        _sqlMapper = sqlMapper ?? throw new ArgumentNullException(nameof(sqlMapper));
     }
 
     /// <inheritdoc />
@@ -87,7 +90,7 @@ public class DataUnitOfWork : IDataUnitOfWork
     protected virtual IDataRepository<TEntity> CreateRepository<[DynamicallyAccessedMembers(DynamicallyAccessedMemberTypes.PublicProperties)] TEntity>()
         where TEntity : class
     {
-        return new DataRepository<TEntity>(_connectionScope, _sqlBuilder);
+        return new DataRepository<TEntity>(_connectionScope, _sqlBuilder, _sqlMapper);
     }
 
     /// <inheritdoc />
@@ -167,6 +170,7 @@ public class DataUnitOfWorkFactory : IDataUnitOfWorkFactory
 {
     private readonly IDbConnectionScopeFactory _connectionScopeFactory;
     private readonly ISqlBuilderFactory _sqlBuilderFactory;
+    private readonly ISqlMapper _sqlMapper;
     private readonly string _providerInvariantName;
 
     /// <summary>
@@ -174,16 +178,19 @@ public class DataUnitOfWorkFactory : IDataUnitOfWorkFactory
     /// </summary>
     /// <param name="connectionScopeFactory">The connection scope factory.</param>
     /// <param name="sqlBuilderFactory">The SQL builder factory.</param>
+    /// <param name="sqlMapper">The SQL mapper.</param>
     /// <param name="providerInvariantName">The provider invariant name for determining SQL dialect.</param>
     public DataUnitOfWorkFactory(
         IDbConnectionScopeFactory connectionScopeFactory,
         ISqlBuilderFactory sqlBuilderFactory,
+        ISqlMapper sqlMapper,
         string providerInvariantName)
     {
         _connectionScopeFactory = connectionScopeFactory ?? throw new ArgumentNullException(nameof(connectionScopeFactory));
         _sqlBuilderFactory = sqlBuilderFactory ?? throw new ArgumentNullException(nameof(sqlBuilderFactory));
         ArgumentException.ThrowIfNullOrWhiteSpace(providerInvariantName);
         _providerInvariantName = providerInvariantName;
+        _sqlMapper = sqlMapper ?? throw new ArgumentNullException(nameof(sqlMapper));
     }
 
     /// <inheritdoc />
@@ -195,7 +202,7 @@ public class DataUnitOfWorkFactory : IDataUnitOfWorkFactory
 
         var sqlBuilder = _sqlBuilderFactory.Create(_providerInvariantName);
 
-        return new DataUnitOfWork(connectionScope, sqlBuilder);
+        return new DataUnitOfWork(connectionScope, sqlBuilder, _sqlMapper);
     }
 
     /// <inheritdoc />
@@ -204,6 +211,6 @@ public class DataUnitOfWorkFactory : IDataUnitOfWorkFactory
         var connectionScope = _connectionScopeFactory.CreateScope();
         var sqlBuilder = _sqlBuilderFactory.Create(_providerInvariantName);
 
-        return new DataUnitOfWork(connectionScope, sqlBuilder);
+        return new DataUnitOfWork(connectionScope, sqlBuilder, _sqlMapper);
     }
 }

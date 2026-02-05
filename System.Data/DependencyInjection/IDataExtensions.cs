@@ -180,6 +180,37 @@ public static class IDataExtensions
         }
 
         /// <summary>
+        /// Registers the specified SQL mapper type as a singleton service in the dependency injection container.
+        /// </summary>
+        /// <remarks>This method ensures that the provided SQL mapper type is registered as a singleton,
+        /// meaning a single instance will be used throughout the application's lifetime. It is important that the type
+        /// parameter TSqlMapper has a public constructor to be instantiated by the dependency injection
+        /// framework.</remarks>
+        /// <typeparam name="TSqlMapper">The type of the SQL mapper to register. Must implement the ISqlMapper interface and have a public
+        /// constructor.</typeparam>
+        /// <returns>The IServiceCollection instance with the SQL mapper registration added, enabling method chaining.</returns>
+        public IServiceCollection AddXSqlMapper<[DynamicallyAccessedMembers(DynamicallyAccessedMemberTypes.PublicConstructors)] TSqlMapper>()
+            where TSqlMapper : class, ISqlMapper
+        {
+            ArgumentNullException.ThrowIfNull(services);
+            return services.AddSingleton<ISqlMapper, TSqlMapper>();
+        }
+
+        /// <summary>
+        /// Adds the SqlMapper services to the current IServiceCollection for dependency injection.
+        /// </summary>
+        /// <remarks>This method requires that the IServiceCollection instance is not null. It configures
+        /// the SqlMapper for use within the application, allowing database mapping functionality to be injected where
+        /// needed.</remarks>
+        /// <returns>The IServiceCollection instance with the SqlMapper services registered. This enables method chaining for
+        /// further service configuration.</returns>
+        public IServiceCollection AddXSqlMapper()
+        {
+            ArgumentNullException.ThrowIfNull(services);
+            return services.AddXSqlMapper<SqlMapper>();
+        }
+
+        /// <summary>
         /// Registers the SQL Server implementation of the ISqlBuilder interface in the service collection.
         /// </summary>
         /// <remarks>This method adds a singleton instance of SqlServerSqlBuilder, which provides SQL

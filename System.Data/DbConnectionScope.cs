@@ -94,6 +94,16 @@ public sealed class DbConnectionScope(DbConnection connection) : IDbConnectionSc
         return command;
     }
 
+    /// <inheritdoc/>
+    [Diagnostics.CodeAnalysis.SuppressMessage("Security", "CA2100:Review SQL queries for security vulnerabilities", Justification = "<Pending>")]
+    public DbCommand CreateCommand(SqlQueryResult queryResult)
+    {
+        var command = CreateCommand();
+        command.CommandText = queryResult.Sql;
+        queryResult.ApplyParameters(command);
+        return command;
+    }
+
     /// <inheritdoc />
     public void Dispose()
     {

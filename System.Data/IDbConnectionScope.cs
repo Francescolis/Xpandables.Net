@@ -100,6 +100,13 @@ public interface IDbConnectionScope : IDisposable, IAsyncDisposable
     /// </summary>
     /// <returns>A new <see cref="DbCommand"/> configured with the connection and current transaction.</returns>
     DbCommand CreateCommand();
+
+    /// <summary>
+    /// Creates a database command using the information provided by the specified SQL query result.
+    /// </summary>
+    /// <param name="queryResult">The SQL query result that contains the necessary information to construct the database command. Cannot be null.</param>
+    /// <returns>A <see cref="DbCommand"/> instance that represents the command to be executed against the database.</returns>
+    DbCommand CreateCommand(SqlQueryResult queryResult);
 }
 
 /// <summary>

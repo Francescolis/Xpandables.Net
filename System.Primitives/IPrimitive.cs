@@ -58,6 +58,8 @@ public interface IPrimitive<TValue> : IPrimitive
 /// to wrap primitive types (such as integers or strings) in domain-specific value objects.
 /// <para>Always decorate your primitive types with the <see cref="PrimitiveJsonConverterAttribute{TPrimitive, TValue}"/> to enable automatic
 /// serialization and deserialization.</para>
+/// <para>Always decorate your primitive types with the <see cref="TypeConverterAttribute"/> to enable automatic type conversion from strings
+/// using the <see cref="PrimitiveTypeConverter{TPrimitive, TValue}"/>.</para>
 /// </remarks>
 /// <typeparam name="TPrimitive">The struct type that implements this interface, representing the strongly-typed primitive value.</typeparam>
 /// <typeparam name="TValue">The underlying value type encapsulated by the primitive. Must be non-null.</typeparam>
@@ -77,6 +79,20 @@ public interface IPrimitive<TPrimitive, TValue> :
     /// the implementation.</param>
     /// <returns>A new instance of the primitive type that represents the specified value.</returns>
     static abstract TPrimitive Create(TValue value);
+
+    /// <summary>
+    /// Tries to convert the specified string representation of a number to its equivalent primitive type without
+    /// throwing an exception.
+    /// </summary>
+    /// <remarks>This method is useful for safely parsing strings into numeric types without throwing
+    /// exceptions. It handles various formats based on the provided culture information.</remarks>
+    /// <param name="s">The string representation of the number to convert. This parameter can be null, in which case the method returns
+    /// false.</param>
+    /// <param name="provider">An optional object that supplies culture-specific formatting information. If null, the current culture is used.</param>
+    /// <param name="result">When this method returns, contains the converted value if the conversion succeeded; otherwise, it is set to the
+    /// default value of TPrimitive.</param>
+    /// <returns>true if the conversion succeeded; otherwise, false.</returns>
+    static abstract bool TryParse(string? s, IFormatProvider? provider, out TPrimitive result);
 
     /// <summary>
     /// Gets the default value for the type parameter <typeparamref name="TValue"/> as defined by the implementing type.
@@ -167,6 +183,44 @@ public static class PrimitiveExtensions
         /// Gets a value indicating whether the current value is equal to the default value for the type.
         /// </summary>
         public bool IsEmpty => EqualityComparer<TValue>.Default.Equals(primitive.Value, TPrimitive.DefaultValue);
+    }
+}
+
+/// <summary>
+/// Provides a type converter for converting between a primitive type and its associated value type using string
+/// representations.
+/// </summary>
+/// <remarks>This converter enables conversion from a string to the specified primitive type. If the string cannot
+/// be parsed into the primitive type, a FormatException is thrown. Use this converter to support custom parsing logic
+/// for types implementing IPrimitive.</remarks>
+/// <typeparam name="TPrimitive">Specifies the primitive type to convert, which must be a struct implementing the IPrimitive interface for the given
+/// value type.</typeparam>
+/// <typeparam name="TValue">Specifies the value type associated with the primitive type. This type must be non-nullable.</typeparam>
+public sealed class PrimitiveTypeConverter<TPrimitive, TValue> : TypeConverter
+    where TPrimitive : struct, IPrimitive<TPrimitive, TValue>
+    where TValue : notnull
+{
+    public override bool CanConvertFrom(ITypeDescriptorContext? context, Type sourceType)
+    {
+        if (sourceType == typeof(string))
+        {
+            return true;
+        }
+
+        return base.CanConvertFrom(context, sourceType);
+    }
+    public override object? ConvertFrom(ITypeDescriptorContext? context, Globalization.CultureInfo? culture, object value)
+    {
+        if (value is string s)
+        {
+            if (TPrimitive.TryParse(s, culture, out var result))
+            {
+                return result;
+            }
+
+            throw new FormatException($"Cannot convert '{s}' to {typeof(TPrimitive)}.");
+        }
+        return base.ConvertFrom(context, culture, value);
     }
 }
 

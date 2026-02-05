@@ -15,6 +15,7 @@
  *
 ********************************************************************************/
 using System.Collections.Frozen;
+using System.ComponentModel;
 using System.ComponentModel.DataAnnotations;
 using System.Runtime.CompilerServices;
 
@@ -30,6 +31,7 @@ namespace System.Entities;
 /// Status values are cached for efficient reuse and comparison operations.
 /// </remarks>
 [PrimitiveJsonConverter<EntityStatus, string>]
+[TypeConverter(typeof(PrimitiveTypeConverter<EntityStatus, string>))]
 #pragma warning disable CA1036 // Override methods on comparable types
 public readonly record struct EntityStatus : IPrimitive<EntityStatus, string>
 #pragma warning restore CA1036 // Override methods on comparable types
@@ -46,6 +48,24 @@ public readonly record struct EntityStatus : IPrimitive<EntityStatus, string>
     public string Value { get; }
 
     private EntityStatus(string value) => Value = value;
+
+    /// <inheritdoc/>
+    [Diagnostics.CodeAnalysis.SuppressMessage("Design", "CA1031:Do not catch general exception types", Justification = "<Pending>")]
+    public static bool TryParse(string? s, IFormatProvider? provider, out EntityStatus result)
+    {
+        if (!string.IsNullOrWhiteSpace(s))
+        {
+            try
+            {
+                result = Create(s);
+                return true;
+            }
+            catch { }
+        }
+
+        result = default;
+        return false;
+    }
 
     /// <inheritdoc/>
     public override string ToString() => Value;
