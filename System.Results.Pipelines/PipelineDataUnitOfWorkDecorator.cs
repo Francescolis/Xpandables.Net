@@ -32,11 +32,11 @@ namespace System.Results.Pipelines;
 /// this decorator explicitly manages transactions since ADO.NET operations execute immediately.
 /// </para>
 /// </remarks>
-/// <typeparam name="TRequest">The type of the request object that must implement <see cref="IRequiresDataUnitOfWork"/>.</typeparam>
+/// <typeparam name="TRequest">The type of the request object that must implement <see cref="IDataRequiresUnitOfWork"/>.</typeparam>
 /// <param name="unitOfWork">The ADO.NET unit of work for transaction management.</param>
 public sealed class PipelineDataUnitOfWorkDecorator<TRequest>(IDataUnitOfWork? unitOfWork = default) :
     IPipelineDecorator<TRequest>
-    where TRequest : class, IRequest, IRequiresDataUnitOfWork
+    where TRequest : class, IRequest, IDataRequiresUnitOfWork
 {
     /// <inheritdoc/>
     public async Task<Result> HandleAsync(

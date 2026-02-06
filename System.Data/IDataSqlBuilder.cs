@@ -74,7 +74,7 @@ public readonly record struct SqlParameter(string Name, object? Value);
 /// </list>
 /// </para>
 /// </remarks>
-public interface ISqlBuilder
+public interface IDataSqlBuilder
 {
     /// <summary>
     /// Gets the SQL dialect this builder generates.
@@ -177,14 +177,14 @@ public interface ISqlBuilder
 /// <summary>
 /// Provides factory methods for creating SQL builders for specific dialects.
 /// </summary>
-public interface ISqlBuilderFactory
+public interface IDataSqlBuilderFactory
 {
     /// <summary>
     /// Creates a SQL builder for the specified dialect.
     /// </summary>
     /// <param name="dialect">The SQL dialect.</param>
     /// <returns>A SQL builder for the specified dialect.</returns>
-    ISqlBuilder Create(SqlDialect dialect);
+    IDataSqlBuilder Create(SqlDialect dialect);
 
     /// <summary>
     /// Creates a SQL builder for the specified provider invariant name.
@@ -192,5 +192,5 @@ public interface ISqlBuilderFactory
     /// <param name="providerInvariantName">The provider invariant name 
     /// (e.g., <see cref="DbProviders.MsSqlServer.InvariantName"/>).</param>
     /// <returns>A SQL builder for the provider's dialect.</returns>
-    ISqlBuilder Create(string providerInvariantName);
+    IDataSqlBuilder Create(string providerInvariantName);
 }

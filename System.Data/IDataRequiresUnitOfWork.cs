@@ -28,5 +28,5 @@ namespace System.Data;
 /// </para>
 /// </remarks>
 #pragma warning disable CA1040 // Avoid empty interfaces
-public interface IRequiresDataUnitOfWork;
+public interface IDataRequiresUnitOfWork;
 #pragma warning restore CA1040 // Avoid empty interfaces

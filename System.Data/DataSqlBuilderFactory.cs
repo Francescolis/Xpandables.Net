@@ -20,18 +20,18 @@ using System.Diagnostics.CodeAnalysis;
 namespace System.Data;
 
 /// <summary>
-/// Provides a default implementation of <see cref="ISqlBuilderFactory"/> that creates 
+/// Provides a default implementation of <see cref="IDataSqlBuilderFactory"/> that creates 
 /// SQL builders for different database dialects.
 /// </summary>
 [RequiresDynamicCode("SQL builders require dynamic code generation for expression compilation.")]
-public sealed class SqlBuilderFactory : ISqlBuilderFactory
+public sealed class DataSqlBuilderFactory : IDataSqlBuilderFactory
 {
-    private static readonly Lazy<MsSqlBuilder> _sqlServerBuilder = new(() => new MsSqlBuilder());
-    private static readonly Lazy<PostgreSqlBuilder> _postgreSqlBuilder = new(() => new PostgreSqlBuilder());
-    private static readonly Lazy<MySqlBuilder> _mySqlBuilder = new(() => new MySqlBuilder());
+    private static readonly Lazy<MsDataSqlBuilder> _sqlServerBuilder = new(() => new MsDataSqlBuilder());
+    private static readonly Lazy<PostgreDataSqlBuilder> _postgreSqlBuilder = new(() => new PostgreDataSqlBuilder());
+    private static readonly Lazy<MyDataSqlBuilder> _mySqlBuilder = new(() => new MyDataSqlBuilder());
 
     /// <inheritdoc />
-    public ISqlBuilder Create(SqlDialect dialect)
+    public IDataSqlBuilder Create(SqlDialect dialect)
     {
         return dialect switch
         {
@@ -43,7 +43,7 @@ public sealed class SqlBuilderFactory : ISqlBuilderFactory
     }
 
     /// <inheritdoc />
-    public ISqlBuilder Create(string providerInvariantName)
+    public IDataSqlBuilder Create(string providerInvariantName)
     {
         ArgumentException.ThrowIfNullOrWhiteSpace(providerInvariantName);
 

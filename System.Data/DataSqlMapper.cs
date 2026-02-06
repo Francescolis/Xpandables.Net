@@ -26,7 +26,7 @@ namespace System.Data;
 /// </summary>
 /// <remarks>Implements the ISqlMapper interface to enable custom mapping of database records to objects. Use this
 /// class to convert data retrieved from a DbDataReader into strongly typed results for application use.</remarks>
-public sealed class SqlMapper : ISqlMapper
+public sealed class DataSqlMapper : IDataSqlMapper
 {
     /// <inheritdoc/>
     public TResult Map<[DynamicallyAccessedMembers(DynamicallyAccessedMemberTypes.PublicParameterlessConstructor | DynamicallyAccessedMemberTypes.PublicConstructors | DynamicallyAccessedMemberTypes.PublicProperties)] TResult>(DbDataReader reader)

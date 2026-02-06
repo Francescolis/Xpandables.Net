@@ -25,7 +25,7 @@ namespace System.Data;
 /// <remarks>Implementations of this interface should provide the logic to convert data from the provided
 /// DbDataReader into the desired TResult type. This is useful for data access layers that need to transform raw
 /// database results into application-specific objects.</remarks>
-public interface ISqlMapper
+public interface IDataSqlMapper
 {
     /// <summary>
     /// Maps the current record from the specified <see cref="DbDataReader"/> to an instance of the specified type.

@@ -190,10 +190,10 @@ public static class IDataExtensions
         /// constructor.</typeparam>
         /// <returns>The IServiceCollection instance with the SQL mapper registration added, enabling method chaining.</returns>
         public IServiceCollection AddXSqlMapper<[DynamicallyAccessedMembers(DynamicallyAccessedMemberTypes.PublicConstructors)] TSqlMapper>()
-            where TSqlMapper : class, ISqlMapper
+            where TSqlMapper : class, IDataSqlMapper
         {
             ArgumentNullException.ThrowIfNull(services);
-            return services.AddSingleton<ISqlMapper, TSqlMapper>();
+            return services.AddSingleton<IDataSqlMapper, TSqlMapper>();
         }
 
         /// <summary>
@@ -207,7 +207,7 @@ public static class IDataExtensions
         public IServiceCollection AddXSqlMapper()
         {
             ArgumentNullException.ThrowIfNull(services);
-            return services.AddXSqlMapper<SqlMapper>();
+            return services.AddXSqlMapper<DataSqlMapper>();
         }
 
         /// <summary>
@@ -220,7 +220,7 @@ public static class IDataExtensions
         public IServiceCollection AddXMsSqlBuilder()
         {
             ArgumentNullException.ThrowIfNull(services);
-            return services.AddSingleton<ISqlBuilder, MsSqlBuilder>();
+            return services.AddSingleton<IDataSqlBuilder, MsDataSqlBuilder>();
         }
 
         /// <summary>
@@ -232,7 +232,7 @@ public static class IDataExtensions
         public IServiceCollection AddXPostgreSqlBuilder()
         {
             ArgumentNullException.ThrowIfNull(services);
-            return services.AddSingleton<ISqlBuilder, PostgreSqlBuilder>();
+            return services.AddSingleton<IDataSqlBuilder, PostgreDataSqlBuilder>();
         }
 
         /// <summary>
@@ -245,7 +245,7 @@ public static class IDataExtensions
         public IServiceCollection AddXMySqlBuilder()
         {
             ArgumentNullException.ThrowIfNull(services);
-            return services.AddSingleton<ISqlBuilder, MySqlBuilder>();
+            return services.AddSingleton<IDataSqlBuilder, MyDataSqlBuilder>();
         }
 
         /// <summary>
@@ -254,10 +254,10 @@ public static class IDataExtensions
         /// <typeparam name="TBuilder">The SQL builder type.</typeparam>
         /// <returns>The <see cref="IServiceCollection"/> instance for chaining.</returns>
         public IServiceCollection AddXSqlBuilder<[DynamicallyAccessedMembers(DynamicallyAccessedMemberTypes.PublicConstructors)] TBuilder>()
-            where TBuilder : class, ISqlBuilder
+            where TBuilder : class, IDataSqlBuilder
         {
             ArgumentNullException.ThrowIfNull(services);
-            return services.AddSingleton<ISqlBuilder, TBuilder>();
+            return services.AddSingleton<IDataSqlBuilder, TBuilder>();
         }
         /// <summary>
         /// Adds the Data unit of work implementation to the service collection for dependency injection.

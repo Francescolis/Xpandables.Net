@@ -25,7 +25,7 @@ using System.Text;
 namespace System.Data;
 
 /// <summary>
-/// Provides a base implementation of <see cref="ISqlBuilder"/> with common SQL generation logic.
+/// Provides a base implementation of <see cref="IDataSqlBuilder"/> with common SQL generation logic.
 /// </summary>
 /// <remarks>
 /// <para>
@@ -47,7 +47,7 @@ namespace System.Data;
 #pragma warning disable CA1062 // Validate arguments of public methods - protected methods are called from validated public methods
 #pragma warning disable CA1002 // Do not expose generic lists - internal implementation detail
 [RequiresDynamicCode("Expression compilation requires dynamic code generation.")]
-public abstract class SqlBuilderBase : ISqlBuilder
+public abstract class DataSqlBuilderBase : IDataSqlBuilder
 {
     private int _parameterIndex;
 

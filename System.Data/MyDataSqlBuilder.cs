@@ -21,79 +21,77 @@ using System.Text;
 namespace System.Data;
 
 /// <summary>
-/// Provides a SQL Server (T-SQL) implementation of <see cref="ISqlBuilder"/>.
+/// Provides a MySQL implementation of <see cref="IDataSqlBuilder"/>.
 /// </summary>
 /// <remarks>
 /// <para>
-/// This implementation generates T-SQL compatible queries with:
+/// This implementation generates MySQL compatible queries with:
 /// <list type="bullet">
-/// <item>Square bracket identifier quoting ([TableName])</item>
-/// <item>@ parameter prefix</item>
-/// <item>OFFSET/FETCH for pagination (SQL Server 2012+)</item>
-/// <item>TOP for simple limit without offset</item>
+/// <item>Backtick identifier quoting (`TableName`)</item>
+/// <item>@ parameter prefix (for MySqlConnector)</item>
+/// <item>LIMIT/OFFSET for pagination</item>
 /// </list>
 /// </para>
 /// </remarks>
 [RequiresDynamicCode("Expression compilation requires dynamic code generation.")]
-public sealed class MsSqlBuilder : SqlBuilderBase
+public sealed class MyDataSqlBuilder : DataSqlBuilderBase
 {
     /// <inheritdoc />
-    public override SqlDialect Dialect => SqlDialect.SqlServer;
+    public override SqlDialect Dialect => SqlDialect.MySql;
 
     /// <inheritdoc />
     public override string ParameterPrefix => "@";
 
     /// <inheritdoc />
-    protected override string LimitKeyword => "TOP";
+    protected override string LimitKeyword => "LIMIT";
 
     /// <inheritdoc />
-    protected override bool LimitBeforeColumns => true;
+    protected override bool LimitBeforeColumns => false;
 
     /// <inheritdoc />
     public override string QuoteIdentifier(string identifier)
     {
         ArgumentException.ThrowIfNullOrWhiteSpace(identifier);
 
-        // Remove any existing brackets and re-wrap
-        identifier = identifier.Trim('[', ']');
-        return $"[{identifier}]";
+        // Remove any existing backticks and re-wrap
+        identifier = identifier.Trim('`');
+        return $"`{identifier}`";
     }
 
     /// <inheritdoc />
     protected override void AppendPaging(StringBuilder sql, int? skip, int? take)
     {
-        // SQL Server uses OFFSET/FETCH (requires ORDER BY)
-        // For TOP without offset, it's already handled in BuildSelect
-
-        if (skip.HasValue || (take.HasValue && skip.HasValue))
+        // MySQL uses LIMIT/OFFSET
+        // Note: MySQL requires LIMIT when using OFFSET
+        if (take.HasValue || skip.HasValue)
         {
-            // OFFSET/FETCH requires an ORDER BY clause
-            // If no ORDER BY was specified, we need to add a default one
-            if (!sql.ToString().Contains("ORDER BY", StringComparison.OrdinalIgnoreCase))
-            {
-                sql.Append(" ORDER BY (SELECT NULL)");
-            }
-
-            sql.Append(CultureInfo.InvariantCulture, $" OFFSET {skip ?? 0} ROWS");
-
             if (take.HasValue)
             {
-                sql.Append(CultureInfo.InvariantCulture, $" FETCH NEXT {take.Value} ROWS ONLY");
+                sql.Append(CultureInfo.InvariantCulture, $" LIMIT {take.Value}");
+            }
+            else if (skip.HasValue)
+            {
+                // MySQL requires LIMIT when using OFFSET, use a very large number
+                sql.Append(" LIMIT 18446744073709551615");
+            }
+
+            if (skip.HasValue && skip.Value > 0)
+            {
+                sql.Append(CultureInfo.InvariantCulture, $" OFFSET {skip.Value}");
             }
         }
     }
 
     /// <summary>
-    /// Translates string.Contains to SQL Server LIKE with escape handling.
+    /// Translates string.Contains to MySQL LIKE with escape handling.
     /// </summary>
     protected override string TranslateStringContains(
         Linq.Expressions.MethodCallExpression methodCall,
         IReadOnlyDictionary<string, string> columnMappings,
         List<SqlParameter> parameters)
     {
-        var (columnExpr, valueExpr) = GetStringMethodOperands(methodCall);
-        var column = TranslateExpression(columnExpr, columnMappings, parameters);
-        var value = ExtractConstantValue(valueExpr);
+        var column = TranslateExpression(methodCall.Object!, columnMappings, parameters);
+        var value = ExtractConstantValue(methodCall.Arguments[0]);
         var escapedValue = EscapeLikePattern(value?.ToString() ?? string.Empty);
         var paramName = NextParameterName();
         parameters.Add(new SqlParameter(paramName, $"%{escapedValue}%"));
@@ -101,16 +99,15 @@ public sealed class MsSqlBuilder : SqlBuilderBase
     }
 
     /// <summary>
-    /// Translates string.StartsWith to SQL Server LIKE with escape handling.
+    /// Translates string.StartsWith to MySQL LIKE with escape handling.
     /// </summary>
     protected override string TranslateStringStartsWith(
         Linq.Expressions.MethodCallExpression methodCall,
         IReadOnlyDictionary<string, string> columnMappings,
         List<SqlParameter> parameters)
     {
-        var (columnExpr, valueExpr) = GetStringMethodOperands(methodCall);
-        var column = TranslateExpression(columnExpr, columnMappings, parameters);
-        var value = ExtractConstantValue(valueExpr);
+        var column = TranslateExpression(methodCall.Object!, columnMappings, parameters);
+        var value = ExtractConstantValue(methodCall.Arguments[0]);
         var escapedValue = EscapeLikePattern(value?.ToString() ?? string.Empty);
         var paramName = NextParameterName();
         parameters.Add(new SqlParameter(paramName, $"{escapedValue}%"));
@@ -118,16 +115,15 @@ public sealed class MsSqlBuilder : SqlBuilderBase
     }
 
     /// <summary>
-    /// Translates string.EndsWith to SQL Server LIKE with escape handling.
+    /// Translates string.EndsWith to MySQL LIKE with escape handling.
     /// </summary>
     protected override string TranslateStringEndsWith(
         Linq.Expressions.MethodCallExpression methodCall,
         IReadOnlyDictionary<string, string> columnMappings,
         List<SqlParameter> parameters)
     {
-        var (columnExpr, valueExpr) = GetStringMethodOperands(methodCall);
-        var column = TranslateExpression(columnExpr, columnMappings, parameters);
-        var value = ExtractConstantValue(valueExpr);
+        var column = TranslateExpression(methodCall.Object!, columnMappings, parameters);
+        var value = ExtractConstantValue(methodCall.Arguments[0]);
         var escapedValue = EscapeLikePattern(value?.ToString() ?? string.Empty);
         var paramName = NextParameterName();
         parameters.Add(new SqlParameter(paramName, $"%{escapedValue}"));
@@ -135,13 +131,13 @@ public sealed class MsSqlBuilder : SqlBuilderBase
     }
 
     /// <summary>
-    /// Escapes special characters in a LIKE pattern for SQL Server.
+    /// Escapes special characters in a LIKE pattern for MySQL.
     /// </summary>
     private static string EscapeLikePattern(string value)
     {
         return value
-            .Replace("[", "[[]", StringComparison.Ordinal)
-            .Replace("%", "[%]", StringComparison.Ordinal)
-            .Replace("_", "[_]", StringComparison.Ordinal);
+            .Replace("\\", "\\\\", StringComparison.Ordinal)
+            .Replace("%", "\\%", StringComparison.Ordinal)
+            .Replace("_", "\\_", StringComparison.Ordinal);
     }
 }

@@ -37,8 +37,8 @@ namespace System.Data;
 public class DataUnitOfWork : IDataUnitOfWork
 {
     private readonly IDbConnectionScope _connectionScope;
-    private readonly ISqlBuilder _sqlBuilder;
-    private readonly ISqlMapper _sqlMapper;
+    private readonly IDataSqlBuilder _sqlBuilder;
+    private readonly IDataSqlMapper _sqlMapper;
     private readonly ConcurrentDictionary<Type, object> _repositories = new();
     private bool _isDisposed;
 
@@ -48,7 +48,7 @@ public class DataUnitOfWork : IDataUnitOfWork
     /// <param name="connectionScope">The connection scope to use.</param>
     /// <param name="sqlBuilder">The SQL builder for generating queries.</param>
     /// <param name="sqlMapper">The SQL mapper for mapping data.</param>
-    public DataUnitOfWork(IDbConnectionScope connectionScope, ISqlBuilder sqlBuilder, ISqlMapper sqlMapper)
+    public DataUnitOfWork(IDbConnectionScope connectionScope, IDataSqlBuilder sqlBuilder, IDataSqlMapper sqlMapper)
     {
         _connectionScope = connectionScope ?? throw new ArgumentNullException(nameof(connectionScope));
         _sqlBuilder = sqlBuilder ?? throw new ArgumentNullException(nameof(sqlBuilder));
@@ -169,8 +169,8 @@ public class DataUnitOfWork : IDataUnitOfWork
 public class DataUnitOfWorkFactory : IDataUnitOfWorkFactory
 {
     private readonly IDbConnectionScopeFactory _connectionScopeFactory;
-    private readonly ISqlBuilderFactory _sqlBuilderFactory;
-    private readonly ISqlMapper _sqlMapper;
+    private readonly IDataSqlBuilderFactory _sqlBuilderFactory;
+    private readonly IDataSqlMapper _sqlMapper;
     private readonly string _providerInvariantName;
 
     /// <summary>
@@ -182,8 +182,8 @@ public class DataUnitOfWorkFactory : IDataUnitOfWorkFactory
     /// <param name="providerInvariantName">The provider invariant name for determining SQL dialect.</param>
     public DataUnitOfWorkFactory(
         IDbConnectionScopeFactory connectionScopeFactory,
-        ISqlBuilderFactory sqlBuilderFactory,
-        ISqlMapper sqlMapper,
+        IDataSqlBuilderFactory sqlBuilderFactory,
+        IDataSqlMapper sqlMapper,
         string providerInvariantName)
     {
         _connectionScopeFactory = connectionScopeFactory ?? throw new ArgumentNullException(nameof(connectionScopeFactory));

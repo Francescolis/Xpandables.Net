@@ -21,23 +21,24 @@ using System.Text;
 namespace System.Data;
 
 /// <summary>
-/// Provides a MySQL implementation of <see cref="ISqlBuilder"/>.
+/// Provides a PostgreSQL implementation of <see cref="IDataSqlBuilder"/>.
 /// </summary>
 /// <remarks>
 /// <para>
-/// This implementation generates MySQL compatible queries with:
+/// This implementation generates PostgreSQL compatible queries with:
 /// <list type="bullet">
-/// <item>Backtick identifier quoting (`TableName`)</item>
-/// <item>@ parameter prefix (for MySqlConnector)</item>
+/// <item>Double quote identifier quoting ("TableName")</item>
+/// <item>$ parameter prefix with positional parameters ($1, $2)</item>
 /// <item>LIMIT/OFFSET for pagination</item>
+/// <item>ILIKE for case-insensitive pattern matching (optional)</item>
 /// </list>
 /// </para>
 /// </remarks>
 [RequiresDynamicCode("Expression compilation requires dynamic code generation.")]
-public sealed class MySqlBuilder : SqlBuilderBase
+public sealed class PostgreDataSqlBuilder : DataSqlBuilderBase
 {
     /// <inheritdoc />
-    public override SqlDialect Dialect => SqlDialect.MySql;
+    public override SqlDialect Dialect => SqlDialect.PostgreSql;
 
     /// <inheritdoc />
     public override string ParameterPrefix => "@";
@@ -53,38 +54,32 @@ public sealed class MySqlBuilder : SqlBuilderBase
     {
         ArgumentException.ThrowIfNullOrWhiteSpace(identifier);
 
-        // Remove any existing backticks and re-wrap
-        identifier = identifier.Trim('`');
-        return $"`{identifier}`";
+        // Remove any existing quotes and re-wrap
+        identifier = identifier.Trim('"');
+        return $"\"{identifier}\"";
     }
 
     /// <inheritdoc />
     protected override void AppendPaging(StringBuilder sql, int? skip, int? take)
     {
-        // MySQL uses LIMIT/OFFSET
-        // Note: MySQL requires LIMIT when using OFFSET
-        if (take.HasValue || skip.HasValue)
+        // PostgreSQL uses LIMIT/OFFSET
+        if (take.HasValue)
         {
-            if (take.HasValue)
-            {
-                sql.Append(CultureInfo.InvariantCulture, $" LIMIT {take.Value}");
-            }
-            else if (skip.HasValue)
-            {
-                // MySQL requires LIMIT when using OFFSET, use a very large number
-                sql.Append(" LIMIT 18446744073709551615");
-            }
+            sql.Append(CultureInfo.InvariantCulture, $" LIMIT {take.Value}");
+        }
 
-            if (skip.HasValue && skip.Value > 0)
-            {
-                sql.Append(CultureInfo.InvariantCulture, $" OFFSET {skip.Value}");
-            }
+        if (skip.HasValue && skip.Value > 0)
+        {
+            sql.Append(CultureInfo.InvariantCulture, $" OFFSET {skip.Value}");
         }
     }
 
     /// <summary>
-    /// Translates string.Contains to MySQL LIKE with escape handling.
+    /// Translates string.Contains to PostgreSQL LIKE with escape handling.
     /// </summary>
+    /// <remarks>
+    /// Uses standard LIKE. For case-insensitive matching, use ILIKE instead.
+    /// </remarks>
     protected override string TranslateStringContains(
         Linq.Expressions.MethodCallExpression methodCall,
         IReadOnlyDictionary<string, string> columnMappings,
@@ -99,7 +94,7 @@ public sealed class MySqlBuilder : SqlBuilderBase
     }
 
     /// <summary>
-    /// Translates string.StartsWith to MySQL LIKE with escape handling.
+    /// Translates string.StartsWith to PostgreSQL LIKE with escape handling.
     /// </summary>
     protected override string TranslateStringStartsWith(
         Linq.Expressions.MethodCallExpression methodCall,
@@ -115,7 +110,7 @@ public sealed class MySqlBuilder : SqlBuilderBase
     }
 
     /// <summary>
-    /// Translates string.EndsWith to MySQL LIKE with escape handling.
+    /// Translates string.EndsWith to PostgreSQL LIKE with escape handling.
     /// </summary>
     protected override string TranslateStringEndsWith(
         Linq.Expressions.MethodCallExpression methodCall,
@@ -131,7 +126,7 @@ public sealed class MySqlBuilder : SqlBuilderBase
     }
 
     /// <summary>
-    /// Escapes special characters in a LIKE pattern for MySQL.
+    /// Escapes special characters in a LIKE pattern for PostgreSQL.
     /// </summary>
     private static string EscapeLikePattern(string value)
     {
