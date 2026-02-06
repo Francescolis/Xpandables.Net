@@ -15,6 +15,7 @@
  *
 ********************************************************************************/
 
+using System.ComponentModel;
 using System.Text.Json;
 
 using FluentAssertions;
@@ -26,10 +27,28 @@ public sealed class IPrimitiveTests
     #region Test Primitives
 
     [PrimitiveJsonConverter<CustomerId, Guid>]
+    [TypeConverter(typeof(PrimitiveTypeConverter<CustomerId, Guid>))]
     public readonly partial record struct CustomerId : IPrimitive<CustomerId, Guid>
     {
         public Guid Value { get; }
         private CustomerId(Guid value) => Value = value;
+        public static bool TryParse(string? s, IFormatProvider? provider, out CustomerId result)
+        {
+            result = default;
+            if (string.IsNullOrWhiteSpace(s))
+            {
+                return false;
+            }
+
+            if (Guid.TryParse(s, provider, out var guid))
+            {
+                result = Create(guid);
+                return true;
+            }
+
+            return false;
+        }
+
         public override string ToString() => Value.ToString();
         public static CustomerId Create(Guid value) => new(value);
         public static Guid DefaultValue => Guid.Empty;
@@ -38,10 +57,22 @@ public sealed class IPrimitiveTests
     }
 
     [PrimitiveJsonConverter<ProductName, string>]
+    [TypeConverter(typeof(PrimitiveTypeConverter<ProductName, string>))]
     public readonly partial record struct ProductName : IPrimitive<ProductName, string>
     {
         public string Value { get; }
         private ProductName(string value) => Value = value ?? string.Empty;
+        public static bool TryParse(string? s, IFormatProvider? provider, out ProductName result)
+        {
+            result = default;
+            if (s is null)
+            {
+                return false;
+            }
+            result = Create(s);
+            return true;
+        }
+
         public override string ToString() => Value;
         public static ProductName Create(string value) => new(value);
         public static string DefaultValue => string.Empty;
@@ -50,10 +81,25 @@ public sealed class IPrimitiveTests
     }
 
     [PrimitiveJsonConverter<Price, decimal>]
+    [TypeConverter(typeof(PrimitiveTypeConverter<Price, decimal>))]
     public readonly partial record struct Price : IPrimitive<Price, decimal>
     {
         public decimal Value { get; }
         private Price(decimal value) => Value = value;
+        public static bool TryParse(string? s, IFormatProvider? provider, out Price result)
+        {
+            result = default;
+            if (string.IsNullOrWhiteSpace(s))
+            {
+                return false;
+            }
+            if (decimal.TryParse(s, provider, out var decimalValue))
+            {
+                result = Create(decimalValue);
+                return true;
+            }
+            return false;
+        }
         public override string ToString() => Value.ToString();
         public static Price Create(decimal value) => new(value);
         public static decimal DefaultValue => 0m;
@@ -62,10 +108,25 @@ public sealed class IPrimitiveTests
     }
 
     [PrimitiveJsonConverter<Quantity, int>]
+    [TypeConverter(typeof(PrimitiveTypeConverter<Quantity, int>))]
     public readonly partial record struct Quantity : IPrimitive<Quantity, int>
     {
         public int Value { get; }
         private Quantity(int value) => Value = value;
+        public static bool TryParse(string? s, IFormatProvider? provider, out Quantity result)
+        {
+            result = default;
+            if (string.IsNullOrWhiteSpace(s))
+            {
+                return false;
+            }
+            if (int.TryParse(s, provider, out var intValue))
+            {
+                result = Create(intValue);
+                return true;
+            }
+            return false;
+        }
         public override string ToString() => Value.ToString();
         public static Quantity Create(int value) => new(value);
         public static int DefaultValue => 0;
@@ -74,10 +135,25 @@ public sealed class IPrimitiveTests
     }
 
     [PrimitiveJsonConverter<CreatedDate, DateTime>]
+    [TypeConverter(typeof(PrimitiveTypeConverter<CreatedDate, DateTime>))]
     public readonly partial record struct CreatedDate : IPrimitive<CreatedDate, DateTime>
     {
         public DateTime Value { get; }
         private CreatedDate(DateTime value) => Value = value;
+        public static bool TryParse(string? s, IFormatProvider? provider, out CreatedDate result)
+        {
+            result = default;
+            if (string.IsNullOrWhiteSpace(s))
+            {
+                return false;
+            }
+            if (DateTime.TryParse(s, provider, System.Globalization.DateTimeStyles.RoundtripKind, out var dateValue))
+            {
+                result = Create(dateValue);
+                return true;
+            }
+            return false;
+        }
         public override string ToString() => Value.ToString();
         public static CreatedDate Create(DateTime value) => new(value);
         public static DateTime DefaultValue => DateTime.MinValue;

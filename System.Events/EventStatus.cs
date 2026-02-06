@@ -15,6 +15,7 @@
  *
 ********************************************************************************/
 using System.Collections.Frozen;
+using System.ComponentModel;
 using System.ComponentModel.DataAnnotations;
 using System.Runtime.CompilerServices;
 
@@ -30,6 +31,7 @@ namespace System.Events;
 /// Predefined statuses include ACTIVE, PENDING, PROCESSING, DELETED, ACCEPTED, SUSPENDED, ONERROR, PUBLISHED, and
 /// DUPLICATE.</remarks>
 [PrimitiveJsonConverter<EventStatus, string>]
+[TypeConverter(typeof(PrimitiveTypeConverter<EventStatus, string>))]
 #pragma warning disable CA1036 // Override methods on comparable types
 public readonly record struct EventStatus : IPrimitive<EventStatus, string>
 #pragma warning restore CA1036 // Override methods on comparable types
@@ -46,6 +48,24 @@ public readonly record struct EventStatus : IPrimitive<EventStatus, string>
     public string Value { get; }
 
     private EventStatus(string value) => Value = value;
+    /// <inheritdoc/>
+    public static bool TryParse(string? s, IFormatProvider? provider, out EventStatus result)
+    {
+        result = default;
+        if (string.IsNullOrWhiteSpace(s))
+        {
+            return false;
+        }
+        try
+        {
+            result = Create(s);
+            return true;
+        }
+        catch (ValidationException)
+        {
+            return false;
+        }
+    }
 
     /// <inheritdoc/>
     public override string ToString() => Value;

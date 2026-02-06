@@ -1,8 +1,10 @@
-﻿using System.ComponentModel.DataAnnotations;
+﻿using System.ComponentModel;
+using System.ComponentModel.DataAnnotations;
 
 namespace Xpandables.Net.SampleApi.EnumerationTypes;
 
 [PrimitiveJsonConverter<AccountType, string>]
+[TypeConverter(typeof(PrimitiveTypeConverter<AccountType, string>))]
 public readonly record struct AccountType : IPrimitive<AccountType, string>
 {
     public static readonly AccountType Savings = new("Savings");
@@ -18,7 +20,23 @@ public readonly record struct AccountType : IPrimitive<AccountType, string>
         ArgumentNullException.ThrowIfNull(value);
         return Create(value);
     }
-
+    public static bool TryParse(string? s, IFormatProvider? provider, out AccountType result)
+    {
+        result = default;
+        if (string.IsNullOrWhiteSpace(s))
+        {
+            return false;
+        }
+        try
+        {
+            result = Create(s);
+            return true;
+        }
+        catch (ValidationException)
+        {
+            return false;
+        }
+    }
     public bool Equals(AccountType other) => Value.Equals(other.Value, StringComparison.Ordinal);
     public override int GetHashCode() => Value.GetHashCode(StringComparison.Ordinal);
     public static AccountType Create(string value)

@@ -56,23 +56,29 @@ public static class DataSpecification
 public readonly record struct DataSpecificationBuilder<TData>
     where TData : class
 {
-    private readonly Expression<Func<TData, bool>>? _predicate;
-    private readonly ImmutableList<IIncludeSpecification<TData>> _includes;
-    private readonly ImmutableList<IOrderSpecification<TData>> _orderBy;
+    private readonly LambdaExpression? _predicate;
+    private readonly ImmutableList<IJoinSpecification> _joins;
+    private readonly ImmutableList<LambdaExpression> _groupBy;
+    private readonly LambdaExpression? _having;
+    private readonly ImmutableList<OrderSpecification> _orderBy;
     private readonly int? _skip;
     private readonly int? _take;
     private readonly bool _isDistinct;
 
     internal DataSpecificationBuilder(
-        Expression<Func<TData, bool>>? predicate = null,
-        ImmutableList<IIncludeSpecification<TData>>? includes = null,
-        ImmutableList<IOrderSpecification<TData>>? orderBy = null,
+        LambdaExpression? predicate = null,
+        ImmutableList<IJoinSpecification>? joins = null,
+        ImmutableList<LambdaExpression>? groupBy = null,
+        LambdaExpression? having = null,
+        ImmutableList<OrderSpecification>? orderBy = null,
         int? skip = null,
         int? take = null,
         bool isDistinct = false)
     {
         _predicate = predicate;
-        _includes = includes ?? [];
+        _joins = joins ?? [];
+        _groupBy = groupBy ?? [];
+        _having = having;
         _orderBy = orderBy ?? [];
         _skip = skip;
         _take = take;
@@ -90,45 +96,71 @@ public readonly record struct DataSpecificationBuilder<TData>
 
         var combined = _predicate is null
             ? predicate
-            : CombinePredicates(_predicate, predicate);
+            : CombinePredicates((Expression<Func<TData, bool>>)_predicate, predicate);
 
-        return new(combined, _includes, _orderBy, _skip, _take, _isDistinct);
+        return new(combined, _joins, _groupBy, _having, _orderBy, _skip, _take, _isDistinct);
     }
 
     /// <summary>
-    /// Adds a navigation property to eagerly load.
+    /// Adds an inner join to the query.
     /// </summary>
-    /// <typeparam name="TProperty">The type of the navigation property.</typeparam>
-    /// <param name="includeExpression">The expression selecting the navigation property.</param>
-    /// <returns>A new builder with the include applied.</returns>
-    public DataSpecificationBuilder<TData> Include<TProperty>(
-        Expression<Func<TData, TProperty>> includeExpression)
+    public DataSpecificationBuilder<TData> InnerJoin<TJoin>(
+        Expression<Func<TData, TJoin, bool>> onExpression,
+        string? tableAlias = null)
+        where TJoin : class
     {
-        ArgumentNullException.ThrowIfNull(includeExpression);
-
-        var include = new IncludeSpecification<TData, TProperty>(includeExpression);
-        return new(_predicate, _includes.Add(include), _orderBy, _skip, _take, _isDistinct);
+        ArgumentNullException.ThrowIfNull(onExpression);
+        var join = new JoinSpecification<TData, TJoin>(SqlJoinType.Inner, onExpression, tableAlias);
+        return new(_predicate, _joins.Add(join), _groupBy, _having, _orderBy, _skip, _take, _isDistinct);
     }
 
     /// <summary>
-    /// Adds a navigation property to eagerly load with nested includes.
+    /// Adds a left join to the query.
     /// </summary>
-    /// <typeparam name="TProperty">The type of the navigation property.</typeparam>
-    /// <param name="includeExpression">The expression selecting the navigation property.</param>
-    /// <param name="thenIncludeBuilder">A function to configure nested includes.</param>
-    /// <returns>A new builder with the include applied.</returns>
-    public DataSpecificationBuilder<TData> Include<TProperty>(
-        Expression<Func<TData, TProperty>> includeExpression,
-        Func<ThenIncludeBuilder<TData, TProperty>, ThenIncludeBuilder<TData, TProperty>> thenIncludeBuilder)
+    public DataSpecificationBuilder<TData> LeftJoin<TJoin>(
+        Expression<Func<TData, TJoin, bool>> onExpression,
+        string? tableAlias = null)
+        where TJoin : class
     {
-        ArgumentNullException.ThrowIfNull(includeExpression);
-        ArgumentNullException.ThrowIfNull(thenIncludeBuilder);
+        ArgumentNullException.ThrowIfNull(onExpression);
+        var join = new JoinSpecification<TData, TJoin>(SqlJoinType.Left, onExpression, tableAlias);
+        return new(_predicate, _joins.Add(join), _groupBy, _having, _orderBy, _skip, _take, _isDistinct);
+    }
 
-        var builder = new ThenIncludeBuilder<TData, TProperty>();
-        builder = thenIncludeBuilder(builder);
+    /// <summary>
+    /// Adds a right join to the query.
+    /// </summary>
+    public DataSpecificationBuilder<TData> RightJoin<TJoin>(
+        Expression<Func<TData, TJoin, bool>> onExpression,
+        string? tableAlias = null)
+        where TJoin : class
+    {
+        ArgumentNullException.ThrowIfNull(onExpression);
+        var join = new JoinSpecification<TData, TJoin>(SqlJoinType.Right, onExpression, tableAlias);
+        return new(_predicate, _joins.Add(join), _groupBy, _having, _orderBy, _skip, _take, _isDistinct);
+    }
 
-        var include = new IncludeSpecification<TData, TProperty>(includeExpression, builder.Build());
-        return new(_predicate, _includes.Add(include), _orderBy, _skip, _take, _isDistinct);
+    /// <summary>
+    /// Adds a full outer join to the query.
+    /// </summary>
+    public DataSpecificationBuilder<TData> FullJoin<TJoin>(
+        Expression<Func<TData, TJoin, bool>> onExpression,
+        string? tableAlias = null)
+        where TJoin : class
+    {
+        ArgumentNullException.ThrowIfNull(onExpression);
+        var join = new JoinSpecification<TData, TJoin>(SqlJoinType.Full, onExpression, tableAlias);
+        return new(_predicate, _joins.Add(join), _groupBy, _having, _orderBy, _skip, _take, _isDistinct);
+    }
+
+    /// <summary>
+    /// Adds a cross join to the query.
+    /// </summary>
+    public DataSpecificationBuilder<TData> CrossJoin<TJoin>(string? tableAlias = null)
+        where TJoin : class
+    {
+        var join = new JoinSpecification<TData, TJoin>(SqlJoinType.Cross, null, tableAlias);
+        return new(_predicate, _joins.Add(join), _groupBy, _having, _orderBy, _skip, _take, _isDistinct);
     }
 
     /// <summary>
@@ -141,8 +173,20 @@ public readonly record struct DataSpecificationBuilder<TData>
     {
         ArgumentNullException.ThrowIfNull(keySelector);
 
-        var order = new OrderSpecification<TData, TKey>(keySelector, Descending: false);
-        return new(_predicate, _includes, _orderBy.Add(order), _skip, _take, _isDistinct);
+        var order = new OrderSpecification(keySelector, Descending: false);
+        return new(_predicate, _joins, _groupBy, _having, _orderBy.Add(order), _skip, _take, _isDistinct);
+    }
+
+    /// <summary>
+    /// Adds ascending ordering by the specified property from a joined entity.
+    /// </summary>
+    public DataSpecificationBuilder<TData> OrderBy<TJoin, TKey>(Expression<Func<TData, TJoin, TKey>> keySelector)
+        where TJoin : class
+    {
+        ArgumentNullException.ThrowIfNull(keySelector);
+
+        var order = new OrderSpecification(keySelector, Descending: false);
+        return new(_predicate, _joins, _groupBy, _having, _orderBy.Add(order), _skip, _take, _isDistinct);
     }
 
     /// <summary>
@@ -155,8 +199,20 @@ public readonly record struct DataSpecificationBuilder<TData>
     {
         ArgumentNullException.ThrowIfNull(keySelector);
 
-        var order = new OrderSpecification<TData, TKey>(keySelector, Descending: true);
-        return new(_predicate, _includes, _orderBy.Add(order), _skip, _take, _isDistinct);
+        var order = new OrderSpecification(keySelector, Descending: true);
+        return new(_predicate, _joins, _groupBy, _having, _orderBy.Add(order), _skip, _take, _isDistinct);
+    }
+
+    /// <summary>
+    /// Adds descending ordering by the specified property from a joined entity.
+    /// </summary>
+    public DataSpecificationBuilder<TData> OrderByDescending<TJoin, TKey>(Expression<Func<TData, TJoin, TKey>> keySelector)
+        where TJoin : class
+    {
+        ArgumentNullException.ThrowIfNull(keySelector);
+
+        var order = new OrderSpecification(keySelector, Descending: true);
+        return new(_predicate, _joins, _groupBy, _having, _orderBy.Add(order), _skip, _take, _isDistinct);
     }
 
     /// <summary>
@@ -185,7 +241,7 @@ public readonly record struct DataSpecificationBuilder<TData>
     public DataSpecificationBuilder<TData> Skip(int count)
     {
         ArgumentOutOfRangeException.ThrowIfNegative(count);
-        return new(_predicate, _includes, _orderBy, count, _take, _isDistinct);
+        return new(_predicate, _joins, _groupBy, _having, _orderBy, count, _take, _isDistinct);
     }
 
     /// <summary>
@@ -196,7 +252,7 @@ public readonly record struct DataSpecificationBuilder<TData>
     public DataSpecificationBuilder<TData> Take(int count)
     {
         ArgumentOutOfRangeException.ThrowIfNegative(count);
-        return new(_predicate, _includes, _orderBy, _skip, count, _isDistinct);
+        return new(_predicate, _joins, _groupBy, _having, _orderBy, _skip, count, _isDistinct);
     }
 
     /// <summary>
@@ -210,7 +266,7 @@ public readonly record struct DataSpecificationBuilder<TData>
         ArgumentOutOfRangeException.ThrowIfNegative(pageIndex);
         ArgumentOutOfRangeException.ThrowIfLessThan(pageSize, 1);
 
-        return new(_predicate, _includes, _orderBy, pageIndex * pageSize, pageSize, _isDistinct);
+        return new(_predicate, _joins, _groupBy, _having, _orderBy, pageIndex * pageSize, pageSize, _isDistinct);
     }
 
     /// <summary>
@@ -218,7 +274,45 @@ public readonly record struct DataSpecificationBuilder<TData>
     /// </summary>
     /// <returns>A new builder with distinct applied.</returns>
     public DataSpecificationBuilder<TData> Distinct()
-        => new(_predicate, _includes, _orderBy, _skip, _take, isDistinct: true);
+        => new(_predicate, _joins, _groupBy, _having, _orderBy, _skip, _take, isDistinct: true);
+
+    /// <summary>
+    /// Adds a grouping expression to the query.
+    /// </summary>
+    public DataSpecificationBuilder<TData> GroupBy<TKey>(Expression<Func<TData, TKey>> keySelector)
+    {
+        ArgumentNullException.ThrowIfNull(keySelector);
+        return new(_predicate, _joins, _groupBy.Add(keySelector), _having, _orderBy, _skip, _take, _isDistinct);
+    }
+
+    /// <summary>
+    /// Adds a grouping expression to the query with a joined entity.
+    /// </summary>
+    public DataSpecificationBuilder<TData> GroupBy<TJoin, TKey>(Expression<Func<TData, TJoin, TKey>> keySelector)
+        where TJoin : class
+    {
+        ArgumentNullException.ThrowIfNull(keySelector);
+        return new(_predicate, _joins, _groupBy.Add(keySelector), _having, _orderBy, _skip, _take, _isDistinct);
+    }
+
+    /// <summary>
+    /// Adds a HAVING predicate applied after grouping.
+    /// </summary>
+    public DataSpecificationBuilder<TData> Having(Expression<Func<TData, bool>> predicate)
+    {
+        ArgumentNullException.ThrowIfNull(predicate);
+        return new(_predicate, _joins, _groupBy, predicate, _orderBy, _skip, _take, _isDistinct);
+    }
+
+    /// <summary>
+    /// Adds a HAVING predicate applied after grouping with a joined entity.
+    /// </summary>
+    public DataSpecificationBuilder<TData> Having<TJoin>(Expression<Func<TData, TJoin, bool>> predicate)
+        where TJoin : class
+    {
+        ArgumentNullException.ThrowIfNull(predicate);
+        return new(_predicate, _joins, _groupBy, predicate, _orderBy, _skip, _take, _isDistinct);
+    }
 
     /// <summary>
     /// Projects the entities to the specified result type and builds the specification.
@@ -233,7 +327,74 @@ public readonly record struct DataSpecificationBuilder<TData>
         return new(
             _predicate,
             selector,
-            _includes,
+            _joins,
+            _groupBy,
+            _having,
+            _orderBy,
+            _skip,
+            _take,
+            _isDistinct);
+    }
+
+    /// <summary>
+    /// Projects the entities and a joined entity to the specified result type.
+    /// </summary>
+    public DataSpecification<TData, TResult> Select<TJoin, TResult>(Expression<Func<TData, TJoin, TResult>> selector)
+        where TJoin : class
+    {
+        ArgumentNullException.ThrowIfNull(selector);
+
+        return new(
+            _predicate,
+            selector,
+            _joins,
+            _groupBy,
+            _having,
+            _orderBy,
+            _skip,
+            _take,
+            _isDistinct);
+    }
+
+    /// <summary>
+    /// Projects the entities and joined entities to the specified result type.
+    /// </summary>
+    public DataSpecification<TData, TResult> Select<TJoin1, TJoin2, TResult>(
+        Expression<Func<TData, TJoin1, TJoin2, TResult>> selector)
+        where TJoin1 : class
+        where TJoin2 : class
+    {
+        ArgumentNullException.ThrowIfNull(selector);
+
+        return new(
+            _predicate,
+            selector,
+            _joins,
+            _groupBy,
+            _having,
+            _orderBy,
+            _skip,
+            _take,
+            _isDistinct);
+    }
+
+    /// <summary>
+    /// Projects the entities and joined entities to the specified result type.
+    /// </summary>
+    public DataSpecification<TData, TResult> Select<TJoin1, TJoin2, TJoin3, TResult>(
+        Expression<Func<TData, TJoin1, TJoin2, TJoin3, TResult>> selector)
+        where TJoin1 : class
+        where TJoin2 : class
+        where TJoin3 : class
+    {
+        ArgumentNullException.ThrowIfNull(selector);
+
+        return new(
+            _predicate,
+            selector,
+            _joins,
+            _groupBy,
+            _having,
             _orderBy,
             _skip,
             _take,
@@ -272,39 +433,6 @@ public readonly record struct DataSpecificationBuilder<TData>
 }
 
 /// <summary>
-/// A fluent builder for configuring nested includes (ThenInclude).
-/// </summary>
-/// <typeparam name="TData">The type of the root data.</typeparam>
-/// <typeparam name="TPreviousProperty">The type of the previous navigation property.</typeparam>
-public readonly record struct ThenIncludeBuilder<TData, TPreviousProperty>
-    where TData : class
-{
-    private readonly ImmutableList<IThenIncludeSpecification> _thenIncludes;
-
-    internal ThenIncludeBuilder(ImmutableList<IThenIncludeSpecification>? thenIncludes = null)
-    {
-        _thenIncludes = thenIncludes ?? [];
-    }
-
-    /// <summary>
-    /// Adds a nested navigation property to eagerly load.
-    /// </summary>
-    /// <typeparam name="TProperty">The type of the nested navigation property.</typeparam>
-    /// <param name="thenIncludeExpression">The expression selecting the nested navigation property.</param>
-    /// <returns>A new builder with the nested include applied.</returns>
-    public ThenIncludeBuilder<TData, TProperty> ThenInclude<TProperty>(
-        Expression<Func<TPreviousProperty, TProperty>> thenIncludeExpression)
-    {
-        ArgumentNullException.ThrowIfNull(thenIncludeExpression);
-
-        var thenInclude = new ThenIncludeSpecification<TPreviousProperty, TProperty>(thenIncludeExpression);
-        return new(_thenIncludes.Add(thenInclude));
-    }
-
-    internal ImmutableList<IThenIncludeSpecification> Build() => _thenIncludes;
-}
-
-/// <summary>
 /// An immutable query specification that defines how to query entities.
 /// </summary>
 /// <typeparam name="TData">The type of data to query.</typeparam>
@@ -313,16 +441,22 @@ public readonly record struct DataSpecification<TData, TResult> : IDataSpecifica
     where TData : class
 {
     /// <inheritdoc />
-    public Expression<Func<TData, bool>>? Predicate { get; }
+    public LambdaExpression? Predicate { get; }
 
     /// <inheritdoc />
-    public Expression<Func<TData, TResult>> Selector { get; }
+    public LambdaExpression Selector { get; }
 
     /// <inheritdoc />
-    public IReadOnlyList<IIncludeSpecification<TData>> Includes { get; }
+    public IReadOnlyList<IJoinSpecification> Joins { get; }
 
     /// <inheritdoc />
-    public IReadOnlyList<IOrderSpecification<TData>> OrderBy { get; }
+    public IReadOnlyList<LambdaExpression> GroupBy { get; }
+
+    /// <inheritdoc />
+    public LambdaExpression? Having { get; }
+
+    /// <inheritdoc />
+    public IReadOnlyList<OrderSpecification> OrderBy { get; }
 
     /// <inheritdoc />
     public int? Skip { get; }
@@ -334,17 +468,21 @@ public readonly record struct DataSpecification<TData, TResult> : IDataSpecifica
     public bool IsDistinct { get; }
 
     internal DataSpecification(
-        Expression<Func<TData, bool>>? predicate,
-        Expression<Func<TData, TResult>> selector,
-        IReadOnlyList<IIncludeSpecification<TData>> includes,
-        IReadOnlyList<IOrderSpecification<TData>> orderBy,
+        LambdaExpression? predicate,
+        LambdaExpression selector,
+        IReadOnlyList<IJoinSpecification> joins,
+        IReadOnlyList<LambdaExpression> groupBy,
+        LambdaExpression? having,
+        IReadOnlyList<OrderSpecification> orderBy,
         int? skip,
         int? take,
         bool isDistinct)
     {
         Predicate = predicate;
         Selector = selector ?? throw new ArgumentNullException(nameof(selector));
-        Includes = includes ?? [];
+        Joins = joins ?? [];
+        GroupBy = groupBy ?? [];
+        Having = having;
         OrderBy = orderBy ?? [];
         Skip = skip;
         Take = take;
@@ -353,53 +491,15 @@ public readonly record struct DataSpecification<TData, TResult> : IDataSpecifica
 }
 
 /// <summary>
-/// Represents an include specification for a specific navigation property.
+/// Represents a join specification for a SQL query.
 /// </summary>
-internal sealed record IncludeSpecification<TData, TProperty> : IIncludeSpecification<TData>
-    where TData : class
+internal sealed record JoinSpecification<TLeft, TRight>(
+    SqlJoinType JoinType,
+    LambdaExpression? OnExpression,
+    string? TableAlias) : IJoinSpecification
+    where TLeft : class
+    where TRight : class
 {
-    public LambdaExpression IncludeExpression { get; }
-    public IReadOnlyList<IThenIncludeSpecification> ThenIncludes { get; }
-
-    internal IncludeSpecification(
-        Expression<Func<TData, TProperty>> includeExpression,
-        IReadOnlyList<IThenIncludeSpecification>? thenIncludes = null)
-    {
-        IncludeExpression = includeExpression;
-        ThenIncludes = thenIncludes ?? [];
-    }
-}
-
-/// <summary>
-/// Represents a then-include specification for a nested navigation property.
-/// </summary>
-internal sealed record ThenIncludeSpecification<TPreviousProperty, TProperty> : IThenIncludeSpecification
-{
-    public LambdaExpression ThenIncludeExpression { get; }
-
-    internal ThenIncludeSpecification(Expression<Func<TPreviousProperty, TProperty>> expression)
-    {
-        ThenIncludeExpression = expression;
-    }
-}
-
-/// <summary>
-/// Represents an ordering specification for a specific property.
-/// </summary>
-internal sealed record OrderSpecification<TData, TKey>(
-    Expression<Func<TData, TKey>> KeySelector,
-    bool Descending) : IOrderSpecification<TData>
-    where TData : class
-{
-    /// <inheritdoc />
-    public IOrderedQueryable<TData> ApplyFirst(IQueryable<TData> query) =>
-        Descending
-            ? query.OrderByDescending(KeySelector)
-            : query.OrderBy(KeySelector);
-
-    /// <inheritdoc />
-    public IOrderedQueryable<TData> ApplySubsequent(IOrderedQueryable<TData> query) =>
-        Descending
-            ? query.ThenByDescending(KeySelector)
-            : query.ThenBy(KeySelector);
+    public Type LeftType => typeof(TLeft);
+    public Type RightType => typeof(TRight);
 }

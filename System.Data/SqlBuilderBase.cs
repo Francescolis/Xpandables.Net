@@ -121,8 +121,10 @@ public abstract class SqlBuilderBase : ISqlBuilder
         var sql = new StringBuilder();
 
         var tableName = GetTableName<TEntity>();
-        var columnMappings = GetColumnMappings<TEntity>();
-        var columns = BuildSelectColumns(specification.Selector, columnMappings);
+        var baseColumns = GetColumnMappings<TEntity>();
+        var bindings = BuildTableBindings<TEntity, TResult>(specification, baseColumns);
+        var selectorParameters = BuildParameterBindings(specification.Selector, bindings);
+        var columns = BuildSelectColumns(specification.Selector, selectorParameters, parameters);
 
         // SELECT
         sql.Append("SELECT ");
@@ -137,20 +139,44 @@ public abstract class SqlBuilderBase : ISqlBuilder
         sql.Append(columns);
         sql.Append(" FROM ");
         sql.Append(tableName);
+        sql.Append(' ');
+        sql.Append(bindings[0].Alias);
+
+        AppendJoins(sql, specification.Joins, bindings, parameters);
 
         // WHERE
         if (specification.Predicate != null)
         {
             sql.Append(" WHERE ");
-            var whereClause = TranslateExpression(specification.Predicate.Body, columnMappings, parameters);
+            var predicateBindings = BuildParameterBindings(specification.Predicate, bindings);
+            var whereClause = TranslateExpression(specification.Predicate.Body, predicateBindings, parameters);
             sql.Append(whereClause);
+        }
+
+        if (specification.GroupBy.Count > 0)
+        {
+            sql.Append(" GROUP BY ");
+            var groupClauses = specification.GroupBy.Select(group =>
+            {
+                var groupBindings = BuildParameterBindings(group, bindings);
+                return TranslateExpression(group.Body, groupBindings, parameters);
+            });
+            sql.Append(string.Join(", ", groupClauses));
+        }
+
+        if (specification.Having != null)
+        {
+            sql.Append(" HAVING ");
+            var havingBindings = BuildParameterBindings(specification.Having, bindings);
+            var havingClause = TranslateExpression(specification.Having.Body, havingBindings, parameters);
+            sql.Append(havingClause);
         }
 
         // ORDER BY
         if (specification.OrderBy.Count > 0)
         {
             sql.Append(" ORDER BY ");
-            var orderClauses = specification.OrderBy.Select(o => BuildOrderClause(o, columnMappings));
+            var orderClauses = specification.OrderBy.Select(o => BuildOrderClause(o, bindings, parameters));
             sql.Append(string.Join(", ", orderClauses));
         }
 
@@ -172,16 +198,54 @@ public abstract class SqlBuilderBase : ISqlBuilder
         var sql = new StringBuilder();
 
         var tableName = GetTableName<TEntity>();
-        var columnMappings = GetColumnMappings<TEntity>();
+        var baseColumns = GetColumnMappings<TEntity>();
+        var bindings = BuildTableBindings<TEntity, TResult>(specification, baseColumns);
 
-        sql.Append("SELECT COUNT(*) FROM ");
+        var requiresSubquery = specification.GroupBy.Count > 0 || specification.IsDistinct;
+
+        if (requiresSubquery)
+        {
+            sql.Append("SELECT COUNT(*) FROM (");
+        }
+
+        sql.Append("SELECT ");
+        sql.Append(requiresSubquery ? "1" : "COUNT(*)");
+        sql.Append(" FROM ");
         sql.Append(tableName);
+        sql.Append(' ');
+        sql.Append(bindings[0].Alias);
+        AppendJoins(sql, specification.Joins, bindings, parameters);
 
         if (specification.Predicate != null)
         {
             sql.Append(" WHERE ");
-            var whereClause = TranslateExpression(specification.Predicate.Body, columnMappings, parameters);
+            var predicateBindings = BuildParameterBindings(specification.Predicate, bindings);
+            var whereClause = TranslateExpression(specification.Predicate.Body, predicateBindings, parameters);
             sql.Append(whereClause);
+        }
+
+        if (specification.GroupBy.Count > 0)
+        {
+            sql.Append(" GROUP BY ");
+            var groupClauses = specification.GroupBy.Select(group =>
+            {
+                var groupBindings = BuildParameterBindings(group, bindings);
+                return TranslateExpression(group.Body, groupBindings, parameters);
+            });
+            sql.Append(string.Join(", ", groupClauses));
+        }
+
+        if (specification.Having != null)
+        {
+            sql.Append(" HAVING ");
+            var havingBindings = BuildParameterBindings(specification.Having, bindings);
+            var havingClause = TranslateExpression(specification.Having.Body, havingBindings, parameters);
+            sql.Append(havingClause);
+        }
+
+        if (requiresSubquery)
+        {
+            sql.Append(") AS CountQuery");
         }
 
         return new SqlQueryResult(sql.ToString(), parameters);
@@ -383,76 +447,269 @@ public abstract class SqlBuilderBase : ISqlBuilder
     protected abstract void AppendPaging(StringBuilder sql, int? skip, int? take);
 
     /// <summary>
-    /// Builds the SELECT column list from a selector expression.
+    /// Represents a binding between a CLR type and a SQL table alias.
     /// </summary>
-    protected virtual string BuildSelectColumns<TEntity, TResult>(
-        Expression<Func<TEntity, TResult>> selector,
-        IReadOnlyDictionary<string, string> columnMappings)
+    protected sealed record TableBinding
+    {
+        /// <summary>
+        /// Initializes a new instance of the <see cref="TableBinding"/> record.
+        /// </summary>
+        public TableBinding(Type entityType, string alias, IReadOnlyDictionary<string, string> columns)
+        {
+            EntityType = entityType;
+            Alias = alias;
+            Columns = columns;
+        }
+
+        /// <summary>
+        /// Gets the CLR type represented by the binding.
+        /// </summary>
+        public Type EntityType { get; }
+
+        /// <summary>
+        /// Gets the SQL alias for the bound table.
+        /// </summary>
+        public string Alias { get; }
+
+        /// <summary>
+        /// Gets the column mappings for the bound type.
+        /// </summary>
+        public IReadOnlyDictionary<string, string> Columns { get; }
+    }
+
+    /// <summary>
+    /// Builds table bindings for the base entity and joined entities.
+    /// </summary>
+    protected virtual List<TableBinding> BuildTableBindings<TEntity, TResult>(
+        IDataSpecification<TEntity, TResult> specification,
+        IReadOnlyDictionary<string, string> baseColumns)
         where TEntity : class
     {
-        // If selector is identity (e => e), select all columns
-        if (selector.Body is ParameterExpression)
+        var bindings = new List<TableBinding>
         {
-            return string.Join(", ", columnMappings.Values.Select(QuoteIdentifier));
+            new(typeof(TEntity), "t0", baseColumns)
+        };
+
+        for (var i = 0; i < specification.Joins.Count; i++)
+        {
+            var join = specification.Joins[i];
+            var alias = join.TableAlias ?? $"t{i + 1}";
+            var columns = GetColumnMappingsForType(join.RightType);
+            bindings.Add(new TableBinding(join.RightType, alias, columns));
         }
 
-        // If selector is a member access (e => e.Property), select that column
+        return bindings;
+    }
+
+    /// <summary>
+    /// Maps lambda parameters to table bindings.
+    /// </summary>
+    protected virtual IReadOnlyDictionary<ParameterExpression, TableBinding> BuildParameterBindings(
+        LambdaExpression expression,
+        IReadOnlyList<TableBinding> bindings,
+        IJoinSpecification? join = null)
+    {
+        var map = new Dictionary<ParameterExpression, TableBinding>();
+
+        if (join != null && expression.Parameters.Count == 2)
+        {
+            var leftBinding = bindings.FirstOrDefault(b => b.EntityType == join.LeftType);
+            var rightBinding = bindings.FirstOrDefault(b => b.EntityType == join.RightType);
+
+            if (leftBinding != null && rightBinding != null)
+            {
+                map[expression.Parameters[0]] = leftBinding;
+                map[expression.Parameters[1]] = rightBinding;
+                return map;
+            }
+        }
+
+        if (expression.Parameters.Count > bindings.Count)
+            throw new InvalidOperationException("Not enough bindings available to map expression parameters.");
+
+        for (var i = 0; i < expression.Parameters.Count; i++)
+        {
+            map[expression.Parameters[i]] = bindings[i];
+        }
+
+        return map;
+    }
+
+    /// <summary>
+    /// Appends join clauses to the SQL statement.
+    /// </summary>
+    protected virtual void AppendJoins(
+        StringBuilder sql,
+        IReadOnlyList<IJoinSpecification> joins,
+        IReadOnlyList<TableBinding> bindings,
+        List<SqlParameter> parameters)
+    {
+        for (var i = 0; i < joins.Count; i++)
+        {
+            var join = joins[i];
+            var binding = bindings[i + 1];
+            var joinKeyword = join.JoinType switch
+            {
+                SqlJoinType.Inner => "INNER JOIN",
+                SqlJoinType.Left => "LEFT JOIN",
+                SqlJoinType.Right => "RIGHT JOIN",
+                SqlJoinType.Full => "FULL OUTER JOIN",
+                SqlJoinType.Cross => "CROSS JOIN",
+                _ => throw new NotSupportedException($"Join type '{join.JoinType}' is not supported.")
+            };
+
+            sql.Append(' ');
+            sql.Append(joinKeyword);
+            sql.Append(' ');
+            sql.Append(GetTableNameForType(binding.EntityType));
+            sql.Append(' ');
+            sql.Append(binding.Alias);
+
+            if (join.JoinType != SqlJoinType.Cross)
+            {
+                if (join.OnExpression is null)
+                    throw new InvalidOperationException("Join predicate is required for non-cross joins.");
+
+                var onBindings = BuildParameterBindings(join.OnExpression, bindings, join);
+                var onClause = TranslateExpression(join.OnExpression.Body, onBindings, parameters);
+                sql.Append(" ON ");
+                sql.Append(onClause);
+            }
+        }
+    }
+
+    /// <summary>
+    /// Resolves a member expression to a qualified SQL column.
+    /// </summary>
+    protected virtual string ResolveMemberColumn(
+        MemberExpression member,
+        IReadOnlyDictionary<ParameterExpression, TableBinding> bindings)
+    {
+        if (member.Expression is not ParameterExpression parameter)
+            throw new InvalidOperationException("Member expressions must target a query parameter.");
+
+        if (!bindings.TryGetValue(parameter, out var binding))
+            throw new InvalidOperationException("Parameter binding could not be resolved.");
+
+        var propertyName = member.Member.Name;
+        if (!binding.Columns.TryGetValue(propertyName, out var columnName))
+            throw new InvalidOperationException($"Property '{propertyName}' is not mapped to a column.");
+
+        return $"{binding.Alias}.{QuoteIdentifier(columnName)}";
+    }
+
+    /// <summary>
+    /// Builds a SELECT projection expression with an optional alias.
+    /// </summary>
+    protected virtual string BuildSelectColumnExpression(
+        Expression expression,
+        IReadOnlyDictionary<ParameterExpression, TableBinding> bindings,
+        List<SqlParameter> parameters,
+        string? columnAlias)
+    {
+        var column = expression is MemberExpression member
+            ? ResolveMemberColumn(member, bindings)
+            : TranslateExpression(expression, bindings, parameters);
+
+        if (!string.IsNullOrWhiteSpace(columnAlias))
+            return $"{column} AS {QuoteIdentifier(columnAlias)}";
+
+        return column;
+    }
+
+    /// <summary>
+    /// Resolves a table name for a runtime type.
+    /// </summary>
+    [UnconditionalSuppressMessage("Trimming", "IL2075:Requires unreferenced code",
+        Justification = "Runtime join binding requires reflection to resolve table names.")]
+    [UnconditionalSuppressMessage("Trimming", "IL2060:Requires unreferenced code",
+        Justification = "Runtime join binding requires reflection to resolve table names.")]
+    protected virtual string GetTableNameForType(Type entityType)
+    {
+        var method = GetType().GetMethod(nameof(GetTableName), BindingFlags.Public | BindingFlags.Instance);
+        var generic = method?.MakeGenericMethod(entityType)
+            ?? throw new InvalidOperationException("Table name resolution failed.");
+        return (string)generic.Invoke(this, null)!;
+    }
+
+    /// <summary>
+    /// Resolves column mappings for a runtime type.
+    /// </summary>
+    [UnconditionalSuppressMessage("Trimming", "IL2075:Requires unreferenced code",
+        Justification = "Runtime join binding requires reflection to resolve column mappings.")]
+    [UnconditionalSuppressMessage("Trimming", "IL2060:Requires unreferenced code",
+        Justification = "Runtime join binding requires reflection to resolve column mappings.")]
+    protected virtual IReadOnlyDictionary<string, string> GetColumnMappingsForType(Type entityType)
+    {
+        var method = GetType().GetMethod(nameof(GetColumnMappings), BindingFlags.Public | BindingFlags.Instance);
+        var generic = method?.MakeGenericMethod(entityType)
+            ?? throw new InvalidOperationException("Column mapping resolution failed.");
+        return (IReadOnlyDictionary<string, string>)generic.Invoke(this, null)!;
+    }
+
+    /// <summary>
+    /// Builds the SELECT column list from a selector expression.
+    /// </summary>
+    protected virtual string BuildSelectColumns(
+        LambdaExpression selector,
+        IReadOnlyDictionary<ParameterExpression, TableBinding> bindings,
+        List<SqlParameter> parameters)
+    {
+        if (selector.Body is ParameterExpression parameter && bindings.TryGetValue(parameter, out var binding))
+        {
+            return string.Join(", ", binding.Columns.Values.Select(column =>
+                $"{binding.Alias}.{QuoteIdentifier(column)}"));
+        }
+
         if (selector.Body is MemberExpression memberExpr)
         {
-            var propertyName = memberExpr.Member.Name;
-            if (columnMappings.TryGetValue(propertyName, out var columnName))
-                return QuoteIdentifier(columnName);
+            return ResolveMemberColumn(memberExpr, bindings);
         }
 
-        // If selector is a new expression (e => new { e.A, e.B }), select those columns
         if (selector.Body is NewExpression newExpr)
         {
             var selectedColumns = new List<string>();
-            foreach (var arg in newExpr.Arguments)
+            for (var i = 0; i < newExpr.Arguments.Count; i++)
             {
-                if (arg is MemberExpression argMember)
-                {
-                    var propertyName = argMember.Member.Name;
-                    if (columnMappings.TryGetValue(propertyName, out var columnName))
-                        selectedColumns.Add(QuoteIdentifier(columnName));
-                }
+                var arg = newExpr.Arguments[i];
+                var alias = newExpr.Members?[i].Name;
+                selectedColumns.Add(BuildSelectColumnExpression(arg, bindings, parameters, alias));
             }
             if (selectedColumns.Count > 0)
                 return string.Join(", ", selectedColumns);
         }
 
-        // Default: select all columns
-        return string.Join(", ", columnMappings.Values.Select(QuoteIdentifier));
+        if (selector.Body is MemberInitExpression memberInit)
+        {
+            var selectedColumns = new List<string>();
+            foreach (var bindingInfo in memberInit.Bindings.OfType<MemberAssignment>())
+            {
+                selectedColumns.Add(BuildSelectColumnExpression(bindingInfo.Expression, bindings, parameters, bindingInfo.Member.Name));
+            }
+            if (selectedColumns.Count > 0)
+                return string.Join(", ", selectedColumns);
+        }
+
+        var expressionColumn = TranslateExpression(selector.Body, bindings, parameters);
+        return expressionColumn;
     }
 
     /// <summary>
     /// Builds an ORDER BY clause from an order specification.
     /// </summary>
-    [UnconditionalSuppressMessage("Trimming", "IL2075:Value passed to parameter is not compatible with target parameter",
-        Justification = "IOrderSpecification implementations are expected to have KeySelector property.")]
-    protected virtual string BuildOrderClause<TEntity>(
-        IOrderSpecification<TEntity> orderSpec,
-        IReadOnlyDictionary<string, string> columnMappings)
-        where TEntity : class
+    protected virtual string BuildOrderClause(
+        OrderSpecification orderSpec,
+        IReadOnlyList<TableBinding> bindings,
+        List<SqlParameter> parameters)
     {
-        // Use reflection to get the key selector from the order specification
-        var orderSpecType = orderSpec.GetType();
-        var keySelectorProp = orderSpecType.GetProperty("KeySelector");
+        var bindingMap = BuildParameterBindings(orderSpec.KeySelector, bindings);
+        var orderExpression = orderSpec.KeySelector.Body;
+        var column = orderExpression is MemberExpression member
+            ? ResolveMemberColumn(member, bindingMap)
+            : TranslateExpression(orderExpression, bindingMap, parameters);
 
-        if (keySelectorProp?.GetValue(orderSpec) is LambdaExpression keySelector)
-        {
-            if (keySelector.Body is MemberExpression memberExpr)
-            {
-                var propertyName = memberExpr.Member.Name;
-                if (columnMappings.TryGetValue(propertyName, out var columnName))
-                {
-                    var direction = orderSpec.Descending ? "DESC" : "ASC";
-                    return $"{QuoteIdentifier(columnName)} {direction}";
-                }
-            }
-        }
-
-        throw new NotSupportedException($"Unable to translate order specification: {orderSpec}");
+        var direction = orderSpec.Descending ? "DESC" : "ASC";
+        return $"{column} {direction}";
     }
 
     /// <summary>
@@ -492,6 +749,209 @@ public abstract class SqlBuilderBase : ISqlBuilder
             var translatedValue = TranslateExpression(valueExpr, columnMappings, parameters);
             return $"{quotedColumn} = {translatedValue}";
         }
+    }
+
+    /// <summary>
+    /// Translates a LINQ expression to SQL using table bindings.
+    /// </summary>
+    protected virtual string TranslateExpression(
+        Expression expression,
+        IReadOnlyDictionary<ParameterExpression, TableBinding> bindings,
+        List<SqlParameter> parameters)
+    {
+        return expression switch
+        {
+            BinaryExpression binary => TranslateBinaryExpression(binary, bindings, parameters),
+            UnaryExpression unary => TranslateUnaryExpression(unary, bindings, parameters),
+            MemberExpression member => TranslateMemberExpression(member, bindings, parameters),
+            ConstantExpression constant => TranslateConstantExpression(constant, parameters),
+            MethodCallExpression methodCall => TranslateMethodCallExpression(methodCall, bindings, parameters),
+            ParameterExpression => throw new NotSupportedException("Parameter expressions must be accessed through member expressions."),
+            _ => throw new NotSupportedException($"Expression type '{expression.NodeType}' is not supported.")
+        };
+    }
+
+    /// <summary>
+    /// Translates a binary expression using table bindings.
+    /// </summary>
+    protected virtual string TranslateBinaryExpression(
+        BinaryExpression binary,
+        IReadOnlyDictionary<ParameterExpression, TableBinding> bindings,
+        List<SqlParameter> parameters)
+    {
+        var left = TranslateExpression(binary.Left, bindings, parameters);
+        var right = TranslateExpression(binary.Right, bindings, parameters);
+
+        var op = binary.NodeType switch
+        {
+            ExpressionType.Equal => "=",
+            ExpressionType.NotEqual => "<>",
+            ExpressionType.GreaterThan => ">",
+            ExpressionType.GreaterThanOrEqual => ">=",
+            ExpressionType.LessThan => "<",
+            ExpressionType.LessThanOrEqual => "<=",
+            ExpressionType.AndAlso => "AND",
+            ExpressionType.OrElse => "OR",
+            ExpressionType.Add => "+",
+            ExpressionType.Subtract => "-",
+            ExpressionType.Multiply => "*",
+            ExpressionType.Divide => "/",
+            ExpressionType.Modulo => "%",
+            _ => throw new NotSupportedException($"Binary operator '{binary.NodeType}' is not supported.")
+        };
+
+        if (right == "NULL" && op == "=")
+            return $"({left} IS NULL)";
+        if (right == "NULL" && op == "<>")
+            return $"({left} IS NOT NULL)";
+
+        return $"({left} {op} {right})";
+    }
+
+    /// <summary>
+    /// Translates a unary expression using table bindings.
+    /// </summary>
+    protected virtual string TranslateUnaryExpression(
+        UnaryExpression unary,
+        IReadOnlyDictionary<ParameterExpression, TableBinding> bindings,
+        List<SqlParameter> parameters)
+    {
+        var operand = TranslateExpression(unary.Operand, bindings, parameters);
+
+        return unary.NodeType switch
+        {
+            ExpressionType.Not => $"(NOT {operand})",
+            ExpressionType.Convert => operand,
+            ExpressionType.Quote => operand,
+            _ => throw new NotSupportedException($"Unary operator '{unary.NodeType}' is not supported.")
+        };
+    }
+
+    /// <summary>
+    /// Translates a member expression using table bindings.
+    /// </summary>
+    protected virtual string TranslateMemberExpression(
+        MemberExpression member,
+        IReadOnlyDictionary<ParameterExpression, TableBinding> bindings,
+        List<SqlParameter> parameters)
+    {
+        if (member.Expression is ParameterExpression)
+        {
+            return ResolveMemberColumn(member, bindings);
+        }
+
+        var value = ExtractValueFromMemberExpression(member);
+        var paramName = NextParameterName();
+        parameters.Add(new SqlParameter(paramName, value));
+        return $"{ParameterPrefix}{paramName}";
+    }
+
+    /// <summary>
+    /// Translates a method call expression using table bindings.
+    /// </summary>
+    protected virtual string TranslateMethodCallExpression(
+        MethodCallExpression methodCall,
+        IReadOnlyDictionary<ParameterExpression, TableBinding> bindings,
+        List<SqlParameter> parameters)
+    {
+        var methodName = methodCall.Method.Name;
+
+        if (methodName == "Contains" && methodCall.Method.DeclaringType != typeof(string))
+            return TranslateCollectionContains(methodCall, bindings, parameters);
+
+        if (methodCall.Method.DeclaringType == typeof(string))
+        {
+            return methodName switch
+            {
+                "Contains" => TranslateStringContains(methodCall, bindings, parameters),
+                "StartsWith" => TranslateStringStartsWith(methodCall, bindings, parameters),
+                "EndsWith" => TranslateStringEndsWith(methodCall, bindings, parameters),
+                "ToLower" => TranslateStringToLower(methodCall, bindings, parameters),
+                "ToUpper" => TranslateStringToUpper(methodCall, bindings, parameters),
+                _ => throw new NotSupportedException($"String method '{methodName}' is not supported.")
+            };
+        }
+
+        throw new NotSupportedException($"Method '{methodCall.Method.DeclaringType?.Name}.{methodName}' is not supported.");
+    }
+
+    /// <summary>
+    /// Translates a collection Contains method call using table bindings.
+    /// </summary>
+    protected virtual string TranslateCollectionContains(
+        MethodCallExpression methodCall,
+        IReadOnlyDictionary<ParameterExpression, TableBinding> bindings,
+        List<SqlParameter> parameters)
+    {
+        var (collectionExpr, itemExpr) = GetCollectionContainsOperands(methodCall);
+        var unwrappedItem = UnwrapConversion(itemExpr);
+
+        if (!IsEntityMemberExpression(unwrappedItem))
+            throw new NotSupportedException("Collection Contains expects an entity member as the item expression.");
+
+        var column = TranslateExpression(unwrappedItem, bindings, parameters);
+        var values = ExtractCollectionValues(collectionExpr);
+
+        if (values.Count == 0)
+            return "(1 = 0)";
+
+        var placeholders = new List<string>(values.Count);
+        foreach (var value in values)
+        {
+            var paramName = NextParameterName();
+            parameters.Add(new SqlParameter(paramName, value));
+            placeholders.Add($"{ParameterPrefix}{paramName}");
+        }
+
+        return $"({column} IN ({string.Join(", ", placeholders)}))";
+    }
+
+    /// <summary>
+    /// Translates string.Contains using table bindings.
+    /// </summary>
+    protected virtual string TranslateStringContains(
+        MethodCallExpression methodCall,
+        IReadOnlyDictionary<ParameterExpression, TableBinding> bindings,
+        List<SqlParameter> parameters)
+    {
+        var (columnExpr, valueExpr) = GetStringMethodOperands(methodCall);
+        var column = TranslateExpression(columnExpr, bindings, parameters);
+        var value = ExtractConstantValue(valueExpr);
+        var paramName = NextParameterName();
+        parameters.Add(new SqlParameter(paramName, $"%{value}%"));
+        return $"({column} LIKE {ParameterPrefix}{paramName})";
+    }
+
+    /// <summary>
+    /// Translates string.StartsWith using table bindings.
+    /// </summary>
+    protected virtual string TranslateStringStartsWith(
+        MethodCallExpression methodCall,
+        IReadOnlyDictionary<ParameterExpression, TableBinding> bindings,
+        List<SqlParameter> parameters)
+    {
+        var (columnExpr, valueExpr) = GetStringMethodOperands(methodCall);
+        var column = TranslateExpression(columnExpr, bindings, parameters);
+        var value = ExtractConstantValue(valueExpr);
+        var paramName = NextParameterName();
+        parameters.Add(new SqlParameter(paramName, $"{value}%"));
+        return $"({column} LIKE {ParameterPrefix}{paramName})";
+    }
+
+    /// <summary>
+    /// Translates string.EndsWith using table bindings.
+    /// </summary>
+    protected virtual string TranslateStringEndsWith(
+        MethodCallExpression methodCall,
+        IReadOnlyDictionary<ParameterExpression, TableBinding> bindings,
+        List<SqlParameter> parameters)
+    {
+        var (columnExpr, valueExpr) = GetStringMethodOperands(methodCall);
+        var column = TranslateExpression(columnExpr, bindings, parameters);
+        var value = ExtractConstantValue(valueExpr);
+        var paramName = NextParameterName();
+        parameters.Add(new SqlParameter(paramName, $"%{value}"));
+        return $"({column} LIKE {ParameterPrefix}{paramName})";
     }
 
     /// <summary>
@@ -865,6 +1325,30 @@ public abstract class SqlBuilderBase : ISqlBuilder
 
     private static bool IsEntityMemberExpression(Expression expression)
         => expression is MemberExpression { Expression: ParameterExpression };
+
+    /// <summary>
+    /// Translates string.ToLower to LOWER(column) using bindings.
+    /// </summary>
+    protected virtual string TranslateStringToLower(
+        MethodCallExpression methodCall,
+        IReadOnlyDictionary<ParameterExpression, TableBinding> bindings,
+        List<SqlParameter> parameters)
+    {
+        var column = TranslateExpression(methodCall.Object!, bindings, parameters);
+        return $"LOWER({column})";
+    }
+
+    /// <summary>
+    /// Translates string.ToUpper to UPPER(column) using bindings.
+    /// </summary>
+    protected virtual string TranslateStringToUpper(
+        MethodCallExpression methodCall,
+        IReadOnlyDictionary<ParameterExpression, TableBinding> bindings,
+        List<SqlParameter> parameters)
+    {
+        var column = TranslateExpression(methodCall.Object!, bindings, parameters);
+        return $"UPPER({column})";
+    }
 
     /// <summary>
     /// Translates string.ToLower to LOWER(column).

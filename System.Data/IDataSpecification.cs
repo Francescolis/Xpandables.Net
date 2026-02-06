@@ -19,8 +19,7 @@ using System.Linq.Expressions;
 namespace System.Data;
 
 /// <summary>
-/// Defines a specification for querying data with type-safe, expression-based 
-/// filtering, projection, sorting, and paging.
+/// Defines a specification for querying data with SQL-specific filtering, joins, grouping, sorting, and paging.
 /// </summary>
 /// <typeparam name="TData">The type of data to query.</typeparam>
 /// <typeparam name="TResult">The type of the projected result.</typeparam>
@@ -34,22 +33,32 @@ public interface IDataSpecification<TData, TResult>
     /// Gets the predicate expression to filter data.
     /// </summary>
     /// <remarks>When <see langword="null"/>, no filtering is applied.</remarks>
-    Expression<Func<TData, bool>>? Predicate { get; }
+    LambdaExpression? Predicate { get; }
 
     /// <summary>
     /// Gets the projection expression to transform data into results.
     /// </summary>
-    Expression<Func<TData, TResult>> Selector { get; }
+    LambdaExpression Selector { get; }
 
     /// <summary>
-    /// Gets the collection of navigation properties to eagerly load.
+    /// Gets the join specifications to apply in the query.
     /// </summary>
-    IReadOnlyList<IIncludeSpecification<TData>> Includes { get; }
+    IReadOnlyList<IJoinSpecification> Joins { get; }
+
+    /// <summary>
+    /// Gets the grouping expressions to apply to the query.
+    /// </summary>
+    IReadOnlyList<LambdaExpression> GroupBy { get; }
+
+    /// <summary>
+    /// Gets the HAVING predicate applied after grouping.
+    /// </summary>
+    LambdaExpression? Having { get; }
 
     /// <summary>
     /// Gets the collection of ordering specifications.
     /// </summary>
-    IReadOnlyList<IOrderSpecification<TData>> OrderBy { get; }
+    IReadOnlyList<OrderSpecification> OrderBy { get; }
 
     /// <summary>
     /// Gets the number of data to skip.
@@ -70,57 +79,64 @@ public interface IDataSpecification<TData, TResult>
 }
 
 /// <summary>
-/// Represents an include specification for eager loading navigation properties.
+/// Specifies the join type to apply.
 /// </summary>
-/// <typeparam name="TData">The type of the data.</typeparam>
-public interface IIncludeSpecification<TData>
-    where TData : class
+public enum SqlJoinType
 {
     /// <summary>
-    /// Gets the expression representing the navigation property to include.
+    /// Represents an inner join.
     /// </summary>
-    LambdaExpression IncludeExpression { get; }
-
+    Inner,
     /// <summary>
-    /// Gets the collection of then-include specifications for nested navigation properties.
+    /// Represents a left join.
     /// </summary>
-    IReadOnlyList<IThenIncludeSpecification> ThenIncludes { get; }
+    Left,
+    /// <summary>
+    /// Represents a right join.
+    /// </summary>
+    Right,
+    /// <summary>
+    /// Represents a full outer join.
+    /// </summary>
+    Full,
+    /// <summary>
+    /// Represents a cross join.
+    /// </summary>
+    Cross
 }
 
 /// <summary>
-/// Represents a then-include specification for nested eager loading.
+/// Represents a join specification for a SQL query.
 /// </summary>
-public interface IThenIncludeSpecification
+public interface IJoinSpecification
 {
     /// <summary>
-    /// Gets the expression representing the nested navigation property to include.
+    /// Gets the left side entity type of the join.
     /// </summary>
-    LambdaExpression ThenIncludeExpression { get; }
+    Type LeftType { get; }
+
+    /// <summary>
+    /// Gets the right side entity type of the join.
+    /// </summary>
+    Type RightType { get; }
+
+    /// <summary>
+    /// Gets the join type.
+    /// </summary>
+    SqlJoinType JoinType { get; }
+
+    /// <summary>
+    /// Gets the join predicate expression.
+    /// </summary>
+    LambdaExpression? OnExpression { get; }
+
+    /// <summary>
+    /// Gets the optional table alias.
+    /// </summary>
+    string? TableAlias { get; }
 }
 
 /// <summary>
-/// Represents an ordering specification that can apply itself to a query.
+/// Represents an ordering specification for SQL queries.
 /// </summary>
-/// <typeparam name="TData">The type of the data.</typeparam>
-public interface IOrderSpecification<TData>
-    where TData : class
-{
-    /// <summary>
-    /// Gets a value indicating whether to order in descending order.
-    /// </summary>
-    bool Descending { get; }
-
-    /// <summary>
-    /// Applies this ordering as the primary sort to an unordered query.
-    /// </summary>
-    /// <param name="query">The unordered query.</param>
-    /// <returns>An ordered query with this ordering applied.</returns>
-    IOrderedQueryable<TData> ApplyFirst(IQueryable<TData> query);
-
-    /// <summary>
-    /// Applies this ordering as a secondary sort to an already ordered query.
-    /// </summary>
-    /// <param name="query">The already ordered query.</param>
-    /// <returns>An ordered query with this additional ordering applied.</returns>
-    IOrderedQueryable<TData> ApplySubsequent(IOrderedQueryable<TData> query);
-}
+public readonly record struct OrderSpecification(LambdaExpression KeySelector, bool Descending);
