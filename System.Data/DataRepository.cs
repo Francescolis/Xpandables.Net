@@ -77,7 +77,7 @@ public class DataRepository<[DynamicallyAccessedMembers(DynamicallyAccessedMembe
             {
                 while (await reader.ReadAsync(cancellationToken).ConfigureAwait(false))
                 {
-                    yield return _sqlMapper.Map<TResult>(reader);
+                    yield return _sqlMapper.MapToResult(specification, reader);
                 }
             }
         }
@@ -118,7 +118,7 @@ public class DataRepository<[DynamicallyAccessedMembers(DynamicallyAccessedMembe
                     {
                         while (await reader.ReadAsync(ct).ConfigureAwait(false))
                         {
-                            yield return _sqlMapper.Map<TResult>(reader);
+                            yield return _sqlMapper.MapToResult<TResult>(reader);
                         }
 
                         if (await reader.NextResultAsync(ct).ConfigureAwait(false) &&
@@ -321,7 +321,7 @@ public class DataRepository<[DynamicallyAccessedMembers(DynamicallyAccessedMembe
             {
                 while (await reader.ReadAsync(cancellationToken).ConfigureAwait(false))
                 {
-                    yield return _sqlMapper.Map<TResult>(reader);
+                    yield return _sqlMapper.MapToResult<TResult>(reader);
                 }
             }
         }

@@ -36,5 +36,21 @@ public interface IDataSqlMapper
     /// <param name="reader">The <see cref="DbDataReader"/> containing the data to be mapped. The reader must be positioned at a valid record
     /// and not be closed.</param>
     /// <returns>An instance of <typeparamref name="TResult"/> populated with the data from the current record of the reader.</returns>
-    TResult Map<[DynamicallyAccessedMembers(DynamicallyAccessedMemberTypes.PublicParameterlessConstructor | DynamicallyAccessedMemberTypes.PublicConstructors | DynamicallyAccessedMemberTypes.PublicProperties)] TResult>(DbDataReader reader);
+    TResult MapToResult<[DynamicallyAccessedMembers(DynamicallyAccessedMemberTypes.PublicParameterlessConstructor | DynamicallyAccessedMemberTypes.PublicConstructors | DynamicallyAccessedMemberTypes.PublicProperties)] TResult>(DbDataReader reader);
+
+    /// <summary>
+    /// Maps data from the specified data reader to a result of the given type according to the provided data specification.
+    /// </summary>
+    /// <remarks>This method is typically used in data access scenarios to transform database records into
+    /// domain-specific result types. The mapping behavior is determined by the provided specification, allowing for
+    /// flexible and reusable data transformations.</remarks>
+    /// <typeparam name="TData">The type of the data that the specification operates on. Must be a reference type.</typeparam>
+    /// <typeparam name="TResult">The type of the result produced by the mapping process.</typeparam>
+    /// <param name="specification">The data specification that defines how to map the data from the reader to the result type.</param>
+    /// <param name="reader">The data reader that supplies the data to be mapped according to the specification.</param>
+    /// <returns>An instance of TResult representing the mapped result based on the data from the reader.</returns>
+    TResult MapToResult<TData, TResult>(
+        IDataSpecification<TData, TResult> specification,
+        DbDataReader reader)
+        where TData : class;
 }

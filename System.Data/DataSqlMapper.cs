@@ -17,6 +17,7 @@
 using System.Data.Common;
 using System.Diagnostics.CodeAnalysis;
 using System.Globalization;
+using System.Linq.Expressions;
 using System.Reflection;
 
 namespace System.Data;
@@ -24,12 +25,58 @@ namespace System.Data;
 /// <summary>
 /// Provides functionality to map data from a database record to a specified result type.
 /// </summary>
-/// <remarks>Implements the ISqlMapper interface to enable custom mapping of database records to objects. Use this
+/// <remarks>Implements the IDataSqlMapper interface to enable custom mapping of database records to objects. Use this
 /// class to convert data retrieved from a DbDataReader into strongly typed results for application use.</remarks>
 public sealed class DataSqlMapper : IDataSqlMapper
 {
     /// <inheritdoc/>
-    public TResult Map<[DynamicallyAccessedMembers(DynamicallyAccessedMemberTypes.PublicParameterlessConstructor | DynamicallyAccessedMemberTypes.PublicConstructors | DynamicallyAccessedMemberTypes.PublicProperties)] TResult>(DbDataReader reader)
+    [UnconditionalSuppressMessage("Trimming", "IL2091:Target generic argument does not have matching annotations", Justification = "Selector mapping requires dynamic access to entity members.")]
+    [UnconditionalSuppressMessage("Trimming", "IL2095:Overridden member has mismatched annotations", Justification = "The mapper relies on runtime reflection for projection mapping.")]
+    public TResult MapToResult<TData, TResult>(
+        IDataSpecification<TData, TResult> specification,
+        DbDataReader reader)
+        where TData : class
+    {
+        ArgumentNullException.ThrowIfNull(specification);
+        ArgumentNullException.ThrowIfNull(reader);
+
+        if (specification.Selector is not Expression<Func<TData, TResult>> typedSelector)
+        {
+            if (specification.Selector.Parameters.Count != 1)
+                throw new InvalidOperationException("Selector must have a single parameter.");
+
+            var parameter = specification.Selector.Parameters[0];
+            if (!parameter.Type.IsAssignableTo(typeof(TData)))
+                throw new InvalidOperationException("Selector parameter type must match the data type.");
+
+            var body = specification.Selector.Body;
+            if (body.Type != typeof(TResult))
+            {
+                body = Expression.Convert(body, typeof(TResult));
+            }
+
+            typedSelector = Expression.Lambda<Func<TData, TResult>>(body, parameter);
+        }
+
+        var entity = MapToResult<TData>(reader);
+        if (typedSelector.Body is ParameterExpression && typeof(TResult) == typeof(TData))
+        {
+            return (TResult)(object)entity;
+        }
+
+        var projector = CompileSelector(typedSelector);
+        return projector(entity);
+    }
+
+    [UnconditionalSuppressMessage("Trimming", "IL2026:Members annotated with 'RequiresUnreferencedCodeAttribute' require dynamic access otherwise can break functionality when trimming application code", Justification = "<Pending>")]
+    [UnconditionalSuppressMessage("AOT", "IL3050:Calling members annotated with 'RequiresDynamicCodeAttribute' may break functionality when AOT compiling.", Justification = "<Pending>")]
+    [UnconditionalSuppressMessage("Trimming", "IL2072:Calling members annotated with 'RequiresDynamicCodeAttribute' may break functionality when AOT compiling.", Justification = "<Pending>")]
+    private static Func<TData, TResult> CompileSelector<TData, TResult>(Expression<Func<TData, TResult>> selector)
+        where TData : class
+        => selector.Compile(preferInterpretation: true);
+
+    /// <inheritdoc/>
+    public TResult MapToResult<[DynamicallyAccessedMembers(DynamicallyAccessedMemberTypes.PublicParameterlessConstructor | DynamicallyAccessedMemberTypes.PublicConstructors | DynamicallyAccessedMemberTypes.PublicProperties)] TResult>(DbDataReader reader)
     {
         ArgumentNullException.ThrowIfNull(reader);
 
