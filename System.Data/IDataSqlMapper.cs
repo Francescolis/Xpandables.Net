@@ -49,7 +49,7 @@ public interface IDataSqlMapper
     /// <param name="specification">The data specification that defines how to map the data from the reader to the result type.</param>
     /// <param name="reader">The data reader that supplies the data to be mapped according to the specification.</param>
     /// <returns>An instance of TResult representing the mapped result based on the data from the reader.</returns>
-    TResult MapToResult<TData, TResult>(
+    TResult MapToResult<TData, [DynamicallyAccessedMembers(DynamicallyAccessedMemberTypes.PublicParameterlessConstructor | DynamicallyAccessedMemberTypes.PublicConstructors | DynamicallyAccessedMemberTypes.PublicProperties)] TResult>(
         IDataSpecification<TData, TResult> specification,
         DbDataReader reader)
         where TData : class;

@@ -31,8 +31,7 @@ public sealed class DataSqlMapper : IDataSqlMapper
 {
     /// <inheritdoc/>
     [UnconditionalSuppressMessage("Trimming", "IL2091:Target generic argument does not have matching annotations", Justification = "Selector mapping requires dynamic access to entity members.")]
-    [UnconditionalSuppressMessage("Trimming", "IL2095:Overridden member has mismatched annotations", Justification = "The mapper relies on runtime reflection for projection mapping.")]
-    public TResult MapToResult<TData, TResult>(
+    public TResult MapToResult<TData, [DynamicallyAccessedMembers(DynamicallyAccessedMemberTypes.PublicParameterlessConstructor | DynamicallyAccessedMemberTypes.PublicConstructors | DynamicallyAccessedMemberTypes.PublicProperties)] TResult>(
         IDataSpecification<TData, TResult> specification,
         DbDataReader reader)
         where TData : class
