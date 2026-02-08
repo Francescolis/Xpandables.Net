@@ -61,7 +61,7 @@ public sealed class PipelineDomainEventsDecorator<TRequest>(
             {
                 await publisher.PublishAsync(batch.Events, cancellationToken).ConfigureAwait(false);
 
-                // Important: do NOT call OnCommitted here; commit happens after SaveChanges.
+                // Important: do NOT call OnCommitted here; commit happens after.
                 // The unit-of-work event decorator will commit and then invoke callbacks.
                 DomainEventCommitBuffer.Current.Add(batch);
             }
