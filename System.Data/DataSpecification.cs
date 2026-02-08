@@ -46,7 +46,15 @@ public static class DataSpecification
     /// <returns>A new specification builder instance.</returns>
     public static DataSpecificationBuilder<TData> For<TData>()
         where TData : class
-        => new();
+        => new(
+            predicate: null,
+            joins: [],
+            groupBy: [],
+            having: null,
+            orderBy: [],
+            skip: null,
+            take: null,
+            isDistinct: false);
 }
 
 /// <summary>
