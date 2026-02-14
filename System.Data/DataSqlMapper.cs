@@ -14,6 +14,7 @@
  * limitations under the License.
  *
 ********************************************************************************/
+using System.Collections.Concurrent;
 using System.Data.Common;
 using System.Diagnostics.CodeAnalysis;
 using System.Globalization;
@@ -29,6 +30,7 @@ namespace System.Data;
 /// class to convert data retrieved from a DbDataReader into strongly typed results for application use.</remarks>
 public sealed class DataSqlMapper : IDataSqlMapper
 {
+    private static readonly ConcurrentDictionary<LambdaExpression, Delegate> _compiledSelectors = new(ReferenceEqualityComparer.Instance);
     /// <inheritdoc/>
     [UnconditionalSuppressMessage("Trimming", "IL2091:Target generic argument does not have matching annotations", Justification = "Selector mapping requires dynamic access to entity members.")]
     public TResult MapToResult<TData, [DynamicallyAccessedMembers(DynamicallyAccessedMemberTypes.PublicParameterlessConstructor | DynamicallyAccessedMemberTypes.PublicConstructors | DynamicallyAccessedMemberTypes.PublicProperties)] TResult>(
@@ -72,7 +74,9 @@ public sealed class DataSqlMapper : IDataSqlMapper
     [UnconditionalSuppressMessage("Trimming", "IL2072:Calling members annotated with 'RequiresDynamicCodeAttribute' may break functionality when AOT compiling.", Justification = "<Pending>")]
     private static Func<TData, TResult> CompileSelector<TData, TResult>(Expression<Func<TData, TResult>> selector)
         where TData : class
-        => selector.Compile(preferInterpretation: true);
+        => (Func<TData, TResult>)_compiledSelectors.GetOrAdd(
+            selector,
+            static expr => ((Expression<Func<TData, TResult>>)expr).Compile(preferInterpretation: true));
 
     /// <inheritdoc/>
     public TResult MapToResult<[DynamicallyAccessedMembers(DynamicallyAccessedMemberTypes.PublicParameterlessConstructor | DynamicallyAccessedMemberTypes.PublicConstructors | DynamicallyAccessedMemberTypes.PublicProperties)] TResult>(DbDataReader reader)
@@ -138,7 +142,7 @@ public sealed class DataSqlMapper : IDataSqlMapper
         if (value == DBNull.Value)
             return default!;
 
-        var converted = value.ChangeTypeNullable(resultType, CultureInfo.CurrentCulture);
+        var converted = value.ChangeTypeNullable(resultType, CultureInfo.InvariantCulture);
         return (TResult)converted!;
     }
 
@@ -200,7 +204,7 @@ public sealed class DataSqlMapper : IDataSqlMapper
             var param = parameters[i];
             var ordinal = columns[param.Name!];
             var value = reader.GetValue(ordinal);
-            args[i] = value.ChangeTypeNullable(param.ParameterType, CultureInfo.CurrentCulture);
+            args[i] = value.ChangeTypeNullable(param.ParameterType, CultureInfo.InvariantCulture);
         }
 
         return constructor.Invoke(args);
@@ -233,7 +237,7 @@ public sealed class DataSqlMapper : IDataSqlMapper
             if (value == DBNull.Value)
                 continue;
 
-            var convertedValue = value.ChangeTypeNullable(property.PropertyType, CultureInfo.CurrentCulture);
+            var convertedValue = value.ChangeTypeNullable(property.PropertyType, CultureInfo.InvariantCulture);
             property.SetValue(instance, convertedValue);
         }
     }

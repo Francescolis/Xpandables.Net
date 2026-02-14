@@ -14,6 +14,7 @@
  * limitations under the License.
  *
 ********************************************************************************/
+using System.Collections.Concurrent;
 using System.ComponentModel.DataAnnotations.Schema;
 using System.Data;
 using System.Diagnostics.CodeAnalysis;
@@ -49,7 +50,10 @@ namespace System.Data;
 [RequiresDynamicCode("Expression compilation requires dynamic code generation.")]
 public abstract class DataSqlBuilderBase : IDataSqlBuilder
 {
-    private int _parameterIndex;
+    [ThreadStatic]
+    private static int _parameterIndex;
+    private static readonly ConcurrentDictionary<Type, IReadOnlyDictionary<string, string>> _columnMappingsCache = new();
+    private readonly ConcurrentDictionary<Type, string> _tableNameCache = new();
 
     /// <inheritdoc />
     public abstract SqlDialect Dialect { get; }
@@ -74,6 +78,12 @@ public abstract class DataSqlBuilderBase : IDataSqlBuilder
     public virtual string GetTableName<[DynamicallyAccessedMembers(DynamicallyAccessedMemberTypes.PublicProperties)] TEntity>()
         where TEntity : class
     {
+        return _tableNameCache.GetOrAdd(typeof(TEntity), _ => BuildTableName<TEntity>());
+    }
+
+    private string BuildTableName<[DynamicallyAccessedMembers(DynamicallyAccessedMemberTypes.PublicProperties)] TEntity>()
+        where TEntity : class
+    {
         var type = typeof(TEntity);
         var tableAttr = type.GetCustomAttribute<TableAttribute>();
 
@@ -89,6 +99,13 @@ public abstract class DataSqlBuilderBase : IDataSqlBuilder
 
     /// <inheritdoc />
     public virtual IReadOnlyDictionary<string, string> GetColumnMappings<[DynamicallyAccessedMembers(DynamicallyAccessedMemberTypes.PublicProperties)] TEntity>()
+        where TEntity : class
+    {
+        return _columnMappingsCache.GetOrAdd(typeof(TEntity), _ => BuildColumnMappings<TEntity>());
+    }
+
+    [SuppressMessage("Performance", "CA1859:Use concrete types when possible for improved performance", Justification = "Return type must match cache value type.")]
+    private static IReadOnlyDictionary<string, string> BuildColumnMappings<[DynamicallyAccessedMembers(DynamicallyAccessedMemberTypes.PublicProperties)] TEntity>()
         where TEntity : class
     {
         var type = typeof(TEntity);
@@ -626,10 +643,17 @@ public abstract class DataSqlBuilderBase : IDataSqlBuilder
         Justification = "Runtime join binding requires reflection to resolve table names.")]
     protected virtual string GetTableNameForType(Type entityType)
     {
-        var method = GetType().GetMethod(nameof(GetTableName), BindingFlags.Public | BindingFlags.Instance);
-        var generic = method?.MakeGenericMethod(entityType)
-            ?? throw new InvalidOperationException("Table name resolution failed.");
-        return (string)generic.Invoke(this, null)!;
+        return _tableNameCache.GetOrAdd(entityType, type =>
+        {
+            var tableAttr = type.GetCustomAttribute<TableAttribute>();
+            if (tableAttr != null)
+            {
+                var schema = string.IsNullOrEmpty(tableAttr.Schema) ? string.Empty : $"{QuoteIdentifier(tableAttr.Schema)}.";
+                return $"{schema}{QuoteIdentifier(tableAttr.Name)}";
+            }
+
+            return QuoteIdentifier(type.Name);
+        });
     }
 
     /// <summary>
@@ -639,12 +663,31 @@ public abstract class DataSqlBuilderBase : IDataSqlBuilder
         Justification = "Runtime join binding requires reflection to resolve column mappings.")]
     [UnconditionalSuppressMessage("Trimming", "IL2060:Requires unreferenced code",
         Justification = "Runtime join binding requires reflection to resolve column mappings.")]
+    [UnconditionalSuppressMessage("Trimming", "IL2070:DynamicallyAccessedMembers on Type.GetProperties",
+        Justification = "Join entity types are expected to have public properties for column resolution.")]
     protected virtual IReadOnlyDictionary<string, string> GetColumnMappingsForType(Type entityType)
     {
-        var method = GetType().GetMethod(nameof(GetColumnMappings), BindingFlags.Public | BindingFlags.Instance);
-        var generic = method?.MakeGenericMethod(entityType)
-            ?? throw new InvalidOperationException("Column mapping resolution failed.");
-        return (IReadOnlyDictionary<string, string>)generic.Invoke(this, null)!;
+        return _columnMappingsCache.GetOrAdd(entityType, BuildColumnMappingsFromType);
+    }
+
+    [UnconditionalSuppressMessage("Trimming", "IL2070:DynamicallyAccessedMembers on Type.GetProperties",
+        Justification = "Join entity types are expected to have public properties for column resolution.")]
+    private static IReadOnlyDictionary<string, string> BuildColumnMappingsFromType(Type type)
+    {
+        var properties = type.GetProperties(BindingFlags.Public | BindingFlags.Instance);
+        var mappings = new Dictionary<string, string>();
+
+        foreach (var property in properties)
+        {
+            if (property.GetCustomAttribute<NotMappedAttribute>() != null)
+                continue;
+
+            var columnAttr = property.GetCustomAttribute<ColumnAttribute>();
+            var columnName = columnAttr?.Name ?? property.Name;
+            mappings[property.Name] = columnName;
+        }
+
+        return mappings;
     }
 
     /// <summary>
@@ -1261,7 +1304,8 @@ public abstract class DataSqlBuilderBase : IDataSqlBuilder
     {
         try
         {
-            return Expression.Lambda(expression).Compile().DynamicInvoke();
+            var converted = Expression.Convert(expression, typeof(object));
+            return Expression.Lambda<Func<object?>>(converted).Compile(preferInterpretation: true)();
         }
         catch (Exception exception)
         {
@@ -1384,7 +1428,7 @@ public abstract class DataSqlBuilderBase : IDataSqlBuilder
             ConstantExpression constant => constant.Value,
             MemberExpression member => ExtractValueFromMemberExpression(member),
             UnaryExpression { NodeType: ExpressionType.Convert } unary => ExtractConstantValue(unary.Operand),
-            _ => Expression.Lambda(expression).Compile().DynamicInvoke()
+            _ => Expression.Lambda<Func<object?>>(Expression.Convert(expression, typeof(object))).Compile(preferInterpretation: true)()
         };
     }
 
@@ -1433,10 +1477,10 @@ public abstract class DataSqlBuilderBase : IDataSqlBuilder
     /// <summary>
     /// Resets the parameter index for a new query.
     /// </summary>
-    protected void ResetParameterIndex() => _parameterIndex = 0;
+    protected static void ResetParameterIndex() => _parameterIndex = 0;
 
     /// <summary>
     /// Gets the next parameter name.
     /// </summary>
-    protected string NextParameterName() => $"p{_parameterIndex++}";
+    protected static string NextParameterName() => $"p{_parameterIndex++}";
 }

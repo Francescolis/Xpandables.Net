@@ -199,14 +199,25 @@ public class DataRepository<[DynamicallyAccessedMembers(DynamicallyAccessedMembe
         ThrowIfDisposed();
         ArgumentNullException.ThrowIfNull(specification);
 
-        var results = await QueryToListAsync(specification, cancellationToken).ConfigureAwait(false);
+        TResult? first = default;
+        var count = 0;
 
-        return results.Count switch
+        await foreach (var result in QueryAsync(specification, cancellationToken).ConfigureAwait(false))
         {
-            0 => throw new InvalidOperationException("Sequence contains no elements."),
-            1 => results[0],
-            _ => throw new InvalidOperationException("Sequence contains more than one element.")
-        };
+            count++;
+            if (count == 1)
+            {
+                first = result;
+            }
+            else
+            {
+                throw new InvalidOperationException("Sequence contains more than one element.");
+            }
+        }
+
+        return count == 0
+            ? throw new InvalidOperationException("Sequence contains no elements.")
+            : first!;
     }
 
     /// <inheritdoc />
@@ -217,14 +228,23 @@ public class DataRepository<[DynamicallyAccessedMembers(DynamicallyAccessedMembe
         ThrowIfDisposed();
         ArgumentNullException.ThrowIfNull(specification);
 
-        var results = await QueryToListAsync(specification, cancellationToken).ConfigureAwait(false);
+        TResult? first = default;
+        var count = 0;
 
-        return results.Count switch
+        await foreach (var result in QueryAsync(specification, cancellationToken).ConfigureAwait(false))
         {
-            0 => default,
-            1 => results[0],
-            _ => throw new InvalidOperationException("Sequence contains more than one element.")
-        };
+            count++;
+            if (count == 1)
+            {
+                first = result;
+            }
+            else
+            {
+                throw new InvalidOperationException("Sequence contains more than one element.");
+            }
+        }
+
+        return count == 0 ? default : first;
     }
 
     /// <inheritdoc />
@@ -434,21 +454,6 @@ public class DataRepository<[DynamicallyAccessedMembers(DynamicallyAccessedMembe
         {
             return await command.ExecuteNonQueryAsync(cancellationToken).ConfigureAwait(false);
         }
-    }
-
-    /// <summary>
-    /// Queries to a list for operations that need materialization.
-    /// </summary>
-    private async Task<List<TResult>> QueryToListAsync<TResult>(
-        IDataSpecification<TData, TResult> specification,
-        CancellationToken cancellationToken)
-    {
-        var results = new List<TResult>();
-        await foreach (var result in QueryAsync<TResult>(specification, cancellationToken).ConfigureAwait(false))
-        {
-            results.Add(result);
-        }
-        return results;
     }
 
     /// <summary>
