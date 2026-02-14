@@ -98,6 +98,21 @@ public sealed class MyDataSqlBuilder : DataSqlBuilderBase
         return $"({column} LIKE {ParameterPrefix}{paramName})";
     }
 
+    /// <inheritdoc />
+    protected override string TranslateStringContains(
+        Linq.Expressions.MethodCallExpression methodCall,
+        IReadOnlyDictionary<Linq.Expressions.ParameterExpression, TableBinding> bindings,
+        List<SqlParameter> parameters)
+    {
+        var (columnExpr, valueExpr) = GetStringMethodOperands(methodCall);
+        var column = TranslateExpression(columnExpr, bindings, parameters);
+        var value = ExtractConstantValue(valueExpr);
+        var escapedValue = EscapeLikePattern(value?.ToString() ?? string.Empty);
+        var paramName = NextParameterName();
+        parameters.Add(new SqlParameter(paramName, $"%{escapedValue}%"));
+        return $"({column} LIKE {ParameterPrefix}{paramName})";
+    }
+
     /// <summary>
     /// Translates string.StartsWith to MySQL LIKE with escape handling.
     /// </summary>
@@ -114,6 +129,21 @@ public sealed class MyDataSqlBuilder : DataSqlBuilderBase
         return $"({column} LIKE {ParameterPrefix}{paramName})";
     }
 
+    /// <inheritdoc />
+    protected override string TranslateStringStartsWith(
+        Linq.Expressions.MethodCallExpression methodCall,
+        IReadOnlyDictionary<Linq.Expressions.ParameterExpression, TableBinding> bindings,
+        List<SqlParameter> parameters)
+    {
+        var (columnExpr, valueExpr) = GetStringMethodOperands(methodCall);
+        var column = TranslateExpression(columnExpr, bindings, parameters);
+        var value = ExtractConstantValue(valueExpr);
+        var escapedValue = EscapeLikePattern(value?.ToString() ?? string.Empty);
+        var paramName = NextParameterName();
+        parameters.Add(new SqlParameter(paramName, $"{escapedValue}%"));
+        return $"({column} LIKE {ParameterPrefix}{paramName})";
+    }
+
     /// <summary>
     /// Translates string.EndsWith to MySQL LIKE with escape handling.
     /// </summary>
@@ -124,6 +154,21 @@ public sealed class MyDataSqlBuilder : DataSqlBuilderBase
     {
         var column = TranslateExpression(methodCall.Object!, columnMappings, parameters);
         var value = ExtractConstantValue(methodCall.Arguments[0]);
+        var escapedValue = EscapeLikePattern(value?.ToString() ?? string.Empty);
+        var paramName = NextParameterName();
+        parameters.Add(new SqlParameter(paramName, $"%{escapedValue}"));
+        return $"({column} LIKE {ParameterPrefix}{paramName})";
+    }
+
+    /// <inheritdoc />
+    protected override string TranslateStringEndsWith(
+        Linq.Expressions.MethodCallExpression methodCall,
+        IReadOnlyDictionary<Linq.Expressions.ParameterExpression, TableBinding> bindings,
+        List<SqlParameter> parameters)
+    {
+        var (columnExpr, valueExpr) = GetStringMethodOperands(methodCall);
+        var column = TranslateExpression(columnExpr, bindings, parameters);
+        var value = ExtractConstantValue(valueExpr);
         var escapedValue = EscapeLikePattern(value?.ToString() ?? string.Empty);
         var paramName = NextParameterName();
         parameters.Add(new SqlParameter(paramName, $"%{escapedValue}"));

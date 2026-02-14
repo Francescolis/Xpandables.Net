@@ -808,6 +808,7 @@ public abstract class DataSqlBuilderBase : IDataSqlBuilder
             UnaryExpression unary => TranslateUnaryExpression(unary, bindings, parameters),
             MemberExpression member => TranslateMemberExpression(member, bindings, parameters),
             ConstantExpression constant => TranslateConstantExpression(constant, parameters),
+            ConditionalExpression conditional => TranslateConditionalExpression(conditional, bindings, parameters),
             MethodCallExpression methodCall => TranslateMethodCallExpression(methodCall, bindings, parameters),
             ParameterExpression => throw new NotSupportedException("Parameter expressions must be accessed through member expressions."),
             _ => throw new NotSupportedException($"Expression type '{expression.NodeType}' is not supported.")
@@ -822,6 +823,13 @@ public abstract class DataSqlBuilderBase : IDataSqlBuilder
         IReadOnlyDictionary<ParameterExpression, TableBinding> bindings,
         List<SqlParameter> parameters)
     {
+        if (binary.NodeType == ExpressionType.Coalesce)
+        {
+            var coalesceLeft = TranslateExpression(binary.Left, bindings, parameters);
+            var coalesceRight = TranslateExpression(binary.Right, bindings, parameters);
+            return $"COALESCE({coalesceLeft}, {coalesceRight})";
+        }
+
         var left = TranslateExpression(binary.Left, bindings, parameters);
         var right = TranslateExpression(binary.Right, bindings, parameters);
 
@@ -859,6 +867,25 @@ public abstract class DataSqlBuilderBase : IDataSqlBuilder
         IReadOnlyDictionary<ParameterExpression, TableBinding> bindings,
         List<SqlParameter> parameters)
     {
+        // Handle !Nullable.HasValue → column IS NULL
+        if (unary.NodeType == ExpressionType.Not
+            && unary.Operand is MemberExpression { Member.Name: "HasValue" } hasValueMember
+            && hasValueMember.Expression is MemberExpression nullableInner
+            && Nullable.GetUnderlyingType(nullableInner.Type) != null)
+        {
+            var column = TranslateExpression(nullableInner, bindings, parameters);
+            return $"({column} IS NULL)";
+        }
+
+        // Handle !p.BoolProperty → column = 0
+        if (unary.NodeType == ExpressionType.Not
+            && unary.Operand is MemberExpression { Expression: ParameterExpression } boolMember
+            && boolMember.Type == typeof(bool))
+        {
+            var column = ResolveMemberColumn(boolMember, bindings);
+            return $"({column} = 0)";
+        }
+
         var operand = TranslateExpression(unary.Operand, bindings, parameters);
 
         return unary.NodeType switch
@@ -878,6 +905,23 @@ public abstract class DataSqlBuilderBase : IDataSqlBuilder
         IReadOnlyDictionary<ParameterExpression, TableBinding> bindings,
         List<SqlParameter> parameters)
     {
+        // Handle Nullable<T>.HasValue → column IS NOT NULL
+        if (member.Member.Name == "HasValue"
+            && member.Expression is MemberExpression nullableMember
+            && Nullable.GetUnderlyingType(nullableMember.Type) != null)
+        {
+            var column = TranslateExpression(nullableMember, bindings, parameters);
+            return $"({column} IS NOT NULL)";
+        }
+
+        // Handle Nullable<T>.Value → unwrap to column
+        if (member.Member.Name == "Value"
+            && member.Expression is MemberExpression nullableValueMember
+            && Nullable.GetUnderlyingType(nullableValueMember.Type) != null)
+        {
+            return TranslateExpression(nullableValueMember, bindings, parameters);
+        }
+
         if (member.Expression is ParameterExpression)
         {
             return ResolveMemberColumn(member, bindings);
@@ -911,8 +955,24 @@ public abstract class DataSqlBuilderBase : IDataSqlBuilder
                 "EndsWith" => TranslateStringEndsWith(methodCall, bindings, parameters),
                 "ToLower" => TranslateStringToLower(methodCall, bindings, parameters),
                 "ToUpper" => TranslateStringToUpper(methodCall, bindings, parameters),
+                "IsNullOrEmpty" => TranslateStringIsNullOrEmpty(methodCall, bindings, parameters),
+                "IsNullOrWhiteSpace" => TranslateStringIsNullOrWhiteSpace(methodCall, bindings, parameters),
                 _ => throw new NotSupportedException($"String method '{methodName}' is not supported.")
             };
+        }
+
+        // Handle Nullable<T>.GetValueOrDefault()
+        if (methodName == "GetValueOrDefault"
+            && methodCall.Object is MemberExpression nullableMember
+            && Nullable.GetUnderlyingType(nullableMember.Type) != null)
+        {
+            var column = TranslateExpression(nullableMember, bindings, parameters);
+            if (methodCall.Arguments.Count == 1)
+            {
+                var defaultValue = TranslateExpression(methodCall.Arguments[0], bindings, parameters);
+                return $"COALESCE({column}, {defaultValue})";
+            }
+            return column;
         }
 
         throw new NotSupportedException($"Method '{methodCall.Method.DeclaringType?.Name}.{methodName}' is not supported.");
@@ -1011,6 +1071,7 @@ public abstract class DataSqlBuilderBase : IDataSqlBuilder
             UnaryExpression unary => TranslateUnaryExpression(unary, columnMappings, parameters),
             MemberExpression member => TranslateMemberExpression(member, columnMappings, parameters),
             ConstantExpression constant => TranslateConstantExpression(constant, parameters),
+            ConditionalExpression conditional => TranslateConditionalExpression(conditional, columnMappings, parameters),
             MethodCallExpression methodCall => TranslateMethodCallExpression(methodCall, columnMappings, parameters),
             ParameterExpression => throw new NotSupportedException("Parameter expressions must be accessed through member expressions."),
             _ => throw new NotSupportedException($"Expression type '{expression.NodeType}' is not supported.")
@@ -1025,6 +1086,13 @@ public abstract class DataSqlBuilderBase : IDataSqlBuilder
         IReadOnlyDictionary<string, string> columnMappings,
         List<SqlParameter> parameters)
     {
+        if (binary.NodeType == ExpressionType.Coalesce)
+        {
+            var coalesceLeft = TranslateExpression(binary.Left, columnMappings, parameters);
+            var coalesceRight = TranslateExpression(binary.Right, columnMappings, parameters);
+            return $"COALESCE({coalesceLeft}, {coalesceRight})";
+        }
+
         var left = TranslateExpression(binary.Left, columnMappings, parameters);
         var right = TranslateExpression(binary.Right, columnMappings, parameters);
 
@@ -1063,6 +1131,26 @@ public abstract class DataSqlBuilderBase : IDataSqlBuilder
         IReadOnlyDictionary<string, string> columnMappings,
         List<SqlParameter> parameters)
     {
+        // Handle !Nullable.HasValue → column IS NULL
+        if (unary.NodeType == ExpressionType.Not
+            && unary.Operand is MemberExpression { Member.Name: "HasValue" } hasValueMember
+            && hasValueMember.Expression is MemberExpression nullableInner
+            && Nullable.GetUnderlyingType(nullableInner.Type) != null)
+        {
+            var column = TranslateExpression(nullableInner, columnMappings, parameters);
+            return $"({column} IS NULL)";
+        }
+
+        // Handle !p.BoolProperty → column = 0
+        if (unary.NodeType == ExpressionType.Not
+            && unary.Operand is MemberExpression { Expression: ParameterExpression } boolMember
+            && boolMember.Type == typeof(bool))
+        {
+            var propertyName = boolMember.Member.Name;
+            if (columnMappings.TryGetValue(propertyName, out var columnName))
+                return $"({QuoteIdentifier(columnName)} = 0)";
+        }
+
         var operand = TranslateExpression(unary.Operand, columnMappings, parameters);
 
         return unary.NodeType switch
@@ -1082,6 +1170,23 @@ public abstract class DataSqlBuilderBase : IDataSqlBuilder
         IReadOnlyDictionary<string, string> columnMappings,
         List<SqlParameter> parameters)
     {
+        // Handle Nullable<T>.HasValue → column IS NOT NULL
+        if (member.Member.Name == "HasValue"
+            && member.Expression is MemberExpression nullableMember
+            && Nullable.GetUnderlyingType(nullableMember.Type) != null)
+        {
+            var column = TranslateExpression(nullableMember, columnMappings, parameters);
+            return $"({column} IS NOT NULL)";
+        }
+
+        // Handle Nullable<T>.Value → unwrap to column
+        if (member.Member.Name == "Value"
+            && member.Expression is MemberExpression nullableValueMember
+            && Nullable.GetUnderlyingType(nullableValueMember.Type) != null)
+        {
+            return TranslateExpression(nullableValueMember, columnMappings, parameters);
+        }
+
         // Check if this is accessing a property on the entity parameter
         if (member.Expression is ParameterExpression)
         {
@@ -1109,8 +1214,14 @@ public abstract class DataSqlBuilderBase : IDataSqlBuilder
         if (constant.Value == null)
             return "NULL";
 
+        var value = constant.Value;
+
+        // Convert enum values to their underlying type for ADO.NET compatibility
+        if (value.GetType().IsEnum)
+            value = Convert.ChangeType(value, Enum.GetUnderlyingType(value.GetType()), Globalization.CultureInfo.InvariantCulture);
+
         var paramName = NextParameterName();
-        parameters.Add(new SqlParameter(paramName, constant.Value));
+        parameters.Add(new SqlParameter(paramName, value));
         return $"{ParameterPrefix}{paramName}";
     }
 
@@ -1137,8 +1248,24 @@ public abstract class DataSqlBuilderBase : IDataSqlBuilder
                 "EndsWith" => TranslateStringEndsWith(methodCall, columnMappings, parameters),
                 "ToLower" => TranslateStringToLower(methodCall, columnMappings, parameters),
                 "ToUpper" => TranslateStringToUpper(methodCall, columnMappings, parameters),
+                "IsNullOrEmpty" => TranslateStringIsNullOrEmpty(methodCall, columnMappings, parameters),
+                "IsNullOrWhiteSpace" => TranslateStringIsNullOrWhiteSpace(methodCall, columnMappings, parameters),
                 _ => throw new NotSupportedException($"String method '{methodName}' is not supported.")
             };
+        }
+
+        // Handle Nullable<T>.GetValueOrDefault()
+        if (methodName == "GetValueOrDefault"
+            && methodCall.Object is MemberExpression nullableMember
+            && Nullable.GetUnderlyingType(nullableMember.Type) != null)
+        {
+            var column = TranslateExpression(nullableMember, columnMappings, parameters);
+            if (methodCall.Arguments.Count == 1)
+            {
+                var defaultValue = TranslateExpression(methodCall.Arguments[0], columnMappings, parameters);
+                return $"COALESCE({column}, {defaultValue})";
+            }
+            return column;
         }
 
         throw new NotSupportedException($"Method '{methodCall.Method.DeclaringType?.Name}.{methodName}' is not supported.");
@@ -1334,6 +1461,82 @@ public abstract class DataSqlBuilderBase : IDataSqlBuilder
 
             return base.Visit(node);
         }
+    }
+
+    /// <summary>
+    /// Translates a conditional expression to SQL CASE WHEN using table bindings.
+    /// </summary>
+    protected virtual string TranslateConditionalExpression(
+        ConditionalExpression conditional,
+        IReadOnlyDictionary<ParameterExpression, TableBinding> bindings,
+        List<SqlParameter> parameters)
+    {
+        var test = TranslateExpression(conditional.Test, bindings, parameters);
+        var ifTrue = TranslateExpression(conditional.IfTrue, bindings, parameters);
+        var ifFalse = TranslateExpression(conditional.IfFalse, bindings, parameters);
+        return $"(CASE WHEN {test} THEN {ifTrue} ELSE {ifFalse} END)";
+    }
+
+    /// <summary>
+    /// Translates a conditional expression to SQL CASE WHEN using column mappings.
+    /// </summary>
+    protected virtual string TranslateConditionalExpression(
+        ConditionalExpression conditional,
+        IReadOnlyDictionary<string, string> columnMappings,
+        List<SqlParameter> parameters)
+    {
+        var test = TranslateExpression(conditional.Test, columnMappings, parameters);
+        var ifTrue = TranslateExpression(conditional.IfTrue, columnMappings, parameters);
+        var ifFalse = TranslateExpression(conditional.IfFalse, columnMappings, parameters);
+        return $"(CASE WHEN {test} THEN {ifTrue} ELSE {ifFalse} END)";
+    }
+
+    /// <summary>
+    /// Translates string.IsNullOrEmpty to SQL using table bindings.
+    /// </summary>
+    protected virtual string TranslateStringIsNullOrEmpty(
+        MethodCallExpression methodCall,
+        IReadOnlyDictionary<ParameterExpression, TableBinding> bindings,
+        List<SqlParameter> parameters)
+    {
+        var column = TranslateExpression(methodCall.Arguments[0], bindings, parameters);
+        return $"({column} IS NULL OR {column} = '')";
+    }
+
+    /// <summary>
+    /// Translates string.IsNullOrEmpty to SQL using column mappings.
+    /// </summary>
+    protected virtual string TranslateStringIsNullOrEmpty(
+        MethodCallExpression methodCall,
+        IReadOnlyDictionary<string, string> columnMappings,
+        List<SqlParameter> parameters)
+    {
+        var column = TranslateExpression(methodCall.Arguments[0], columnMappings, parameters);
+        return $"({column} IS NULL OR {column} = '')";
+    }
+
+    /// <summary>
+    /// Translates string.IsNullOrWhiteSpace to SQL using table bindings.
+    /// </summary>
+    protected virtual string TranslateStringIsNullOrWhiteSpace(
+        MethodCallExpression methodCall,
+        IReadOnlyDictionary<ParameterExpression, TableBinding> bindings,
+        List<SqlParameter> parameters)
+    {
+        var column = TranslateExpression(methodCall.Arguments[0], bindings, parameters);
+        return $"({column} IS NULL OR LTRIM(RTRIM({column})) = '')";
+    }
+
+    /// <summary>
+    /// Translates string.IsNullOrWhiteSpace to SQL using column mappings.
+    /// </summary>
+    protected virtual string TranslateStringIsNullOrWhiteSpace(
+        MethodCallExpression methodCall,
+        IReadOnlyDictionary<string, string> columnMappings,
+        List<SqlParameter> parameters)
+    {
+        var column = TranslateExpression(methodCall.Arguments[0], columnMappings, parameters);
+        return $"({column} IS NULL OR LTRIM(RTRIM({column})) = '')";
     }
 
     [SuppressMessage("Performance", "CA1859:Use concrete types when possible for improved performance", Justification = "<Pending>")]
