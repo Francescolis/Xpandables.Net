@@ -66,10 +66,24 @@ public class DataUnitOfWork : IDataUnitOfWork
     }
 
     /// <inheritdoc />
-    public IDataTransaction? CurrentTransaction => _connectionScope.CurrentTransaction;
+    public IDataTransaction? CurrentTransaction
+    {
+        get
+        {
+            ThrowIfDisposed();
+            return _connectionScope.CurrentTransaction;
+        }
+    }
 
     /// <inheritdoc />
-    public bool HasActiveTransaction => _connectionScope.HasActiveTransaction;
+    public bool HasActiveTransaction
+    {
+        get
+        {
+            ThrowIfDisposed();
+            return _connectionScope.HasActiveTransaction;
+        }
+    }
 
     /// <inheritdoc />
     public virtual IDataRepository<TEntity> GetRepository<[DynamicallyAccessedMembers(DynamicallyAccessedMemberTypes.PublicProperties)] TEntity>()
