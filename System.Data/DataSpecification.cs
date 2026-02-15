@@ -15,7 +15,7 @@
  *
 ********************************************************************************/
 using System.Collections.Immutable;
-using System.Data;
+using System.Diagnostics.CodeAnalysis;
 using System.Linq.Expressions;
 
 namespace System.Data;
@@ -65,29 +65,29 @@ public readonly record struct DataSpecificationBuilder<TData>
     where TData : class
 {
     private readonly LambdaExpression? _predicate;
-    private readonly ImmutableList<IJoinSpecification> _joins;
-    private readonly ImmutableList<LambdaExpression> _groupBy;
+    private readonly ImmutableArray<IJoinSpecification> _joins;
+    private readonly ImmutableArray<LambdaExpression> _groupBy;
     private readonly LambdaExpression? _having;
-    private readonly ImmutableList<OrderSpecification> _orderBy;
+    private readonly ImmutableArray<OrderSpecification> _orderBy;
     private readonly int? _skip;
     private readonly int? _take;
     private readonly bool _isDistinct;
 
     internal DataSpecificationBuilder(
-        LambdaExpression? predicate = null,
-        ImmutableList<IJoinSpecification>? joins = null,
-        ImmutableList<LambdaExpression>? groupBy = null,
-        LambdaExpression? having = null,
-        ImmutableList<OrderSpecification>? orderBy = null,
-        int? skip = null,
-        int? take = null,
-        bool isDistinct = false)
+        LambdaExpression? predicate,
+        ImmutableArray<IJoinSpecification> joins,
+        ImmutableArray<LambdaExpression> groupBy,
+        LambdaExpression? having,
+        ImmutableArray<OrderSpecification> orderBy,
+        int? skip,
+        int? take,
+        bool isDistinct)
     {
         _predicate = predicate;
-        _joins = joins ?? [];
-        _groupBy = groupBy ?? [];
+        _joins = joins;
+        _groupBy = groupBy;
         _having = having;
-        _orderBy = orderBy ?? [];
+        _orderBy = orderBy;
         _skip = skip;
         _take = take;
         _isDistinct = isDistinct;
@@ -481,20 +481,20 @@ public readonly record struct DataSpecification<TData, TResult> : IDataSpecifica
     internal DataSpecification(
         LambdaExpression? predicate,
         LambdaExpression selector,
-        IReadOnlyList<IJoinSpecification> joins,
-        IReadOnlyList<LambdaExpression> groupBy,
+        ImmutableArray<IJoinSpecification> joins,
+        ImmutableArray<LambdaExpression> groupBy,
         LambdaExpression? having,
-        IReadOnlyList<OrderSpecification> orderBy,
+        ImmutableArray<OrderSpecification> orderBy,
         int? skip,
         int? take,
         bool isDistinct)
     {
         Predicate = predicate;
         Selector = selector ?? throw new ArgumentNullException(nameof(selector));
-        Joins = joins ?? [];
-        GroupBy = groupBy ?? [];
+        Joins = joins;
+        GroupBy = groupBy;
         Having = having;
-        OrderBy = orderBy ?? [];
+        OrderBy = orderBy;
         Skip = skip;
         Take = take;
         IsDistinct = isDistinct;
