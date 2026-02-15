@@ -159,11 +159,11 @@ public static class IPipelineExtensions
         /// Registers a pipeline request handler of the specified type with the dependency injection container.
         /// </summary>
         /// <remarks>Use this method to add custom pipeline request handlers to the service collection for
-        /// dependency injection. The handler will be registered with transient lifetime, meaning a new instance is
-        /// created each time it is requested.</remarks>
+        /// dependency injection. The handler will be registered with scoped lifetime to amortize the cost of
+        /// pipeline construction and to align with scoped decorator dependencies.</remarks>
         /// <param name="type">The type that implements the <see cref="IPipelineRequestHandler{TRequest}"/> interface. Must have public constructors and
         /// implement the required interface.</param>
-        /// <returns>The IServiceCollection instance with the pipeline request handler registered as a transient service.</returns>
+        /// <returns>The IServiceCollection instance with the pipeline request handler registered as a scoped service.</returns>
         /// <exception cref="InvalidOperationException">Thrown if the specified type does not implement the <see cref="IPipelineRequestHandler{TRequest}"/>> interface.</exception>
         public IServiceCollection AddXPipelineRequestHandler([DynamicallyAccessedMembers(DynamicallyAccessedMemberTypes.Interfaces | DynamicallyAccessedMemberTypes.PublicConstructors)] Type type)
         {
@@ -179,14 +179,14 @@ public static class IPipelineExtensions
             // If `type` is open generic (or implements handler as open generic), register open generic service.
             if (type.ContainsGenericParameters || handlerInterface.ContainsGenericParameters)
             {
-                return services.AddTransient(typeof(IPipelineRequestHandler<>), type);
+                return services.AddScoped(typeof(IPipelineRequestHandler<>), type);
             }
 
             // Closed implementation: register specifically for the closed TRequest (IPipelineRequestHandler<TRequest>).
             var requestType = handlerInterface.GenericTypeArguments[0];
             var serviceType = typeof(IPipelineRequestHandler<>).MakeGenericType(requestType);
 
-            return services.AddTransient(serviceType, type);
+            return services.AddScoped(serviceType, type);
         }
     }
 }

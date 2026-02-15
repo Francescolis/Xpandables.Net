@@ -38,7 +38,7 @@ public sealed class PipelineExtensionsTests
     }
 
     [Fact]
-    public void AddXPipelineRequestHandler_RegistersTransientDescriptor()
+    public void AddXPipelineRequestHandler_RegistersScopedDescriptor()
     {
         // Arrange
         var services = new ServiceCollection();
@@ -46,10 +46,12 @@ public sealed class PipelineExtensionsTests
         // Act
         services.AddXPipelineRequestHandler(typeof(TestHandler));
         using var provider = services.BuildServiceProvider();
-        var handler1 = provider.GetRequiredService<IPipelineRequestHandler<TestRequest>>();
-        var handler2 = provider.GetRequiredService<IPipelineRequestHandler<TestRequest>>();
+        using var scope1 = provider.CreateScope();
+        using var scope2 = provider.CreateScope();
+        var handler1 = scope1.ServiceProvider.GetRequiredService<IPipelineRequestHandler<TestRequest>>();
+        var handler2 = scope2.ServiceProvider.GetRequiredService<IPipelineRequestHandler<TestRequest>>();
 
-        // Assert
+        // Assert — scoped: different scopes yield different instances
         Assert.NotSame(handler1, handler2);
     }
 

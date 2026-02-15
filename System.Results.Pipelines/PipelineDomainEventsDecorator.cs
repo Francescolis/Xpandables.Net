@@ -71,18 +71,19 @@ public sealed class PipelineDomainEventsDecorator<TRequest>(
     }
 
     /// <summary>
-    /// Provides a thread-local buffer for managing batches of pending domain events.
+    /// Provides an async-local buffer for managing batches of pending domain events.
     /// </summary>
-    /// <remarks>This class is designed to facilitate the temporary storage and management of domain event
-    /// batches within the context of a single thread. It ensures that each thread has its own isolated
-    /// buffer.</remarks>
+    /// <remarks>This class uses <see cref="AsyncLocal{T}"/> to ensure that domain event batches
+    /// flow correctly across async continuations, unlike <c>[ThreadStatic]</c> which is not safe
+    /// with <c>async/await</c> due to potential thread switches.</remarks>
     internal static class DomainEventCommitBuffer
     {
-        [ThreadStatic] private static List<PendingDomainEventsBatch>? _batches;
+        private static readonly AsyncLocal<List<PendingDomainEventsBatch>?> _batches = new();
+
         /// <summary>
         /// Gets the current list of pending domain event batches.
         /// </summary>
-        public static List<PendingDomainEventsBatch> Current => _batches ??= [];
+        public static List<PendingDomainEventsBatch> Current => _batches.Value ??= [];
         /// <summary>
         /// Retrieves and clears all pending domain event batches.
         /// </summary>

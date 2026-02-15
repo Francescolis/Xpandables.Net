@@ -25,6 +25,11 @@ namespace System.ComponentModel.DataAnnotations;
 public interface IValidator
 {
     /// <summary>
+    /// Gets the order in which this item is processed or applied.
+    /// </summary>
+    int Order { get; }
+
+    /// <summary>
     /// Validates the specified object instance and returns a collection of validation results.
     /// </summary>
     /// <param name="instance">The object to validate. Cannot be null.</param>

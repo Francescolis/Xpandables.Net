@@ -31,7 +31,7 @@ namespace System.Results;
 /// supports integration with HTTP-based APIs and can be used to standardize result handling across application
 /// layers.</remarks>
 [DebuggerDisplay($"{{{nameof(DebuggerDisplay)},nq}}")]
-public record Result : _Result
+public record Result : ResultBase
 {
     /// <summary>
     /// Initializes a new instance of the Result class for use by derived types and JSON deserialization.
@@ -58,7 +58,7 @@ public record Result : _Result
 /// supports integration with HTTP-based APIs and can be used to standardize result handling across application
 /// layers.</remarks>
 /// <typeparam name="TValue">The type of the value contained in the result.</typeparam>
-public record Result<TValue> : _Result
+public record Result<TValue> : ResultBase
 {
     /// <summary>
     /// Initializes a new instance of the Result class for use by derived types and JSON deserialization.
@@ -77,10 +77,10 @@ public record Result<TValue> : _Result
     /// Gets or sets the value of the result.
     /// </summary>
     [MaybeNull, AllowNull]
-    public new TValue Value
+    public TValue Value
     {
-        get => base.Value is TValue result ? result : default;
-        protected internal init => base.Value = value;
+        get => InternalValue is TValue result ? result : default;
+        protected internal init => InternalValue = value;
     }
 
     /// <summary>
@@ -107,7 +107,7 @@ public record Result<TValue> : _Result
             Headers = result.Headers,
             Extensions = result.Extensions,
             Exception = result.Exception,
-            Value = result.Value
+            InternalValue = result.Value
         };
     }
 
@@ -115,7 +115,7 @@ public record Result<TValue> : _Result
     /// Defines an implicit conversion from a non-generic Result to a generic <see cref="Result{TValue}"/> instance.
     /// </summary>
     /// <remarks>All properties from the source Result are copied to the new <see cref="Result{TValue}"/> instance. The
-    /// Value property is set to the source Value if it is of type TValue; otherwise, it is set to the default value of
+    /// Value property is set to the source InternalValue if it is of type TValue; otherwise, it is set to the default value of
     /// TValue.</remarks>
     /// <param name="result">The non-generic Result instance to convert. Cannot be null.</param>
     [SuppressMessage("Usage", "CA2225:Operator overloads have named alternates", Justification = "<Pending>")]
@@ -133,33 +133,7 @@ public record Result<TValue> : _Result
             Headers = result.Headers,
             Extensions = result.Extensions,
             Exception = result.Exception,
-            Value = result.Value is TValue value ? value : default
-        };
-    }
-
-    /// <summary>
-    /// Converts a generic <see cref="Result{TValue}"/> instance to a non-generic <see langword="Result{object}"/> instance,
-    /// preserving all status and metadata information.
-    /// </summary>
-    /// <remarks>This operator allows code to treat a generic result as a non-generic result, which can be
-    /// useful when the value type is not known at compile time. All properties, including status, errors, and
-    /// extensions, are copied to the new instance.</remarks>
-    /// <param name="result">The generic result to convert. Cannot be null.</param>
-    [SuppressMessage("Usage", "CA2225:Operator overloads have named alternates", Justification = "<Pending>")]
-    public static implicit operator Result<object>(Result<TValue> result)
-    {
-        ArgumentNullException.ThrowIfNull(result);
-        return new()
-        {
-            StatusCode = result.StatusCode,
-            Title = result.Title,
-            Detail = result.Detail,
-            Location = result.Location,
-            Errors = result.Errors,
-            Headers = result.Headers,
-            Extensions = result.Extensions,
-            Exception = result.Exception,
-            Value = result.Value
+            Value = result.InternalValue is TValue value ? value : default
         };
     }
 }

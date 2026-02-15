@@ -43,14 +43,14 @@ public sealed class PipelinePostDecorator<TRequest>(
 
         foreach (IRequestPostHandler<TRequest> postHandler in postHandlers)
         {
-            Result result = await postHandler
+            response = await postHandler
                 .HandleAsync(context, response, cancellationToken)
                 .ConfigureAwait(false);
 
             // If any post-handler returns a failure response, we short-circuit and return that response.
-            if (result.IsFailure)
+            if (response.IsFailure)
             {
-                return result;
+                return response;
             }
         }
 

@@ -35,7 +35,7 @@ public sealed class CompositeValidator<TArgument>(IEnumerable<IValidator<TArgume
     public override IReadOnlyCollection<ValidationResult> Validate(TArgument instance)
     {
         List<ValidationResult> validationResults = [];
-        foreach (IValidator<TArgument> validator in _validators)
+        foreach (IValidator<TArgument> validator in _validators.OrderBy(v => v.Order))
         {
             var results = validator.Validate(instance);
             if (results is { Count: > 0 })
@@ -52,7 +52,7 @@ public sealed class CompositeValidator<TArgument>(IEnumerable<IValidator<TArgume
     {
         List<ValidationResult> validationResults = [];
 
-        foreach (IValidator<TArgument> validator in _validators)
+        foreach (IValidator<TArgument> validator in _validators.OrderBy(v => v.Order))
         {
             var results = await validator
                 .ValidateAsync(instance)

@@ -8,8 +8,10 @@
 		<LangVersion>latest</LangVersion>
 		<Platforms>x64</Platforms>
 		<NoWarn>CA1859;7</NoWarn>
-        <AssemblyName>Xpandables.Net.UnitTests</AssemblyName>
-        <RootNamespace>Xpandables.Net.UnitTests</RootNamespace>
+		<AssemblyName>Xpandables.Net.UnitTests</AssemblyName>
+		<RootNamespace>Xpandables.Net.UnitTests</RootNamespace>
+		<SignAssembly>true</SignAssembly>
+		<AssemblyOriginatorKeyFile>..\System.Results\Xpandables.Net.snk</AssemblyOriginatorKeyFile>
 	</PropertyGroup>
 
 	<ItemGroup>

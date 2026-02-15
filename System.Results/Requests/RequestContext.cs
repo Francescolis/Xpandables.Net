@@ -51,7 +51,7 @@ public sealed class RequestContext<TRequest>(TRequest request) : IEnumerable<Key
     private Dictionary<string, object> Items
     {
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
-        get => _items ??= new Dictionary<string, object>(StringComparer.Ordinal);
+        get => _items ??= new(StringComparer.Ordinal);
     }
 
     /// <summary>
@@ -67,7 +67,7 @@ public sealed class RequestContext<TRequest>(TRequest request) : IEnumerable<Key
     /// <exception cref="ArgumentNullException">Thrown when the key/value is <see langword="null"/>.</exception>
     public object? this[string key]
     {
-        get => _items is not null && _items.TryGetValue(key, out var value) ? value : null;
+        get => Items.TryGetValue(key, out var value) ? value : null;
         set => Items[key] = value ?? throw new ArgumentNullException(nameof(value), "Value cannot be null.");
     }
 
@@ -95,16 +95,7 @@ public sealed class RequestContext<TRequest>(TRequest request) : IEnumerable<Key
     /// <returns><see langword="true"/> if the collection contains an item with the specified key; otherwise, <see
     /// langword="false"/>.</returns>
     [MethodImpl(MethodImplOptions.AggressiveInlining)]
-    public bool TryGetItem(string key, [NotNullWhen(true)] out object? value)
-    {
-        if (_items is not null)
-        {
-            return _items.TryGetValue(key, out value);
-        }
-
-        value = null;
-        return false;
-    }
+    public bool TryGetItem(string key, [NotNullWhen(true)] out object? value) => Items.TryGetValue(key, out value);
 
     /// <summary>
     /// Attempts to retrieve an item of the specified type from the collection using the provided key.
@@ -122,7 +113,7 @@ public sealed class RequestContext<TRequest>(TRequest request) : IEnumerable<Key
     [MethodImpl(MethodImplOptions.AggressiveInlining)]
     public bool TryGetItem<TItem>(string key, [NotNullWhen(true)] out TItem? item)
     {
-        if (_items is not null && _items.TryGetValue(key, out var value) && value is TItem castedItem)
+        if (Items.TryGetValue(key, out var value) && value is TItem castedItem)
         {
             item = castedItem;
             return true;
@@ -157,10 +148,7 @@ public sealed class RequestContext<TRequest>(TRequest request) : IEnumerable<Key
     /// <param name="key">The key of the item to remove. Cannot be <see langword="null"/> or empty.</param>
     /// <returns><see langword="true"/> if the item was successfully removed; otherwise, <see langword="false"/>.</returns>
     [MethodImpl(MethodImplOptions.AggressiveInlining)]
-    public bool RemoveItem(string key)
-    {
-        return _items is not null && _items.Remove(key);
-    }
+    public bool RemoveItem(string key) => Items.Remove(key);
 
     /// <summary>
     /// Removes all items from the request context.

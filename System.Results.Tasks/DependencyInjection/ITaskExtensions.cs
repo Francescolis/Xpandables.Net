@@ -110,11 +110,13 @@ public static class ITaskExtensions
                 .AddXPipelineExceptionDecorator();
 
         /// <summary>
-        /// Registers the specified mediator implementation as a scoped service for dependency injection.
+        /// Registers the specified mediator implementation as a transient service for dependency injection.
         /// </summary>
         /// <remarks>Use this method to configure a custom mediator implementation for use within the
-        /// application's dependency injection container. The mediator will be resolved as a scoped service, meaning a
-        /// new instance is created per request or scope.
+        /// application's dependency injection container. The mediator is stateless and delegates to pipeline handlers,
+        /// so it is registered as transient.
+        /// <para>Ensure that <c>PipelineExceptionDecorator</c> is registered in the pipeline to handle
+        /// unhandled exceptions. Without it, exceptions will propagate to the caller.</para>
         /// <para></para>if you want to add pipeline decorators, register handler services in this order :
         /// <list type="bullet">
         /// <item>PipelinePreDecorator</item>
@@ -142,7 +144,7 @@ public static class ITaskExtensions
         /// <returns>The <see cref="IServiceCollection"/> instance with the mediator service registration added.</returns>
         public IServiceCollection AddXMediator<[DynamicallyAccessedMembers(DynamicallyAccessedMemberTypes.PublicConstructors)] TMediator>()
             where TMediator : class, IMediator =>
-            services.AddScoped<IMediator, TMediator>()
+            services.AddTransient<IMediator, TMediator>()
             .AddXPipelineRequestHandler();
 
         /// <summary>

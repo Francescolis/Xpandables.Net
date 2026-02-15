@@ -39,6 +39,10 @@ public sealed class ResultMiddleware : IMiddleware
         {
             await next(context).ConfigureAwait(false);
         }
+        catch (OperationCanceledException)
+        {
+            throw;
+        }
         catch (Exception exception)
             when (!context.Response.HasStarted)
         {

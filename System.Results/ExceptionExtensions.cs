@@ -51,7 +51,11 @@ public static class ExceptionExtensions
         {
             ArgumentNullException.ThrowIfNull(exception);
 
-            bool isDevelopment = (Environment.GetEnvironmentVariable("ASPNETCORE_ENVIRONMENT") ?? "Development") == "Development";
+#if DEBUG
+            bool isDevelopment = true;
+#else
+            bool isDevelopment = false;
+#endif
 
             if (exception is ResultException resultException)
             {
@@ -98,7 +102,12 @@ public static class ExceptionExtensions
         public FailureResult<TValue> ToResult<TValue>(HttpStatusCode? statusCode = null, string? reason = default)
         {
             ArgumentNullException.ThrowIfNull(exception);
-            bool isDevelopment = (Environment.GetEnvironmentVariable("ASPNETCORE_ENVIRONMENT") ?? "Development") == "Development";
+
+#if DEBUG
+            bool isDevelopment = true;
+#else
+            bool isDevelopment = false;
+#endif
             if (exception is ResultException resultException)
             {
                 var executionResult = resultException.Result;

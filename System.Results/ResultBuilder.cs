@@ -102,7 +102,7 @@ public abstract class ResultBuilder<TBuilder>(HttpStatusCode statusCode) :
             Title = Title,
             Detail = Detail,
             Location = Location,
-            Value = Value,
+            InternalValue = Value,
             Errors = Errors,
             Headers = Headers,
             Extensions = Extensions,

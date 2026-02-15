@@ -50,9 +50,9 @@ public sealed class ControllerResultFilter : IAsyncAlwaysRunResultFilter
                     .WriteAsync(context.HttpContext, result)
                     .ConfigureAwait(false);
 
-                if (result.Value is not null)
+                if (result.InternalValue is not null)
                 {
-                    objectResult.Value = result.Value;
+                    objectResult.Value = result.InternalValue;
                 }
             }
         }

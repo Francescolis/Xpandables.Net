@@ -14,6 +14,8 @@
  * limitations under the License.
  *
 ********************************************************************************/
+using System.ComponentModel;
+
 namespace System.Results.Requests;
 
 /// <summary>
@@ -58,6 +60,7 @@ public interface IRequestHandler<in TRequest, TResponse> : IRequestHandler<TRequ
         TRequest request,
         CancellationToken cancellationToken = default);
 
+    [EditorBrowsable(EditorBrowsableState.Never)]
     async Task<Result> IRequestHandler<TRequest>.HandleAsync(
         TRequest request, CancellationToken cancellationToken) =>
         await HandleAsync(request, cancellationToken).ConfigureAwait(false);

@@ -14,14 +14,16 @@
  * limitations under the License.
  *
 ********************************************************************************/
-namespace System.Results;
+namespace System.Entities;
 
 /// <summary>
-/// 
+/// Marker interface to indicate that a request requires automatic 
+/// entity unit of work management, ensuring database changes are persisted
+/// regardless of the request outcome.
 /// </summary>
-public static partial class ResultFunctionalExtensions
-{
-    extension<TValue>(Result<TValue> result)
-    {
-    }
-}
+/// <remarks>Implement this interface to signal that the implementing class should be used within a unit of work
+/// pattern. This interface does not define any members and serves as a semantic indicator for dependency injection or
+/// other framework-specific behaviors.</remarks>
+#pragma warning disable CA1040 // Avoid empty interfaces
+public interface IEntityRequiresUnitOfWork;
+#pragma warning restore CA1040 // Avoid empty interfaces

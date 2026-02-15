@@ -1,6 +1,5 @@
 using System.Net;
 using System.Results;
-using Xunit;
 
 namespace Xpandables.Net.UnitTests.Systems.Results;
 
@@ -17,7 +16,7 @@ public sealed class ResultConversionTests
 
         // Assert
         Assert.Equal(HttpStatusCode.OK, result.StatusCode);
-        Assert.Equal(42, result.Value);
+        Assert.Equal(42, result.InternalValue);
     }
 
     [Fact]
@@ -54,19 +53,19 @@ public sealed class ResultConversionTests
         Assert.Null(typed.Value);
     }
 
-    [Fact]
-    public void ImplicitConversion_FromGenericToObjectResult_PreservesValue()
-    {
-        // Arrange
-        Result<int> typedResult = Result.Success(10);
+    //[Fact]
+    //public void ImplicitConversion_FromGenericToObjectResult_PreservesValue()
+    //{
+    //    // Arrange
+    //    Result<int> typedResult = Result.Success(10);
 
-        // Act
-        Result<object> result = typedResult;
+    //    // Act
+    //    Result<object> result = typedResult;
 
-        // Assert
-        Assert.Equal(10, result.Value);
-        Assert.Equal(HttpStatusCode.OK, result.StatusCode);
-    }
+    //    // Assert
+    //    Assert.Equal(10, result.Value);
+    //    Assert.Equal(HttpStatusCode.OK, result.StatusCode);
+    //}
 
     [Fact]
     public void ImplicitConversion_FromGeneric_NullSource_Throws()

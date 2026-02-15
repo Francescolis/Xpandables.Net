@@ -62,7 +62,7 @@ public static class IRequestExtensions
                     && i.GetGenericTypeDefinition() == typeof(IPipelineDecorator<>)))
             {
                 throw new InvalidOperationException(
-                    $"{pipeline.Name} does not implement IPipelineDecorator<,> interface.");
+                    $"{pipeline.Name} does not implement IPipelineDecorator<> interface.");
             }
 
             return services.AddTransient(typeof(IPipelineDecorator<>), pipeline);
@@ -99,6 +99,7 @@ public static class IRequestExtensions
                             && type.GetInterfaces().Any(i =>
                                 i.IsGenericType &&
                                 (i.GetGenericTypeDefinition() == typeof(IRequestHandler<>)
+                                || i.GetGenericTypeDefinition() == typeof(IRequestHandler<,>)
                                 || i.GetGenericTypeDefinition() == typeof(IRequestContextHandler<>)
                                 || i.GetGenericTypeDefinition() == typeof(IRequestContextHandler<,>)
                                 || i.GetGenericTypeDefinition() == typeof(IRequestPostHandler<>)
@@ -112,6 +113,7 @@ public static class IRequestExtensions
                     type.GetInterfaces()
                         .Where(i => i.IsGenericType &&
                                     (i.GetGenericTypeDefinition() == typeof(IRequestHandler<>)
+                                    || i.GetGenericTypeDefinition() == typeof(IRequestHandler<,>)
                                     || i.GetGenericTypeDefinition() == typeof(IRequestContextHandler<>)
                                     || i.GetGenericTypeDefinition() == typeof(IRequestContextHandler<,>)
                                     || i.GetGenericTypeDefinition() == typeof(IRequestPostHandler<>)

@@ -34,27 +34,6 @@ public sealed record SuccessResult : Result
 
     /// <inheritdoc/>
     public sealed override bool IsSuccess => true;
-
-    /// <summary>
-    /// Converts a non-generic SuccessResult instance to a generic success instance, preserving all result
-    /// data.
-    /// </summary>
-    /// <remarks>This implicit conversion allows seamless use of SuccessResult in contexts where
-    /// success is expected. All headers, status code, extensions, and value are copied to the new
-    /// instance.</remarks>
-    /// <param name="success">The SuccessResult instance to convert. Cannot be null.</param>
-    [SuppressMessage("Usage", "CA2225:Operator overloads have named alternates", Justification = "<Pending>")]
-    public static implicit operator SuccessResult<object>(SuccessResult success)
-    {
-        ArgumentNullException.ThrowIfNull(success);
-        return new()
-        {
-            Headers = success.Headers,
-            StatusCode = success.StatusCode,
-            Extensions = success.Extensions,
-            Value = success.Value
-        };
-    }
 }
 
 /// <summary>
@@ -83,8 +62,8 @@ public sealed record SuccessResult<TValue> : Result<TValue>
     [MaybeNull, AllowNull]
     public required new TValue Value
     {
-        get => base.Value is TValue result ? result : default;
-        init => base.Value = value;
+        get => InternalValue is TValue result ? result : default;
+        init => InternalValue = value;
     }
 
     /// <summary>
@@ -103,7 +82,27 @@ public sealed record SuccessResult<TValue> : Result<TValue>
             Headers = success.Headers,
             StatusCode = success.StatusCode,
             Location = success.Location,
-            Value = success.Value
+            InternalValue = success.Value
+        };
+    }
+
+    /// <summary>
+    /// Converts a non-generic SuccessResult instance to a generic <see cref="SuccessResult{TValue}"/> instance, copying relevant
+    /// properties and attempting to cast the internal value to the specified type.
+    /// </summary>
+    /// <remarks>If the internal value of the source SuccessResult cannot be cast to TValue, the resulting
+    /// Value property will be set to the default value of TValue.</remarks>
+    /// <param name="success">The SuccessResult instance to convert. Cannot be null.</param>
+    [SuppressMessage("Usage", "CA2225:Operator overloads have named alternates", Justification = "<Pending>")]
+    public static implicit operator SuccessResult<TValue>(SuccessResult success)
+    {
+        ArgumentNullException.ThrowIfNull(success);
+        return new()
+        {
+            Headers = success.Headers,
+            StatusCode = success.StatusCode,
+            Extensions = success.Extensions,
+            Value = success.InternalValue is TValue result ? result : default
         };
     }
 }

@@ -30,15 +30,13 @@ namespace System.Results;
 /// referenced directly in application code. Use <see cref="Result"/> or <see cref="Result{TValue}"/> instead.</remarks>
 [DebuggerDisplay($"{{{nameof(DebuggerDisplay)},nq}}")]
 [EditorBrowsable(EditorBrowsableState.Never)]
-[SuppressMessage("Naming", "CA1707:Identifiers should not contain underscores", Justification = "<Pending>")]
-[SuppressMessage("Style", "IDE1006:Naming Styles", Justification = "<Pending>")]
-public abstract record _Result
+public abstract record ResultBase
 {
     /// <summary>
-    /// Initializes a new instance of the _Result class for use by derived types and JSON deserialization.
+    /// Initializes a new instance of the ResultBase class for use by derived types and JSON deserialization.
     /// </summary>
     [JsonConstructor]
-    protected internal _Result() { }
+    protected internal ResultBase() { }
 
     /// <summary>
     /// Represents the HTTP status code associated with the operation result.
@@ -61,12 +59,13 @@ public abstract record _Result
     public Uri? Location { get; protected internal init; }
 
     /// <summary>
-    /// Represents the value associated with the operation result, which can be of any type.
+    /// Represents the internal value associated with the operation result, which can be of any type.
     /// </summary>
-    /// <remarks>This property is designed to hold the result of the operation, which may vary in type depending on the
-    /// context.</remarks>
+    /// <remarks>This property is designed to hold the result of the operation internally.
+    /// Derived types should expose a public <c>Value</c> property with the appropriate type if needed.</remarks>
     [MaybeNull, AllowNull]
-    public object Value { get; protected internal init; }
+    [JsonIgnore]
+    protected internal object InternalValue { get; init; }
 
     /// <summary>
     /// Represents a collection of errors associated with the operation result.

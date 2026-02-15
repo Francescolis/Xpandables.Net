@@ -50,7 +50,7 @@ public sealed class SuccessResultBuilder :
             Location = Location,
             Headers = Headers,
             Exception = Exception,
-            Value = Value
+            InternalValue = Value
         };
 
     /// <summary>

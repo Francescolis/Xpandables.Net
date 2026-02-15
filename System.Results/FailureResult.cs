@@ -54,31 +54,6 @@ public sealed record FailureResult : Result
     /// Represents a detailed, human-readable explanation specific to this occurrence of the problem.
     /// </summary>
     public new string? Detail { get => base.Detail; init => base.Detail = value; }
-
-    /// <summary>
-    /// Converts a <see cref="FailureResult"/> instance to a <see cref="FailureResult{Object}"/> instance, copying all
-    /// relevant properties.
-    /// </summary>
-    /// <remarks>This operator enables implicit conversion from a non-generic <see cref="FailureResult"/> to a
-    /// generic <see cref="FailureResult{Object}"/>. All properties are copied to the new instance. This is useful when
-    /// working with APIs that expect the generic form.</remarks>
-    /// <param name="failure">The <see cref="FailureResult"/> instance to convert. Cannot be null.</param>
-    [Diagnostics.CodeAnalysis.SuppressMessage("Usage", "CA2225:Operator overloads have named alternates", Justification = "<Pending>")]
-    public static implicit operator FailureResult<object>(FailureResult failure)
-    {
-        ArgumentNullException.ThrowIfNull(failure);
-        return new()
-        {
-            StatusCode = failure.StatusCode,
-            Title = failure.Title,
-            Detail = failure.Detail,
-            Location = failure.Location,
-            Errors = failure.Errors,
-            Headers = failure.Headers,
-            Extensions = failure.Extensions,
-            Exception = failure.Exception
-        };
-    }
 }
 
 /// <summary>
@@ -154,32 +129,6 @@ public sealed record FailureResult<TValue> : Result<TValue>
     /// <param name="failure">The FailureResult instance to convert. Cannot be null.</param>
     [Diagnostics.CodeAnalysis.SuppressMessage("Usage", "CA2225:Operator overloads have named alternates", Justification = "<Pending>")]
     public static implicit operator FailureResult<TValue>(FailureResult failure)
-    {
-        ArgumentNullException.ThrowIfNull(failure);
-        return new()
-        {
-            StatusCode = failure.StatusCode,
-            Title = failure.Title,
-            Detail = failure.Detail,
-            Location = failure.Location,
-            Errors = failure.Errors,
-            Headers = failure.Headers,
-            Extensions = failure.Extensions,
-            Exception = failure.Exception
-        };
-    }
-
-    /// <summary>
-    /// Converts a <see langword="FailureResult{object}"/> instance to a <see cref="FailureResult{TValue}"/> instance,
-    /// preserving failure details.
-    /// </summary>
-    /// <remarks>This operator allows failure results with an object payload to be cast to a generic failure
-    /// result of any type, enabling consistent error handling across different value types. All failure details,
-    /// including status code, title, detail, location, errors, headers, extensions, and exception, are copied to the
-    /// new instance.</remarks>
-    /// <param name="failure">The <see langword="FailureResult{object}"/> instance containing failure information to convert. Cannot be null.</param>
-    [Diagnostics.CodeAnalysis.SuppressMessage("Usage", "CA2225:Operator overloads have named alternates", Justification = "<Pending>")]
-    public static implicit operator FailureResult<TValue>(FailureResult<object> failure)
     {
         ArgumentNullException.ThrowIfNull(failure);
         return new()

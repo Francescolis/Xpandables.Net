@@ -27,7 +27,7 @@ public sealed class MediatorTests
     }
 
     [Fact]
-    public async Task SendAsync_ConvertsUnhandledExceptionToFailureResult()
+    public async Task SendAsync_WithoutExceptionDecorator_PropagatesException()
     {
         // Arrange
         var services = new ServiceCollection();
@@ -35,13 +35,10 @@ public sealed class MediatorTests
         var mediator = new Mediator(services.BuildServiceProvider());
         var request = new TestRequest();
 
-        // Act
-        var result = await mediator.SendAsync(request);
-
-        // Assert
-        Assert.Equal(HttpStatusCode.InternalServerError, result.StatusCode);
-        Assert.False(result.IsSuccess);
-        Assert.NotNull(result.Exception);
+        // Act & Assert — Mediator is a pure dispatcher; without PipelineExceptionDecorator,
+        // unhandled exceptions propagate to the caller.
+        await Assert.ThrowsAsync<InvalidOperationException>(
+            () => mediator.SendAsync(request));
     }
 
     [Fact]

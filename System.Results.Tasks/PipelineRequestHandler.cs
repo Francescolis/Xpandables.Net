@@ -21,19 +21,6 @@ using System.Runtime.CompilerServices;
 namespace System.Results.Tasks;
 
 /// <summary>
-/// 
-/// </summary>
-/// <typeparam name="TRequest"></typeparam>
-public sealed class CustomPipelineRequestHandler<TRequest> :
-    IPipelineRequestHandler<TRequest>
-    where TRequest : class, IRequest
-{
-    /// <inheritdoc/>
-    public Task<Result> HandleAsync(TRequest request, CancellationToken cancellationToken = default) =>
-        Task.FromResult<Result>(Result.Success());
-}
-
-/// <summary>
 /// Represents a sealed class that implements the pipeline request handling mechanism for a given request type.
 /// This handler uses a series of decorators, applied in reverse order, to process the request and execute the operation.
 /// </summary>
@@ -83,11 +70,6 @@ public sealed class PipelineRequestHandler<TRequest> :
         }
         else
         {
-            if (decoratorArray.Length > 1)
-            {
-                Array.Reverse(decoratorArray);
-            }
-
             _pipeline = BuildPipeline(decoratorArray);
         }
     }
@@ -130,7 +112,7 @@ public sealed class PipelineRequestHandler<TRequest> :
             current = (ctx, ct) =>
             {
 #pragma warning disable IDE0039 // Use local function
-                RequestHandler nextHandler = cancellationToken => next(ctx, cancellationToken);
+                RequestHandler nextHandler = innerCt => next(ctx, innerCt);
 #pragma warning restore IDE0039 // Use local function
                 return decorator.HandleAsync(ctx, nextHandler, ct);
             };

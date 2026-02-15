@@ -24,10 +24,10 @@ namespace System.Results.Pipelines;
 /// changes are saved to the database context via the <see cref="IEntityUnitOfWork"/>
 /// after processing the request and response in a pipeline execution.
 /// </summary>
-/// <typeparam name="TRequest">The type of the request object that must implement <see cref="IRequiresEntityUnitOfWork"/>.</typeparam>
+/// <typeparam name="TRequest">The type of the request object that must implement <see cref="IEntityRequiresUnitOfWork"/>.</typeparam>
 public sealed class PipelineEntityUnitOfWorkDecorator<TRequest>(IEntityUnitOfWork? unitOfWork = default) :
     IPipelineDecorator<TRequest>
-    where TRequest : class, IRequest, IRequiresEntityUnitOfWork
+    where TRequest : class, IRequest, IEntityRequiresUnitOfWork
 {
     /// <inheritdoc/>
     public async Task<Result> HandleAsync(
@@ -38,20 +38,15 @@ public sealed class PipelineEntityUnitOfWorkDecorator<TRequest>(IEntityUnitOfWor
         ArgumentNullException.ThrowIfNull(context);
         ArgumentNullException.ThrowIfNull(nextHandler);
 
-        try
-        {
-            Result response = await nextHandler(cancellationToken).ConfigureAwait(false);
+        Result response = await nextHandler(cancellationToken).ConfigureAwait(false);
 
-            return response;
-        }
-        finally
+        if (response.IsSuccess && unitOfWork is not null)
         {
-            if (unitOfWork is not null)
-            {
-                await unitOfWork
-                    .SaveChangesAsync(cancellationToken)
-                    .ConfigureAwait(false);
-            }
+            await unitOfWork
+                .SaveChangesAsync(cancellationToken)
+                .ConfigureAwait(false);
         }
+
+        return response;
     }
 }

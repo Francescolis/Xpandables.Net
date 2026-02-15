@@ -30,8 +30,6 @@ namespace Microsoft.AspNetCore.Http;
 /// result handling and response formatting.</remarks>
 public sealed class ResultEndpointFilter : IEndpointFilter
 {
-    private IResultHeaderWriter? headerWriter;
-
     /// <inheritdoc/>
     public async ValueTask<object?> InvokeAsync(EndpointFilterInvocationContext context, EndpointFilterDelegate next)
     {
@@ -44,7 +42,7 @@ public sealed class ResultEndpointFilter : IEndpointFilter
 
             if (objectResult is Result result)
             {
-                headerWriter ??= context.HttpContext.RequestServices
+                IResultHeaderWriter headerWriter = context.HttpContext.RequestServices
                     .GetRequiredService<IResultHeaderWriter>();
 
                 await headerWriter
@@ -57,9 +55,9 @@ public sealed class ResultEndpointFilter : IEndpointFilter
                     return Results.Empty;
                 }
 
-                if (result.Value is not null)
+                if (result.InternalValue is not null)
                 {
-                    objectResult = result.Value;
+                    objectResult = result.InternalValue;
                 }
                 else
                 {
@@ -68,6 +66,10 @@ public sealed class ResultEndpointFilter : IEndpointFilter
             }
 
             return objectResult;
+        }
+        catch (OperationCanceledException)
+        {
+            throw;
         }
         catch (Exception exception)
             when (!context.HttpContext.Response.HasStarted)

@@ -14,25 +14,23 @@
  * limitations under the License.
  *
 ********************************************************************************/
+using System.Diagnostics.CodeAnalysis;
+
 namespace System.Results.Requests;
 
 /// <summary>
-/// Represents a request with metadata about its creation time.
+/// Represents a marker interface for requests that can be dispatched through the mediator pipeline.
 /// </summary>
-/// <remarks>Implementations of this interface provide access to the creation timestamp of the request, which can
-/// be used for auditing, logging, or tracking purposes.</remarks>
-public interface IRequest
-{
-    /// <summary>
-    /// Gets the date and time when the request was created.
-    /// </summary>
-    public DateTime CreatedAt => DateTime.Now;
-}
+/// <remarks>Implement this interface on request types to make them compatible with the pipeline
+/// and mediator infrastructure.</remarks>
+[SuppressMessage("Design", "CA1040:Avoid empty interfaces", Justification = "Marker interface by design for pipeline dispatch.")]
+public interface IRequest;
 
 /// <summary>
 /// Represents a request that returns a result of the specified type when processed.
 /// </summary>
 /// <typeparam name="TResult">The type of the result produced by the request.</typeparam>
+[SuppressMessage("Design", "CA1040:Avoid empty interfaces", Justification = "Marker interface by design.")]
 public interface IRequest<out TResult> : IRequest;
 
 /// <summary>
@@ -41,6 +39,7 @@ public interface IRequest<out TResult> : IRequest;
 /// <remarks>Use this interface to define requests that yield multiple results over time, such as asynchronous or
 /// observable data streams. Implementations may deliver results incrementally rather than all at once.</remarks>
 /// <typeparam name="TResult">The type of the elements returned by the stream produced by the request.</typeparam>
+[SuppressMessage("Design", "CA1040:Avoid empty interfaces", Justification = "Marker interface by design.")]
 public interface IStreamRequest<out TResult> : IRequest;
 
 /// <summary>
@@ -51,4 +50,5 @@ public interface IStreamRequest<out TResult> : IRequest;
 /// of large result sets in manageable segments. Implementations may provide asynchronous or synchronous streaming
 /// capabilities depending on the underlying data source.</remarks>
 /// <typeparam name="TResult">The type of the result returned for each page in the stream.</typeparam>
+[SuppressMessage("Design", "CA1040:Avoid empty interfaces", Justification = "Marker interface by design.")]
 public interface IStreamPagedRequest<out TResult> : IRequest;

@@ -42,7 +42,8 @@ public sealed class PipelineExceptionDecorator<TRequest>(
         {
             return await nextHandler(cancellationToken).ConfigureAwait(false);
         }
-        catch (Exception exception) when (exception is not ResultException)
+        catch (Exception exception)
+            when (exception is not ResultException and not OperationCanceledException)
         {
             if (exceptionHandler is not null)
             {
@@ -52,7 +53,8 @@ public sealed class PipelineExceptionDecorator<TRequest>(
                         .HandleAsync(context, exception, cancellationToken)
                         .ConfigureAwait(false);
                 }
-                catch (Exception ex) when (ex is not ResultException)
+                catch (Exception ex)
+                    when (ex is not ResultException and not OperationCanceledException)
                 {
                     AggregateException aggregateException = new(
                         "An error occurred while handling the exception.",
