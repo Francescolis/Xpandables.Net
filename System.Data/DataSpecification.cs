@@ -409,12 +409,15 @@ public readonly record struct DataSpecificationBuilder<TData>
             _isDistinct);
     }
 
+    // Cached per closed generic type — ensures ReferenceEqualityComparer hits in DataSqlMapper._compiledSelectors
+    private static readonly Expression<Func<TData, TData>> _identitySelector = static e => e;
+
     /// <summary>
     /// Builds the specification returning the entity itself (identity projection).
     /// </summary>
     /// <returns>A completed query specification.</returns>
     public DataSpecification<TData, TData> Build()
-        => Select(e => e);
+        => Select(_identitySelector);
 
     private static Expression<Func<TData, bool>> CombinePredicates(
         Expression<Func<TData, bool>> left,

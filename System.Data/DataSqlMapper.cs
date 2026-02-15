@@ -27,10 +27,16 @@ namespace System.Data;
 /// Provides functionality to map data from a database record to a specified result type.
 /// </summary>
 /// <remarks>Implements the IDataSqlMapper interface to enable custom mapping of database records to objects. Use this
-/// class to convert data retrieved from a DbDataReader into strongly typed results for application use.</remarks>
+/// class to convert data retrieved from a DbDataReader into strongly typed results for application use.
+/// <para>Reflection metadata (properties, constructors, setter delegates) is cached per type on first use,
+/// eliminating per-row reflection overhead.</para></remarks>
 public sealed class DataSqlMapper : IDataSqlMapper
 {
     private static readonly ConcurrentDictionary<LambdaExpression, Delegate> _compiledSelectors = new(ReferenceEqualityComparer.Instance);
+    private static readonly ConcurrentDictionary<Type, TypeMetadata> _typeMetadataCache = new();
+    private static readonly ConcurrentDictionary<PropertyInfo, Action<object, object?>> _setterCache = new();
+    private static readonly ConcurrentDictionary<ConstructorInfo, Func<object?[], object>> _ctorDelegateCache = new();
+
     /// <inheritdoc/>
     [UnconditionalSuppressMessage("Trimming", "IL2091:Target generic argument does not have matching annotations", Justification = "Selector mapping requires dynamic access to entity members.")]
     public TResult MapToResult<TData, [DynamicallyAccessedMembers(DynamicallyAccessedMemberTypes.PublicParameterlessConstructor | DynamicallyAccessedMemberTypes.PublicConstructors | DynamicallyAccessedMemberTypes.PublicProperties)] TResult>(
@@ -76,7 +82,7 @@ public sealed class DataSqlMapper : IDataSqlMapper
         where TData : class
         => (Func<TData, TResult>)_compiledSelectors.GetOrAdd(
             selector,
-            static expr => ((Expression<Func<TData, TResult>>)expr).Compile(preferInterpretation: true));
+            static expr => ((Expression<Func<TData, TResult>>)expr).Compile());
 
     /// <inheritdoc/>
     public TResult MapToResult<[DynamicallyAccessedMembers(DynamicallyAccessedMemberTypes.PublicParameterlessConstructor | DynamicallyAccessedMemberTypes.PublicConstructors | DynamicallyAccessedMemberTypes.PublicProperties)] TResult>(DbDataReader reader)
@@ -90,17 +96,17 @@ public sealed class DataSqlMapper : IDataSqlMapper
             return MapScalar<TResult>(reader, resultType);
         }
 
+        var metadata = GetOrCreateTypeMetadata(resultType);
         var columns = BuildColumnLookup(reader);
 
-        var parameterlessCtor = resultType.GetConstructor(Type.EmptyTypes);
-        if (parameterlessCtor != null)
+        if (metadata.HasParameterlessConstructor)
         {
             var instance = Activator.CreateInstance<TResult>();
-            PopulateProperties(instance!, resultType, reader, columns, paramNames: null);
+            PopulateProperties(instance!, metadata, reader, columns, paramNames: null);
             return instance!;
         }
 
-        var constructor = SelectConstructor(resultType, columns);
+        var constructor = SelectConstructor(metadata, columns);
         if (constructor is null)
         {
             throw new InvalidOperationException(
@@ -109,12 +115,9 @@ public sealed class DataSqlMapper : IDataSqlMapper
 
         var result = (TResult)CreateWithConstructor(constructor, reader, columns);
 
-        var ctorParamNames = constructor
-            .GetParameters()
-            .Select(p => p.Name!)
-            .ToHashSet(StringComparer.OrdinalIgnoreCase);
+        var ctorParamNames = GetCachedCtorParamNames(constructor);
 
-        PopulateProperties(result!, resultType, reader, columns, ctorParamNames);
+        PopulateProperties(result!, metadata, reader, columns, ctorParamNames);
         return result;
     }
 
@@ -148,24 +151,21 @@ public sealed class DataSqlMapper : IDataSqlMapper
 
     private static Dictionary<string, int> BuildColumnLookup(DbDataReader reader)
     {
-        var columns = new Dictionary<string, int>(StringComparer.OrdinalIgnoreCase);
+        var columns = new Dictionary<string, int>(reader.FieldCount, StringComparer.OrdinalIgnoreCase);
         for (var i = 0; i < reader.FieldCount; i++)
         {
             var name = reader.GetName(i);
-            if (!columns.ContainsKey(name))
-            {
-                columns[name] = i;
-            }
+            columns.TryAdd(name, i);
         }
         return columns;
     }
 
-    private static ConstructorInfo? SelectConstructor([DynamicallyAccessedMembers(DynamicallyAccessedMemberTypes.PublicConstructors)] Type resultType, Dictionary<string, int> columns)
+    private static ConstructorInfo? SelectConstructor(TypeMetadata metadata, Dictionary<string, int> columns)
     {
         ConstructorInfo? best = null;
         var bestScore = -1;
 
-        foreach (var ctor in resultType.GetConstructors(BindingFlags.Public | BindingFlags.Instance))
+        foreach (var ctor in metadata.Constructors)
         {
             var parameters = ctor.GetParameters();
             if (parameters.Length == 0)
@@ -207,7 +207,8 @@ public sealed class DataSqlMapper : IDataSqlMapper
             args[i] = value.ChangeTypeNullable(param.ParameterType, CultureInfo.InvariantCulture);
         }
 
-        return constructor.Invoke(args);
+        var factory = GetCompiledCtorFactory(constructor);
+        return factory(args);
     }
 
     [UnconditionalSuppressMessage("Trimming", "IL2026:Members annotated with 'RequiresUnreferencedCodeAttribute' require dynamic access otherwise can break functionality when trimming application code", Justification = "<Pending>")]
@@ -215,22 +216,21 @@ public sealed class DataSqlMapper : IDataSqlMapper
     [UnconditionalSuppressMessage("Trimming", "IL2072:Calling members annotated with 'RequiresDynamicCodeAttribute' may break functionality when AOT compiling.", Justification = "<Pending>")]
     private static void PopulateProperties(
         object instance,
-        [DynamicallyAccessedMembers(DynamicallyAccessedMemberTypes.PublicProperties)] Type resultType,
+        TypeMetadata metadata,
         DbDataReader reader,
         Dictionary<string, int> columns,
         HashSet<string>? paramNames)
     {
-        var properties = resultType.GetProperties(BindingFlags.Public | BindingFlags.Instance);
-
         for (var i = 0; i < reader.FieldCount; i++)
         {
             var columnName = reader.GetName(i);
-            var property = FindProperty(properties, columnName);
-
-            if (property is null || !property.CanWrite)
+            if (!metadata.PropertyByName.TryGetValue(columnName, out var property))
                 continue;
 
-            if (paramNames != null && paramNames.Contains(property.Name))
+            if (!property.CanWrite)
+                continue;
+
+            if (paramNames is not null && paramNames.Contains(property.Name))
                 continue;
 
             var value = reader.GetValue(i);
@@ -238,17 +238,91 @@ public sealed class DataSqlMapper : IDataSqlMapper
                 continue;
 
             var convertedValue = value.ChangeTypeNullable(property.PropertyType, CultureInfo.InvariantCulture);
-            property.SetValue(instance, convertedValue);
+            var setter = GetCompiledSetter(property);
+            setter(instance, convertedValue);
         }
     }
 
-    private static PropertyInfo? FindProperty(PropertyInfo[] properties, string columnName)
+    [UnconditionalSuppressMessage("Trimming", "IL2026:Members annotated with 'RequiresUnreferencedCodeAttribute' require dynamic access otherwise can break functionality when trimming application code", Justification = "<Pending>")]
+    [UnconditionalSuppressMessage("AOT", "IL3050:Calling members annotated with 'RequiresDynamicCodeAttribute' may break functionality when AOT compiling.", Justification = "<Pending>")]
+    private static Action<object, object?> GetCompiledSetter(PropertyInfo property)
     {
-        foreach (var prop in properties)
+        return _setterCache.GetOrAdd(property, static prop =>
         {
-            if (string.Equals(prop.Name, columnName, StringComparison.OrdinalIgnoreCase))
-                return prop;
-        }
-        return null;
+            var instance = Expression.Parameter(typeof(object), "instance");
+            var value = Expression.Parameter(typeof(object), "value");
+            var castInstance = Expression.Convert(instance, prop.DeclaringType!);
+            var castValue = Expression.Convert(value, prop.PropertyType);
+            var setExpr = Expression.Assign(Expression.Property(castInstance, prop), castValue);
+            return Expression.Lambda<Action<object, object?>>(setExpr, instance, value).Compile();
+        });
     }
+
+    [UnconditionalSuppressMessage("Trimming", "IL2070:DynamicallyAccessedMembers on Type.GetProperties",
+        Justification = "Callers guarantee the type has the required annotations.")]
+    [UnconditionalSuppressMessage("Trimming", "IL2067:DynamicallyAccessedMembers",
+        Justification = "Callers guarantee the type has the required annotations.")]
+    private static TypeMetadata GetOrCreateTypeMetadata(
+        [DynamicallyAccessedMembers(DynamicallyAccessedMemberTypes.PublicProperties
+            | DynamicallyAccessedMemberTypes.PublicConstructors
+            | DynamicallyAccessedMemberTypes.PublicParameterlessConstructor)] Type type)
+    {
+        return _typeMetadataCache.GetOrAdd(type, static t =>
+        {
+            var properties = t.GetProperties(BindingFlags.Public | BindingFlags.Instance);
+            var propertyByName = new Dictionary<string, PropertyInfo>(properties.Length, StringComparer.OrdinalIgnoreCase);
+            foreach (var prop in properties)
+            {
+                propertyByName.TryAdd(prop.Name, prop);
+            }
+
+            var constructors = t.GetConstructors(BindingFlags.Public | BindingFlags.Instance);
+            var hasParameterlessCtor = t.GetConstructor(Type.EmptyTypes) is not null;
+
+            return new TypeMetadata(properties, propertyByName, constructors, hasParameterlessCtor);
+        });
+    }
+
+    [UnconditionalSuppressMessage("Trimming", "IL2026:Members annotated with 'RequiresUnreferencedCodeAttribute' require dynamic access otherwise can break functionality when trimming application code", Justification = "<Pending>")]
+    [UnconditionalSuppressMessage("AOT", "IL3050:Calling members annotated with 'RequiresDynamicCodeAttribute' may break functionality when AOT compiling.", Justification = "<Pending>")]
+    private static Func<object?[], object> GetCompiledCtorFactory(ConstructorInfo constructor)
+    {
+        return _ctorDelegateCache.GetOrAdd(constructor, static ctor =>
+        {
+            var argsParam = Expression.Parameter(typeof(object?[]), "args");
+            var ctorParams = ctor.GetParameters();
+            var argExpressions = new Expression[ctorParams.Length];
+            for (var i = 0; i < ctorParams.Length; i++)
+            {
+                var index = Expression.ArrayIndex(argsParam, Expression.Constant(i));
+                argExpressions[i] = Expression.Convert(index, ctorParams[i].ParameterType);
+            }
+            var newExpr = Expression.New(ctor, argExpressions);
+            var body = Expression.Convert(newExpr, typeof(object));
+            return Expression.Lambda<Func<object?[], object>>(body, argsParam).Compile();
+        });
+    }
+
+    private static readonly ConcurrentDictionary<ConstructorInfo, HashSet<string>> _ctorParamNamesCache = new();
+
+    private static HashSet<string> GetCachedCtorParamNames(ConstructorInfo constructor)
+    {
+        return _ctorParamNamesCache.GetOrAdd(constructor, static ctor =>
+        {
+            var parameters = ctor.GetParameters();
+            var names = new HashSet<string>(parameters.Length, StringComparer.OrdinalIgnoreCase);
+            foreach (var p in parameters)
+            {
+                if (p.Name is not null)
+                    names.Add(p.Name);
+            }
+            return names;
+        });
+    }
+
+    private sealed record TypeMetadata(
+        PropertyInfo[] Properties,
+        Dictionary<string, PropertyInfo> PropertyByName,
+        ConstructorInfo[] Constructors,
+        bool HasParameterlessConstructor);
 }

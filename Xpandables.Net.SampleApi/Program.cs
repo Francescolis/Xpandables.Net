@@ -51,6 +51,7 @@ builder.Services
     .AddXEventPublisher()
     .AddXAggregateStore()
     .AddXDataUnitOfWork()
+    .AddXSqlMapper()
     .AddXMsSqlBuilder()
     .AddXDbConnectionScopeFactory()
     .AddXDbConnectionScope()

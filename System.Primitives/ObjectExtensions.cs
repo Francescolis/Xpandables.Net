@@ -62,8 +62,18 @@ public static class ObjectExtensions
             if (obj is null || obj is DBNull)
                 return null;
 
+            var sourceType = obj.GetType();
+
+            // Fast path: already the exact type or directly assignable
+            if (sourceType == conversionType || conversionType.IsAssignableFrom(sourceType))
+                return obj;
+
             if (Nullable.GetUnderlyingType(conversionType) is Type underlying)
                 return ChangeTypeNullable(obj, underlying, formatProvider);
+
+            // Fast path: primitive-to-primitive via Convert.ChangeType
+            if (sourceType.IsPrimitive && conversionType.IsPrimitive)
+                return Convert.ChangeType(obj, conversionType, formatProvider);
 
             if (TryConvertKeyValuePair(obj, conversionType, formatProvider, out var kvpResult))
                 return kvpResult;

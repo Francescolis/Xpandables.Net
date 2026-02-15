@@ -6,9 +6,6 @@ public static class Program
 {
     public static void Main(string[] args)
     {
-        BenchmarkRunner.Run(
-        [
-            typeof(AsyncPagedEnumerableBenchmark)
-        ]);
+        BenchmarkSwitcher.FromAssembly(typeof(AsyncPagedEnumerableBenchmark).Assembly).Run(args);
     }
 }

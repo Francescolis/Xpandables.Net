@@ -39,6 +39,7 @@ builder.Services
     .AddXIntegrationEventEnricher()
     .AddXDataUnitOfWork()
     .AddXMsSqlBuilder()
+    .AddXSqlMapper()
     .AddXDbConnectionScopeFactory()
     .AddXDbConnectionScope()
     .AddXEventContextAccessor()
