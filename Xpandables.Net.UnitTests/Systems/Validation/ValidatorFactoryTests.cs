@@ -67,6 +67,7 @@ public sealed class ValidatorFactoryTests
 
     private sealed class TestValidator : IValidator<TestValidatable>
     {
+        public int Order { get; } = 0;
         public IReadOnlyCollection<ValidationResult> Validate(TestValidatable instance) => [];
 
         public ValueTask<IReadOnlyCollection<ValidationResult>> ValidateAsync(TestValidatable instance) =>

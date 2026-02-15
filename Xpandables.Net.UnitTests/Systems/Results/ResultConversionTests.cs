@@ -53,20 +53,6 @@ public sealed class ResultConversionTests
         Assert.Null(typed.Value);
     }
 
-    //[Fact]
-    //public void ImplicitConversion_FromGenericToObjectResult_PreservesValue()
-    //{
-    //    // Arrange
-    //    Result<int> typedResult = Result.Success(10);
-
-    //    // Act
-    //    Result<object> result = typedResult;
-
-    //    // Assert
-    //    Assert.Equal(10, result.Value);
-    //    Assert.Equal(HttpStatusCode.OK, result.StatusCode);
-    //}
-
     [Fact]
     public void ImplicitConversion_FromGeneric_NullSource_Throws()
     {

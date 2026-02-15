@@ -29,6 +29,11 @@ public abstract class Validator<TArgument> : IValidator<TArgument>
     where TArgument : class, IRequiresValidation
 {
     /// <summary>
+    /// Gets the order of the validator. Validators with lower order values are executed first.
+    /// </summary>
+    public virtual int Order => 0;
+
+    /// <summary>
     /// Contains the service provider.
     /// </summary>
     protected IServiceProvider? ServiceProvider { get; set; }
