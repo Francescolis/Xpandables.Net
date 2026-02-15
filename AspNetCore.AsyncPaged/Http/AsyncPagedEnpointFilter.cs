@@ -15,8 +15,6 @@
  *
 ********************************************************************************/
 
-using System.Diagnostics.CodeAnalysis;
-
 using Microsoft.AspNetCore.Mvc;
 
 namespace Microsoft.AspNetCore.Http;
@@ -36,14 +34,12 @@ public sealed class AsyncPagedEnpointFilter : IEndpointFilter
     /// applicable.
     /// </summary>
     /// <remarks>If the result of the endpoint is an <see cref="IAsyncPagedEnumerable"/>, it is wrapped in a
-    /// <see cref="AsyncPagedResult{T}"/> to provide paged response semantics. Otherwise, the original result is
+    /// paged result to provide paged response semantics. Otherwise, the original result is
     /// returned unchanged.</remarks>
     /// <param name="context">The invocation context containing information about the current endpoint execution. Cannot be null.</param>
     /// <param name="next">The delegate representing the next filter or endpoint in the pipeline. Cannot be null.</param>
     /// <returns>A <see cref="ValueTask{Object}"/> that represents the asynchronous operation. Returns a paged result if the
     /// endpoint produces an <see cref="IAsyncPagedEnumerable"/>; otherwise, returns the original result.</returns>
-    [UnconditionalSuppressMessage("AOT", "IL3050:Calling members annotated with 'RequiresDynamicCodeAttribute' may break functionality when AOT compiling.", Justification = "<Pending>")]
-    [UnconditionalSuppressMessage("Trimming", "IL2026:'GetArgumentType' uses reflection to discover implemented interfaces", Justification = "Used for dynamic dispatch in ASP.NET Core filter")]
     public async ValueTask<object?> InvokeAsync(
         EndpointFilterInvocationContext context,
         EndpointFilterDelegate next)
@@ -68,11 +64,6 @@ public sealed class AsyncPagedEnpointFilter : IEndpointFilter
             return result;
         }
 
-        Type itemType = pagedEnumerable.GetArgumentType();
-        Type resultAsyncPagedType = typeof(AsyncPagedResult<>).MakeGenericType(itemType);
-
-        object resultAsyncPaged = Activator.CreateInstance(resultAsyncPagedType, pagedEnumerable, null, null)!;
-
-        return resultAsyncPaged;
+        return new AsyncPagedNonGenericResult(pagedEnumerable);
     }
 }

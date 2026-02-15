@@ -268,7 +268,7 @@ public readonly record struct Pagination
     /// </summary>
     /// <remarks>Returns null if the total count is unknown or page size is zero.</remarks>
     public int? TotalPages => TotalCount.HasValue && PageSize > 0
-        ? (int)Math.Ceiling((double)TotalCount.Value / PageSize)
+        ? (TotalCount.Value + PageSize - 1) / PageSize
         : null;
 }
 

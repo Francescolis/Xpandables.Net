@@ -414,10 +414,10 @@ public static class JsonSerializerExtensions
         return result as Task ?? throw new InvalidOperationException($"Expected Task from {method.Name}, but got null.");
     }
 
-    [UnconditionalSuppressMessage("AOT", "IL3050:Calling members annotated with 'RequiresDynamicCodeAttribute' may break functionality when AOT compiling.", Justification = "<Pending>")]
-    [UnconditionalSuppressMessage("Trimming", "IL2026:'GetArgumentType' uses reflection to discover implemented interfaces", Justification = "Used for dynamic dispatch in non-AOT scenarios")]
-    [UnconditionalSuppressMessage("Trimming", "IL2070:Calling members annotated with 'RequiresUnreferencedCodeAttribute' may break functionality when trimming application code.", Justification = "<Pending>")]
-    [UnconditionalSuppressMessage("Trimming", "IL2060:Calling members annotated with 'RequiresAssemblyFilesAttribute' may break functionality when trimming application code.", Justification = "<Pending>")]
+    [UnconditionalSuppressMessage("AOT", "IL3050:Calling members annotated with 'RequiresDynamicCodeAttribute' may break functionality when AOT compiling.", Justification = "Non-generic dispatch requires MakeGenericMethod; callers are annotated with RequiresDynamicCode.")]
+    [UnconditionalSuppressMessage("Trimming", "IL2026:Members annotated with 'RequiresUnreferencedCodeAttribute' require dynamic access", Justification = "Non-generic dispatch requires reflection; callers are annotated with RequiresUnreferencedCode.")]
+    [UnconditionalSuppressMessage("Trimming", "IL2070:'this' argument does not satisfy 'DynamicallyAccessedMemberTypes.PublicMethods'", Justification = "Type arguments are preserved by the generic IAsyncPagedEnumerable<T> constraint.")]
+    [UnconditionalSuppressMessage("Trimming", "IL2060:Call to 'MethodInfo.MakeGenericMethod' does not preserve method requirements", Justification = "Target method SerializeAsyncPagedCoreGenericAsync has no DynamicallyAccessedMembers constraints.")]
     private static Task SerializeAsyncPagedCoreNonGenericAsync(
         object output,
         IAsyncPagedEnumerable paged,
@@ -432,10 +432,10 @@ public static class JsonSerializerExtensions
         return result as Task ?? throw new InvalidOperationException($"Expected Task from {method.Name}, but got null.");
     }
 
-    [UnconditionalSuppressMessage("AOT", "IL3050:Calling members annotated with 'RequiresDynamicCodeAttribute' may break functionality when AOT compiling.", Justification = "<Pending>")]
-    [UnconditionalSuppressMessage("Trimming", "IL2026:'GetArgumentType' uses reflection to discover implemented interfaces", Justification = "Used for dynamic dispatch in non-AOT scenarios")]
-    [UnconditionalSuppressMessage("Trimming", "IL2070:Calling members annotated with 'RequiresUnreferencedCodeAttribute' may break functionality when trimming application code.", Justification = "<Pending>")]
-    [UnconditionalSuppressMessage("Trimming", "IL2060:Calling members annotated with 'RequiresAssemblyFilesAttribute' may break functionality when trimming application code.", Justification = "<Pending>")]
+    [UnconditionalSuppressMessage("AOT", "IL3050:Calling members annotated with 'RequiresDynamicCodeAttribute' may break functionality when AOT compiling.", Justification = "Non-generic dispatch requires MakeGenericMethod; callers are annotated with RequiresDynamicCode.")]
+    [UnconditionalSuppressMessage("Trimming", "IL2026:Members annotated with 'RequiresUnreferencedCodeAttribute' require dynamic access", Justification = "Non-generic dispatch requires reflection; callers are annotated with RequiresUnreferencedCode.")]
+    [UnconditionalSuppressMessage("Trimming", "IL2070:'this' argument does not satisfy 'DynamicallyAccessedMemberTypes.PublicMethods'", Justification = "Type arguments are preserved by the generic IAsyncPagedEnumerable<T> constraint.")]
+    [UnconditionalSuppressMessage("Trimming", "IL2060:Call to 'MethodInfo.MakeGenericMethod' does not preserve method requirements", Justification = "Target method SerializeAsyncPagedCoreGenericAsync has no DynamicallyAccessedMembers constraints.")]
     private static Task SerializeAsyncPagedCoreNonGenericAsync(
         object output,
         IAsyncPagedEnumerable paged,

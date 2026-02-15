@@ -79,7 +79,6 @@ public sealed class AsyncPagedEnumerator<T> : IAsyncPagedEnumerator<T>
     }
 
     /// <inheritdoc/>
-    [MethodImpl(MethodImplOptions.AggressiveInlining)]
     public async ValueTask<bool> MoveNextAsync()
     {
         ObjectDisposedException.ThrowIf(_disposed, this);
@@ -130,15 +129,16 @@ public sealed class AsyncPagedEnumerator<T> : IAsyncPagedEnumerator<T>
     [MethodImpl(MethodImplOptions.AggressiveInlining)]
     private void UpdatePagination(int index)
     {
-        if (_strategy == PaginationStrategy.None) return;
-
         if (_strategy == PaginationStrategy.PerItem)
         {
-            _pagination = _pagination with
+            if (_pagination.PageSize == 0)
             {
-                PageSize = _pagination.PageSize == 0 ? 1 : _pagination.PageSize,
-                CurrentPage = index
-            };
+                _pagination = _pagination with { PageSize = 1, CurrentPage = index };
+            }
+            else
+            {
+                _pagination = _pagination with { CurrentPage = index };
+            }
             return;
         }
 
@@ -146,7 +146,10 @@ public sealed class AsyncPagedEnumerator<T> : IAsyncPagedEnumerator<T>
         {
             int pageSize = _pagination.PageSize;
             int currentPage = pageSize > 0 ? ((index - 1) / pageSize) + 1 : 1;
-            _pagination = _pagination with { PageSize = pageSize, CurrentPage = currentPage };
+            if (currentPage != _pagination.CurrentPage)
+            {
+                _pagination = _pagination with { CurrentPage = currentPage };
+            }
         }
     }
 }

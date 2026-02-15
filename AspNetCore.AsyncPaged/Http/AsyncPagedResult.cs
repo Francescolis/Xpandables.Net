@@ -45,7 +45,7 @@ public sealed class AsyncPagedResult<TResult>(
     JsonTypeInfo<TResult>? jsonTypeInfo = null) : IResult
 {
     private readonly IAsyncPagedEnumerable<TResult> _results = results ?? throw new ArgumentNullException(nameof(results));
-    private JsonTypeInfo<TResult>? _jsonTypeInfo = jsonTypeInfo;
+    private volatile JsonTypeInfo<TResult>? _jsonTypeInfo = jsonTypeInfo;
     private readonly JsonSerializerOptions? _serializerOptions = serializerOptions;
 
     /// <inheritdoc/>
@@ -60,12 +60,12 @@ public sealed class AsyncPagedResult<TResult>(
         var pipeWriter = httpContext.Response.BodyWriter;
 
         var options = _serializerOptions ?? httpContext.GetJsonSerializerOptions();
-        _jsonTypeInfo ??= (JsonTypeInfo<TResult>?)options.GetTypeInfo(typeof(TResult));
+        var typeInfo = _jsonTypeInfo ?? ResolveJsonTypeInfo(options);
 
-        if (_jsonTypeInfo is not null)
+        if (typeInfo is not null)
         {
             await JsonSerializer
-                .SerializeAsyncPaged(pipeWriter, _results, _jsonTypeInfo, cancellationToken)
+                .SerializeAsyncPaged(pipeWriter, _results, typeInfo, cancellationToken)
                 .ConfigureAwait(false);
         }
         else
@@ -74,5 +74,12 @@ public sealed class AsyncPagedResult<TResult>(
                 .SerializeAsyncPaged(pipeWriter, _results, options, cancellationToken)
                 .ConfigureAwait(false);
         }
+    }
+
+    private JsonTypeInfo<TResult>? ResolveJsonTypeInfo(JsonSerializerOptions options)
+    {
+        var resolved = (JsonTypeInfo<TResult>?)options.GetTypeInfo(typeof(TResult));
+        _jsonTypeInfo = resolved;
+        return resolved;
     }
 }

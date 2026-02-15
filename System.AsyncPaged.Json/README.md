@@ -358,23 +358,57 @@ The following benchmarks compare `System.AsyncPaged.Json` serialization/deserial
 
 | Scenario | Dataset | Custom AsyncPaged | Framework IAsyncEnumerable | Improvement |
 |----------|---------|------------------:|---------------------------:|------------:|
-| Small    | 100     | **76 μs**          | 87 μs                      | **+12%**     |
-| Medium   | 1,000   | **858 μs**         | 974 μs                     | **+11%**     |
-| Large    | 10,000  | **6,441 μs**       | 6,859 μs                   | **+6%**     |
+| Small    | 100     | **109 μs**         | 121 μs                     | **+10%**     |
+| Medium   | 1,000   | **1,290 μs**       | 1,445 μs                   | **+11%**     |
+| Large    | 10,000  | **8,732 μs**       | 9,975 μs                   | **+12%**     |
 
 ### Deserialization Performance (Read from JSON)
 
 | Scenario | Dataset | Custom AsyncPaged | Framework IAsyncEnumerable | Improvement |
 |----------|---------|------------------:|---------------------------:|------------:|
-| Small    | 100     | **43 μs**         | 67 μs                     | **+34%**     |
-| Medium   | 1,000   | **226 μs**       | 654 μs                   | **+65%**    |
-| Large    | 10,000  | **2,015 μs**       | 6,542 μs                  | **+69%**    |
+| Small    | 100     | **80 μs**          | 122 μs                     | **+34%**     |
+| Medium   | 1,000   | **460 μs**         | 1,174 μs                   | **+61%**     |
+| Large    | 10,000  | **4,310 μs**       | 11,759 μs                  | **+63%**     |
+
+### Memory Allocation
+
+| Scenario | Dataset | Custom AsyncPaged | Framework IAsyncEnumerable | Reduction |
+|----------|---------|------------------:|---------------------------:|----------:|
+| Small    | 100     | **24.23 KB**       | 60.80 KB                   | **−60%**   |
+| Medium   | 1,000   | **25.45 KB**       | 574.08 KB                  | **−96%**   |
+| Large    | 10,000  | **37.70 KB**       | 5,706.89 KB                | **−99%**   |
+
+*Memory figures are for deserialization (read from JSON), where the difference is most significant.*
+
+### Raw BenchmarkDotNet Results
+
+<details>
+<summary>Click to expand full benchmark results</summary>
+
+| Method                                                       | ItemCount | Mean         | Error     | StdDev    | Ratio | RatioSD | Rank | Gen0     | Gen1     | Gen2     | Allocated  | Alloc Ratio |
+|------------------------------------------------------------- |---------- |-------------:|----------:|----------:|------:|--------:|-----:|---------:|---------:|---------:|-----------:|------------:|
+| 'Framework IAsyncEnumerable Serialization'                   | 100       |    121.26 us |  0.616 us |  0.576 us |  1.00 |    0.01 |    3 |   6.8359 |   0.4883 |        - |   74.01 KB |        1.00 |
+| 'Custom IAsyncPagedEnumerable Serialization'                 | 100       |    108.53 us |  1.581 us |  1.479 us |  0.90 |    0.01 |    2 |   5.9814 |   0.6104 |        - |   72.12 KB |        0.97 |
+| 'Framework IAsyncEnumerable Deserialization (HttpContent)'   | 100       |    121.96 us |  1.218 us |  1.080 us |  1.01 |    0.01 |    3 |   4.8828 |   0.2441 |        - |    60.8 KB |        0.82 |
+| 'Custom IAsyncPagedEnumerable Deserialization (HttpContent)' | 100       |     80.07 us |  0.405 us |  0.379 us |  0.66 |    0.00 |    1 |   1.9531 |        - |        - |   24.23 KB |        0.33 |
+|                                                              |           |              |           |           |       |         |      |          |          |          |            |             |
+| 'Framework IAsyncEnumerable Serialization'                   | 1000      |  1,444.90 us | 27.481 us | 30.545 us |  1.00 |    0.03 |    4 | 117.1875 | 117.1875 | 117.1875 |  599.92 KB |        1.00 |
+| 'Custom IAsyncPagedEnumerable Serialization'                 | 1000      |  1,290.02 us | 21.372 us | 19.991 us |  0.89 |    0.02 |    3 | 117.1875 | 117.1875 | 117.1875 |  616.86 KB |        1.03 |
+| 'Framework IAsyncEnumerable Deserialization (HttpContent)'   | 1000      |  1,173.81 us |  7.631 us |  7.138 us |  0.81 |    0.02 |    2 |  45.8984 |   1.9531 |        - |  574.08 KB |        0.96 |
+| 'Custom IAsyncPagedEnumerable Deserialization (HttpContent)' | 1000      |    460.10 us |  2.103 us |  1.967 us |  0.32 |    0.01 |    1 |   1.9531 |        - |        - |   25.45 KB |        0.04 |
+|                                                              |           |              |           |           |       |         |      |          |          |          |            |             |
+| 'Framework IAsyncEnumerable Serialization'                   | 10000     |  9,975.05 us | 55.857 us | 52.249 us |  1.00 |    0.01 |    3 | 718.7500 | 640.6250 | 640.6250 | 5026.28 KB |       1.000 |
+| 'Custom IAsyncPagedEnumerable Serialization'                 | 10000     |  8,731.93 us | 36.779 us | 32.604 us |  0.88 |    0.01 |    2 | 601.5625 | 500.0000 | 492.1875 | 5192.73 KB |       1.033 |
+| 'Framework IAsyncEnumerable Deserialization (HttpContent)'   | 10000     | 11,759.42 us | 59.528 us | 55.683 us |  1.18 |    0.01 |    4 | 460.9375 |  23.4375 |        - | 5706.89 KB |       1.135 |
+| 'Custom IAsyncPagedEnumerable Deserialization (HttpContent)' | 10000     |  4,309.54 us | 17.159 us | 16.051 us |  0.43 |    0.00 |    1 |        - |        - |        - |    37.7 KB |       0.007 |
+
+</details>
 
 **Key Findings:**
-- ⚡ **Serialization:** Comparable performance with slightly better memory efficiency for large datasets
-- ⚡ **Deserialization:** Significant performance advantage (34-69% faster), especially for medium and large datasets
-- 💾 **Memory Allocation:** Efficient buffer management with reduced memory pressure
-- 📈 **Scalability:** Performance improves relative to dataset size due to adaptive flushing
+- ⚡ **Serialization:** 10–12% faster across all dataset sizes with comparable memory usage
+- ⚡ **Deserialization:** 34–63% faster, with the advantage growing for larger datasets
+- 💾 **Memory Allocation:** Up to 99% reduction in deserialization memory (37.7 KB vs 5,707 KB at 10K items) — zero Gen0/Gen1/Gen2 GC pressure at scale
+- 📈 **Scalability:** Performance and memory advantages increase with dataset size due to streaming architecture and adaptive flushing
 
 ---
 
