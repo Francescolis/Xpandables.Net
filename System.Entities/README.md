@@ -1,4 +1,4 @@
-﻿# System.Entities
+# System.Entities
 
 [![NuGet](https://img.shields.io/nuget/v/Xpandables.Entities.svg)](https://www.nuget.org/packages/Xpandables.Entities)
 [![.NET](https://img.shields.io/badge/.NET-10.0+-purple.svg)](https://dotnet.microsoft.com/)
@@ -16,28 +16,26 @@ Built for .NET 10 with AOT compatibility and full async support.
 
 ### Entity Interfaces
 - **`IEntity`** — Base entity with lifecycle tracking (`KeyId`, `CreatedOn`, `UpdatedOn`, `DeletedOn`, `Status`, `IsDeleted`)
-- **`IEntity<TKey>`** — Typed entity with strongly-typed key identifier
-- **`EntityStatus`** — Status constants (`ACTIVE`, `INACTIVE`, `DELETED`, `SUSPENDED`)
+- **`IEntity<TKey>`** — Typed entity with strongly-typed key identifier (`TKey : notnull, IComparable`)
+- **`EntityStatus`** — Strongly-typed status primitive (`ACTIVE`, `PENDING`, `DELETED`, `SUSPENDED`, `PROCESSING`, `PUBLISHED`, `ACCEPTED`, `DUPLICATE`, `ONERROR`)
 
 ### Repository Pattern
-- **`IRepository`** — Base repository marker interface (implements `IDisposable`, `IAsyncDisposable`)
-- **`IRepository<TEntity>`** — Generic repository with async CRUD operations
+- **`IEntityRepository`** — Base repository marker interface (implements `IDisposable`, `IAsyncDisposable`)
+- **`IEntityRepository<TEntity>`** — Generic repository with async CRUD operations
 - **`IAmbientContextReceiver<TContext>`** — For receiving ambient context data
-- **`IRequiresUnitOfWork`** — Marker for handlers requiring transactional scope
+- **`IEntityRequiresUnitOfWork`** — Marker for handlers requiring transactional scope
 
 ### Query Specifications
-- **`IQuerySpecification<TEntity, TResult>`** — Type-safe query specification with predicate, selector, includes, ordering, skip/take
 - **`QuerySpecification`** — Static factory with `For<TEntity>()` method
-- **`QuerySpecificationBuilder<TEntity>`** — Fluent builder for specifications
+- **`QuerySpecificationBuilder<TEntity>`** — Fluent builder with `Where`, `OrderBy`, `Include`, `Skip`, `Take`, `Page`, `Distinct`, `WithTracking`, `Select`
+- **`IQuerySpecification<TEntity, TResult>`** — Type-safe query specification
 - **`IIncludeSpecification<TEntity>`** — Eager loading specification
 - **`IOrderSpecification<TEntity>`** — Ordering specification
-- **`IThenIncludeSpecification`** — Nested include specification
 
 ### Unit of Work
-- **`IUnitOfWork`** — Transaction coordination with `GetRepository<T>()`, `BeginTransactionAsync()`, `SaveChangesAsync()`
-- **`IUnitOfWork<TContext>`** — Typed unit of work
-- **`IUnitOfWorkTransaction`** — Transaction abstraction with `CommitAsync()`, `RollbackAsync()`
-- **`UnitOfWorkDbTransaction`** — DbTransaction wrapper
+- **`IEntityUnitOfWork`** — Transaction coordination with `GetRepository<T>()`, `BeginTransactionAsync()`, `SaveChangesAsync()`
+- **`IEntityUnitOfWorkTransaction`** — Transaction abstraction with `CommitAsync()`, `RollbackAsync()`
+- **`EntityUnitOfWorkDbTransaction`** — DbTransaction wrapper
 
 ### Entity Updates
 - **`EntityUpdater`** — Static factory with `For<TSource>()` and `SetProperty()` methods
@@ -64,7 +62,7 @@ public class User : IEntity<Guid>
     public string Email { get; set; } = string.Empty;
     public bool IsActive { get; set; } = true;
 
-    // IEntity properties
+    // IEntity lifecycle properties
     public string Status { get; set; } = EntityStatus.ACTIVE;
     public DateTime CreatedOn { get; set; }
     public DateTime? UpdatedOn { get; set; }
@@ -85,10 +83,25 @@ var spec = QuerySpecification
     .For<User>()
     .Where(u => u.IsActive)
     .OrderBy(u => u.Name)
-    .Include(u => u.Orders)
     .Skip(0)
     .Take(20)
     .Select(u => new UserDto(u.KeyId, u.Name, u.Email));
+
+// With paging helper
+var pagedSpec = QuerySpecification
+    .For<User>()
+    .Where(u => u.IsActive)
+    .OrderBy(u => u.Name)
+    .Page(pageIndex: 0, pageSize: 20)
+    .Select(u => new UserDto(u.KeyId, u.Name, u.Email));
+
+// With includes and tracking
+var detailedSpec = QuerySpecification
+    .For<Order>()
+    .Where(o => o.Status == EntityStatus.PENDING)
+    .Include(o => o.Customer)
+    .WithTracking()
+    .Select(o => o);
 ```
 
 ### Use the Repository
@@ -96,7 +109,9 @@ var spec = QuerySpecification
 ```csharp
 using System.Entities;
 
-public class UserService(IRepository<User> repository, IUnitOfWork unitOfWork)
+public class UserService(
+    IEntityRepository<User> repository,
+    IEntityUnitOfWork unitOfWork)
 {
     public IAsyncPagedEnumerable<UserDto> GetActiveUsers()
     {
@@ -108,17 +123,20 @@ public class UserService(IRepository<User> repository, IUnitOfWork unitOfWork)
         return repository.FetchAsync(spec);
     }
 
-    public async Task<User?> GetByIdAsync(Guid id, CancellationToken ct)
+    public async Task<User?> GetByIdAsync(
+        Guid id, CancellationToken ct)
     {
         var spec = QuerySpecification
             .For<User>()
             .Where(u => u.KeyId == id)
             .Select(u => u);
 
-        return await repository.FetchSingleOrDefaultAsync(spec, ct);
+        return await repository
+            .FetchSingleOrDefaultAsync(spec, ct);
     }
 
-    public async Task CreateUserAsync(User user, CancellationToken ct)
+    public async Task CreateUserAsync(
+        User user, CancellationToken ct)
     {
         await repository.AddAsync([user], ct);
         await unitOfWork.SaveChangesAsync(ct);
@@ -142,7 +160,12 @@ var spec = QuerySpecification
     .Where(p => p.IsActive)
     .Select(p => p);
 
+// Via UnitOfWork (tracked, can rollback)
 int updated = await repository.UpdateAsync(spec, updater, ct);
+await unitOfWork.SaveChangesAsync(ct);
+
+// Bulk (immediate, bypasses UoW)
+int bulkUpdated = await repository.UpdateBulkAsync(spec, updater, ct);
 ```
 
 ### Unit of Work with Transactions
@@ -150,15 +173,18 @@ int updated = await repository.UpdateAsync(spec, updater, ct);
 ```csharp
 using System.Entities;
 
-public class OrderService(IUnitOfWork unitOfWork)
+public class OrderService(IEntityUnitOfWork unitOfWork)
 {
-    public async Task PlaceOrderAsync(Order order, CancellationToken ct)
+    public async Task PlaceOrderAsync(
+        Order order, CancellationToken ct)
     {
-        await using var transaction = await unitOfWork.BeginTransactionAsync(ct);
+        await using var transaction = await unitOfWork
+            .BeginTransactionAsync(ct);
 
         try
         {
-            var orderRepo = unitOfWork.GetRepository<IRepository<Order>>();
+            var orderRepo = unitOfWork
+                .GetRepository<IEntityRepository<Order>>();
 
             await orderRepo.AddAsync([order], ct);
             await unitOfWork.SaveChangesAsync(ct);
@@ -180,11 +206,16 @@ public class OrderService(IUnitOfWork unitOfWork)
 using Microsoft.Extensions.DependencyInjection;
 
 // Register unit of work
-services.AddXUnitOfWork<MyUnitOfWork>();
+services.AddXEntityUnitOfWork<MyEntityUnitOfWork>();
 
 // Or with interface and implementation
-services.AddXUnitOfWork<IUnitOfWork, MyUnitOfWork>();
+services.AddXEntityUnitOfWork<IEntityUnitOfWork, MyEntityUnitOfWork>();
+
+// Keyed registration for multiple contexts
+services.AddXEntityUnitOfWorkKeyed<MyEntityUnitOfWork>("orders");
 ```
+
+---
 
 ## Repository Methods
 
@@ -197,137 +228,38 @@ services.AddXUnitOfWork<IUnitOfWork, MyUnitOfWork>();
 | `FetchFirstOrDefaultAsync<TResult>(spec)` | Returns first or default |
 | `AddAsync(entities)` | Adds entities, returns count |
 | `UpdateAsync(entities)` | Updates entities, returns count |
-| `UpdateAsync(spec, expression)` | Bulk update with expression |
-| `UpdateAsync(spec, action)` | Bulk update with action |
-| `UpdateAsync(spec, updater)` | Bulk update with EntityUpdater |
-| `DeleteAsync(spec)` | Bulk delete, returns count |
+| `UpdateAsync(spec, expression)` | Bulk update with expression (via UoW) |
+| `UpdateAsync(spec, action)` | Bulk update with action (via UoW) |
+| `UpdateAsync(spec, updater)` | Bulk update with EntityUpdater (via UoW) |
+| `UpdateBulkAsync(spec, updater)` | Immediate bulk update (bypasses UoW) |
+| `DeleteAsync(spec)` | Delete matching entities (via UoW) |
+| `DeleteBulkAsync(spec)` | Immediate bulk delete (bypasses UoW) |
 
 ## Core Types
 
 | Type | Description |
 |------|-------------|
 | `IEntity` | Entity with lifecycle metadata |
-| `IEntity<TKey>` | Typed entity with key |
-| `IRepository<TEntity>` | Generic async repository |
-| `IUnitOfWork` | Transaction coordinator |
+| `IEntity<TKey>` | Typed entity with key (`TKey : notnull, IComparable`) |
+| `EntityStatus` | Strongly-typed status primitive |
+| `IEntityRepository<TEntity>` | Generic async repository |
+| `IEntityUnitOfWork` | Transaction coordinator |
+| `IEntityUnitOfWorkTransaction` | Transaction with commit/rollback |
 | `IQuerySpecification<TEntity, TResult>` | Query specification |
 | `QuerySpecification` | Fluent query builder factory |
 | `EntityUpdater` | Bulk update builder factory |
-| `EntityUpdater<TEntity>` | Typed update builder |
-
-## License
-
-Apache License 2.0
-        .HasJsonDocumentComparer();
-});
-```
-
-### ReadOnlyMemory<byte> Converter
-
-```csharp
-using System.Entities.Data.Converters;
-
-public class BinaryData : IEntity
-{
-    public Guid Id { get; set; }
-    public ReadOnlyMemory<byte> Content { get; set; }
-    
-    // IEntity properties...
-}
-
-// In DataContext.OnModelCreating
-modelBuilder.Entity<BinaryData>(entity =>
-{
-    entity.Property(e => e.Content)
-        .HasReadOnlyMemoryToByteArrayConversion();
-});
-```
-
----
-
-## 📊 Extension Methods Summary
-
-### IServiceCollection Extensions
-
-| Method | Description |
-|--------|-------------|
-| `AddXDataContext<T>()` | Registers DataContext with DbContextOptions |
-| `AddXDataContextFactory<T>()` | Registers IDbContextFactory for factory pattern |
-| `AddXEntityFrameworkRepositories()` | Registers base IRepository and IUnitOfWork |
-| `AddXEntityFrameworkRepositories<T>()` | Registers typed IRepository<T> and IUnitOfWork<T> |
-
-### PropertyBuilder Extensions
-
-| Method | Description |
-|--------|-------------|
-| `HasJsonDocumentConversion()` | Configures JsonDocument value converter |
-| `HasJsonDocumentComparer()` | Configures JsonDocument value comparer |
-| `HasReadOnlyMemoryToByteArrayConversion()` | Configures ReadOnlyMemory<byte> converter |
-
----
-
-## ✅ Best Practices
-
-### ✅ Do
-
-- **Inherit from `DataContext`** — Get automatic entity lifecycle tracking
-- **Implement `IEntity`** — Enable automatic `CreatedOn`/`UpdatedOn`/`DeletedOn`
-- **Use `FetchAsync` with projections** — Select only needed columns with DTOs
-- **Set `IsUnitOfWorkEnabled = false`** — For immediate SQL execution (bulk operations)
-- **Use `EntityUpdater`** — For efficient bulk updates via `ExecuteUpdate`
-- **Use `IUnitOfWork` for transactions** — Coordinate multiple operations
-
-### ❌ Don't
-
-- **Mix repository and direct DbContext access** — Choose one approach
-- **Forget `IsUnitOfWorkEnabled`** — Default is `true`, requiring explicit save
-- **Use `ExecuteUpdate`/`ExecuteDelete` with tracking** — These bypass change tracking
-
----
-
-## ⚡ Performance Tips
-
-```csharp
-// FetchAsync applies AsNoTracking by default for read-only queries
-var users = await repository
-    .FetchAsync<User, User>(q => q.Where(u => u.IsActive))
-    .ToListAsync(ct);
-
-// Projections reduce data transfer
-var names = await repository
-    .FetchAsync<User, string>(q => q
-        .Where(u => u.IsActive)
-        .Select(u => u.Name))
-    .ToListAsync(ct);
-
-// EntityUpdater with IsUnitOfWorkEnabled = false for single SQL statement
-repository.IsUnitOfWorkEnabled = false;
-var updater = EntityUpdater<User>
-    .Create()
-    .SetProperty(u => u.LastUpdated, DateTime.UtcNow);
-
-await repository.UpdateAsync(
-    q => q.Where(u => u.IsActive),
-    updater,
-    ct);
-// Single UPDATE statement, no entity loading
-```
+| `IEntityRequiresUnitOfWork` | Marker for pipeline UoW integration |
 
 ---
 
 ## 📚 Related Packages
 
-| Package | Description |
-|---------|-------------|
-| **System.Entities** | Core entity abstractions (`IEntity`, `IRepository`, `IUnitOfWork`) |
-| **System.Events.Data** | Event Store and Outbox EF Core implementations |
-| **Microsoft.EntityFrameworkCore** | EF Core framework |
+- **Xpandables.Entities.EntityFramework** — EF Core implementation of repository and unit of work
+- **Xpandables.Events** — Domain event contracts
+- **Xpandables.Results** — Result types for handler responses
 
 ---
 
 ## 📄 License
 
-Apache License 2.0 - Copyright © Kamersoft 2025
-
-Contributions welcome at [Xpandables.Net on GitHub](https://github.com/Francescolis/Xpandables.Net).
-
+Apache License 2.0 — Copyright © Kamersoft 2025

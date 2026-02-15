@@ -225,29 +225,26 @@ services.ConfigureXRestClientOptions(options =>
 | `RestResponse` | Response wrapper |
 | `RestClientOptions` | Resilience configuration |
 
-## License
-
-Apache License 2.0
+---
 
 ## ✅ Best Practices
 
-1. **Use appropriate request interfaces** - IRestString for JSON, IRestQueryString for GET params
-2. **Combine interfaces** - A request can implement multiple interfaces (IRestPathString + IRestString)
-3. **Use records** - Immutable request types work best
-4. **Dispose responses** - Always use `using` with RestResponse
-5. **Handle errors** - Check IsSuccess before accessing results
-6. **Configure timeouts** - Set appropriate timeouts for your API
+1. **Use appropriate request interfaces** — `IRestString` for JSON, `IRestQueryString` for GET params
+2. **Combine interfaces** — A request can implement multiple interfaces (`IRestPathString` + `IRestString`)
+3. **Use records** — Immutable request types work best
+4. **Dispose responses** — Always use `using` with `RestResponse`
+5. **Handle errors** — Check `IsSuccess` before accessing results
+6. **Configure timeouts** — Set appropriate timeouts for your API
 
 ---
 
 ## 📚 Related Packages
 
-- **System.Results** - Result types for response handling
-- **AspNetCore.Net** - ASP.NET Core integration
-- **System.Text.Json** - JSON serialization
+- **Xpandables.Results** — Result types for response handling
+- **Xpandables.AspNetCore** — ASP.NET Core integration
 
 ---
 
 ## 📄 License
 
-Apache License 2.0 - Copyright © Kamersoft 2025
+Apache License 2.0 — Copyright © Kamersoft 2025

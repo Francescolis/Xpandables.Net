@@ -1,4 +1,4 @@
-﻿# 🔗 Xpandables.Results.Pipelines
+﻿# 🔗 System.Results.Pipelines
 
 [![NuGet](https://img.shields.io/badge/NuGet-10.0.1-blue.svg)](https://www.nuget.org/packages/Xpandables.Results.Pipelines)
 [![.NET](https://img.shields.io/badge/.NET-10.0-purple.svg)](https://dotnet.microsoft.com/)
@@ -14,7 +14,8 @@
 ### ✨ Key Features
 
 - ✅ **PipelineValidationDecorator** - Automatic request validation for `IRequiresValidation`
-- 🔄 **PipelineUnitOfWorkDecorator** - Unit of Work integration for `IRequiresUnitOfWork`
+- 🔄 **PipelineEntityUnitOfWorkDecorator** — EF Core Unit of Work for `IEntityRequiresUnitOfWork`
+- 🔄 **PipelineDataUnitOfWorkDecorator** — ADO.NET Unit of Work for `IDataRequiresUnitOfWork`
 - 📡 **PipelineDomainEventsDecorator** - Publish domain events for `IRequiresDomainEvents`
 - 📮 **PipelineIntegrationOutboxDecorator** - Outbox publishing for `IRequiresIntegrationOutbox`
 - 📝 **PipelinePreDecorator** - Execute logic before the main handler
@@ -46,13 +47,15 @@ var builder = WebApplication.CreateBuilder(args);
 builder.Services.AddXPipelineRequestHandler();
 
 // Add decorators (order matters - first registered runs outermost)
-builder.Services.AddXPipelineExceptionDecorator();       // Handle exceptions
-builder.Services.AddXPipelineValidationDecorator();      // Validate requests
-builder.Services.AddXPipelinePreDecorator();             // Pre-processing
-builder.Services.AddXPipelineUnitOfWorkDecorator();      // Transaction management
-builder.Services.AddXPipelineDomainEventsDecorator();    // Publish domain events
-builder.Services.AddXPipelineIntegrationOutboxDecorator(); // Outbox pattern
-builder.Services.AddXPipelinePostDecorator();            // Post-processing
+builder.Services.AddXPipelineExceptionDecorator();             // Handle exceptions
+builder.Services.AddXPipelineValidationDecorator();            // Validate requests
+builder.Services.AddXPipelinePreDecorator();                   // Pre-processing
+builder.Services.AddXPipelineEntityUnitOfWorkDecorator();      // EF Core transactions
+builder.Services.AddXPipelineDataUnitOfWorkDecorator();        // ADO.NET transactions
+builder.Services.AddXPipelineDomainEventsDecorator();          // Publish domain events
+builder.Services.AddXPipelineIntegrationOutboxDecorator();     // Outbox pattern
+builder.Services.AddXPipelineEventStoreEventDecorator();       // Event store persistence
+builder.Services.AddXPipelinePostDecorator();                  // Post-processing
 ```
 
 ### Mark Requests for Pipeline Features
@@ -65,9 +68,9 @@ using System.ComponentModel.DataAnnotations;
 public sealed record CreateUserCommand(string Name, string Email) 
     : IRequest<User>, IRequiresValidation;
 
-// Request that requires Unit of Work (transaction)
+// Request that requires Unit of Work (EF Core transaction)
 public sealed record UpdateOrderCommand(Guid OrderId, OrderStatus Status) 
-    : IRequest, IRequiresUnitOfWork;
+    : IRequest, IEntityRequiresUnitOfWork;
 
 // Request that may publish domain events
 public sealed record ProcessPaymentCommand(Guid OrderId, decimal Amount) 
@@ -91,7 +94,7 @@ public sealed record CreateProductCommand(string Name, decimal Price)
     : IRequest<Product>, IRequiresValidation;
 
 // Validator
-public sealed class CreateProductValidator : RuleValidator<CreateProductCommand>
+public sealed class CreateProductValidator : Validator<CreateProductCommand>
 {
     public override IReadOnlyCollection<ValidationResult> Validate(CreateProductCommand instance)
     {
@@ -108,17 +111,17 @@ public sealed class CreateProductValidator : RuleValidator<CreateProductCommand>
 }
 ```
 
-### PipelineUnitOfWorkDecorator
+### PipelineEntityUnitOfWorkDecorator
 
-Automatically saves changes after handler execution for requests implementing `IRequiresUnitOfWork`:
+Automatically saves changes after handler execution for requests implementing `IEntityRequiresUnitOfWork`:
 
 ```csharp
 // Register
-builder.Services.AddXPipelineUnitOfWorkDecorator();
+builder.Services.AddXPipelineEntityUnitOfWorkDecorator();
 
 // Request with unit of work
 public sealed record CreateOrderCommand(Guid CustomerId, List<OrderItem> Items) 
-    : IRequest<Order>, IRequiresUnitOfWork;
+    : IRequest<Order>, IEntityRequiresUnitOfWork;
 
 // Handler - SaveChanges is called automatically after execution
 public sealed class CreateOrderHandler : IRequestHandler<CreateOrderCommand, Order>
@@ -303,7 +306,7 @@ builder.Services
 ## ✅ Best Practices
 
 1. **Order decorators carefully** - Exception handler should be outermost
-2. **Use marker interfaces** - IRequiresValidation, IRequiresUnitOfWork enable specific decorators
+2. **Use marker interfaces** — `IRequiresValidation`, `IEntityRequiresUnitOfWork`, `IDataRequiresUnitOfWork` enable specific decorators
 3. **Keep handlers focused** - Let decorators handle cross-cutting concerns
 4. **Register all pre/post handlers** - They run for all matching requests
 5. **Buffer events** - Use the provided buffers for domain/integration events

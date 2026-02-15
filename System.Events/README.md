@@ -54,15 +54,6 @@ Built for .NET 10 with full async support.
 - **`IEventContextAccessor`** — Access current event context
 - **`AsyncLocalEventContextAccessor`** — AsyncLocal-based accessor
 
-### Data Entities
-- **`IEntityEvent`** — Base entity event interface
-- **`IEntityEventDomain`** — Domain event entity
-- **`IEntityEventSnapshot`** — Snapshot event entity
-- **`IEntityEventOutbox`** — Outbox event entity
-- **`IEntityEventInbox`** — Inbox event entity
-- **`IEventConverter`** — Convert between events and entities
-- **`IEventConverterFactory`** — Factory for event converters
-
 ### Enrichers
 - **`IDomainEventEnricher`** — Enrich domain events with metadata
 - **`IIntegrationEventEnricher`** — Enrich integration events
@@ -109,7 +100,7 @@ public sealed class OrderAggregate : Aggregate, IAggregateFactory<OrderAggregate
 
     public void CreateOrder(Guid orderId, Guid customerId)
     {
-        PushEvent(new OrderCreated
+        AppendEvent(new OrderCreated
         {
             StreamId = orderId,
             CustomerId = customerId
@@ -189,16 +180,9 @@ public class OrderService(IAggregateStore aggregateStore)
 | `IOutboxStore` | Transactional outbox |
 | `IInboxStore` | Idempotent inbox |
 
-## License
+---
 
-Apache License 2.0
-public record OrderCancelled : DomainEvent
-{
-    public required string Reason { get; init; }
-}
-```
-
-### Use aggregate store
+### Use Aggregate Store
 
 ```csharp
 using System.Events.Aggregates;

@@ -75,7 +75,6 @@
 	</ItemGroup>
 
 	<ItemGroup>
-		<None Include="README.md" Pack="true" PackagePath="" />
 		<None Include="..\Xpandables.Net.png" Link="Xpandables.Net.png">
 			<PackagePath>\</PackagePath>
 			<Pack>True</Pack>

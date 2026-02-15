@@ -1,4 +1,4 @@
-﻿# System.Primitives
+# System.Primitives
 
 [![NuGet](https://img.shields.io/nuget/v/Xpandables.Primitives.svg)](https://www.nuget.org/packages/Xpandables.Primitives)
 [![.NET](https://img.shields.io/badge/.NET-10.0+-purple.svg)](https://dotnet.microsoft.com/)
@@ -38,7 +38,7 @@ Built for .NET 10 with zero external dependencies.
 - **`State`** — Base state implementation
 
 ### Caching
-- **`MemoryAwareCache<TKey, TValue>`** — Cache with GC pressure monitoring
+- **`MemoryAwareCache<TKey, TValue>`** — Cache with GC pressure monitoring and weak references
 - **`WeakCacheEntry<T>`** — Weak reference cache entry
 - **`ICacheTypeResolver`** — Type resolver for cached items
 - **`CacheTypeResolver`** — Default type resolver
@@ -48,10 +48,10 @@ Built for .NET 10 with zero external dependencies.
 - **`DisposableAsync`** — Base class for IAsyncDisposable
 
 ### Extension Methods
-- **`StringExtensions`** — String manipulation utilities
-- **`ObjectExtensions`** — Object utilities
-- **`ExceptionExtensions`** — Exception utilities
-- **`HttpStatusCodeExtensions`** — HTTP status helpers
+- **`StringExtensions`** — String manipulation and formatting
+- **`ObjectExtensions`** — Object null checks and type conversion
+- **`ExceptionExtensions`** — Exception details and HTTP status mapping
+- **`HttpStatusCodeExtensions`** — HTTP status helpers (Title, Detail, IsSuccess)
 - **`JsonSerializerExtensions`** — JSON serialization helpers
 - **`ThrowExceptionExtensions`** — Fluent exception throwing
 
@@ -90,16 +90,33 @@ public readonly record struct Email : IPrimitive<Email, string>
 
     public static string DefaultValue => string.Empty;
 
-    public static implicit operator string(Email email) => email.Value;
-    public static implicit operator Email(string value) => Create(value);
+    public static bool TryParse(
+        string? s, IFormatProvider? provider, out Email result)
+    {
+        if (s is not null && s.Contains('@'))
+        {
+            result = Create(s);
+            return true;
+        }
+        result = default;
+        return false;
+    }
 
-    public static bool operator ==(Email left, Email right) => left.Value == right.Value;
-    public static bool operator !=(Email left, Email right) => !(left == right);
+    public string ToString(string? format, IFormatProvider? provider) =>
+        Value;
+
+    public int CompareTo(Email other) =>
+        string.Compare(Value, other.Value, StringComparison.Ordinal);
+
+    public int CompareTo(object? obj) =>
+        obj is Email other ? CompareTo(other) : 1;
+
+    public bool Equals(Email other) => Value == other.Value;
 }
 
 // Usage
-Email email = "john@example.com";  // Implicit conversion + validation
-string emailStr = email;           // Implicit back to string
+Email email = Email.Create("john@example.com");
+string emailStr = email.Value; // "john@example.com"
 ```
 
 ### Element Collections
@@ -108,8 +125,8 @@ string emailStr = email;           // Implicit back to string
 using System.Collections;
 
 // Create a collection
-var collection = ElementCollection.Create("key1", "value1", "value2")
-    .Add("key2", "value3");
+var collection = ElementCollection.With("key1", "value1", "value2")
+    + new ElementEntry("key2", "value3");
 
 // Access entries
 foreach (var entry in collection)
@@ -124,101 +141,45 @@ if (collection.TryGetValue("key1", out var values))
 }
 ```
 
-### State Pattern
-
-```csharp
-using System.States;
-
-public class TrafficLight : StateContext<TrafficLightState>
-{
-    public TrafficLight() : base(new RedState()) { }
-
-    public void Next() => State.Handle(this);
-}
-
-public abstract class TrafficLightState : State
-{
-    public abstract void Handle(TrafficLight context);
-}
-
-public class RedState : TrafficLightState
-{
-    public override void Handle(TrafficLight context) => context.SetState(new GreenState());
-}
-```
-
 ### Memory-Aware Cache
 
 ```csharp
 using System.Cache;
 
-var cache = new MemoryAwareCache<string, ExpensiveObject>();
+// Cleanup every 5 mins, items expire after 1 hour (defaults)
+var cache = new MemoryAwareCache<string, User>();
 
-cache.GetOrAdd("key", () => new ExpensiveObject());
+// Get existing or create new
+User user = cache.GetOrAdd("user:123", key => LoadUser(key));
 
-// Cache automatically evicts under memory pressure
-```
+// Add or update
+cache.AddOrUpdate("user:456", new User { Id = 456, Name = "Jane" });
 
-## Core Types
-
-| Type | Description |
-|------|-------------|
-| `IPrimitive<TPrimitive, TValue>` | Strongly-typed value object |
-| `ElementCollection` | Key-value collection |
-| `IStateContext` | State machine context |
-| `MemoryAwareCache<K, V>` | GC-aware cache |
-| `Disposable` | IDisposable base class |
-
-## License
-
-Apache License 2.0
-var context = new StateContext<Order>(order, OrderState.Pending);
-
-context.Request();  // Transitions to Confirmed
-Console.WriteLine($"State: {context.State.Name}");  // "Confirmed"
-```
-
----
-
-## 💾 Memory-Aware Cache
-
-Cache with automatic eviction under memory pressure:
-
-```csharp
-var cache = new MemoryAwareCache<string, User>(maxItems: 1000);
-
-// Add items
-cache.Add("user:123", new User { Id = 123, Name = "John" });
-cache.Add("user:456", new User { Id = 456, Name = "Jane" });
-
-// Retrieve
-if (cache.TryGet("user:123", out var user))
+// Try retrieve
+if (cache.TryGetValue("user:123", out var cachedUser))
 {
-    Console.WriteLine($"Found: {user.Name}");
+    Console.WriteLine($"Found: {cachedUser.Name}");
 }
 
-// Cache uses weak references
-// Items automatically evicted when GC needs memory
+// Items use weak references — automatically collected under GC pressure
 ```
 
----
+### HttpStatusCode Extensions
 
-## 🧩 Extension Methods
-
-### String Extensions
 ```csharp
-string text = "  hello  ";
-bool isEmpty = text.IsNullOrWhiteSpace();  // false
-string trimmed = text.Trim();  // "hello"
-```
+using System.Net;
 
-### Object Extensions
-```csharp
-var obj = new { Name = "John", Age = 30 };
-var dict = obj.ToDictionary();  // Convert to Dictionary<string, object>
+var status = HttpStatusCode.BadRequest;
+
+bool isSuccess = status.IsSuccess;            // false
+bool isFailure = status.IsFailure;            // true
+bool isValidation = status.IsValidationProblem; // true
+string title = status.Title;                  // "Bad Request"
+string detail = status.Detail;                // Description text
 ```
 
 ### Exception Extensions
+
 ```csharp
 try
 {
@@ -226,102 +187,15 @@ try
 }
 catch (Exception ex)
 {
-    var executionResult = ex.ToExecutionResult();
-    // Converts exception to OperationResult
+    // Get full message including inner exceptions
+    string fullMessage = ex.GetFullExceptionMessage();
+
+    // Convert to ElementCollection for structured error data
+    ElementCollection entries = ex.GetElementEntries();
+
+    // Get the appropriate HTTP status code
+    HttpStatusCode statusCode = ex.GetHttpStatusCode();
 }
-```
-
-### HttpStatusCode Extensions
-```csharp
-var status = HttpStatusCode.BadRequest;
-
-string title = status.Title;  // "Bad Request"
-string detail = status.Detail;  // Description
-bool isSuccess = status.IsSuccess();  // false
-bool isFailure = status.IsFailure();  // true
-bool isValidation = status.IsValidationProblem();  // true
-```
-
----
-
-## 🎯 Real-World Examples
-
-### UserId Primitive
-
-```csharp
-[PrimitiveJsonConverter<UserId, Guid>]
-public readonly record struct UserId : IPrimitive<UserId, Guid>
-{
-    public required Guid Value { get; init; }
-
-    public static UserId Create(Guid value)
-    {
-        if (value == Guid.Empty)
-            throw new ArgumentException("UserId cannot be empty");
-        return new UserId { Value = value };
-    }
-
-    public static Guid DefaultValue => Guid.Empty;
-    public static UserId NewId() => Create(Guid.NewGuid());
-
-    public static implicit operator Guid(UserId id) => id.Value;
-    public static implicit operator UserId(Guid value) => Create(value);
-
-    public static bool operator ==(UserId left, UserId right) => 
-        left.Value == right.Value;
-    public static bool operator !=(UserId left, UserId right) => 
-        !(left == right);
-}
-
-// Usage in domain model
-public class User
-{
-    public UserId Id { get; init; } = UserId.NewId();
-    public Email Email { get; init; }
-    public string Name { get; init; } = default!;
-}
-```
-
-### Domain Model with Primitives
-
-```csharp
-public class Order
-{
-    public OrderId Id { get; init; } = OrderId.NewId();
-    public UserId CustomerId { get; init; }
-    public Money TotalAmount { get; private set; }
-    public List<OrderLine> Lines { get; init; } = [];
-
-    public void AddLine(ProductId productId, Quantity quantity, Money unitPrice)
-    {
-        var line = new OrderLine
-        {
-            ProductId = productId,
-            Quantity = quantity,
-            UnitPrice = unitPrice,
-            Total = unitPrice.Multiply(quantity.Value)
-        };
-
-        Lines.Add(line);
-        RecalculateTotal();
-    }
-
-    private void RecalculateTotal()
-    {
-        decimal sum = Lines.Sum(l => l.Total.Value);
-        TotalAmount = Money.Create(sum);
-    }
-}
-
-// Usage
-var order = new Order { CustomerId = currentUserId };
-order.AddLine(
-    productId: ProductId.From("PROD-001"),
-    quantity: Quantity.Create(2),
-    unitPrice: Money.Create(49.99m)
-);
-
-Console.WriteLine($"Order total: {order.TotalAmount}");  // $99.98
 ```
 
 ---
@@ -335,10 +209,7 @@ public class MyResource : Disposable
 {
     private readonly Stream _stream;
 
-    public MyResource(Stream stream)
-    {
-        _stream = stream;
-    }
+    public MyResource(Stream stream) => _stream = stream;
 
     protected override void Dispose(bool disposing)
     {
@@ -358,9 +229,12 @@ public class MyAsyncResource : DisposableAsync
 {
     private readonly DbConnection _connection;
 
+    public MyAsyncResource(DbConnection connection)
+        => _connection = connection;
+
     protected override async ValueTask DisposeAsync(bool disposing)
     {
-        if (disposing && _connection != null)
+        if (disposing)
         {
             await _connection.CloseAsync();
             await _connection.DisposeAsync();
@@ -372,56 +246,37 @@ public class MyAsyncResource : DisposableAsync
 
 ---
 
-## ✅ Best Practices
+## Core Types
 
-### ✅ Do
-
-- **Use primitives for domain concepts** - Email, Money, ProductId, etc.
-- **Validate in Create() method** - Fail fast with clear exceptions
-- **Make primitives immutable** - Use `readonly record struct`
-- **Add domain operations** - Methods like Add(), Subtract() for Money
-- **Use implicit conversions** - Seamless usage with underlying types
-- **Decorate with JsonConverter** - Automatic JSON serialization
-- **Keep primitives simple** - Single responsibility
-
-### ❌ Don't
-
-- **Create primitives for everything** - Only for important domain concepts
-- **Put complex business logic in primitives** - Keep them lightweight
-- **Make primitives classes** - Use structs for better performance
-- **Skip validation** - Always validate in Create() method
-- **Expose public setters** - Primitives should be immutable
-- **Throw generic exceptions** - Use specific ArgumentException messages
+| Type | Description |
+|------|-------------|
+| `IPrimitive<TPrimitive, TValue>` | Strongly-typed value object |
+| `ElementCollection` | Key-value collection |
+| `IStateContext` | State machine context |
+| `MemoryAwareCache<TKey, TValue>` | Weak-reference cache with auto-cleanup |
+| `Disposable` / `DisposableAsync` | Disposable base classes |
 
 ---
 
-## 📊 Performance Benefits
+## ✅ Best Practices
 
-| Aspect | Classes | Structs (Primitives) |
-|--------|---------|----------------------|
-| Allocation | Heap | Stack (most cases) |
-| GC Pressure | Higher | Lower |
-| Copy Cost | Reference | Value copy |
-| Memory | Pointer overhead | Direct value |
-| Best For | Large objects | Small values |
-
-Primitives use `readonly record struct` for:
-- ✅ Stack allocation in most cases
-- ✅ Reduced GC pressure
-- ✅ Value semantics
-- ✅ Immutability guarantees
+- **Use primitives for domain concepts** — Email, Money, ProductId, etc.
+- **Validate in `Create()` method** — Fail fast with clear exceptions
+- **Make primitives `readonly record struct`** — Stack allocation, value semantics
+- **Decorate with `PrimitiveJsonConverter`** — Automatic JSON serialization
+- **Keep primitives simple** — Single responsibility, no complex business logic
+- **Use `Disposable`/`DisposableAsync`** — Consistent dispose pattern implementation
 
 ---
 
 ## 📚 Related Packages
 
-- **[System.Primitives.Validation](../System.Primitives.Validation)** - FluentValidation integration
-- **[System.Primitives.Composition](../System.Primitives.Composition)** - DI composition utilities
-- **[System.ExecutionResults](../System.ExecutionResults)** - Result pattern types
-- **[System.Optionals](../System.Optionals)** - Optional value types
+- **Xpandables.Validation** — Specification pattern and validation
+- **Xpandables.Optionals** — Optional/Maybe monad
+- **Xpandables.Results** — Result pattern types
 
 ---
 
 ## 📄 License
 
-Apache License 2.0 - Copyright © Kamersoft 2025
+Apache License 2.0 — Copyright © Kamersoft 2025

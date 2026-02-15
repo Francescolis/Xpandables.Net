@@ -1,4 +1,4 @@
-﻿# System.Validation
+# System.Validation
 
 [![NuGet](https://img.shields.io/nuget/v/Xpandables.Validation.svg)](https://www.nuget.org/packages/Xpandables.Validation)
 [![.NET](https://img.shields.io/badge/.NET-10.0+-purple.svg)](https://dotnet.microsoft.com/)
@@ -17,7 +17,7 @@ Built for .NET 10 with full async support.
 ### Specification Pattern
 - **`ISpecification<TSource>`** — Specification with expression-based criteria
 - **`Specification`** — Static factory methods for creating specifications
-- **`SpecificationExtensions`** — Combinators (And, Or, Not, All, Any)
+- **`SpecificationExtensions`** — Combinators (And, Or, OrElse, Not)
 
 ### Validators
 - **`IValidator`** — Base validator interface
@@ -51,6 +51,8 @@ dotnet add package Xpandables.Validation
 ```csharp
 using Microsoft.Extensions.DependencyInjection;
 
+// Scans assemblies for sealed IValidator<T> implementations and registers them,
+// along with ICompositeValidator<T> and IValidatorResolver for each argument type.
 services.AddXValidators(typeof(Program).Assembly);
 ```
 
@@ -76,8 +78,8 @@ if (validUser.IsSatisfiedBy(user))
     Console.WriteLine("User meets all criteria");
 }
 
-// Use in LINQ
-var activeAdults = users.Where(validUser.Expression.Compile());
+// Use in LINQ queries
+var activeAdults = users.AsQueryable().Where(validUser);
 ```
 
 ### Specification Factory Methods
@@ -94,8 +96,6 @@ var isNotNull = Specification.IsNotNull<User, string>(u => u.Email);
 // Comparisons
 var greaterThan = Specification.GreaterThan<Product, decimal>(p => p.Price, 10m);
 var lessThan = Specification.LessThan<Product, int>(p => p.Stock, 100);
-var greaterOrEqual = Specification.GreaterThanOrEqual<User, int>(u => u.Age, 18);
-var lessOrEqual = Specification.LessThanOrEqual<Product, decimal>(p => p.Price, 100m);
 
 // String operations
 var contains = Specification.Contains<User>(u => u.Email, "@");
@@ -113,49 +113,69 @@ var alwaysFalse = Specification.False<User>();
 var spec1 = Specification.Equal<User, bool>(u => u.IsActive, true);
 var spec2 = Specification.GreaterThan<User, int>(u => u.Age, 18);
 
-// Logical AND
+// Extension methods (work on ISpecification<T>)
 var andSpec = spec1.And(spec2);
-var andAlsoSpec = spec1.AndAlso(spec2); // Short-circuit
-
-// Logical OR
 var orSpec = spec1.Or(spec2);
 var orElseSpec = spec1.OrElse(spec2); // Short-circuit
-
-// Logical NOT
 var notSpec = spec1.Not();
 
-// Multiple with All (AND) or Any (OR)
+// Static methods
 var allSpec = Specification.All(spec1, spec2);
 var anySpec = Specification.Any(spec1, spec2);
 
-// Operator syntax
-var combined = spec1 & spec2; // AND
-var either = spec1 | spec2;   // OR
-var negated = !spec1;         // NOT
+// Operator syntax (requires Specification<T> — use FromExpression)
+Specification<User> s1 = Specification.FromExpression<User>(u => u.IsActive);
+Specification<User> s2 = Specification.FromExpression<User>(u => u.Age > 18);
+
+var combined = s1 & s2; // AND
+var either = s1 | s2;   // OR
+var negated = !s1;       // NOT
 ```
+
+### LINQ Integration
+
+```csharp
+var isActive = Specification.Equal<User, bool>(u => u.IsActive, true);
+
+// IQueryable (expression tree — database-compatible)
+IQueryable<User> activeUsers = dbContext.Users.Where(isActive);
+
+// IEnumerable (compiled predicate — in-memory)
+IEnumerable<User> filtered = userList.Where(isActive);
+bool anyActive = userList.Any(isActive);
+bool allActive = userList.All(isActive);
+```
+
+---
+
+## 🛡️ Validators
 
 ### Create a Validator
 
 ```csharp
 using System.ComponentModel.DataAnnotations;
 
-public sealed record CreateUserRequest(string Name, string Email, int Age) 
+public sealed record CreateUserRequest(string Name, string Email, int Age)
     : IRequiresValidation;
 
-public sealed class CreateUserValidator : IValidator<CreateUserRequest>
+public sealed class CreateUserValidator : Validator<CreateUserRequest>
 {
-    public IReadOnlyCollection<ValidationResult> Validate(CreateUserRequest instance)
+    public override IReadOnlyCollection<ValidationResult> Validate(
+        CreateUserRequest instance)
     {
         var results = new List<ValidationResult>();
 
         if (string.IsNullOrWhiteSpace(instance.Name))
-            results.Add(new ValidationResult("Name is required", [nameof(instance.Name)]));
+            results.Add(new ValidationResult(
+                "Name is required", [nameof(instance.Name)]));
 
         if (!instance.Email.Contains('@'))
-            results.Add(new ValidationResult("Invalid email", [nameof(instance.Email)]));
+            results.Add(new ValidationResult(
+                "Invalid email", [nameof(instance.Email)]));
 
         if (instance.Age < 18)
-            results.Add(new ValidationResult("Must be 18+", [nameof(instance.Age)]));
+            results.Add(new ValidationResult(
+                "Must be 18+", [nameof(instance.Age)]));
 
         return results;
     }
@@ -173,7 +193,8 @@ public class UserService(IValidator<CreateUserRequest> validator)
 
         if (validationResults.Count > 0)
         {
-            throw new ValidationException(validationResults.First().ErrorMessage);
+            throw new ValidationException(
+                validationResults.First().ErrorMessage);
         }
 
         // Create user...
@@ -181,81 +202,67 @@ public class UserService(IValidator<CreateUserRequest> validator)
 }
 ```
 
-### Composite Validator
-
-```csharp
-public class ComplexValidator : ICompositeValidator<CreateUserRequest>
-{
-    private readonly IValidator<CreateUserRequest>[] _validators;
-
-    public ComplexValidator(IEnumerable<IValidator<CreateUserRequest>> validators)
-        => _validators = validators.ToArray();
-
-    public IReadOnlyCollection<ValidationResult> Validate(CreateUserRequest instance)
-        => _validators.SelectMany(v => v.Validate(instance)).ToList();
-}
-```
-
-## Core Types
-
-| Type | Description |
-|------|-------------|
-| `ISpecification<T>` | Specification with expression |
-| `Specification` | Factory methods |
-| `IValidator<T>` | Strongly-typed validator |
-| `IRequiresValidation` | Validation marker |
-| `IValidatorFactory` | Validator creation |
-| `ICompositeValidator<T>` | Multiple validators |
-
-## License
-
-Apache License 2.0
-        }
-
-        if (!priceSpec.IsSatisfiedBy(instance))
-        {
-            results.Add(new ValidationResult("Price must be greater than zero", [nameof(instance.Price)]));
-        }
-
-        if (!stockSpec.IsSatisfiedBy(instance))
-        {
-            results.Add(new ValidationResult("Stock must be greater than zero", [nameof(instance.Stock)]));
-        }
-
-        return results;
-    }
-
-    public ValueTask<IReadOnlyCollection<ValidationResult>> ValidateAsync(CreateProductRequest instance)
-        => new(Validate(instance));
-}
-```
-
 ### Async Validation
 
 ```csharp
-public sealed class UniqueEmailValidator : IValidator<CreateUserRequest>
+public sealed class UniqueEmailValidator : Validator<CreateUserRequest>
 {
     private readonly IUserRepository _repository;
 
     public UniqueEmailValidator(IUserRepository repository)
         => _repository = repository;
 
-    public async ValueTask<IReadOnlyCollection<ValidationResult>> ValidateAsync(
-        CreateUserRequest instance)
-    {
-        var results = new List<ValidationResult>();
+    // Lower order = runs first
+    public override int Order => 10;
 
-        var existingUser = await _repository.FindByEmailAsync(instance.Email).ConfigureAwait(false);
-        if (existingUser is not null)
+    public override IReadOnlyCollection<ValidationResult> Validate(
+        CreateUserRequest instance) => [];
+
+    public override async ValueTask<IReadOnlyCollection<ValidationResult>>
+        ValidateAsync(CreateUserRequest instance)
+    {
+        var existing = await _repository
+            .FindByEmailAsync(instance.Email)
+            .ConfigureAwait(false);
+
+        if (existing is not null)
         {
-            results.Add(new ValidationResult("Email already exists", [nameof(instance.Email)]));
+            return [new ValidationResult(
+                "Email already exists",
+                [nameof(instance.Email)])];
         }
 
-        return results;
+        return [];
     }
+}
+```
 
-    public IReadOnlyCollection<ValidationResult> Validate(CreateUserRequest instance)
-        => ValidateAsync(instance).GetAwaiter().GetResult();
+### Composite Validator
+
+When multiple validators are registered for the same type,
+`CompositeValidator<T>` aggregates them in `Order` sequence:
+
+```csharp
+// Registration (AddXValidators does this automatically)
+services.AddXValidators(typeof(CreateUserValidator).Assembly);
+
+// Usage — inject ICompositeValidator<T> to run all validators
+public class UserService(ICompositeValidator<CreateUserRequest> validator)
+{
+    public async Task CreateUserAsync(
+        CreateUserRequest request,
+        CancellationToken ct)
+    {
+        // Runs CreateUserValidator, then UniqueEmailValidator (by Order)
+        var results = await validator
+            .ValidateAsync(request)
+            .ConfigureAwait(false);
+
+        if (results.Count > 0)
+        {
+            // Handle validation errors...
+        }
+    }
 }
 ```
 
@@ -270,53 +277,51 @@ using Microsoft.Extensions.DependencyInjection;
 
 var builder = WebApplication.CreateBuilder(args);
 
+// Register all validators from assembly
+builder.Services.AddXValidators(typeof(CreateUserValidator).Assembly);
+
+// Or register infrastructure separately
 builder.Services
-    .AddXValidator()
-    .AddXValidatorFactory()
-    .AddXValidatorProvider()
-    .AddXValidators(typeof(CreateUserValidator).Assembly);
+    .AddXCompositeValidator()       // ICompositeValidator<T> → CompositeValidator<T>
+    .AddXValidatorFactory()         // IValidatorFactory → ValidatorFactory
+    .AddXValidatorProvider();       // IValidatorProvider → ValidatorProvider
 ```
 
 ---
 
 ## 🌍 Real-World Examples
 
-### Order Validation
+### Validator with Specifications
 
 ```csharp
-public sealed class OrderValidator : Validator<CreateOrderRequest>
+public sealed record CreateProductRequest(
+    string Name, decimal Price, int Stock) : IRequiresValidation;
+
+public sealed class CreateProductValidator : Validator<CreateProductRequest>
 {
-    public override IReadOnlyCollection<ValidationResult> Validate(CreateOrderRequest instance)
+    public override IReadOnlyCollection<ValidationResult> Validate(
+        CreateProductRequest instance)
     {
         var results = new List<ValidationResult>();
 
-        // Customer validation
-        var hasCustomer = Specification.IsNotNull<CreateOrderRequest, Guid?>(o => o.CustomerId);
-        if (!hasCustomer.IsSatisfiedBy(instance))
-        {
-            results.Add(new ValidationResult("Customer is required", [nameof(instance.CustomerId)]));
-        }
+        var nameSpec = Specification.IsNotNull<CreateProductRequest, string>(
+            p => p.Name);
+        var priceSpec = Specification.GreaterThan<CreateProductRequest, decimal>(
+            p => p.Price, 0m);
+        var stockSpec = Specification.GreaterThan<CreateProductRequest, int>(
+            p => p.Stock, 0);
 
-        // Items validation
-        if (instance.Items is null || instance.Items.Count == 0)
-        {
-            results.Add(new ValidationResult("At least one item is required", [nameof(instance.Items)]));
-        }
-        else
-        {
-            var validItemSpec = Specification.GreaterThan<OrderItem, int>(i => i.Quantity, 0)
-                .And(Specification.GreaterThan<OrderItem, decimal>(i => i.UnitPrice, 0));
+        if (!nameSpec.IsSatisfiedBy(instance))
+            results.Add(new ValidationResult(
+                "Name is required", [nameof(instance.Name)]));
 
-            for (int i = 0; i < instance.Items.Count; i++)
-            {
-                if (!validItemSpec.IsSatisfiedBy(instance.Items[i]))
-                {
-                    results.Add(new ValidationResult(
-                        $"Item {i + 1} must have quantity and price greater than zero",
-                        [$"Items[{i}]"]));
-                }
-            }
-        }
+        if (!priceSpec.IsSatisfiedBy(instance))
+            results.Add(new ValidationResult(
+                "Price must be greater than zero", [nameof(instance.Price)]));
+
+        if (!stockSpec.IsSatisfiedBy(instance))
+            results.Add(new ValidationResult(
+                "Stock must be greater than zero", [nameof(instance.Stock)]));
 
         return results;
     }
@@ -326,28 +331,24 @@ public sealed class OrderValidator : Validator<CreateOrderRequest>
 ### Complex Business Rules
 
 ```csharp
-public class DiscountEligibilitySpec
+public static class DiscountEligibility
 {
     // Premium customer with high order value
     public static ISpecification<Order> PremiumDiscount =>
-        Specification.Equal<Order, CustomerType>(o => o.Customer.Type, CustomerType.Premium)
+        Specification.Equal<Order, string>(o => o.CustomerType, "Premium")
             .And(Specification.GreaterThan<Order, decimal>(o => o.TotalAmount, 1000m));
 
     // First-time customer discount
     public static ISpecification<Order> FirstTimeDiscount =>
-        Specification.Equal<Order, int>(o => o.Customer.OrderCount, 0);
-
-    // Seasonal discount (example: December)
-    public static ISpecification<Order> SeasonalDiscount =>
-        Specification.Equal<Order, int>(o => o.OrderDate.Month, 12);
+        Specification.Equal<Order, int>(o => o.CustomerOrderCount, 0);
 
     // Any discount applies
     public static ISpecification<Order> AnyDiscount =>
-        Specification.Any(PremiumDiscount, FirstTimeDiscount, SeasonalDiscount);
+        Specification.Any(PremiumDiscount, FirstTimeDiscount);
 }
 
 // Usage
-if (DiscountEligibilitySpec.PremiumDiscount.IsSatisfiedBy(order))
+if (DiscountEligibility.PremiumDiscount.IsSatisfiedBy(order))
 {
     order.ApplyDiscount(0.15m); // 15% premium discount
 }
@@ -355,25 +356,40 @@ if (DiscountEligibilitySpec.PremiumDiscount.IsSatisfiedBy(order))
 
 ---
 
+## Core Types
+
+| Type | Description |
+|------|-------------|
+| `ISpecification<T>` | Specification with expression |
+| `Specification` | Static factory and combinator methods |
+| `IValidator<T>` | Strongly-typed validator |
+| `Validator<T>` | Base validator with sync/async support |
+| `ICompositeValidator<T>` | Aggregates multiple validators |
+| `IRequiresValidation` | Marker for types needing validation |
+| `IValidatorFactory` | Creates validators by type |
+
+---
+
 ## ✅ Best Practices
 
-1. **Create reusable specifications** - Define common business rules as static specifications
-2. **Combine specifications** - Use And, Or, Not for complex rules
-3. **Use factory methods** - Prefer Equal, GreaterThan, Contains over raw expressions
-4. **Implement IRequiresValidation** - Mark requests for automatic pipeline validation
-5. **Keep validators focused** - One validator per request type
-6. **Use async validation** - For database lookups or external service calls
+1. **Create reusable specifications** — Define common rules as static specifications
+2. **Combine specifications** — Use `And`, `Or`, `Not` for complex rules
+3. **Use factory methods** — Prefer `Equal`, `GreaterThan`, `Contains` over raw expressions
+4. **Implement `IRequiresValidation`** — Mark request types for automatic pipeline validation
+5. **Keep validators focused** — One validator per request type
+6. **Use async validation** — Override `ValidateAsync` for database lookups or external calls
+7. **Use `Order` property** — Control validator execution sequence in composite validators
 
 ---
 
 ## 📚 Related Packages
 
-- **Xpandables.Primitives** - Core primitives and utilities
-- **Xpandables.Results** - Result types with validation integration
-- **Xpandables.Results.Pipelines** - Automatic validation in request pipelines
+- **Xpandables.Primitives** — Core primitives and utilities
+- **Xpandables.Results** — Result types with validation integration
+- **Xpandables.Results.Pipelines** — Automatic validation in request pipelines
 
 ---
 
 ## 📄 License
 
-Apache License 2.0 - Copyright © Kamersoft 2025
+Apache License 2.0 — Copyright © Kamersoft 2025
