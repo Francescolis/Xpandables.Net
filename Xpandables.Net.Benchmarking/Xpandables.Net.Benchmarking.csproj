@@ -1,23 +1,22 @@
-<Project Sdk="Microsoft.NET.Sdk">
+﻿<Project Sdk="Microsoft.NET.Sdk">
+
   <PropertyGroup>
-    <TargetFramework>net10.0</TargetFramework>
-    <OutputType>Exe</OutputType>
-    <ImplicitUsings>enable</ImplicitUsings>
-    <Nullable>enable</Nullable>
-    <IsPackable>false</IsPackable>
-	  <LangVersion>latest</LangVersion>
-    <Configurations>Debug;Release</Configurations>
-    <TreatWarningsAsErrors>true</TreatWarningsAsErrors>
-    <Platforms>x64</Platforms>
-    <AssemblyName>Xpandables.Net.Benchmarking</AssemblyName>
-    <RootNamespace>Xpandables.Net.Benchmarking</RootNamespace>
+	<OutputType>Exe</OutputType>
+	<IsPackable>false</IsPackable>
+	<AssemblyName>Xpandables.Net.Benchmarking</AssemblyName>
+	<RootNamespace>Xpandables.Net.Benchmarking</RootNamespace>
+	<AnalysisMode>Default</AnalysisMode>
+	<TreatWarningsAsErrors>false</TreatWarningsAsErrors>
   </PropertyGroup>
+
   <ItemGroup>
-    <PackageReference Include="BenchmarkDotNet" Version="0.15.8" />
-    <PackageReference Include="Microsoft.VisualStudio.DiagnosticsHub.BenchmarkDotNetDiagnosers" Version="18.3.36812.1" />
+	<PackageReference Include="BenchmarkDotNet" />
+	<PackageReference Include="Microsoft.VisualStudio.DiagnosticsHub.BenchmarkDotNetDiagnosers" />
   </ItemGroup>
+
   <ItemGroup>
-    <ProjectReference Include="..\System.AsyncPaged.Json\System.AsyncPaged.Json.csproj" />
-    <ProjectReference Include="..\System.Data\System.Data.csproj" />
+	<ProjectReference Include="..\System.AsyncPaged.Json\System.AsyncPaged.Json.csproj" />
+	<ProjectReference Include="..\System.Data\System.Data.csproj" />
   </ItemGroup>
+
 </Project>

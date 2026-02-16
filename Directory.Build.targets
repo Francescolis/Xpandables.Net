@@ -1,0 +1,57 @@
+﻿<Project>
+
+  <!-- ═══════════════════════════════════════════════════
+       Library projects — packable NuGet packages
+       This file is imported AFTER the project file, so
+       conditions on $(IsPackable) work correctly.
+       Individual projects still set: Title, Description,
+       AssemblyName, RootNamespace, PackageId, PackageTags.
+       ═══════════════════════════════════════════════════ -->
+  <PropertyGroup Condition="'$(IsPackable)' != 'false' And '$(OutputType)' != 'Exe'">
+    <Company>Kamersoft</Company>
+    <Authors>Francescolis</Authors>
+    <Copyright>Copyright © Kamersoft 2025</Copyright>
+    <NeutralLanguage>en-US</NeutralLanguage>
+
+    <PackageProjectUrl>https://github.com/Francescolis/Xpandables.Net</PackageProjectUrl>
+    <RepositoryUrl>https://github.com/Francescolis/Xpandables.Net</RepositoryUrl>
+    <RepositoryType>git</RepositoryType>
+    <PublishRepositoryUrl>true</PublishRepositoryUrl>
+    <PackageLicenseExpression>Apache-2.0</PackageLicenseExpression>
+    <PackageRequireLicenseAcceptance>true</PackageRequireLicenseAcceptance>
+    <PackageIcon>Xpandables.Net.png</PackageIcon>
+    <PackageReadmeFile>README.md</PackageReadmeFile>
+
+    <GenerateDocumentationFile>true</GenerateDocumentationFile>
+    <GeneratePackageOnBuild>true</GeneratePackageOnBuild>
+    <IncludeSymbols>true</IncludeSymbols>
+    <SymbolPackageFormat>snupkg</SymbolPackageFormat>
+    <IncludeSource>true</IncludeSource>
+    <EmbedUntrackedSources>true</EmbedUntrackedSources>
+    <EnablePackageValidation>false</EnablePackageValidation>
+    <PackageOutputPath>$(MSBuildThisFileDirectory)..\Nugets</PackageOutputPath>
+
+    <SignAssembly>true</SignAssembly>
+    <AssemblyOriginatorKeyFile>Xpandables.Net.snk</AssemblyOriginatorKeyFile>
+    <ApplicationIcon>Xpandables.Net.ico</ApplicationIcon>
+
+    <IsAotCompatible>true</IsAotCompatible>
+
+    <!-- Versioning — single source of truth -->
+    <Version>10.0.1</Version>
+    <AssemblyVersion>10.0.1.0</AssemblyVersion>
+    <FileVersion>10.0.1.0</FileVersion>
+    <PackageVersion>10.0.1</PackageVersion>
+  </PropertyGroup>
+
+  <!-- Shared packaging items for library projects -->
+  <ItemGroup Condition="'$(IsPackable)' != 'false' And '$(OutputType)' != 'Exe'">
+    <Content Include="Xpandables.Net.ico" />
+    <None Include="README.md" Pack="true" PackagePath="" />
+    <None Include="$(MSBuildThisFileDirectory)Xpandables.Net.png" Link="Xpandables.Net.png">
+      <PackagePath>\</PackagePath>
+      <Pack>True</Pack>
+    </None>
+  </ItemGroup>
+
+</Project>
