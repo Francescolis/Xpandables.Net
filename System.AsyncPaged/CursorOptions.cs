@@ -14,6 +14,7 @@
  * limitations under the License.
  *
 ********************************************************************************/
+using System.Diagnostics.CodeAnalysis;
 using System.Globalization;
 using System.Linq.Expressions;
 
@@ -119,7 +120,9 @@ public static class CursorOptions
     /// null, a default parser is used.</param>
     /// <returns>A <see cref="CursorOptions{TSource}"/> instance configured with the specified selector, direction, inclusivity,
     /// and optional formatter and parser.</returns>
-    public static CursorOptions<TSource> Create<TSource, TCursor>(
+    [UnconditionalSuppressMessage("AOT", "IL3050", Justification = "TCursor is annotated with DynamicallyAccessedMembers.")]
+    [UnconditionalSuppressMessage("Trimming", "IL2026", Justification = "TCursor is annotated with DynamicallyAccessedMembers.")]
+    public static CursorOptions<TSource> Create<TSource, [DynamicallyAccessedMembers(DynamicallyAccessedMemberTypes.PublicConstructors)] TCursor>(
         Expression<Func<TSource, TCursor>> selector,
         CursorDirection direction = CursorDirection.Forward,
         bool isInclusive = false,
@@ -140,7 +143,7 @@ public static class CursorOptions
                 {
                     null => default,
                     TCursor typed => typed,
-                    _ => (TCursor)Convert.ChangeType(token, typeof(TCursor), CultureInfo.InvariantCulture)
+                    _ => ObjectExtensions.ChangeTypeNullable<TCursor>(token, CultureInfo.InvariantCulture)
                 }),
             TokenParser = parser is null
                 ? value => CursorTokenConverters.Parse(value, typeof(TCursor))
@@ -151,7 +154,9 @@ public static class CursorOptions
 
 internal static class CursorTokenConverters
 {
-    public static string? Format(object? token, Type cursorType)
+    public static string? Format(
+        object? token,
+        [DynamicallyAccessedMembers(DynamicallyAccessedMemberTypes.PublicConstructors)] Type cursorType)
     {
         if (token is null)
         {
@@ -163,7 +168,11 @@ internal static class CursorTokenConverters
             : Convert.ToString(token, CultureInfo.InvariantCulture);
     }
 
-    public static object? Parse(string? value, Type cursorType)
+    [UnconditionalSuppressMessage("AOT", "IL3050", Justification = "cursorType is annotated with DynamicallyAccessedMembers.")]
+    [UnconditionalSuppressMessage("Trimming", "IL2026", Justification = "cursorType is annotated with DynamicallyAccessedMembers.")]
+    public static object? Parse(
+        string? value,
+        [DynamicallyAccessedMembers(DynamicallyAccessedMemberTypes.PublicConstructors)] Type cursorType)
     {
         if (value is null)
         {
@@ -172,6 +181,6 @@ internal static class CursorTokenConverters
 
         return cursorType == typeof(string)
             ? value
-            : Convert.ChangeType(value, cursorType, CultureInfo.InvariantCulture);
+            : ObjectExtensions.ChangeTypeNullable(value, cursorType, CultureInfo.InvariantCulture);
     }
 }
