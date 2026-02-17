@@ -7,6 +7,11 @@ using Scalar.AspNetCore;
 
 WebApplicationBuilder builder = WebApplication.CreateBuilder(args);
 
+builder.AddServiceDefaults();
+
+builder.AddSqlServerClient("accountDB");
+builder.AddSqlServerClient("eventDB");
+
 builder.Services
 	.AddXMinimalEndpointRoutes()
 	.AddXResultEndpointValidator()
@@ -42,6 +47,8 @@ builder.Services.AddOpenApi(options => options.AddDocumentTransformer((document,
 }));
 
 WebApplication app = builder.Build();
+
+app.MapDefaultEndpoints();
 
 app.UseHttpsRedirection();
 app.MapOpenApi();

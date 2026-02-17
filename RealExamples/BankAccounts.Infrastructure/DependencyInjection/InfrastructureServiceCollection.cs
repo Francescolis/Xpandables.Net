@@ -35,7 +35,7 @@ public sealed class InfrastructureServiceCollection : IAddServiceExport
 
 		services.AddXDataContext<AccountDataContext>(options =>
 			options
-				.UseSqlServer(configuration.GetConnectionString("AccountDb"),
+				.UseSqlServer(configuration.GetConnectionString("accountDB"),
 				options => options
 					.EnableRetryOnFailure()
 					.UseQuerySplittingBehavior(QuerySplittingBehavior.SplitQuery))
