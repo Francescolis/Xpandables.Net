@@ -25,6 +25,9 @@
     <Project Path="RealExamples/BankAccounts.Domain/BankAccounts.Domain/BankAccounts.Domain.csproj" Id="da84a3f4-6b89-4f48-99d6-60de47f6276b">
       <Platform Project="x64" />
     </Project>
+    <Project Path="RealExamples/BankAccounts.EventDbInitialiazer/BankAccounts.EventDbInitialiazer.csproj" Id="857ce7c1-7fb1-43e4-bada-6a0002e5e389">
+      <Platform Project="x64" />
+    </Project>
     <Project Path="RealExamples/BankAccounts.Infrastructure/BankAccounts.Infrastructure.csproj" Id="58cbb844-0b4a-4f5d-b09a-241eafab1633">
       <Platform Project="x64" />
     </Project>

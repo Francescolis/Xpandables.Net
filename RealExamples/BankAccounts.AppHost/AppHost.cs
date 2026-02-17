@@ -6,6 +6,10 @@ var sqlServer = builder.AddSqlServer("sqlserver", password: saPassword, port: 14
 var accountDB = sqlServer.AddDatabase("accountDB", "AccountDB");
 var eventDB = sqlServer.AddDatabase("eventDB", "EventDB");
 
+builder.AddProject<Projects.BankAccounts_EventDbInitialiazer>("eventdb-initializer")
+	.WithReference(eventDB)
+	.WaitFor(eventDB);
+
 builder.AddProject<Projects.BankAccounts_Api>("bankaccounts-api")
 	.WithReference(accountDB)
 	.WithReference(eventDB)

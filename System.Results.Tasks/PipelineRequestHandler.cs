@@ -34,90 +34,95 @@ namespace System.Results.Tasks;
 /// Decorators are applied in reverse order to maintain expected execution flow.
 /// </remarks>
 public sealed class PipelineRequestHandler<TRequest> :
-    IPipelineRequestHandler<TRequest>
-    where TRequest : class, IRequest
+	IPipelineRequestHandler<TRequest>
+	where TRequest : class, IRequest
 {
-    private readonly IRequestHandler<TRequest> _decoratee;
-    private readonly bool _isContextHandler;
-    private readonly Func<TRequest, CancellationToken, Task<Result>>? _fastPath;
-    private readonly Func<RequestContext<TRequest>, CancellationToken, Task<Result>>? _pipeline;
+	private readonly IRequestHandler<TRequest> _decoratee;
+	private readonly bool _isContextHandler;
+	private readonly Func<TRequest, CancellationToken, Task<Result>>? _fastPath;
+	private readonly Func<RequestContext<TRequest>, CancellationToken, Task<Result>>? _pipeline;
 
-    /// <summary>
-    /// Initializes a new instance of the <see cref="PipelineRequestHandler{TRequest}"/> class.
-    /// </summary>
-    /// <param name="decoratee">The final handler in the pipeline that processes the request.</param>
-    /// <param name="decorators">The collection of decorators to apply to the pipeline.</param>
-    public PipelineRequestHandler(
-        IRequestHandler<TRequest> decoratee,
-        IEnumerable<IPipelineDecorator<TRequest>> decorators)
-    {
-        ArgumentNullException.ThrowIfNull(decoratee);
-        ArgumentNullException.ThrowIfNull(decorators);
+	/// <summary>
+	/// Initializes a new instance of the <see cref="PipelineRequestHandler{TRequest}"/> class.
+	/// </summary>
+	/// <param name="decoratee">The final handler in the pipeline that processes the request.</param>
+	/// <param name="decorators">The collection of decorators to apply to the pipeline.</param>
+	public PipelineRequestHandler(
+		IRequestHandler<TRequest> decoratee,
+		IEnumerable<IPipelineDecorator<TRequest>> decorators)
+	{
+		ArgumentNullException.ThrowIfNull(decoratee);
+		ArgumentNullException.ThrowIfNull(decorators);
 
-        _decoratee = decoratee;
-        _isContextHandler = decoratee is IRequestContextHandler<TRequest>;
+		_decoratee = decoratee;
+		_isContextHandler = decoratee is IRequestContextHandler<TRequest>;
 
-        // Materialize decorators once at construction time to avoid per-request allocations.
-        IPipelineDecorator<TRequest>[] decoratorArray = decorators as IPipelineDecorator<TRequest>[]
-            ?? [.. decorators];
+		// Materialize decorators once at construction time to avoid per-request allocations.
+		IPipelineDecorator<TRequest>[] decoratorArray = decorators as IPipelineDecorator<TRequest>[]
+			?? [.. decorators];
 
-        // Optimize: if no decorators, create fast path that bypasses pipeline machinery
-        if (decoratorArray.Length == 0)
-        {
-            _fastPath = _isContextHandler
-                ? (req, ct) => ((IRequestContextHandler<TRequest>)_decoratee).HandleAsync(new RequestContext<TRequest>(req), ct)
-                : (req, ct) => _decoratee.HandleAsync(req, ct);
-        }
-        else
-        {
-            _pipeline = BuildPipeline(decoratorArray);
-        }
-    }
+		// Optimize: if no decorators, create fast path that bypasses pipeline machinery
+		if (decoratorArray.Length == 0)
+		{
+			_fastPath = _isContextHandler
+				? (req, ct) => ((IRequestContextHandler<TRequest>)_decoratee).HandleAsync(new RequestContext<TRequest>(req), ct)
+				: (req, ct) => _decoratee.HandleAsync(req, ct);
+		}
+		else
+		{
+			if (decoratorArray.Length > 1)
+			{
+				Array.Reverse(decoratorArray);
+			}
 
-    /// <inheritdoc />
-    [MethodImpl(MethodImplOptions.AggressiveInlining)]
-    public Task<Result> HandleAsync(TRequest request, CancellationToken cancellationToken = default)
-    {
-        ArgumentNullException.ThrowIfNull(request);
+			_pipeline = BuildPipeline(decoratorArray);
+		}
+	}
 
-        // Fast path: no decorators - bypass all pipeline machinery
-        if (_fastPath is not null)
-        {
-            return _fastPath(request, cancellationToken);
-        }
+	/// <inheritdoc />
+	[MethodImpl(MethodImplOptions.AggressiveInlining)]
+	public Task<Result> HandleAsync(TRequest request, CancellationToken cancellationToken = default)
+	{
+		ArgumentNullException.ThrowIfNull(request);
 
-        // Standard path: execute pre-built pipeline
-        RequestContext<TRequest> context = new(request);
-        if (_pipeline is null)
-        {
-            throw new InvalidOperationException("Pipeline execution delegate is not configured.");
-        }
+		// Fast path: no decorators - bypass all pipeline machinery
+		if (_fastPath is not null)
+		{
+			return _fastPath(request, cancellationToken);
+		}
 
-        return _pipeline(context, cancellationToken);
-    }
+		// Standard path: execute pre-built pipeline
+		RequestContext<TRequest> context = new(request);
+		if (_pipeline is null)
+		{
+			throw new InvalidOperationException("Pipeline execution delegate is not configured.");
+		}
 
-    [MethodImpl(MethodImplOptions.AggressiveInlining)]
-    private Func<RequestContext<TRequest>, CancellationToken, Task<Result>> BuildPipeline(
-        IPipelineDecorator<TRequest>[] decorators)
-    {
-        Func<RequestContext<TRequest>, CancellationToken, Task<Result>> current = _isContextHandler
-            ? (ctx, ct) => ((IRequestContextHandler<TRequest>)_decoratee).HandleAsync(ctx, ct)
-            : (ctx, ct) => _decoratee.HandleAsync(ctx.Request, ct);
+		return _pipeline(context, cancellationToken);
+	}
 
-        for (int i = decorators.Length - 1; i >= 0; i--)
-        {
-            IPipelineDecorator<TRequest> decorator = decorators[i];
-            Func<RequestContext<TRequest>, CancellationToken, Task<Result>> next = current;
+	[MethodImpl(MethodImplOptions.AggressiveInlining)]
+	private Func<RequestContext<TRequest>, CancellationToken, Task<Result>> BuildPipeline(
+		IPipelineDecorator<TRequest>[] decorators)
+	{
+		Func<RequestContext<TRequest>, CancellationToken, Task<Result>> current = _isContextHandler
+			? (ctx, ct) => ((IRequestContextHandler<TRequest>)_decoratee).HandleAsync(ctx, ct)
+			: (ctx, ct) => _decoratee.HandleAsync(ctx.Request, ct);
 
-            current = (ctx, ct) =>
-            {
+		for (int i = decorators.Length - 1; i >= 0; i--)
+		{
+			IPipelineDecorator<TRequest> decorator = decorators[i];
+			Func<RequestContext<TRequest>, CancellationToken, Task<Result>> next = current;
+
+			current = (ctx, ct) =>
+			{
 #pragma warning disable IDE0039 // Use local function
-                RequestHandler nextHandler = innerCt => next(ctx, innerCt);
+				RequestHandler nextHandler = innerCt => next(ctx, innerCt);
 #pragma warning restore IDE0039 // Use local function
-                return decorator.HandleAsync(ctx, nextHandler, ct);
-            };
-        }
+				return decorator.HandleAsync(ctx, nextHandler, ct);
+			};
+		}
 
-        return current;
-    }
+		return current;
+	}
 }

@@ -1,4 +1,4 @@
-/*******************************************************************************
+﻿/*******************************************************************************
  * Copyright (C) 2025 Kamersoft
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
@@ -22,7 +22,7 @@ namespace System.Events.Data.Scripts;
 public sealed class SqliteEventTableScripts : IEventTableScriptProvider
 {
     /// <inheritdoc />
-    public string GetCreateAllTablesScript(string schema = "Events") => $$"""
+    public string GetCreateAllTablesScript(string schema = "Events") => """
 CREATE TABLE IF NOT EXISTS "DomainEvents" (
     "KeyId" TEXT NOT NULL PRIMARY KEY,
     "StreamId" TEXT NOT NULL,
@@ -36,7 +36,7 @@ CREATE TABLE IF NOT EXISTS "DomainEvents" (
     "DeletedOn" TEXT NULL,
     "EventName" TEXT NOT NULL,
     "EventData" TEXT NOT NULL,
-    "Sequence" INTEGER NOT NULL PRIMARY KEY AUTOINCREMENT
+    "Sequence" INTEGER NOT NULL
 );
 
 CREATE TABLE IF NOT EXISTS "InboxEvents" (
@@ -52,7 +52,7 @@ CREATE TABLE IF NOT EXISTS "InboxEvents" (
     "CreatedOn" TEXT NOT NULL,
     "UpdatedOn" TEXT NULL,
     "DeletedOn" TEXT NULL,
-    "Sequence" INTEGER NOT NULL PRIMARY KEY AUTOINCREMENT
+    "Sequence" INTEGER NOT NULL
 );
 
 CREATE TABLE IF NOT EXISTS "OutboxEvents" (
@@ -69,7 +69,7 @@ CREATE TABLE IF NOT EXISTS "OutboxEvents" (
     "DeletedOn" TEXT NULL,
     "EventName" TEXT NOT NULL,
     "EventData" TEXT NOT NULL,
-    "Sequence" INTEGER NOT NULL PRIMARY KEY AUTOINCREMENT
+    "Sequence" INTEGER NOT NULL
 );
 
 CREATE TABLE IF NOT EXISTS "SnapshotEvents" (
@@ -83,8 +83,45 @@ CREATE TABLE IF NOT EXISTS "SnapshotEvents" (
     "DeletedOn" TEXT NULL,
     "EventName" TEXT NOT NULL,
     "EventData" TEXT NOT NULL,
-    "Sequence" INTEGER NOT NULL PRIMARY KEY AUTOINCREMENT
+    "Sequence" INTEGER NOT NULL
 );
+
+-- Auto-increment triggers for Sequence columns
+CREATE TRIGGER IF NOT EXISTS "TR_DomainEvents_Sequence"
+AFTER INSERT ON "DomainEvents"
+FOR EACH ROW WHEN NEW."Sequence" = 0
+BEGIN
+    UPDATE "DomainEvents"
+    SET "Sequence" = (SELECT COALESCE(MAX("Sequence"), 0) + 1 FROM "DomainEvents")
+    WHERE "KeyId" = NEW."KeyId";
+END;
+
+CREATE TRIGGER IF NOT EXISTS "TR_InboxEvents_Sequence"
+AFTER INSERT ON "InboxEvents"
+FOR EACH ROW WHEN NEW."Sequence" = 0
+BEGIN
+    UPDATE "InboxEvents"
+    SET "Sequence" = (SELECT COALESCE(MAX("Sequence"), 0) + 1 FROM "InboxEvents")
+    WHERE "KeyId" = NEW."KeyId";
+END;
+
+CREATE TRIGGER IF NOT EXISTS "TR_OutboxEvents_Sequence"
+AFTER INSERT ON "OutboxEvents"
+FOR EACH ROW WHEN NEW."Sequence" = 0
+BEGIN
+    UPDATE "OutboxEvents"
+    SET "Sequence" = (SELECT COALESCE(MAX("Sequence"), 0) + 1 FROM "OutboxEvents")
+    WHERE "KeyId" = NEW."KeyId";
+END;
+
+CREATE TRIGGER IF NOT EXISTS "TR_SnapshotEvents_Sequence"
+AFTER INSERT ON "SnapshotEvents"
+FOR EACH ROW WHEN NEW."Sequence" = 0
+BEGIN
+    UPDATE "SnapshotEvents"
+    SET "Sequence" = (SELECT COALESCE(MAX("Sequence"), 0) + 1 FROM "SnapshotEvents")
+    WHERE "KeyId" = NEW."KeyId";
+END;
 
 CREATE INDEX IF NOT EXISTS "IX_DomainEvent_StreamId" ON "DomainEvents" ("StreamId");
 CREATE UNIQUE INDEX IF NOT EXISTS "IX_DomainEvent_StreamId_StreamVersion_Unique" ON "DomainEvents" ("StreamId", "StreamVersion");
@@ -106,7 +143,11 @@ CREATE INDEX IF NOT EXISTS "IX_OutboxEvents_Sequence" ON "OutboxEvents" ("Sequen
 """;
 
     /// <inheritdoc />
-    public string GetDropAllTablesScript(string schema = "Events") => $$"""
+    public string GetDropAllTablesScript(string schema = "Events") => """
+DROP TRIGGER IF EXISTS "TR_SnapshotEvents_Sequence";
+DROP TRIGGER IF EXISTS "TR_OutboxEvents_Sequence";
+DROP TRIGGER IF EXISTS "TR_InboxEvents_Sequence";
+DROP TRIGGER IF EXISTS "TR_DomainEvents_Sequence";
 DROP TABLE IF EXISTS "SnapshotEvents";
 DROP TABLE IF EXISTS "OutboxEvents";
 DROP TABLE IF EXISTS "InboxEvents";
