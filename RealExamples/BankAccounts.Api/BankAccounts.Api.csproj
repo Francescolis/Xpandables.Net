@@ -1,0 +1,30 @@
+﻿<Project Sdk="Microsoft.NET.Sdk.Web">
+
+  <PropertyGroup>
+    <IsPackable>false</IsPackable>
+    <UserSecretsId>546b6908-2395-4d98-91ad-2c4135cef74f</UserSecretsId>
+    <DockerDefaultTargetOS>Windows</DockerDefaultTargetOS>
+    <DockerfileContext>..\..</DockerfileContext>
+  </PropertyGroup>
+
+  <ItemGroup>
+    <PackageReference Include="Microsoft.AspNetCore.OpenApi" />
+    <PackageReference Include="Scalar.AspNetCore" />
+    <PackageReference Include="Microsoft.VisualStudio.Azure.Containers.Tools.Targets" />
+  </ItemGroup>
+
+  <ItemGroup>
+    <Folder Include="Features\" />
+  </ItemGroup>
+
+  <ItemGroup>
+    <ProjectReference Include="..\..\AspNetCore.AsyncPaged\AspNetCore.AsyncPaged.csproj" />
+    <ProjectReference Include="..\..\AspNetCore.Composition\AspNetCore.Composition.csproj" />
+    <ProjectReference Include="..\..\AspNetCore.Events\AspNetCore.Events.csproj" />
+    <ProjectReference Include="..\..\AspNetCore.Net\AspNetCore.Net.csproj" />
+    <ProjectReference Include="..\..\AspNetCore.Results\AspNetCore.Results.csproj" />
+    <ProjectReference Include="..\BankAccounts.Domain\BankAccounts.Domain\BankAccounts.Domain.csproj" />
+    <ProjectReference Include="..\BankAccounts.Infrastructure\BankAccounts.Infrastructure.csproj" />
+  </ItemGroup>
+
+</Project>

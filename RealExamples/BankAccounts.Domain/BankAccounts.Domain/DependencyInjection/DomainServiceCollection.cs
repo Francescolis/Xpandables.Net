@@ -16,6 +16,8 @@
 ********************************************************************************/
 using System.ComponentModel.Composition;
 using System.Composition;
+using System.Data;
+using System.Data.Common;
 using System.Diagnostics.CodeAnalysis;
 
 using Microsoft.Extensions.Configuration;
@@ -32,6 +34,11 @@ public sealed class DomainServiceCollection : IAddServiceExport
 	{
 		ArgumentNullException.ThrowIfNull(services);
 		ArgumentNullException.ThrowIfNull(configuration);
+
+		services.AddXDbConnectionMsSqlServer(configuration.GetConnectionString("EventDb")!);
+		DbProviderFactories.RegisterFactory(
+			DbProviders.MsSqlServer.InvariantName,
+			Microsoft.Data.SqlClient.SqlClientFactory.Instance);
 
 		services.AddXRequestHandlers()
 			.AddXEventHandlers()
