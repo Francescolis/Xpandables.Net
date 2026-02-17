@@ -11,6 +11,7 @@ builder.Services
 	.AddXMinimalEndpointRoutes()
 	.AddXResultEndpointValidator()
 	.AddXJsonSerializerOptions()
+	.AddXMediatorWithEventSourcingPipelines()
 	.AddXServiceExports(builder.Configuration, typeof(Account).Assembly, typeof(AccountDataContext).Assembly)
 	.AddValidation()
 	.AddMemoryCache()

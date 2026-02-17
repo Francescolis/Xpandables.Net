@@ -76,6 +76,7 @@ public sealed class AccountTypeValidationAttribute : ValidationAttribute
 	{
 		return value switch
 		{
+			AccountType _ => true,
 			string accountType => AccountType.TryParse(accountType, null, out _),
 			_ => false
 		};
