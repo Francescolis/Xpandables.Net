@@ -17,6 +17,9 @@
 using System.ComponentModel.DataAnnotations.Schema;
 using System.Entities;
 
+using Microsoft.EntityFrameworkCore;
+using Microsoft.EntityFrameworkCore.Metadata.Builders;
+
 namespace BankAccounts.Infrastructure;
 
 [Table("Accounts", Schema = "Bank")]
@@ -27,4 +30,45 @@ public sealed class AccountEntity : Entity<Guid>
 	public required string Owner { get; set; }
 	public required string Email { get; set; }
 	public required decimal Balance { get; set; } = 0m;
+}
+
+public sealed class AccountTypeEntityConfiguration : IEntityTypeConfiguration<AccountEntity>
+{
+	public void Configure(EntityTypeBuilder<AccountEntity> builder)
+	{
+		ArgumentNullException.ThrowIfNull(builder);
+
+		builder.HasKey(a => a.KeyId);
+
+		builder.Property(a => a.AccountNumber)
+			.IsRequired()
+			.HasMaxLength(20);
+
+		builder.Property(a => a.AccountType)
+			.IsRequired()
+			.HasMaxLength(50);
+
+		builder.Property(a => a.Owner)
+			.IsRequired()
+			.HasMaxLength(100);
+
+		builder.Property(a => a.Email)
+			.IsRequired()
+			.HasMaxLength(100);
+
+		builder.Property(a => a.Balance)
+			.IsRequired()
+			.HasColumnType("decimal(18,2)");
+
+		builder.Property(a => a.CreatedOn)
+			.HasDefaultValueSql("GETUTCDATE()");
+
+		builder.Property(a => a.UpdatedOn);
+
+		builder.Property(a => a.DeletedOn);
+
+		builder.Property(a => a.Status)
+			.IsRequired()
+			.HasMaxLength(20);
+	}
 }

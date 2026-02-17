@@ -13,6 +13,7 @@ builder.Services
 	.AddXJsonSerializerOptions()
 	.AddXMediatorWithEventSourcingPipelines()
 	.AddXServiceExports(builder.Configuration, typeof(Account).Assembly, typeof(AccountDataContext).Assembly)
+	.AddXRequestHandlers()
 	.AddValidation()
 	.AddMemoryCache()
 	.AddXEventStores()
@@ -54,5 +55,10 @@ app.UseXEventContextMiddleware();
 app.UseXResultMiddleware();
 app.UseXMinimalEndpointRoutes();
 
+using (IServiceScope scope = app.Services.CreateScope())
+{
+	AccountDataContext readDb = scope.ServiceProvider.GetRequiredService<AccountDataContext>();
+	await readDb.Database.EnsureCreatedAsync().ConfigureAwait(false);
+}
 
 await app.RunAsync().ConfigureAwait(false);

@@ -26,4 +26,10 @@ namespace BankAccounts.Infrastructure;
 public sealed class AccountDataContext(DbContextOptions<AccountDataContext> options) : DataContext(options)
 {
 	public DbSet<AccountEntity> Accounts { get; set; } = default!;
+
+	protected override void OnModelCreating(ModelBuilder modelBuilder)
+	{
+		ArgumentNullException.ThrowIfNull(modelBuilder);
+		modelBuilder.ApplyConfiguration(new AccountTypeEntityConfiguration());
+	}
 }
