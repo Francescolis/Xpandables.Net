@@ -29,3 +29,4 @@ using System.Diagnostics.CodeAnalysis;
 [assembly: SuppressMessage("Naming", "CA1711:Identifiers should not have incorrect suffix", Justification = "<Pending>", Scope = "type", Target = "~T:BankAccounts.Domain.Features.WithdrawAccount.MoneyWithdrawEventHandler")]
 [assembly: SuppressMessage("Naming", "CA1711:Identifiers should not have incorrect suffix", Justification = "<Pending>", Scope = "type", Target = "~T:BankAccounts.Domain.Features.BlockAccount.AccountBlockedEventHandler")]
 [assembly: SuppressMessage("Naming", "CA1711:Identifiers should not have incorrect suffix", Justification = "<Pending>", Scope = "type", Target = "~T:BankAccounts.Domain.Features.UnBlockAccount.AccountUnBlockedEventHandler")]
+[assembly: SuppressMessage("Naming", "CA1711:Identifiers should not have incorrect suffix", Justification = "<Pending>", Scope = "type", Target = "~T:BankAccounts.Domain.DependencyInjection.DomainServiceCollection")]
