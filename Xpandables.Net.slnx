@@ -15,6 +15,11 @@
       <Platform Project="x64" />
     </Project>
   </Folder>
+  <Folder Name="/RealExamples/">
+    <Project Path="RealExamples/BankAccounts.Domain/BankAccounts.Domain/BankAccounts.Domain.csproj" Id="da84a3f4-6b89-4f48-99d6-60de47f6276b">
+      <Platform Project="x64" />
+    </Project>
+  </Folder>
   <Folder Name="/Solution Items/">
     <File Path=".editorconfig" />
     <File Path="README.md" />
