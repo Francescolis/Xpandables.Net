@@ -1,4 +1,4 @@
-/*******************************************************************************
+﻿/*******************************************************************************
  * Copyright (C) 2025 Kamersoft
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
@@ -21,8 +21,8 @@ namespace System.Events.Data.Scripts;
 /// </summary>
 public sealed class PostgreSqlEventTableScripts : IEventTableScriptProvider
 {
-    /// <inheritdoc />
-    public string GetCreateAllTablesScript(string schema = "events") => $$"""
+	/// <inheritdoc />
+	public string GetCreateAllTablesScript(string schema = "events") => $$"""
 CREATE SCHEMA IF NOT EXISTS "{{schema}}";
 
 CREATE TABLE IF NOT EXISTS "{{schema}}"."DomainEvents" (
@@ -54,6 +54,7 @@ CREATE TABLE IF NOT EXISTS "{{schema}}"."InboxEvents" (
     "CreatedOn" TIMESTAMP WITHOUT TIME ZONE NOT NULL,
     "UpdatedOn" TIMESTAMP WITHOUT TIME ZONE NULL,
     "DeletedOn" TIMESTAMP WITHOUT TIME ZONE NULL,
+	"EventName" VARCHAR(255) NOT NULL,
     "Sequence" BIGSERIAL NOT NULL
 );
 
@@ -107,8 +108,8 @@ CREATE INDEX IF NOT EXISTS "IX_OutboxEvent_Status_NextAttemptOn" ON "{{schema}}"
 CREATE INDEX IF NOT EXISTS "IX_OutboxEvents_Sequence" ON "{{schema}}"."OutboxEvents" ("Sequence");
 """;
 
-    /// <inheritdoc />
-    public string GetDropAllTablesScript(string schema = "events") => $$"""
+	/// <inheritdoc />
+	public string GetDropAllTablesScript(string schema = "events") => $$"""
 DROP TABLE IF EXISTS "{{schema}}"."SnapshotEvents";
 DROP TABLE IF EXISTS "{{schema}}"."OutboxEvents";
 DROP TABLE IF EXISTS "{{schema}}"."InboxEvents";

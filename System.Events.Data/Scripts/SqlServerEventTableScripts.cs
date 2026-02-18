@@ -21,8 +21,8 @@ namespace System.Events.Data.Scripts;
 /// </summary>
 public sealed class SqlServerEventTableScripts : IEventTableScriptProvider
 {
-    /// <inheritdoc />
-    public string GetCreateAllTablesScript(string schema = "Events") => $$"""
+	/// <inheritdoc />
+	public string GetCreateAllTablesScript(string schema = "Events") => $$"""
 IF NOT EXISTS (SELECT * FROM sys.schemas WHERE name = '{{schema}}')
     EXEC('CREATE SCHEMA [{{schema}}]');
 
@@ -57,6 +57,7 @@ CREATE TABLE [{{schema}}].[InboxEvents] (
     [CreatedOn] DATETIME2 NOT NULL,
     [UpdatedOn] DATETIME2 NULL,
     [DeletedOn] DATETIME2 NULL,
+	[EventName] NVARCHAR(255) NOT NULL,
     [Sequence] BIGINT IDENTITY(1,1) NOT NULL
 );
 
@@ -127,8 +128,8 @@ IF NOT EXISTS (SELECT 1 FROM sys.indexes WHERE name = 'IX_OutboxEvents_Sequence'
     CREATE INDEX [IX_OutboxEvents_Sequence] ON [{{schema}}].[OutboxEvents] ([Sequence]);
 """;
 
-    /// <inheritdoc />
-    public string GetDropAllTablesScript(string schema = "Events") => $$"""
+	/// <inheritdoc />
+	public string GetDropAllTablesScript(string schema = "Events") => $$"""
 DROP TABLE IF EXISTS [{{schema}}].[SnapshotEvents];
 DROP TABLE IF EXISTS [{{schema}}].[OutboxEvents];
 DROP TABLE IF EXISTS [{{schema}}].[InboxEvents];

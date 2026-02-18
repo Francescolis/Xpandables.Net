@@ -82,9 +82,13 @@ public sealed class CacheTypeResolver : Disposable, ICacheTypeResolver
             ? assemblies
             : [.. AppDomain.CurrentDomain
                 .GetAssemblies()
-                .Where(a => !_legacyPrefixes
-                    .Any(prefix => a.GetName().Name!
-                        .StartsWith(prefix, StringComparison.InvariantCultureIgnoreCase) == true))];
+                .Where(a =>
+                {
+                    var name = a.GetName().Name;
+                    return name is not null
+                        && !_legacyPrefixes.Any(prefix =>
+                            name.StartsWith(prefix, StringComparison.OrdinalIgnoreCase));
+                })];
 
         foreach (var assembly in _assemblies)
         {
@@ -92,7 +96,7 @@ public sealed class CacheTypeResolver : Disposable, ICacheTypeResolver
             {
                 if (predicate(type))
                 {
-                    _memoryCache.AddOrUpdate(type.Name, type);
+                    _memoryCache.GetOrAdd(type.Name, _ => type);
                 }
             }
         }

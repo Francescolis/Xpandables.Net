@@ -21,8 +21,8 @@ namespace System.Events.Data.Scripts;
 /// </summary>
 public sealed class SqliteEventTableScripts : IEventTableScriptProvider
 {
-    /// <inheritdoc />
-    public string GetCreateAllTablesScript(string schema = "Events") => """
+	/// <inheritdoc />
+	public string GetCreateAllTablesScript(string schema = "Events") => """
 CREATE TABLE IF NOT EXISTS "DomainEvents" (
     "KeyId" TEXT NOT NULL PRIMARY KEY,
     "StreamId" TEXT NOT NULL,
@@ -52,6 +52,7 @@ CREATE TABLE IF NOT EXISTS "InboxEvents" (
     "CreatedOn" TEXT NOT NULL,
     "UpdatedOn" TEXT NULL,
     "DeletedOn" TEXT NULL,
+	"EventData" TEXT NOT NULL,
     "Sequence" INTEGER NOT NULL
 );
 
@@ -142,8 +143,8 @@ CREATE INDEX IF NOT EXISTS "IX_OutboxEvent_Status_NextAttemptOn" ON "OutboxEvent
 CREATE INDEX IF NOT EXISTS "IX_OutboxEvents_Sequence" ON "OutboxEvents" ("Sequence");
 """;
 
-    /// <inheritdoc />
-    public string GetDropAllTablesScript(string schema = "Events") => """
+	/// <inheritdoc />
+	public string GetDropAllTablesScript(string schema = "Events") => """
 DROP TRIGGER IF EXISTS "TR_SnapshotEvents_Sequence";
 DROP TRIGGER IF EXISTS "TR_OutboxEvents_Sequence";
 DROP TRIGGER IF EXISTS "TR_InboxEvents_Sequence";
