@@ -22,7 +22,7 @@ namespace BankAccounts.Domain.Features.DepositAccount;
 
 public sealed record DepositAccountCommand : IRequest<DepositAccountResult>, IRequiresValidation, IRequiresEventStorage
 {
-	public Guid AccountId { get; init; }
+	public required Guid AccountId { get; init; }
 
 	[Range(0.01, double.MaxValue)]
 	public required decimal Amount { get; init; }

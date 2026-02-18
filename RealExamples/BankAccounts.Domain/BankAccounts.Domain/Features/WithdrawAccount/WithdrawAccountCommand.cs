@@ -22,7 +22,7 @@ namespace BankAccounts.Domain.Features.WithdrawAccount;
 
 public sealed record WithdrawAccountCommand : IRequest<WithdrawAccountResult>, IRequiresValidation, IRequiresEventStorage
 {
-	public Guid AccountId { get; init; }
+	public required Guid AccountId { get; init; }
 	[Required]
 	[Range(0.01, double.MaxValue)]
 	public required decimal Amount { get; init; }

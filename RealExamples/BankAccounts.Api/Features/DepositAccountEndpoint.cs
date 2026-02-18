@@ -15,6 +15,7 @@
  *
 ********************************************************************************/
 
+using System.ComponentModel.DataAnnotations;
 using System.Results.Tasks;
 
 using BankAccounts.Domain.Features.DepositAccount;
@@ -23,6 +24,21 @@ using Microsoft.AspNetCore.Mvc;
 
 namespace BankAccounts.Api.Features;
 
+public sealed record DepositAccountRequest : IRequiresValidation
+{
+	[Range(0.01, double.MaxValue)]
+	public required decimal Amount { get; init; }
+
+	[Required]
+	[StringLength(3, MinimumLength = 3)]
+	public required string Currency { get; init; }
+
+	[Required]
+	[StringLength(byte.MaxValue)]
+	public required string Description { get; init; }
+}
+
+
 [System.Diagnostics.CodeAnalysis.SuppressMessage("Maintainability", "CA1515:Consider making public types internal", Justification = "<Pending>")]
 public sealed class DepositAccountEndpoint : IMinimalEndpointRoute
 {
@@ -30,18 +46,25 @@ public sealed class DepositAccountEndpoint : IMinimalEndpointRoute
 	{
 		ArgumentNullException.ThrowIfNull(app);
 
-		app.MapPost("/bank-accounts/{accountId}/deposit",
+		app.MapPost("/bank-accounts/{accountId:guid:required}/deposit",
 			async (
 				[FromRoute] Guid accountId,
-				DepositAccountCommand command,
+				DepositAccountRequest request,
 				IMediator mediator) =>
-		await mediator.SendAsync(command with { AccountId = accountId }).ConfigureAwait(false))
+			await mediator.SendAsync(new DepositAccountCommand
+			{
+				AccountId = accountId,
+				Amount = request.Amount,
+				Currency = request.Currency,
+				Description = request.Description
+			})
+			.ConfigureAwait(false))
 			.AllowAnonymous()
 			.WithTags("BankAccounts")
 			.WithName("DepositBankAccount")
 			.WithSummary("Deposits money into a bank account.")
 			.WithDescription("Deposits money into a bank account with the provided details.")
-			.Accepts<DepositAccountCommand>()
+			.Accepts<DepositAccountRequest>()
 			.Produces201Created<DepositAccountResult>()
 			.Produces400BadRequest()
 			.Produces401Unauthorized()

@@ -27,7 +27,7 @@ public sealed class AccountOperationEndpoint : IMinimalEndpointRoute
 	{
 		ArgumentNullException.ThrowIfNull(app);
 
-		app.MapGet("/bank-accounts/{accountId}/operations",
+		app.MapGet("/bank-accounts/{accountId:guid:required}/operations",
 			async (Guid accountId, IMediator mediator) =>
 				await mediator.SendAsync(new AccountOperationQuery { AccountId = accountId }).ConfigureAwait(false))
 			.AllowAnonymous()

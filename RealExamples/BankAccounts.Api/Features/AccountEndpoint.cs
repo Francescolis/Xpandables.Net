@@ -46,17 +46,18 @@ public sealed class AccountEndpoint : IMinimalEndpointRoute
 	{
 		ArgumentNullException.ThrowIfNull(app);
 
-		app.MapGet("/bank-accounts", async ([AsParameters] AccountQuery query, IMediator mediator) =>
-			await mediator.SendAsync(query).ConfigureAwait(false))
-			.AllowAnonymous()
-			.WithTags("BankAccounts")
-			.WithName("GetBankAccount")
-			.WithSummary("Gets a bank account or accounts.")
-			.WithDescription("Retrieves the specified bank account or accounts.")
-			.Produces200OK<IAsyncPagedEnumerable<AccountResult>>()
-			.Produces400BadRequest()
-			.Produces401Unauthorized()
-			.Produces500InternalServerError();
+		app.MapGet("/bank-accounts",
+			async ([AsParameters] AccountQuery query, IMediator mediator) =>
+				await mediator.SendAsync(query).ConfigureAwait(false))
+				.AllowAnonymous()
+				.WithTags("BankAccounts")
+				.WithName("GetBankAccount")
+				.WithSummary("Gets a bank account or accounts.")
+				.WithDescription("Retrieves the specified bank account or accounts.")
+				.Produces200OK<IAsyncPagedEnumerable<AccountResult>>()
+				.Produces400BadRequest()
+				.Produces401Unauthorized()
+				.Produces500InternalServerError();
 	}
 }
 

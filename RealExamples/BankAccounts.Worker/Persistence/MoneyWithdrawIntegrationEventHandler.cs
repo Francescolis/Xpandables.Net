@@ -37,7 +37,7 @@ public sealed class MoneyWithdrawIntegrationEventHandler(AccountDataContext cont
 			.Where(b => b.KeyId == @event.BankAccountId)
 			.ExecuteUpdateAsync(
 				b => b
-					.SetProperty(b => b.Balance, b => b.Balance - @event.Amount)
+					.SetProperty(b => b.Balance, b => b.Balance + @event.Amount)
 					.SetProperty(b => b.UpdatedOn, DateTime.UtcNow),
 				cancellationToken)
 			.ConfigureAwait(false);

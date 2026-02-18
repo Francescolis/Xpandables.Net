@@ -14,56 +14,39 @@
  * limitations under the License.
  *
 ********************************************************************************/
-
 using System.ComponentModel.DataAnnotations;
 using System.Results.Tasks;
 
-using BankAccounts.Domain.Features.WithdrawAccount;
+using BankAccounts.Domain.Features.UnBlockAccount;
 
 using Microsoft.AspNetCore.Mvc;
 
 namespace BankAccounts.Api.Features;
 
-public sealed record WithdrawAccountRequest : IRequiresValidation
-{
-	[Required]
-	[Range(0.01, double.MaxValue)]
-	public required decimal Amount { get; init; }
-	[Required]
-	[StringLength(3, MinimumLength = 3)]
-	public required string Currency { get; init; }
-	[Required]
-	[StringLength(250, MinimumLength = 3)]
-	public required string Description { get; init; }
-}
-
 [System.Diagnostics.CodeAnalysis.SuppressMessage("Maintainability", "CA1515:Consider making public types internal", Justification = "<Pending>")]
-public sealed class WithdrawAccountEndpoint : IMinimalEndpointRoute
+public sealed class UnBlockAccountEndpoint : IMinimalEndpointRoute
 {
 	public void AddRoutes(MinimalRouteBuilder app)
 	{
 		ArgumentNullException.ThrowIfNull(app);
 
-		app.MapPost("/bank-accounts/{accountId:guid:required}/withdraw",
+		app.MapPost("/bank-accounts/{accountId:guid:required}/unblock",
 			async (
 				[FromRoute] Guid accountId,
-				WithdrawAccountRequest request,
+				[FromBody, Required] string reason,
 				IMediator mediator) =>
-				await mediator.SendAsync(new WithdrawAccountCommand
-				{
-					AccountId = accountId,
-					Amount = request.Amount,
-					Currency = request.Currency,
-					Description = request.Description
-				})
+			await mediator.SendAsync(new UnBlockAccountCommand
+			{
+				AccountId = accountId,
+				Reason = reason
+			})
 			.ConfigureAwait(false))
 			.AllowAnonymous()
 			.WithTags("BankAccounts")
-			.WithName("WithdrawBankAccount")
-			.WithSummary("Withdraws money from a bank account.")
-			.WithDescription("Withdraws money from a bank account with the provided details.")
-			.Accepts<WithdrawAccountRequest>()
-			.Produces201Created<WithdrawAccountResult>()
+			.WithName("UnBlockBankAccount")
+			.WithSummary("UnBlock bank account.")
+			.WithDescription("UnBlocks the specify bank account.")
+			.Produces200OK()
 			.Produces400BadRequest()
 			.Produces401Unauthorized()
 			.Produces500InternalServerError();

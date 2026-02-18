@@ -19,6 +19,7 @@ using System.Composition;
 using System.Data;
 using System.Data.Common;
 using System.Diagnostics.CodeAnalysis;
+using System.Events;
 
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
@@ -53,7 +54,7 @@ public sealed class DomainServiceCollection : IAddServiceExport
 			.AddXDataDbConnectionScope()
 			.AddXEventStores()
 			.AddXEventConverterFactory()
-			.AddXCacheTypeResolver()
+			.AddXCacheTypeResolver(type => typeof(IEvent).IsAssignableFrom(type), typeof(Account).Assembly)
 			.AddXEventContextAccessor()
 			.AddXDomainEventEnricher()
 			.AddXIntegrationEventEnricher();

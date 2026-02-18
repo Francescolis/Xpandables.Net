@@ -47,18 +47,19 @@ public sealed class AccountBalanceEndpoint : IMinimalEndpointRoute
 	{
 		ArgumentNullException.ThrowIfNull(app);
 
-		app.MapGet("/bank-accounts/{accountId}/balance", async (Guid accountId, IMediator mediator) =>
-			await mediator.SendAsync(new AccountBalanceQuery { AccountId = accountId }).ConfigureAwait(false))
-			.AllowAnonymous()
-			.WithTags("BankAccounts")
-			.WithName("GetBankAccountBalance")
-			.WithSummary("Gets the balance of a bank account.")
-			.WithDescription("Retrieves the current balance of the specified bank account.")
-			.Produces200OK<AccountBalanceResult>()
-			.Produces400BadRequest()
-			.Produces401Unauthorized()
-			.Produces404NotFound()
-			.Produces500InternalServerError();
+		app.MapGet("/bank-accounts/{accountId:guid:required}/balance",
+			async (Guid accountId, IMediator mediator) =>
+				await mediator.SendAsync(new AccountBalanceQuery { AccountId = accountId }).ConfigureAwait(false))
+				.AllowAnonymous()
+				.WithTags("BankAccounts")
+				.WithName("GetBankAccountBalance")
+				.WithSummary("Gets the balance of a bank account.")
+				.WithDescription("Retrieves the current balance of the specified bank account.")
+				.Produces200OK<AccountBalanceResult>()
+				.Produces400BadRequest()
+				.Produces401Unauthorized()
+				.Produces404NotFound()
+				.Produces500InternalServerError();
 	}
 
 }

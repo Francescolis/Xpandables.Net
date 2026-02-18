@@ -42,7 +42,7 @@ public sealed class AccountTypeEntityConfiguration : IEntityTypeConfiguration<Ac
 
 		builder.Property(a => a.AccountNumber)
 			.IsRequired()
-			.HasMaxLength(20);
+			.HasMaxLength(50);
 
 		builder.Property(a => a.AccountType)
 			.IsRequired()
