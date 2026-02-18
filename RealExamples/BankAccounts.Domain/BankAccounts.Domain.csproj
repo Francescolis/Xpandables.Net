@@ -1,0 +1,26 @@
+﻿<Project Sdk="Microsoft.NET.Sdk">
+
+  <PropertyGroup>
+    <TargetFramework>net10.0</TargetFramework>
+    <ImplicitUsings>enable</ImplicitUsings>
+    <Nullable>enable</Nullable>
+    <IsPackable>false</IsPackable>
+  </PropertyGroup>
+
+  <ItemGroup>
+    <PackageReference Include="Microsoft.Data.SqlClient" />
+  </ItemGroup>
+
+  <ItemGroup>
+    <None Remove="C:\Users\fewan\source\repos\Francescolis\Xpandables.Net\Xpandables.Net.png" />
+  </ItemGroup>
+
+  <ItemGroup>
+    <ProjectReference Include="..\..\System.Composition\System.Composition.csproj" />
+    <ProjectReference Include="..\..\System.Data\System.Data.csproj" />
+    <ProjectReference Include="..\..\System.Events.Data\System.Events.Data.csproj" />
+    <ProjectReference Include="..\..\System.Events\System.Events.csproj" />
+    <ProjectReference Include="..\..\System.Results.Tasks\System.Results.Tasks.csproj" />
+  </ItemGroup>
+
+</Project>

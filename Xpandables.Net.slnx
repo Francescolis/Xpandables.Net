@@ -2,19 +2,6 @@
   <Configurations>
     <Platform Name="x64" />
   </Configurations>
-  <Folder Name="/Benchmarks/">
-    <Project Path="Xpandables.Net.Benchmarking/Xpandables.Net.Benchmarking.csproj">
-      <Platform Project="x64" />
-    </Project>
-  </Folder>
-  <Folder Name="/Real Example/">
-    <Project Path="Xpandables.Net.SampleApi/Xpandables.Net.SampleApi.csproj" Id="829a0c40-2dec-4ab0-9b14-5979b806c738">
-      <Platform Project="x64" />
-    </Project>
-    <Project Path="Xpandables.Net.Worker/Xpandables.Net.Worker.csproj" Id="46c14268-e658-4664-a665-f5caa564c255">
-      <Platform Project="x64" />
-    </Project>
-  </Folder>
   <Folder Name="/RealExamples/">
     <Project Path="RealExamples/BankAccounts.Api/BankAccounts.Api.csproj">
       <Platform Project="x64" />
@@ -22,7 +9,7 @@
     <Project Path="RealExamples/BankAccounts.AppHost/BankAccounts.AppHost.csproj" Id="647d06fa-1304-49d6-a92e-cd3dc7b327ea">
       <Platform Project="x64" />
     </Project>
-    <Project Path="RealExamples/BankAccounts.Domain/BankAccounts.Domain/BankAccounts.Domain.csproj" Id="da84a3f4-6b89-4f48-99d6-60de47f6276b">
+    <Project Path="RealExamples/BankAccounts.Domain/BankAccounts.Domain.csproj">
       <Platform Project="x64" />
     </Project>
     <Project Path="RealExamples/BankAccounts.EventDbInitialiazer/BankAccounts.EventDbInitialiazer.csproj" Id="857ce7c1-7fb1-43e4-bada-6a0002e5e389">
@@ -37,16 +24,17 @@
     <Project Path="RealExamples/BankAccounts.Worker/BankAccounts.Worker.csproj">
       <Platform Project="x64" />
     </Project>
+    <Project Path="RealExamples/Xpandables.Net.Benchmarking/Xpandables.Net.Benchmarking.csproj">
+      <Platform Project="x64" />
+    </Project>
+    <Project Path="RealExamples/Xpandables.Net.UnitTests/Xpandables.Net.UnitTests.csproj">
+      <Platform Project="x64" />
+    </Project>
   </Folder>
   <Folder Name="/Solution Items/">
     <File Path=".editorconfig" />
     <File Path="README.md" />
     <File Path="Resources.Designer.t4" />
-  </Folder>
-  <Folder Name="/Tests/">
-    <Project Path="Xpandables.Net.UnitTests/Xpandables.Net.UnitTests.csproj">
-      <Platform Project="x64" />
-    </Project>
   </Folder>
   <Project Path="AspNetCore.AsyncPaged/AspNetCore.AsyncPaged.csproj" Id="08987866-6b93-4ff0-91f6-ada314aa75a4">
     <Platform Project="x64" />

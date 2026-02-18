@@ -21,7 +21,7 @@
     <ProjectReference Include="..\..\AspNetCore.Events\AspNetCore.Events.csproj" />
     <ProjectReference Include="..\..\AspNetCore.Net\AspNetCore.Net.csproj" />
     <ProjectReference Include="..\..\AspNetCore.Results\AspNetCore.Results.csproj" />
-    <ProjectReference Include="..\BankAccounts.Domain\BankAccounts.Domain\BankAccounts.Domain.csproj" />
+    <ProjectReference Include="..\BankAccounts.Domain\BankAccounts.Domain.csproj" />
     <ProjectReference Include="..\BankAccounts.Infrastructure\BankAccounts.Infrastructure.csproj" />
     <ProjectReference Include="..\BankAccounts.ServiceDefaults\BankAccounts.ServiceDefaults.csproj" />
   </ItemGroup>

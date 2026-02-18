@@ -15,8 +15,8 @@
   </ItemGroup>
 
   <ItemGroup>
-	<ProjectReference Include="..\System.AsyncPaged.Json\System.AsyncPaged.Json.csproj" />
-	<ProjectReference Include="..\System.Data\System.Data.csproj" />
+	<ProjectReference Include="..\..\System.AsyncPaged.Json\System.AsyncPaged.Json.csproj" />
+	<ProjectReference Include="..\..\System.Data\System.Data.csproj" />
   </ItemGroup>
 
 </Project>
