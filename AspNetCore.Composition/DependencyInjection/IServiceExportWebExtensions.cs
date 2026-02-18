@@ -34,81 +34,82 @@ namespace Microsoft.Extensions.DependencyInjection;
 /// publishing applications; ensure that all required types are preserved if trimming is enabled.</remarks>
 public static class IServiceExportWebExtensions
 {
-    extension(WebApplication application)
-    {
-        /// <summary>
-        /// Uses the service exports with default options.
-        /// </summary>
-        /// <returns>The web application with applied service exports.</returns>
-        [RequiresAssemblyFiles]
-        public WebApplication UseXServiceExports()
-        {
-            ArgumentNullException.ThrowIfNull(application);
-            return application.UseXServiceExports(_ => { });
-        }
+	extension(WebApplication application)
+	{
+		/// <summary>
+		/// Uses the service exports with default options.
+		/// </summary>
+		/// <returns>The web application with applied service exports.</returns>
+		[RequiresAssemblyFiles]
+		public WebApplication UseXServiceExports()
+		{
+			ArgumentNullException.ThrowIfNull(application);
+			return application.UseXServiceExports(_ => { });
+		}
 
-        /// <summary>
-        /// Uses the service exports with specified options.
-        /// </summary>
-        /// <param name="configureOptions">The action to configure export options.</param>
-        /// <returns>The web application with applied service exports.</returns>
-        // ReSharper disable once MemberCanBePrivate.Global
-        [RequiresAssemblyFiles()]
-        public WebApplication UseXServiceExports(Action<ExportOptions> configureOptions)
-        {
-            ArgumentNullException.ThrowIfNull(application);
-            ArgumentNullException.ThrowIfNull(configureOptions);
+		/// <summary>
+		/// Uses the service exports with specified options.
+		/// </summary>
+		/// <param name="configureOptions">The action to configure export options.</param>
+		/// <returns>The web application with applied service exports.</returns>
+		// ReSharper disable once MemberCanBePrivate.Global
+		[RequiresAssemblyFiles()]
+		public WebApplication UseXServiceExports(Action<ExportOptions> configureOptions)
+		{
+			ArgumentNullException.ThrowIfNull(application);
+			ArgumentNullException.ThrowIfNull(configureOptions);
 
-            ExportOptions options = new();
-            configureOptions(options);
+			ExportOptions options = new();
+			configureOptions(options);
 
-            IServiceExportExtensions.ApplyServiceExports<IUseServiceExport>(
-                options, exports =>
-                {
-                    foreach (IUseServiceExport export in exports)
-                    {
-                        export.UseServices(application);
-                    }
-                });
+			IServiceExportExtensions.ApplyServiceExports<IUseServiceExport>(
+				options, exports =>
+				{
+					foreach (IUseServiceExport export in exports)
+					{
+						export.UseServices(application);
+					}
+				});
 
-            return application;
-        }
+			return application;
+		}
 
-        /// <summary>
-        /// Uses the specified assemblies to apply services to the web application.
-        /// </summary>
-        /// <param name="assemblies">The assemblies to scan for services.</param>
-        /// <returns>The web application with applied services.</returns>
-        [RequiresUnreferencedCode("This method may be trimmed.")]
-        public WebApplication UseXServices(params Assembly[] assemblies)
-        {
-            ArgumentNullException.ThrowIfNull(application);
-            ArgumentNullException.ThrowIfNull(assemblies);
+		/// <summary>
+		/// Uses the specified assemblies to apply services to the web application.
+		/// </summary>
+		/// <param name="assemblies">The assemblies to scan for services.</param>
+		/// <returns>The web application with applied services.</returns>
+		[RequiresUnreferencedCode("This method may be trimmed.")]
+		public WebApplication UseXServices(params IEnumerable<Assembly> assemblies)
+		{
+			ArgumentNullException.ThrowIfNull(application);
+			ArgumentNullException.ThrowIfNull(assemblies);
 
-            assemblies = assemblies is { Length: > 0 } ? assemblies : [Assembly.GetCallingAssembly()];
+			Assembly[] assembliesArray = assemblies as Assembly[] ?? [.. assemblies];
+			assembliesArray = assembliesArray is { Length: > 0 } ? assembliesArray : [Assembly.GetCallingAssembly()];
 
-            List<Type> types = [.. assemblies
-                .SelectMany(assembly => assembly.GetTypes())
-                .Where(type =>
-                    type is
-                    {
-                        IsAbstract: false,
-                        IsInterface: false,
-                        IsGenericType: false
-                    }
-                    && Array.Exists(type.GetInterfaces(),
-                        t => !t.IsGenericType
-                        && t == typeof(IUseService)))];
+			List<Type> types = [.. assembliesArray
+				.SelectMany(assembly => assembly.GetTypes())
+				.Where(type =>
+					type is
+					{
+						IsAbstract: false,
+						IsInterface: false,
+						IsGenericType: false
+					}
+					&& Array.Exists(type.GetInterfaces(),
+						t => !t.IsGenericType
+						&& t == typeof(IUseService)))];
 
-            foreach (Type type in types)
-            {
-                if (Activator.CreateInstance(type) is IUseService useService)
-                {
-                    useService.UseServices(application);
-                }
-            }
+			foreach (Type type in types)
+			{
+				if (Activator.CreateInstance(type) is IUseService useService)
+				{
+					useService.UseServices(application);
+				}
+			}
 
-            return application;
-        }
-    }
+			return application;
+		}
+	}
 }

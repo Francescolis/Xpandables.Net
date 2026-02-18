@@ -34,7 +34,7 @@ builder.Services
 	.AddXEventContextAccessor()
 	.AddXEventConverterContext()
 	.AddXEventConverterFactory()
-	.AddXCacheTypeResolver(type => typeof(IIntegrationEvent).IsAssignableFrom(type), [typeof(Account).Assembly])
+	.AddXCacheTypeResolver(type => typeof(IIntegrationEvent).IsAssignableFrom(type), typeof(Account).Assembly)
 	.AddXEventHandlers()
 	.AddXEventHandlerInboxDecorator()
 	.AddXEventPublisher()

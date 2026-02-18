@@ -513,11 +513,12 @@ public static class IEventExtensions
 		/// with the discovered event handlers registered.</returns>
 		[RequiresUnreferencedCode("The event handlers may not be fully referenced.")]
 		[RequiresDynamicCode("The event handlers may not be fully referenced.")]
-		public IServiceCollection AddXEventHandlers(params Assembly[] assemblies)
+		public IServiceCollection AddXEventHandlers(params IEnumerable<Assembly> assemblies)
 		{
-			assemblies = assemblies is { Length: > 0 } ? assemblies : [Assembly.GetCallingAssembly()];
+			Assembly[] assembliesArray = assemblies as Assembly[] ?? [.. assemblies];
+			assembliesArray = assembliesArray is { Length: > 0 } ? assembliesArray : [Assembly.GetCallingAssembly()];
 
-			var eventHandlerTypes = assemblies
+			var eventHandlerTypes = assembliesArray
 				.SelectMany(assembly => assembly.GetTypes())
 				.Where(type =>
 					type is { IsClass: true, IsAbstract: false, IsSealed: true }

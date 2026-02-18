@@ -118,7 +118,7 @@ public static class PrimitivesExtensions
 		/// services.</remarks>
 		/// <returns>The same IServiceCollection instance, allowing for method chaining.</returns>
 		[RequiresUnreferencedCode("Uses reflection to load types from assemblies.")]
-		public IServiceCollection AddXCacheTypeResolver(params Assembly[] assemblies)
+		public IServiceCollection AddXCacheTypeResolver(params IEnumerable<Assembly> assemblies)
 		{
 			ArgumentNullException.ThrowIfNull(services);
 			services.AddXCacheTypeResolver();
@@ -137,9 +137,10 @@ public static class PrimitivesExtensions
 		/// <returns>The service collection with the Cache type resolver registered. This enables further chaining of service
 		/// configuration.</returns>
 		[RequiresUnreferencedCode("Uses reflection to load types from assemblies.")]
-		public IServiceCollection AddXCacheTypeResolver(Predicate<Type> predicate, params Assembly[] assemblies)
+		public IServiceCollection AddXCacheTypeResolver(Predicate<Type> predicate, params IEnumerable<Assembly> assemblies)
 		{
 			ArgumentNullException.ThrowIfNull(services);
+
 			services.AddXCacheTypeResolver();
 			CacheTypeResolver.RegisterAssemblies(predicate, assemblies);
 			return services;

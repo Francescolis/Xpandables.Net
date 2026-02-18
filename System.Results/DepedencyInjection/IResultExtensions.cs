@@ -82,11 +82,12 @@ public static class IResultExtensions
 		/// <returns>The <see cref="IServiceCollection"/> instance with handler services registered.</returns>
 		[RequiresDynamicCode("Dynamic code generation is required for this method.")]
 		[RequiresUnreferencedCode("Calls MakeGenericMethod which may require unreferenced code.")]
-		public IServiceCollection AddXRequestHandlers(params Assembly[] assemblies)
+		public IServiceCollection AddXRequestHandlers(params IEnumerable<Assembly> assemblies)
 		{
-			assemblies = assemblies is { Length: > 0 } ? assemblies : [Assembly.GetCallingAssembly()];
+			Assembly[] assembliesArray = assemblies as Assembly[] ?? [.. assemblies];
+			assembliesArray = assembliesArray is { Length: > 0 } ? assembliesArray : [Assembly.GetCallingAssembly()];
 
-			IEnumerable<HandlerType> handlerTypes = assemblies.SelectMany(assembly =>
+			IEnumerable<HandlerType> handlerTypes = assembliesArray.SelectMany(assembly =>
 					assembly.GetTypes()
 						.Where(type =>
 							type is

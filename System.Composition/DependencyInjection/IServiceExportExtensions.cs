@@ -36,149 +36,150 @@ namespace Microsoft.Extensions.DependencyInjection;
 /// publishing applications; ensure that all required types are preserved if trimming is enabled.</remarks>
 public static class IServiceExportExtensions
 {
-    extension(IServiceCollection services)
-    {
-        /// <summary>
-        /// Adds services exports to the service collection using the specified configuration.
-        /// </summary>
-        /// <param name="configuration">The configuration settings used to configure the X service exports. Cannot be null.</param>
-        /// <returns>The service collection with X service exports registered. This enables further chaining of service
-        /// registration calls.</returns>
-        [RequiresAssemblyFiles]
-        public IServiceCollection AddXServiceExports(IConfiguration configuration)
-        {
-            ArgumentNullException.ThrowIfNull(services);
-            ArgumentNullException.ThrowIfNull(configuration);
+	extension(IServiceCollection services)
+	{
+		/// <summary>
+		/// Adds services exports to the service collection using the specified configuration.
+		/// </summary>
+		/// <param name="configuration">The configuration settings used to configure the X service exports. Cannot be null.</param>
+		/// <returns>The service collection with X service exports registered. This enables further chaining of service
+		/// registration calls.</returns>
+		[RequiresAssemblyFiles]
+		public IServiceCollection AddXServiceExports(IConfiguration configuration)
+		{
+			ArgumentNullException.ThrowIfNull(services);
+			ArgumentNullException.ThrowIfNull(configuration);
 
-            return services.AddXServiceExports(configuration, _ => { });
-        }
+			return services.AddXServiceExports(configuration, _ => { });
+		}
 
-        /// <summary>
-        /// Adds services to the service collection using the specified configuration and export options.
-        /// </summary>
-        /// <param name="configuration">The configuration source used to initialize the exported services. Cannot be null.</param>
-        /// <param name="configureOptions">A delegate that configures the export options. Cannot be null.</param>
-        /// <returns>The current <see cref="IServiceCollection"/> instance with the X service exports registered.</returns>
-        [RequiresAssemblyFiles]
-        public IServiceCollection AddXServiceExports(IConfiguration configuration, Action<ExportOptions> configureOptions)
-        {
-            ArgumentNullException.ThrowIfNull(services);
-            ArgumentNullException.ThrowIfNull(configuration);
-            ArgumentNullException.ThrowIfNull(configureOptions);
+		/// <summary>
+		/// Adds services to the service collection using the specified configuration and export options.
+		/// </summary>
+		/// <param name="configuration">The configuration source used to initialize the exported services. Cannot be null.</param>
+		/// <param name="configureOptions">A delegate that configures the export options. Cannot be null.</param>
+		/// <returns>The current <see cref="IServiceCollection"/> instance with the X service exports registered.</returns>
+		[RequiresAssemblyFiles]
+		public IServiceCollection AddXServiceExports(IConfiguration configuration, Action<ExportOptions> configureOptions)
+		{
+			ArgumentNullException.ThrowIfNull(services);
+			ArgumentNullException.ThrowIfNull(configuration);
+			ArgumentNullException.ThrowIfNull(configureOptions);
 
-            ExportOptions options = new();
-            configureOptions(options);
+			ExportOptions options = new();
+			configureOptions(options);
 
-            ApplyServiceExports<IAddServiceExport>(
-                options, exports =>
-                {
-                    foreach (IAddServiceExport export in exports)
-                    {
-                        export.AddServices(services, configuration);
-                    }
-                });
+			ApplyServiceExports<IAddServiceExport>(
+				options, exports =>
+				{
+					foreach (IAddServiceExport export in exports)
+					{
+						export.AddServices(services, configuration);
+					}
+				});
 
-            return services;
-        }
+			return services;
+		}
 
-        /// <summary>
-        /// Adds all services implementing the IAddService interface from the specified assemblies to the service
-        /// collection using the provided configuration.
-        /// </summary>
-        /// <remarks>This method scans the provided assemblies for non-abstract, non-generic types that
-        /// implement IAddService and invokes their AddServices method to register services. The method may be trimmed
-        /// when publishing with trimming enabled; ensure that all required types are preserved.</remarks>
-        /// <param name="configuration">The configuration to be used when adding services. Cannot be null.</param>
-        /// <param name="assemblies">The assemblies to scan for types implementing IAddService. If no assemblies are specified, the calling
-        /// assembly is used by default.</param>
-        /// <returns>The IServiceCollection instance with the discovered service exports added.</returns>
-        [RequiresUnreferencedCode("This method may be trimmed.")]
-        public IServiceCollection AddXServiceExports(IConfiguration configuration, params Assembly[] assemblies)
-        {
-            ArgumentNullException.ThrowIfNull(services);
-            ArgumentNullException.ThrowIfNull(configuration);
+		/// <summary>
+		/// Adds all services implementing the IAddService interface from the specified assemblies to the service
+		/// collection using the provided configuration.
+		/// </summary>
+		/// <remarks>This method scans the provided assemblies for non-abstract, non-generic types that
+		/// implement IAddService and invokes their AddServices method to register services. The method may be trimmed
+		/// when publishing with trimming enabled; ensure that all required types are preserved.</remarks>
+		/// <param name="configuration">The configuration to be used when adding services. Cannot be null.</param>
+		/// <param name="assemblies">The assemblies to scan for types implementing IAddService. If no assemblies are specified, the calling
+		/// assembly is used by default.</param>
+		/// <returns>The IServiceCollection instance with the discovered service exports added.</returns>
+		[RequiresUnreferencedCode("This method may be trimmed.")]
+		public IServiceCollection AddXServiceExports(IConfiguration configuration, params IEnumerable<Assembly> assemblies)
+		{
+			ArgumentNullException.ThrowIfNull(services);
+			ArgumentNullException.ThrowIfNull(configuration);
 
-            assemblies = assemblies is { Length: > 0 } ? assemblies : [Assembly.GetCallingAssembly()];
+			Assembly[] assembliesArray = assemblies as Assembly[] ?? [.. assemblies];
+			assembliesArray = assembliesArray is { Length: > 0 } ? assembliesArray : [Assembly.GetCallingAssembly()];
 
-            List<Type> types = [.. assemblies
-            .SelectMany(assembly => assembly.GetTypes())
-            .Where(type =>
-                type is
-                {
-                    IsAbstract: false,
-                    IsInterface: false,
-                    IsGenericType: false
-                }
-                && Array.Exists(type.GetInterfaces(),
-                    t => !t.IsGenericType
-                    && t == typeof(IAddService)))];
+			List<Type> types = [.. assembliesArray
+			.SelectMany(assembly => assembly.GetTypes())
+			.Where(type =>
+				type is
+				{
+					IsAbstract: false,
+					IsInterface: false,
+					IsGenericType: false
+				}
+				&& Array.Exists(type.GetInterfaces(),
+					t => !t.IsGenericType
+					&& t == typeof(IAddService)))];
 
-            foreach (Type type in types)
-            {
-                if (Activator.CreateInstance(type) is IAddService addService)
-                {
-                    addService.AddServices(services, configuration);
-                }
-            }
+			foreach (Type type in types)
+			{
+				if (Activator.CreateInstance(type) is IAddService addService)
+				{
+					addService.AddServices(services, configuration);
+				}
+			}
 
-            return services;
-        }
-    }
+			return services;
+		}
+	}
 
-    [RequiresAssemblyFiles]
-    internal static void ApplyServiceExports<TServiceExport>(
-        ExportOptions options,
-        Action<IEnumerable<TServiceExport>> onServiceExport)
-        where TServiceExport : class
-    {
-        ArgumentNullException.ThrowIfNull(options);
-        ArgumentNullException.ThrowIfNull(onServiceExport);
+	[RequiresAssemblyFiles]
+	internal static void ApplyServiceExports<TServiceExport>(
+		ExportOptions options,
+		Action<IEnumerable<TServiceExport>> onServiceExport)
+		where TServiceExport : class
+	{
+		ArgumentNullException.ThrowIfNull(options);
+		ArgumentNullException.ThrowIfNull(onServiceExport);
 
-        try
-        {
-            using ComposablePartCatalog directoryCatalog = options
-                 .SearchSubDirectories
-                 ? new RecursiveDirectoryCatalog(
-                     options.Path, options.SearchPattern)
-                 : new DirectoryCatalog(
-                     options.Path, options.SearchPattern);
+		try
+		{
+			using ComposablePartCatalog directoryCatalog = options
+				 .SearchSubDirectories
+				 ? new RecursiveDirectoryCatalog(
+					 options.Path, options.SearchPattern)
+				 : new DirectoryCatalog(
+					 options.Path, options.SearchPattern);
 
-            ImportDefinition importDefinition =
-                     ApplyImportDefinition<TServiceExport>();
+			ImportDefinition importDefinition =
+					 ApplyImportDefinition<TServiceExport>();
 
-            using AggregateCatalog aggregateCatalog = new();
-            aggregateCatalog.Catalogs.Add(directoryCatalog);
+			using AggregateCatalog aggregateCatalog = new();
+			aggregateCatalog.Catalogs.Add(directoryCatalog);
 
-            using CompositionContainer compositionContainer =
-                new(aggregateCatalog);
+			using CompositionContainer compositionContainer =
+				new(aggregateCatalog);
 
-            IEnumerable<TServiceExport> exportServices = compositionContainer
-                .GetExports(importDefinition)
-                .Select(def => def.Value)
-                .OfType<TServiceExport>();
+			IEnumerable<TServiceExport> exportServices = compositionContainer
+				.GetExports(importDefinition)
+				.Select(def => def.Value)
+				.OfType<TServiceExport>();
 
-            onServiceExport(exportServices);
-        }
-        catch (Exception exception)
-              when (exception is NotSupportedException
-                            or DirectoryNotFoundException
-                            or UnauthorizedAccessException
-                            or ArgumentException
-                            or PathTooLongException
-                            or ReflectionTypeLoadException)
-        {
-            throw new InvalidOperationException(
-                "Adding or using exports failed." +
-                " See inner exception.", exception);
-        }
-    }
+			onServiceExport(exportServices);
+		}
+		catch (Exception exception)
+			  when (exception is NotSupportedException
+							or DirectoryNotFoundException
+							or UnauthorizedAccessException
+							or ArgumentException
+							or PathTooLongException
+							or ReflectionTypeLoadException)
+		{
+			throw new InvalidOperationException(
+				"Adding or using exports failed." +
+				" See inner exception.", exception);
+		}
+	}
 
-    internal static ImportDefinition ApplyImportDefinition<TServiceExport>()
-     where TServiceExport : class
-     => new(
-             _ => true,
-             typeof(TServiceExport).FullName,
-             ImportCardinality.ZeroOrMore,
-             false,
-             false);
+	internal static ImportDefinition ApplyImportDefinition<TServiceExport>()
+	 where TServiceExport : class
+	 => new(
+			 _ => true,
+			 typeof(TServiceExport).FullName,
+			 ImportCardinality.ZeroOrMore,
+			 false,
+			 false);
 }

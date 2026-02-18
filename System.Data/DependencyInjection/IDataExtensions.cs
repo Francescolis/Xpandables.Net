@@ -417,14 +417,15 @@ public static class IDataExtensions
 		[RequiresUnreferencedCode("Requires unreferenced code.")]
 		public IServiceCollection AddXDataRepositories(
 			ServiceLifetime lifetime,
-			params Assembly[] assemblies)
+			params IEnumerable<Assembly> assemblies)
 		{
 			ArgumentNullException.ThrowIfNull(services);
 			ArgumentNullException.ThrowIfNull(assemblies);
 
-			assemblies = assemblies.Length == 0 ? [Assembly.GetCallingAssembly()] : assemblies;
+			Assembly[] assembliesArray = assemblies as Assembly[] ?? [.. assemblies];
+			assembliesArray = assembliesArray is { Length: > 0 } ? assembliesArray : [Assembly.GetCallingAssembly()];
 
-			foreach (var assembly in assemblies)
+			foreach (var assembly in assembliesArray)
 			{
 				var types = assembly.GetTypes();
 				var repositoryTypes = types

@@ -54,7 +54,7 @@ public sealed class DomainServiceCollection : IAddServiceExport
 			.AddXDataDbConnectionScope()
 			.AddXEventStores()
 			.AddXEventConverterFactory()
-			.AddXCacheTypeResolver(type => typeof(IEvent).IsAssignableFrom(type), [typeof(Account).Assembly])
+			.AddXCacheTypeResolver(type => typeof(IEvent).IsAssignableFrom(type), typeof(Account).Assembly)
 			.AddXEventContextAccessor()
 			.AddXDomainEventEnricher()
 			.AddXIntegrationEventEnricher();
