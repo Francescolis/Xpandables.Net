@@ -20,7 +20,7 @@ using System.Results.Requests;
 
 namespace BankAccounts.Domain.Features.OperationAccount;
 
-public sealed class AccountOperationQueryHandler(IEventStore eventStore) :
+public sealed class AccountOperationQueryHandler(IDomainStore eventStore) :
 	IStreamPagedRequestHandler<AccountOperationQuery, AccountOperationResult>
 {
 	public async Task<Result<IAsyncPagedEnumerable<AccountOperationResult>>> HandleAsync(

@@ -15,6 +15,7 @@
   <ItemGroup>
     <ProjectReference Include="..\BankAccounts.Api\BankAccounts.Api.csproj" />
     <ProjectReference Include="..\BankAccounts.EventDbInitialiazer\BankAccounts.EventDbInitialiazer.csproj" />
+    <ProjectReference Include="..\BankAccounts.Worker\BankAccounts.Worker.csproj" />
   </ItemGroup>
 
 </Project>

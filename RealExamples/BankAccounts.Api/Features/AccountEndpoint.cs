@@ -14,6 +14,7 @@
  * limitations under the License.
  *
 ********************************************************************************/
+using System.Entities;
 using System.Results;
 using System.Results.Requests;
 using System.Results.Tasks;
@@ -69,7 +70,7 @@ public sealed class AccountQueryHandler(AccountDataContext context) : IStreamPag
 		await Task.Yield();
 
 		IAsyncPagedEnumerable<AccountResult> accounts = context.Accounts
-			.Where(a => request.AccountId == null || a.KeyId == request.AccountId)
+			.Where(a => a.Status == EntityStatus.ACTIVE.Value && (request.AccountId == null || a.KeyId == request.AccountId))
 			.Take(request.Count)
 			.Select(a => new AccountResult
 			{

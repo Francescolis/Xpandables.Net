@@ -20,7 +20,7 @@ builder.Services.AddCors(options =>
 			.AllowAnyHeader()
 			.AllowCredentials()));
 
-builder.Services.AddXDbConnectionMsSqlServer(builder.Configuration.GetConnectionString("EventStoreDb")!);
+builder.Services.AddXDataDbConnectionMsSqlServer(builder.Configuration.GetConnectionString("EventStoreDb")!);
 DbProviderFactories.RegisterFactory(
 	DbProviders.MsSqlServer.InvariantName,
 	Microsoft.Data.SqlClient.SqlClientFactory.Instance);
@@ -48,10 +48,10 @@ builder.Services
 	.AddXEventPublisher()
 	.AddXAggregateStore()
 	.AddXDataUnitOfWork()
-	.AddXSqlMapper()
-	.AddXMsSqlBuilder()
-	.AddXDbConnectionScopeFactory()
-	.AddXDbConnectionScope()
+	.AddXDataSqlMapper()
+	.AddXDataMsSqlBuilder()
+	.AddXDataDbConnectionScopeFactory()
+	.AddXDataDbConnectionScope()
 	.AddMemoryCache()
 	.AddXEventStores()
 	.AddXEventConverterFactory()

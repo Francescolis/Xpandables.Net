@@ -35,7 +35,7 @@ public sealed class DomainServiceCollection : IAddServiceExport
 		ArgumentNullException.ThrowIfNull(services);
 		ArgumentNullException.ThrowIfNull(configuration);
 
-		services.AddXDbConnectionMsSqlServer(configuration.GetConnectionString("eventDB")!);
+		services.AddXDataDbConnectionMsSqlServer(configuration.GetConnectionString("eventDB")!);
 		DbProviderFactories.RegisterFactory(
 			DbProviders.MsSqlServer.InvariantName,
 			Microsoft.Data.SqlClient.SqlClientFactory.Instance);
@@ -47,10 +47,10 @@ public sealed class DomainServiceCollection : IAddServiceExport
 			.AddXEventPublisher()
 			.AddXAggregateStore()
 			.AddXDataUnitOfWork()
-			.AddXSqlMapper()
-			.AddXMsSqlBuilder()
-			.AddXDbConnectionScopeFactory()
-			.AddXDbConnectionScope()
+			.AddXDataSqlMapper()
+			.AddXDataMsSqlBuilder()
+			.AddXDataDbConnectionScopeFactory()
+			.AddXDataDbConnectionScope()
 			.AddXEventStores()
 			.AddXEventConverterFactory()
 			.AddXCacheTypeResolver()

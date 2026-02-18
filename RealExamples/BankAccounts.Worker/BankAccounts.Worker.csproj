@@ -1,0 +1,25 @@
+﻿<Project Sdk="Microsoft.NET.Sdk.Worker">
+
+  <PropertyGroup>
+    <IsPackable>false</IsPackable>
+    <TargetFramework>net10.0</TargetFramework>
+    <Nullable>enable</Nullable>
+    <ImplicitUsings>enable</ImplicitUsings>
+    <UserSecretsId>dotnet-BankAccounts.Worker-2109a5d0-daeb-499a-acc4-c8b1c9f6deae</UserSecretsId>
+    <DockerDefaultTargetOS>Linux</DockerDefaultTargetOS>
+    <DockerfileContext>..\..</DockerfileContext>
+  </PropertyGroup>
+
+  <ItemGroup>
+    <PackageReference Include="Aspire.Microsoft.Data.SqlClient" />
+    <PackageReference Include="Microsoft.Extensions.Hosting" />
+    <PackageReference Include="Microsoft.VisualStudio.Azure.Containers.Tools.Targets" />
+  </ItemGroup>
+
+  <ItemGroup>
+    <ProjectReference Include="..\..\AspNetCore.Net\AspNetCore.Net.csproj" />
+    <ProjectReference Include="..\BankAccounts.Domain\BankAccounts.Domain\BankAccounts.Domain.csproj" />
+    <ProjectReference Include="..\BankAccounts.Infrastructure\BankAccounts.Infrastructure.csproj" />
+    <ProjectReference Include="..\BankAccounts.ServiceDefaults\BankAccounts.ServiceDefaults.csproj" />
+  </ItemGroup>
+</Project>

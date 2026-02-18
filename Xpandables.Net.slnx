@@ -34,6 +34,9 @@
     <Project Path="RealExamples/BankAccounts.ServiceDefaults/BankAccounts.ServiceDefaults.csproj">
       <Platform Project="x64" />
     </Project>
+    <Project Path="RealExamples/BankAccounts.Worker/BankAccounts.Worker.csproj">
+      <Platform Project="x64" />
+    </Project>
   </Folder>
   <Folder Name="/Solution Items/">
     <File Path=".editorconfig" />

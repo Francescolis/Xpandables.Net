@@ -26,7 +26,7 @@ namespace System.Events.Aggregates;
 /// <remarks>Implementations of this interface are responsible for storing and loading aggregates, typically using
 /// an event store or similar persistence mechanism. The interface is intended for use in domain-driven design and event
 /// sourcing scenarios, where aggregates represent the consistency boundaries of the domain model.
-/// <para>If you need more fine-grained control over the persistence of aggregates, consider using the <see cref="IEventStore"/> implementation.</para>
+/// <para>If you need more fine-grained control over the persistence of aggregates, consider using the <see cref="IDomainStore"/> implementation.</para>
 /// </remarks>
 public interface IAggregateStore
 {
@@ -56,7 +56,7 @@ public interface IAggregateStore
 /// <remarks>This interface provides type-safe methods for working with aggregates, enabling implementations to
 /// persist and rehydrate domain objects. It is typically used in event sourcing or domain-driven design scenarios to
 /// abstract the underlying storage details.
-/// <para>If you need more fine-grained control over the persistence of aggregates, consider using the <see cref="IEventStore"/> implementation.</para>
+/// <para>If you need more fine-grained control over the persistence of aggregates, consider using the <see cref="IDomainStore"/> implementation.</para>
 /// </remarks>
 /// <typeparam name="TAggregate">The type of aggregate managed by the store. Must be a class that implements the <see cref="IAggregateFactory{TAggregate}"/> 
 /// interface.</typeparam>

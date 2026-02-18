@@ -16,4 +16,10 @@ builder.AddProject<Projects.BankAccounts_Api>("bankaccounts-api")
 	.WaitFor(accountDB)
 	.WaitFor(eventDB);
 
+builder.AddProject<Projects.BankAccounts_Worker>("bankaccounts-worker")
+	.WithReference(accountDB)
+	.WithReference(eventDB)
+	.WaitFor(accountDB)
+	.WaitFor(eventDB);
+
 builder.Build().Run();

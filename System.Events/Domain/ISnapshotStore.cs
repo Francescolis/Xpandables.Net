@@ -25,22 +25,22 @@ namespace System.Events.Domain;
 /// be used to optimize state reconstruction for aggregates or entities. This interface extends the base event store
 /// functionality by enabling efficient retrieval and storage of snapshots, typically used in event-sourced systems to
 /// reduce replay time.</remarks>
-public interface ISnapshotEventStore
+public interface ISnapshotStore
 {
-    /// <summary>
-    /// Asynchronously retrieves the latest snapshot event for the specified owner.
-    /// </summary>
-    /// <param name="ownerId">The unique identifier of the owner whose snapshot event is to be retrieved. Cannot be null or empty.</param>
-    /// <param name="cancellationToken">A cancellation token that can be used to cancel the asynchronous operation.</param>
-    /// <returns>A task that represents the asynchronous operation. The task result contains an optional <see cref="EnvelopeResult"/> representing 
-    /// the latest snapshot event if found; otherwise, an empty optional.</returns>
-    Task<EnvelopeResult?> GetLatestSnapshotAsync(Guid ownerId, CancellationToken cancellationToken = default);
+	/// <summary>
+	/// Asynchronously retrieves the latest snapshot event for the specified owner.
+	/// </summary>
+	/// <param name="ownerId">The unique identifier of the owner whose snapshot event is to be retrieved. Cannot be null or empty.</param>
+	/// <param name="cancellationToken">A cancellation token that can be used to cancel the asynchronous operation.</param>
+	/// <returns>A task that represents the asynchronous operation. The task result contains an optional <see cref="EnvelopeResult"/> representing 
+	/// the latest snapshot event if found; otherwise, an empty optional.</returns>
+	Task<EnvelopeResult?> GetLatestSnapshotAsync(Guid ownerId, CancellationToken cancellationToken = default);
 
-    /// <summary>
-    /// Asynchronously appends a snapshot event to the store.
-    /// </summary>
-    /// <param name="event">The snapshot event to be saved. Cannot be null.</param>
-    /// <param name="cancellationToken">A cancellation token that can be used to cancel the asynchronous save operation.</param>
-    /// <returns>A task that represents the asynchronous save operation.</returns>
-    Task AppendSnapshotAsync(ISnapshotEvent @event, CancellationToken cancellationToken = default);
+	/// <summary>
+	/// Asynchronously appends a snapshot event to the store.
+	/// </summary>
+	/// <param name="event">The snapshot event to be saved. Cannot be null.</param>
+	/// <param name="cancellationToken">A cancellation token that can be used to cancel the asynchronous save operation.</param>
+	/// <returns>A task that represents the asynchronous save operation.</returns>
+	Task AppendSnapshotAsync(ISnapshotEvent @event, CancellationToken cancellationToken = default);
 }

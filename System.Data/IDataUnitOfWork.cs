@@ -1,4 +1,4 @@
-/*******************************************************************************
+﻿/*******************************************************************************
  * Copyright (C) 2025 Kamersoft
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
@@ -56,7 +56,7 @@ public interface IDataUnitOfWork : IDisposable, IAsyncDisposable
     /// <summary>
     /// Gets the connection scope managed by this unit of work.
     /// </summary>
-    IDbConnectionScope ConnectionScope { get; }
+    IDataDbConnectionScope ConnectionScope { get; }
 
     /// <summary>
     /// Gets the current active transaction, if any.

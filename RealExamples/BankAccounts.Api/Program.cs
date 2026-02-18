@@ -20,7 +20,6 @@ builder.Services
 	.AddXServiceExports(builder.Configuration, typeof(Account).Assembly, typeof(AccountDataContext).Assembly)
 	.AddXRequestHandlers()
 	.AddValidation()
-	.AddMemoryCache()
 	.AddXEventStores()
 	.AddXResultMiddleware()
 	.AddXEventContextMiddleware()

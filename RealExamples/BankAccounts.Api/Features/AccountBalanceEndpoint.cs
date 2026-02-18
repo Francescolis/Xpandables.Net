@@ -15,6 +15,7 @@
  *
 ********************************************************************************/
 using System.ComponentModel.DataAnnotations;
+using System.Entities;
 using System.Results;
 using System.Results.Requests;
 using System.Results.Tasks;
@@ -72,7 +73,7 @@ public sealed class AccountBalanceQueryHandler(AccountDataContext context) : IRe
 
 		AccountBalanceResult? account = await context.Accounts
 			.AsNoTracking()
-			.Where(a => a.KeyId == request.AccountId)
+			.Where(a => a.KeyId == request.AccountId && a.Status == EntityStatus.ACTIVE.Value)
 			.Select(a => new AccountBalanceResult
 			{
 				AccountId = a.KeyId.ToString(),

@@ -1,4 +1,4 @@
-/*******************************************************************************
+﻿/*******************************************************************************
  * Copyright (C) 2025 Kamersoft
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
@@ -36,7 +36,7 @@ namespace System.Data;
 [RequiresDynamicCode("Expression compilation requires dynamic code generation.")]
 public class DataUnitOfWork : IDataUnitOfWork
 {
-    private readonly IDbConnectionScope _connectionScope;
+    private readonly IDataDbConnectionScope _connectionScope;
     private readonly IDataSqlBuilder _sqlBuilder;
     private readonly IDataSqlMapper _sqlMapper;
     private readonly ConcurrentDictionary<Type, object> _repositories = new();
@@ -48,7 +48,7 @@ public class DataUnitOfWork : IDataUnitOfWork
     /// <param name="connectionScope">The connection scope to use.</param>
     /// <param name="sqlBuilder">The SQL builder for generating queries.</param>
     /// <param name="sqlMapper">The SQL mapper for mapping data.</param>
-    public DataUnitOfWork(IDbConnectionScope connectionScope, IDataSqlBuilder sqlBuilder, IDataSqlMapper sqlMapper)
+    public DataUnitOfWork(IDataDbConnectionScope connectionScope, IDataSqlBuilder sqlBuilder, IDataSqlMapper sqlMapper)
     {
         _connectionScope = connectionScope ?? throw new ArgumentNullException(nameof(connectionScope));
         _sqlBuilder = sqlBuilder ?? throw new ArgumentNullException(nameof(sqlBuilder));
@@ -56,7 +56,7 @@ public class DataUnitOfWork : IDataUnitOfWork
     }
 
     /// <inheritdoc />
-    public IDbConnectionScope ConnectionScope
+    public IDataDbConnectionScope ConnectionScope
     {
         get
         {
@@ -182,7 +182,7 @@ public class DataUnitOfWork : IDataUnitOfWork
 [RequiresDynamicCode("Expression compilation requires dynamic code generation.")]
 public class DataUnitOfWorkFactory : IDataUnitOfWorkFactory
 {
-    private readonly IDbConnectionScopeFactory _connectionScopeFactory;
+    private readonly IDataDbConnectionScopeFactory _connectionScopeFactory;
     private readonly IDataSqlBuilderFactory _sqlBuilderFactory;
     private readonly IDataSqlMapper _sqlMapper;
     private readonly string _providerInvariantName;
@@ -195,7 +195,7 @@ public class DataUnitOfWorkFactory : IDataUnitOfWorkFactory
     /// <param name="sqlMapper">The SQL mapper.</param>
     /// <param name="providerInvariantName">The provider invariant name for determining SQL dialect.</param>
     public DataUnitOfWorkFactory(
-        IDbConnectionScopeFactory connectionScopeFactory,
+        IDataDbConnectionScopeFactory connectionScopeFactory,
         IDataSqlBuilderFactory sqlBuilderFactory,
         IDataSqlMapper sqlMapper,
         string providerInvariantName)

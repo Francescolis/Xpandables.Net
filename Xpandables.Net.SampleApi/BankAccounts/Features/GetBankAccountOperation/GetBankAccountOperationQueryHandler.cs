@@ -18,7 +18,7 @@ using Xpandables.Net.SampleApi.BankAccounts.Accounts;
 
 namespace Xpandables.Net.SampleApi.BankAccounts.Features.GetBankAccountOperation;
 
-public sealed class GetBankAccountOperationQueryHandler(IEventStore eventStore) :
+public sealed class GetBankAccountOperationQueryHandler(IDomainStore eventStore) :
     IStreamPagedRequestHandler<GetBankAccountOperationQuery, GetBankAccountOperationResult>
 {
     public async Task<Result<IAsyncPagedEnumerable<GetBankAccountOperationResult>>> HandleAsync(

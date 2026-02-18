@@ -39,7 +39,7 @@ namespace System.Events.Aggregates;
 public sealed class SnapshotStore<TAggregate>(
     IOptions<SnapshotOptions> options,
     IAggregateStore<TAggregate> aggregateStore,
-    IEventStore eventStore) : IAggregateStore<TAggregate>
+    IDomainStore eventStore) : IAggregateStore<TAggregate>
     where TAggregate : class, IAggregate, IAggregateFactory<TAggregate>, IOriginator
 {
     private readonly SnapshotOptions _options = options.Value

@@ -1,4 +1,4 @@
-using System.Events;
+﻿using System.Events;
 using System.Events.Aggregates;
 using System.Events.Domain;
 using System.Runtime.CompilerServices;
@@ -86,7 +86,7 @@ internal sealed class TestMoneyDepositedHandler : IEventHandler<MoneyDeposited>
     }
 }
 
-internal sealed class FakeEventStore : IEventStore
+internal sealed class FakeEventStore : IDomainStore
 {
     private readonly List<IDomainEvent> _events = [];
     private readonly AsyncDisposable _subscription = new();

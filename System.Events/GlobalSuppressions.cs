@@ -1,4 +1,4 @@
-/*******************************************************************************
+﻿/*******************************************************************************
  * Copyright (C) 2025 Kamersoft
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
@@ -32,7 +32,7 @@ using System.Diagnostics.CodeAnalysis;
 [assembly: SuppressMessage("Naming", "CA1716:Identifiers should not match keywords", Justification = "<Pending>", Scope = "member", Target = "~M:System.Events.Domain.IEventSourcing.LoadFromHistory(System.Events.Domain.IDomainEvent)")]
 [assembly: SuppressMessage("Naming", "CA1716:Identifiers should not match keywords", Justification = "<Pending>", Scope = "member", Target = "~M:System.Events.Domain.IEventSourcing.AppendEvent(System.Events.Domain.IDomainEvent)")]
 [assembly: SuppressMessage("Naming", "CA1716:Identifiers should not match keywords", Justification = "<Pending>", Scope = "member", Target = "~M:System.Events.Domain.IEventSourcing.AppendVersioningEvent(System.Events.Domain.IDomainEvent)")]
-[assembly: SuppressMessage("Naming", "CA1716:Identifiers should not match keywords", Justification = "<Pending>", Scope = "member", Target = "~M:System.Events.Domain.ISnapshotEventStore.AppendSnapshotAsync(System.Events.Domain.ISnapshotEvent,System.Threading.CancellationToken)~System.Threading.Tasks.Task")]
+[assembly: SuppressMessage("Naming", "CA1716:Identifiers should not match keywords", Justification = "<Pending>", Scope = "member", Target = "~M:System.Events.Domain.ISnapshotStore.AppendSnapshotAsync(System.Events.Domain.ISnapshotEvent,System.Threading.CancellationToken)~System.Threading.Tasks.Task")]
 [assembly: SuppressMessage("Naming", "CA1716:Identifiers should not match keywords", Justification = "<Pending>", Scope = "member", Target = "~M:System.Events.Aggregates.Aggregate.UpdateBusinessVersionFromEvent(System.Events.Domain.IDomainEvent)")]
 [assembly: SuppressMessage("Naming", "CA1716:Identifiers should not match keywords", Justification = "<Pending>", Scope = "member", Target = "~M:System.Events.Aggregates.Aggregate.IsSignificantBusinessEvent(System.Events.Domain.IDomainEvent)~System.Boolean")]
 [assembly: SuppressMessage("Naming", "CA1716:Identifiers should not match keywords", Justification = "<Pending>", Scope = "member", Target = "~M:System.Events.Integration.IInboxStore.ReceiveAsync(System.Events.Integration.IIntegrationEvent,System.String,System.Nullable{System.TimeSpan},System.Threading.CancellationToken)~System.Threading.Tasks.Task{System.Events.Integration.InboxReceiveResult}")]
