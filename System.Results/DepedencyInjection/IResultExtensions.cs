@@ -16,7 +16,6 @@
 ********************************************************************************/
 using System.Diagnostics.CodeAnalysis;
 using System.Reflection;
-using System.Results;
 using System.Results.Pipelines;
 using System.Results.Requests;
 
@@ -42,33 +41,6 @@ public static class IResultExtensions
 	/// <param name="services">The service collection to extend. Cannot be null.</param>"
 	extension(IServiceCollection services)
 	{
-		/// <summary>
-		/// Adds a singleton implementation of the specified HTTP status code mapper to the service collection.
-		/// </summary>
-		/// <remarks>This method registers the specified HTTP status code mapper as a singleton service for dependency
-		/// injection. Subsequent requests for IHttpStatusCodeMapper will resolve to the registered implementation.</remarks>
-		/// <typeparam name="THttpStatusCodeMapper">The type of the HTTP status code mapper to register. Must implement the IHttpStatusCodeMapper interface and have a
-		/// public constructor.</typeparam>
-		/// <returns>The IServiceCollection instance with the HTTP status code mapper registered.</returns>
-		public IServiceCollection AddXHttpStatusCodeMapper<[DynamicallyAccessedMembers(DynamicallyAccessedMemberTypes.PublicConstructors)] THttpStatusCodeMapper>()
-			where THttpStatusCodeMapper : class, IHttpStatusCodeMapper
-		{
-			ArgumentNullException.ThrowIfNull(services);
-			return services.AddSingleton<IHttpStatusCodeMapper, THttpStatusCodeMapper>();
-		}
-
-		/// <summary>
-		/// Adds the default HTTP status code mapper to the service collection for dependency injection.
-		/// </summary>
-		/// <remarks>This method registers the default implementation of the HTTP status code mapper. Call this method
-		/// during application startup to enable HTTP status code mapping services.</remarks>
-		/// <returns>The same IServiceCollection instance so that additional calls can be chained.</returns>
-		public IServiceCollection AddXHttpStatusCodeMapper()
-		{
-			ArgumentNullException.ThrowIfNull(services);
-			return services.AddXHttpStatusCodeMapper<HttpStatusCodeMapper>();
-		}
-
 		/// <summary>
 		/// Registers the specified pipeline decorator type as a transient implementation of the <see cref="IPipelineDecorator{TRequest}"/>
 		/// interface in the service collection.

@@ -53,7 +53,7 @@ public sealed class ResultMiddleware : IMiddleware
 
             Result result = exception switch
             {
-                BadHttpRequestException badHttpRequestException => badHttpRequestException.ToResult(),
+                BadHttpRequestException badHttpRequestException => badHttpRequestException.ToResult(context),
                 _ => exception.ToResult()
             };
 

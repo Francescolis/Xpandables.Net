@@ -36,6 +36,34 @@ public static class PrimitivesExtensions
 	extension(IServiceCollection services)
 	{
 		/// <summary>
+		/// Adds a singleton implementation of the specified HTTP status code extension to the service collection.
+		/// </summary>
+		/// <remarks>This method registers the specified HTTP status code extension as a singleton service for dependency
+		/// injection. Subsequent requests for IHttpStatusCodeExtension will resolve to the registered implementation.</remarks>
+		/// <typeparam name="THttpStatusCodeExtension">The type of the HTTP status code extension to register. Must implement the IHttpStatusCodeExtension interface and have a
+		/// public constructor.</typeparam>
+		/// <returns>The IServiceCollection instance with the HTTP status code extension registered.</returns>
+		public IServiceCollection AddXHttpStatusCodeExtension<[DynamicallyAccessedMembers(DynamicallyAccessedMemberTypes.PublicConstructors)] THttpStatusCodeExtension>()
+			where THttpStatusCodeExtension : class, IHttpStatusCodeExtension
+		{
+			ArgumentNullException.ThrowIfNull(services);
+			services.TryAddSingleton<IHttpStatusCodeExtension, THttpStatusCodeExtension>();
+			return services;
+		}
+
+		/// <summary>
+		/// Adds the default HTTP status code extension to the service collection for dependency injection.
+		/// </summary>
+		/// <remarks>This method registers the default implementation of the HTTP status code extension. Call this method
+		/// during application startup to enable HTTP status code extension services.</remarks>
+		/// <returns>The same IServiceCollection instance so that additional calls can be chained.</returns>
+		public IServiceCollection AddXHttpStatusCodeExtension()
+		{
+			ArgumentNullException.ThrowIfNull(services);
+			return services.AddXHttpStatusCodeExtension<HttpStatusCodeExtension>();
+		}
+
+		/// <summary>
 		/// Registers a singleton implementation of the specified cache type resolver in the service collection.
 		/// </summary>
 		/// <remarks>Use this method to configure dependency injection for event cache type resolution. If

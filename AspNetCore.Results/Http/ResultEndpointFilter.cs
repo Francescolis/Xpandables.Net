@@ -81,7 +81,7 @@ public sealed class ResultEndpointFilter : IEndpointFilter
 
             Result result = exception switch
             {
-                BadHttpRequestException badHttpRequestException => badHttpRequestException.ToResult(),
+                BadHttpRequestException badHttpRequestException => badHttpRequestException.ToResult(context.HttpContext),
                 ResultException executionResultException => executionResultException.Result,
                 _ => exception.ToResult()
             };

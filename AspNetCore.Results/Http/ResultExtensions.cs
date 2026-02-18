@@ -62,23 +62,30 @@ public static class ResultExtensions
 	}
 
 	/// <summary>
-	/// Converts a BadHttpRequestException to an OperationResult representing a standardized HTTP bad request error
+	/// Converts a BadHttpRequestException to a <see cref="Result"/> representing a standardized HTTP bad request error
 	/// response.
 	/// </summary>
 	/// <remarks>In development environments, the error detail will include the full exception message. In
-	/// other environments, a generic error detail is provided. The resulting OperationResult includes the parameter
-	/// name and error message extracted from the exception, if available.</remarks>
+	/// other environments, a generic error detail is provided. The resulting result includes the parameter
+	/// name and error message extracted from the exception, if available.
+	/// The method resolves <see cref="IHttpStatusCodeExtension"/> from the request services to obtain
+	/// localized or custom title and detail values. If the service is not registered, the default implementation is used.</remarks>
 	/// <param name="exception">The BadHttpRequestException instance to convert. Cannot be null.</param>
-	/// <returns>An OperationResult containing details about the bad HTTP request, including status code, error title, and error
+	/// <param name="context">The current HTTP context used to resolve services. Cannot be null.</param>
+	/// <returns>A result containing details about the bad HTTP request, including status code, error title, and error
 	/// details.</returns>
-	public static Result ToResult(this BadHttpRequestException exception)
+	public static Result ToResult(this BadHttpRequestException exception, HttpContext context)
 	{
 		ArgumentNullException.ThrowIfNull(exception);
+		ArgumentNullException.ThrowIfNull(context);
+
+		IHttpStatusCodeExtension statusCodeExtension = context.RequestServices
+			.GetService<IHttpStatusCodeExtension>() ?? new HttpStatusCodeExtension();
 
 #if DEBUG
 		bool isDevelopment = true;
 #else
-        bool isDevelopment = false;
+		bool isDevelopment = false;
 #endif
 
 		HttpStatusCode statusCode = (HttpStatusCode)exception.StatusCode;
@@ -93,8 +100,7 @@ public static class ResultExtensions
 
 			if (startParameterNameIndex <= 0 || endParameterNameIndex <= startParameterNameIndex)
 			{
-				// Message format doesn't match expected pattern, use fallback
-				return CreateFallbackResult(exception, statusCode, isDevelopment);
+				return CreateFallbackResult(exception, statusCode, isDevelopment, statusCodeExtension);
 			}
 
 			string parameterName = exception
@@ -103,7 +109,7 @@ public static class ResultExtensions
 
 			if (string.IsNullOrWhiteSpace(parameterName))
 			{
-				return CreateFallbackResult(exception, statusCode, isDevelopment);
+				return CreateFallbackResult(exception, statusCode, isDevelopment, statusCodeExtension);
 			}
 
 			string errorMessage = exception.Message
@@ -112,26 +118,27 @@ public static class ResultExtensions
 
 			return Result
 				.BadRequest()
-				.WithTitle(statusCode.Title)
-				.WithDetail(isDevelopment ? exception.ToString() : statusCode.Detail)
+				.WithTitle(statusCodeExtension.GetTitle(statusCode))
+				.WithDetail(isDevelopment ? exception.ToString() : statusCodeExtension.GetDetail(statusCode))
 				.WithStatusCode(statusCode)
 				.WithError(parameterName, errorMessage)
 				.Build();
 		}
 		catch (ArgumentOutOfRangeException)
 		{
-			return CreateFallbackResult(exception, statusCode, isDevelopment);
+			return CreateFallbackResult(exception, statusCode, isDevelopment, statusCodeExtension);
 		}
 
 		static Result CreateFallbackResult(
 			BadHttpRequestException exception,
 			HttpStatusCode statusCode,
-			bool isDevelopment)
+			bool isDevelopment,
+			IHttpStatusCodeExtension statusCodeExtension)
 		{
 			return Result
 				.BadRequest()
-				.WithTitle(statusCode.Title)
-				.WithDetail(isDevelopment ? exception.ToString() : statusCode.Detail)
+				.WithTitle(statusCodeExtension.GetTitle(statusCode))
+				.WithDetail(isDevelopment ? exception.ToString() : statusCodeExtension.GetDetail(statusCode))
 				.WithStatusCode(statusCode)
 				.WithException(exception)
 				.Build();
@@ -201,12 +208,15 @@ public static class ResultExtensions
 		{
 			ArgumentNullException.ThrowIfNull(context);
 
+			IHttpStatusCodeExtension statusCodeExtension = context.RequestServices
+				.GetService<IHttpStatusCodeExtension>() ?? new HttpStatusCodeExtension();
+
 			bool isDevelopment = context.RequestServices
 				.GetRequiredService<IWebHostEnvironment>()
 				.IsDevelopment();
 
-			var title = result.Title ?? result.StatusCode.Title;
-			var detail = result.Detail ?? result.StatusCode.Detail;
+			var title = result.Title ?? statusCodeExtension.GetTitle(result.StatusCode);
+			var detail = result.Detail ?? statusCodeExtension.GetDetail(result.StatusCode);
 			var status = (int)result.StatusCode;
 			var instance = $"{context.Request.Method} {context.Request.Path}{context.Request.QueryString.Value}";
 			var type = isDevelopment ? result.GetType().Name : null;

@@ -22,8 +22,13 @@ namespace System.Rests.ResponseBuilders;
 /// <summary>
 /// Composes a failure RestResponse asynchronously using the provided RestResponseContext.
 /// </summary>
-public sealed class RestResponseFailureComposer : IRestResponseComposer
+/// <param name="statusCodeExtension">An optional implementation of <see cref="IHttpStatusCodeExtension"/> used to map
+/// HTTP status codes to exceptions. If null, the default <see cref="HttpStatusCodeExtension"/> is used.</param>
+public sealed class RestResponseFailureComposer(
+    IHttpStatusCodeExtension? statusCodeExtension = null) : IRestResponseComposer
 {
+    private readonly IHttpStatusCodeExtension _statusCodeExtension =
+        statusCodeExtension ?? new HttpStatusCodeExtension();
     /// <inheritdoc/>
     public bool CanCompose(RestResponseContext context)
     {
@@ -63,7 +68,7 @@ public sealed class RestResponseFailureComposer : IRestResponseComposer
                 ReasonPhrase = response.ReasonPhrase,
                 Headers = response.Headers.ToElementCollection(),
                 Version = response.Version,
-                Exception = response.StatusCode.GetException(errorContent)
+                Exception = _statusCodeExtension.GetException(response.StatusCode, errorContent)
             };
         }
         catch (Exception exception)

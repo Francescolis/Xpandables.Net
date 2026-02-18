@@ -35,50 +35,52 @@ namespace Microsoft.AspNetCore.Http;
 /// <param name="writers">The collection of IProblemDetailsWriter instances used to write problem details responses. Cannot be null.</param>
 public sealed class ResultProblemDetailsService(IEnumerable<IProblemDetailsWriter> writers) : IProblemDetailsService
 {
-    private readonly IProblemDetailsWriter[] _writers = [.. writers];
+	private readonly IProblemDetailsWriter[] _writers = [.. writers];
 
-    /// <inheritdoc/>
-    public async ValueTask WriteAsync(ProblemDetailsContext context)
-    {
-        if (!await TryWriteAsync(context).ConfigureAwait(false))
-        {
-            throw new InvalidOperationException("Unable to find a registered `IProblemDetailsWriter` that can write to the given context.");
-        }
-    }
+	/// <inheritdoc/>
+	public async ValueTask WriteAsync(ProblemDetailsContext context)
+	{
+		if (!await TryWriteAsync(context).ConfigureAwait(false))
+		{
+			throw new InvalidOperationException("Unable to find a registered `IProblemDetailsWriter` that can write to the given context.");
+		}
+	}
 
-    /// <inheritdoc/>
-    public async ValueTask<bool> TryWriteAsync(ProblemDetailsContext context)
-    {
-        ArgumentNullException.ThrowIfNull(context);
-        ArgumentNullException.ThrowIfNull(context.ProblemDetails);
-        ArgumentNullException.ThrowIfNull(context.HttpContext);
+	/// <inheritdoc/>
+	public async ValueTask<bool> TryWriteAsync(ProblemDetailsContext context)
+	{
+		ArgumentNullException.ThrowIfNull(context);
+		ArgumentNullException.ThrowIfNull(context.ProblemDetails);
+		ArgumentNullException.ThrowIfNull(context.HttpContext);
 
-        if (context.Exception is not null)
-        {
-            var result = context.Exception.ToResult();
-            context.ProblemDetails = result.ToProblemDetails(context.HttpContext);
-        }
-        else
-        {
-            bool isDevelopment = context.HttpContext.RequestServices.GetRequiredService<IWebHostEnvironment>().IsDevelopment();
-            HttpStatusCode statusCode = (HttpStatusCode?)context.ProblemDetails.Status ?? HttpStatusCode.BadRequest;
-            context.ProblemDetails.Status ??= (int)statusCode;
-            context.ProblemDetails.Title ??= statusCode.Title;
-            context.ProblemDetails.Detail ??= statusCode.Detail;
-            context.ProblemDetails.Instance ??= $"{context.HttpContext.Request.Method} {context.HttpContext.Request.Path}{context.HttpContext.Request.QueryString.Value}";
-            context.ProblemDetails.Type ??= (isDevelopment ? (statusCode.IsValidationProblem ? nameof(ValidationException) : nameof(InvalidOperationException)) : null);
-        }
+		if (context.Exception is not null)
+		{
+			var result = context.Exception.ToResult();
+			context.ProblemDetails = result.ToProblemDetails(context.HttpContext);
+		}
+		else
+		{
+			bool isDevelopment = context.HttpContext.RequestServices.GetRequiredService<IWebHostEnvironment>().IsDevelopment();
+			IHttpStatusCodeExtension statusCodeExtension = context.HttpContext.RequestServices.GetService<IHttpStatusCodeExtension>()
+				?? new HttpStatusCodeExtension();
+			HttpStatusCode statusCode = (HttpStatusCode?)context.ProblemDetails.Status ?? HttpStatusCode.BadRequest;
+			context.ProblemDetails.Status ??= (int)statusCode;
+			context.ProblemDetails.Title ??= statusCodeExtension.GetTitle(statusCode);
+			context.ProblemDetails.Detail ??= statusCodeExtension.GetDetail(statusCode);
+			context.ProblemDetails.Instance ??= $"{context.HttpContext.Request.Method} {context.HttpContext.Request.Path}{context.HttpContext.Request.QueryString.Value}";
+			context.ProblemDetails.Type ??= (isDevelopment ? (statusCode.IsValidationProblem ? nameof(ValidationException) : nameof(InvalidOperationException)) : null);
+		}
 
-        for (var i = 0; i < _writers.Length; i++)
-        {
-            var selectedWriter = _writers[i];
-            if (selectedWriter.CanWrite(context))
-            {
-                await selectedWriter.WriteAsync(context).ConfigureAwait(false);
-                return true;
-            }
-        }
+		for (var i = 0; i < _writers.Length; i++)
+		{
+			var selectedWriter = _writers[i];
+			if (selectedWriter.CanWrite(context))
+			{
+				await selectedWriter.WriteAsync(context).ConfigureAwait(false);
+				return true;
+			}
+		}
 
-        return false;
-    }
+		return false;
+	}
 }
