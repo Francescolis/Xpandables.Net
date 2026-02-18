@@ -1,4 +1,4 @@
-/*******************************************************************************
+﻿/*******************************************************************************
  * Copyright (C) 2025 Kamersoft
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
@@ -32,163 +32,181 @@ namespace System.Events.Data;
 /// </remarks>
 [RequiresDynamicCode("Expression compilation requires dynamic code generation.")]
 public sealed class InboxStore<
-    [DynamicallyAccessedMembers(DynamicallyAccessedMemberTypes.PublicProperties)] TEntityEventInbox> : IInboxStore
-    where TEntityEventInbox : class, IDataEventInbox
+	[DynamicallyAccessedMembers(DynamicallyAccessedMemberTypes.PublicProperties)] TEntityEventInbox> : IInboxStore
+	where TEntityEventInbox : class, IDataEventInbox
 {
-    private readonly IDataRepository<TEntityEventInbox> _inboxRepository;
-    private readonly IDataUnitOfWork _unitOfWork;
-    private readonly IEventConverterFactory _converterFactory;
-    private readonly IEventConverter<TEntityEventInbox, IIntegrationEvent> _converter;
+	private readonly IDataRepository<TEntityEventInbox> _inboxRepository;
+	private readonly IDataUnitOfWork _unitOfWork;
+	private readonly IEventConverterFactory _converterFactory;
+	private readonly IEventConverter<TEntityEventInbox, IIntegrationEvent> _converter;
 
-    /// <summary>
-    /// Initializes a new instance of the DataInboxStore class.
-    /// </summary>
-    /// <param name="unitOfWork">The ADO.NET unit of work.</param>
-    /// <param name="converterFactory">The event converter factory.</param>
-    public InboxStore(
-        IDataUnitOfWork unitOfWork,
-        IEventConverterFactory converterFactory)
-    {
-        ArgumentNullException.ThrowIfNull(unitOfWork);
-        ArgumentNullException.ThrowIfNull(converterFactory);
+	/// <summary>
+	/// Initializes a new instance of the DataInboxStore class.
+	/// </summary>
+	/// <param name="unitOfWork">The ADO.NET unit of work.</param>
+	/// <param name="converterFactory">The event converter factory.</param>
+	public InboxStore(
+		IDataUnitOfWork unitOfWork,
+		IEventConverterFactory converterFactory)
+	{
+		ArgumentNullException.ThrowIfNull(unitOfWork);
+		ArgumentNullException.ThrowIfNull(converterFactory);
 
-        _unitOfWork = unitOfWork;
-        _inboxRepository = unitOfWork.GetRepository<TEntityEventInbox>();
-        _converterFactory = converterFactory;
-        _converter = converterFactory.GetInboxEventConverter<TEntityEventInbox>();
-    }
+		_unitOfWork = unitOfWork;
+		_inboxRepository = unitOfWork.GetRepository<TEntityEventInbox>();
+		_converterFactory = converterFactory;
+		_converter = converterFactory.GetInboxEventConverter<TEntityEventInbox>();
+	}
 
-    /// <inheritdoc />
-    public async Task<InboxReceiveResult> ReceiveAsync(
-        IIntegrationEvent @event,
-        string consumer,
-        TimeSpan? visibilityTimeout = default,
-        CancellationToken cancellationToken = default)
-    {
-        ArgumentNullException.ThrowIfNull(@event);
-        ArgumentException.ThrowIfNullOrWhiteSpace(consumer);
+	/// <inheritdoc />
+	public async Task<InboxReceiveResult> ReceiveAsync(
+		IIntegrationEvent @event,
+		string consumer,
+		TimeSpan? visibilityTimeout = default,
+		CancellationToken cancellationToken = default)
+	{
+		ArgumentNullException.ThrowIfNull(@event);
+		ArgumentException.ThrowIfNullOrWhiteSpace(consumer);
 
-        // Check for existing entry
-        var specification = DataSpecification
-            .For<TEntityEventInbox>()
-            .Where(e => e.KeyId == @event.EventId && e.Consumer == consumer)
-            .Build();
+		// Check for existing entry
+		var specification = DataSpecification
+			.For<TEntityEventInbox>()
+			.Where(e => e.KeyId == @event.EventId && e.Consumer == consumer)
+			.Build();
 
-        var existing = await _inboxRepository
-            .QueryFirstOrDefaultAsync(specification, cancellationToken)
-            .ConfigureAwait(false);
+		var existing = await _inboxRepository
+			.QueryFirstOrDefaultAsync(specification, cancellationToken)
+			.ConfigureAwait(false);
 
-        if (existing is not null)
-        {
-            if (existing.Status == EventStatus.PUBLISHED.Value)
-            {
-                return new InboxReceiveResult(@event.EventId, EventStatus.DUPLICATE);
-            }
+		if (existing is not null)
+		{
+			if (existing.Status == EventStatus.PUBLISHED.Value)
+			{
+				return new InboxReceiveResult(@event.EventId, EventStatus.DUPLICATE);
+			}
 
-            if (existing.Status == EventStatus.PROCESSING.Value)
-            {
-                return new InboxReceiveResult(@event.EventId, EventStatus.PROCESSING);
-            }
+			if (existing.Status == EventStatus.PROCESSING.Value)
+			{
+				return new InboxReceiveResult(@event.EventId, EventStatus.PROCESSING);
+			}
 
-            if (existing.Status == EventStatus.ONERROR.Value)
-            {
-                // Allow retry only if lease expired
-                if (existing.NextAttemptOn is not null && existing.NextAttemptOn > DateTime.UtcNow)
-                {
-                    return new InboxReceiveResult(@event.EventId, EventStatus.PROCESSING);
-                }
-            }
-        }
+			if (existing.Status == EventStatus.ONERROR.Value)
+			{
+				// Still within the backoff window — treat as in-progress
+				if (existing.NextAttemptOn is not null && existing.NextAttemptOn > DateTime.UtcNow)
+				{
+					return new InboxReceiveResult(@event.EventId, EventStatus.PROCESSING);
+				}
 
-        // Insert new inbox entry
-        TEntityEventInbox entity = _converter.ConvertEventToEntity(@event, _converterFactory.ConverterContext);
-        entity.SetStatus(EventStatus.PROCESSING.Value);
-        entity.Consumer = consumer;
-        entity.ClaimId = Guid.NewGuid();
-        entity.NextAttemptOn = DateTime.UtcNow.Add(visibilityTimeout ?? TimeSpan.FromMinutes(5));
+				// Lease expired or NextAttemptOn is null — allow retry by updating existing record
+				var updater = DataUpdater
+					.For<TEntityEventInbox>()
+					.SetProperty(e => e.Status, EventStatus.PROCESSING.Value)
+					.SetProperty(e => e.ErrorMessage, (string?)null)
+					.SetProperty(e => e.ClaimId, Guid.NewGuid())
+					.SetProperty(e => e.NextAttemptOn, DateTime.UtcNow.Add(visibilityTimeout ?? TimeSpan.FromMinutes(5)))
+					.SetProperty(e => e.UpdatedOn, DateTime.UtcNow);
 
-        await _inboxRepository.InsertAsync(entity, cancellationToken).ConfigureAwait(false);
+				await _inboxRepository
+					.UpdateAsync(specification, updater, cancellationToken)
+					.ConfigureAwait(false);
 
-        return new InboxReceiveResult(@event.EventId, EventStatus.ACCEPTED);
-    }
+				return new InboxReceiveResult(@event.EventId, EventStatus.ACCEPTED);
+			}
 
-    /// <inheritdoc />
-    public async Task CompleteAsync(
-        CancellationToken cancellationToken,
-        params CompletedInboxEvent[] events)
-    {
-        ArgumentNullException.ThrowIfNull(events);
-        ArgumentOutOfRangeException.ThrowIfEqual(events.Length, 0);
+			// Unrecognized status — treat as duplicate to prevent insert failure
+			return new InboxReceiveResult(@event.EventId, EventStatus.DUPLICATE);
+		}
 
-        var now = DateTime.UtcNow;
+		// No existing entry — insert new inbox record
+		TEntityEventInbox entity = _converter.ConvertEventToEntity(@event, _converterFactory.ConverterContext);
+		entity.SetStatus(EventStatus.PROCESSING.Value);
+		entity.Consumer = consumer;
+		entity.ClaimId = Guid.NewGuid();
+		entity.NextAttemptOn = DateTime.UtcNow.Add(visibilityTimeout ?? TimeSpan.FromMinutes(5));
 
-        foreach (var evt in events)
-        {
-            var specification = DataSpecification
-                .For<TEntityEventInbox>()
-                .Where(e => e.KeyId == evt.EventId && e.Consumer == evt.Consumer)
-                .Build();
+		await _inboxRepository.InsertAsync(entity, cancellationToken).ConfigureAwait(false);
 
-            var updater = DataUpdater
-                .For<TEntityEventInbox>()
-                .SetProperty(e => e.Status, EventStatus.PUBLISHED.Value)
-                .SetProperty(e => e.ErrorMessage, (string?)null)
-                .SetProperty(e => e.NextAttemptOn, (DateTime?)null)
-                .SetProperty(e => e.ClaimId, (Guid?)null)
-                .SetProperty(e => e.UpdatedOn, now);
+		return new InboxReceiveResult(@event.EventId, EventStatus.ACCEPTED);
+	}
 
-            await _inboxRepository
-                .UpdateAsync(specification, updater, cancellationToken)
-                .ConfigureAwait(false);
-        }
-    }
+	/// <inheritdoc />
+	public async Task CompleteAsync(
+		CancellationToken cancellationToken,
+		params CompletedInboxEvent[] events)
+	{
+		ArgumentNullException.ThrowIfNull(events);
+		ArgumentOutOfRangeException.ThrowIfEqual(events.Length, 0);
 
-    /// <inheritdoc />
-    public async Task FailAsync(
-        CancellationToken cancellationToken,
-        params FailedInboxEvent[] failures)
-    {
-        ArgumentNullException.ThrowIfNull(failures);
-        ArgumentOutOfRangeException.ThrowIfEqual(failures.Length, 0);
+		var now = DateTime.UtcNow;
 
-        var now = DateTime.UtcNow;
+		foreach (var evt in events)
+		{
+			var specification = DataSpecification
+				.For<TEntityEventInbox>()
+				.Where(e => e.KeyId == evt.EventId && e.Consumer == evt.Consumer)
+				.Build();
 
-        foreach (var failure in failures)
-        {
-            // Get current attempt count
-            var getSpec = DataSpecification
-                .For<TEntityEventInbox>()
-                .Where(e => e.KeyId == failure.EventId && e.Consumer == failure.Consumer)
-                .Select(e => e.AttemptCount);
+			var updater = DataUpdater
+				.For<TEntityEventInbox>()
+				.SetProperty(e => e.Status, EventStatus.PUBLISHED.Value)
+				.SetProperty(e => e.ErrorMessage, (string?)null)
+				.SetProperty(e => e.NextAttemptOn, (DateTime?)null)
+				.SetProperty(e => e.ClaimId, (Guid?)null)
+				.SetProperty(e => e.UpdatedOn, now);
 
-            var currentAttempt = await _inboxRepository
-                .QueryFirstOrDefaultAsync(getSpec, cancellationToken)
-                .ConfigureAwait(false);
+			await _inboxRepository
+				.UpdateAsync(specification, updater, cancellationToken)
+				.ConfigureAwait(false);
+		}
+	}
 
-            var nextAttempt = currentAttempt + 1;
-            var backoffSeconds = nextAttempt < 1 ? 10 :
-                                 nextAttempt < 2 ? 20 :
-                                 nextAttempt < 3 ? 40 :
-                                 nextAttempt < 4 ? 80 :
-                                 nextAttempt < 5 ? 160 : 320;
+	/// <inheritdoc />
+	public async Task FailAsync(
+		CancellationToken cancellationToken,
+		params FailedInboxEvent[] failures)
+	{
+		ArgumentNullException.ThrowIfNull(failures);
+		ArgumentOutOfRangeException.ThrowIfEqual(failures.Length, 0);
 
-            var specification = DataSpecification
-                .For<TEntityEventInbox>()
-                .Where(e => e.KeyId == failure.EventId && e.Consumer == failure.Consumer)
-                .Build();
+		var now = DateTime.UtcNow;
 
-            var updater = DataUpdater
-                .For<TEntityEventInbox>()
-                .SetProperty(e => e.Status, EventStatus.ONERROR.Value)
-                .SetProperty(e => e.ErrorMessage, failure.Error)
-                .SetProperty(e => e.AttemptCount, nextAttempt)
-                .SetProperty(e => e.NextAttemptOn, now.AddSeconds(backoffSeconds))
-                .SetProperty(e => e.ClaimId, (Guid?)null)
-                .SetProperty(e => e.UpdatedOn, now);
+		foreach (var failure in failures)
+		{
+			// Get current attempt count
+			var getSpec = DataSpecification
+				.For<TEntityEventInbox>()
+				.Where(e => e.KeyId == failure.EventId && e.Consumer == failure.Consumer)
+				.Select(e => e.AttemptCount);
 
-            await _inboxRepository
-                .UpdateAsync(specification, updater, cancellationToken)
-                .ConfigureAwait(false);
-        }
-    }
+			var currentAttempt = await _inboxRepository
+				.QueryFirstOrDefaultAsync(getSpec, cancellationToken)
+				.ConfigureAwait(false);
+
+			var nextAttempt = currentAttempt + 1;
+			var backoffSeconds = nextAttempt < 1 ? 10 :
+								 nextAttempt < 2 ? 20 :
+								 nextAttempt < 3 ? 40 :
+								 nextAttempt < 4 ? 80 :
+								 nextAttempt < 5 ? 160 : 320;
+
+			var specification = DataSpecification
+				.For<TEntityEventInbox>()
+				.Where(e => e.KeyId == failure.EventId && e.Consumer == failure.Consumer)
+				.Build();
+
+			var updater = DataUpdater
+				.For<TEntityEventInbox>()
+				.SetProperty(e => e.Status, EventStatus.ONERROR.Value)
+				.SetProperty(e => e.ErrorMessage, failure.Error)
+				.SetProperty(e => e.AttemptCount, nextAttempt)
+				.SetProperty(e => e.NextAttemptOn, now.AddSeconds(backoffSeconds))
+				.SetProperty(e => e.ClaimId, (Guid?)null)
+				.SetProperty(e => e.UpdatedOn, now);
+
+			await _inboxRepository
+				.UpdateAsync(specification, updater, cancellationToken)
+				.ConfigureAwait(false);
+		}
+	}
 }
