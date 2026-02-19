@@ -1,4 +1,4 @@
-using System.Optionals;
+﻿using System.Optionals;
 using System.Text.Json;
 using Xunit;
 
@@ -9,12 +9,12 @@ public sealed class OptionalJsonConverterTests
     [Fact]
     public void Serialize_EmptyOptional_WritesNull()
     {
-        // Arrange
-        var options = CreateOptions();
+		// Arrange
+		JsonSerializerOptions options = CreateOptions();
         var optional = Optional.Empty<int>();
 
-        // Act
-        var json = JsonSerializer.Serialize(optional, options);
+		// Act
+		string json = JsonSerializer.Serialize(optional, options);
 
         // Assert
         Assert.Equal("null", json);
@@ -23,12 +23,12 @@ public sealed class OptionalJsonConverterTests
     [Fact]
     public void Serialize_SomeOptional_WritesPrimitiveValue()
     {
-        // Arrange
-        var options = CreateOptions();
+		// Arrange
+		JsonSerializerOptions options = CreateOptions();
         var optional = Optional.Some(7);
 
-        // Act
-        var json = JsonSerializer.Serialize(optional, options);
+		// Act
+		string json = JsonSerializer.Serialize(optional, options);
 
         // Assert
         Assert.Equal("7", json);
@@ -40,8 +40,8 @@ public sealed class OptionalJsonConverterTests
         // Arrange
         var factory = new OptionalJsonConverterFactory();
 
-        // Act
-        var result = factory.CanConvert(typeof(int));
+		// Act
+		bool result = factory.CanConvert(typeof(int));
 
         // Assert
         Assert.False(result);
@@ -53,8 +53,8 @@ public sealed class OptionalJsonConverterTests
         // Arrange
         var factory = new OptionalJsonConverterFactory();
 
-        // Act
-        var result = factory.CanConvert(typeof(Optional<string>));
+		// Act
+		bool result = factory.CanConvert(typeof(Optional<string>));
 
         // Assert
         Assert.True(result);
@@ -77,11 +77,11 @@ public sealed class OptionalJsonConverterTests
     [Fact]
     public void Deserialize_NullToken_ReturnsEmptyOptional()
     {
-        // Arrange
-        var options = CreateOptions();
+		// Arrange
+		JsonSerializerOptions options = CreateOptions();
 
-        // Act
-        var result = JsonSerializer.Deserialize<Optional<int>>("null", options);
+		// Act
+		Optional<int> result = JsonSerializer.Deserialize<Optional<int>>("null", options);
 
         // Assert
         Assert.True(result.IsEmpty);
@@ -90,11 +90,11 @@ public sealed class OptionalJsonConverterTests
     [Fact]
     public void Deserialize_PrimitiveValue_ReturnsOptionalWithValue()
     {
-        // Arrange
-        var options = CreateOptions();
+		// Arrange
+		JsonSerializerOptions options = CreateOptions();
 
-        // Act
-        var result = JsonSerializer.Deserialize<Optional<int>>("5", options);
+		// Act
+		Optional<int> result = JsonSerializer.Deserialize<Optional<int>>("5", options);
 
         // Assert
         Assert.True(result.IsNotEmpty);

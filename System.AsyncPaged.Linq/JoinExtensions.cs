@@ -1,4 +1,4 @@
-/*******************************************************************************
+﻿/*******************************************************************************
  * Copyright (C) 2025 Kamersoft
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
@@ -90,11 +90,11 @@ public static class JoinExtensions
 
                 // Build lookup from inner sequence  
                 var innerLookup = new Dictionary<TKey, List<TInner>>(comparer!);
-                await foreach (var innerElement in inner.WithCancellation(ct).ConfigureAwait(false))
+                await foreach (TInner? innerElement in inner.WithCancellation(ct).ConfigureAwait(false))
                 {
-                    var innerKey = innerKeySelector(innerElement)
+                    TKey innerKey = innerKeySelector(innerElement)
                         ?? throw new InvalidOperationException($"Inner key selector returned null for element of type '{typeof(TInner).Name}'.");
-                    if (!innerLookup.TryGetValue(innerKey, out var list))
+                    if (!innerLookup.TryGetValue(innerKey, out List<TInner>? list))
                     {
                         list = [];
                         innerLookup[innerKey] = list;
@@ -103,13 +103,13 @@ public static class JoinExtensions
                 }
 
                 // Join with outer sequence
-                await foreach (var outerElement in source.WithCancellation(ct).ConfigureAwait(false))
+                await foreach (TSource? outerElement in source.WithCancellation(ct).ConfigureAwait(false))
                 {
-                    var outerKey = outerKeySelector(outerElement)
+                    TKey outerKey = outerKeySelector(outerElement)
                         ?? throw new InvalidOperationException($"Outer key selector returned null for element of type '{typeof(TSource).Name}'.");
-                    if (innerLookup.TryGetValue(outerKey, out var matchingInnerElements))
+                    if (innerLookup.TryGetValue(outerKey, out List<TInner>? matchingInnerElements))
                     {
-                        foreach (var innerElement in matchingInnerElements)
+                        foreach (TInner? innerElement in matchingInnerElements)
                         {
                             ct.ThrowIfCancellationRequested();
                             yield return resultSelector(outerElement, innerElement);
@@ -184,11 +184,11 @@ public static class JoinExtensions
 
                 // Build lookup from inner sequence
                 var innerLookup = new Dictionary<TKey, List<TInner>>(comparer!);
-                await foreach (var innerElement in inner.WithCancellation(ct).ConfigureAwait(false))
+                await foreach (TInner? innerElement in inner.WithCancellation(ct).ConfigureAwait(false))
                 {
-                    var innerKey = innerKeySelector(innerElement)
+                    TKey innerKey = innerKeySelector(innerElement)
                         ?? throw new InvalidOperationException($"Inner key selector returned null for element of type '{typeof(TInner).Name}'.");
-                    if (!innerLookup.TryGetValue(innerKey, out var list))
+                    if (!innerLookup.TryGetValue(innerKey, out List<TInner>? list))
                     {
                         list = [];
                         innerLookup[innerKey] = list;
@@ -197,11 +197,11 @@ public static class JoinExtensions
                 }
 
                 // Group join with outer sequence
-                await foreach (var outerElement in source.WithCancellation(ct).ConfigureAwait(false))
+                await foreach (TSource? outerElement in source.WithCancellation(ct).ConfigureAwait(false))
                 {
-                    var outerKey = outerKeySelector(outerElement)
+                    TKey outerKey = outerKeySelector(outerElement)
                         ?? throw new InvalidOperationException($"Outer key selector returned null for element of type '{typeof(TSource).Name}'.");
-                    var matchingInnerElements = innerLookup.TryGetValue(outerKey, out var list) ? list : [];
+					List<TInner> matchingInnerElements = innerLookup.TryGetValue(outerKey, out List<TInner>? list) ? list : [];
                     yield return resultSelector(outerElement, matchingInnerElements);
                 }
             }

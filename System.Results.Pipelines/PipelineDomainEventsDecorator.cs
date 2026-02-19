@@ -47,17 +47,22 @@ public sealed class PipelineDomainEventsDecorator<TRequest>(
         ArgumentNullException.ThrowIfNull(context);
         ArgumentNullException.ThrowIfNull(nextHandler);
 
-        var result = await nextHandler(cancellationToken).ConfigureAwait(false);
+		Result result = await nextHandler(cancellationToken).ConfigureAwait(false);
 
         if (result.IsFailure)
-            return result;
+		{
+			return result;
+		}
 
-        for (int pass = 0; pass < 16; pass++)
+		for (int pass = 0; pass < 16; pass++)
         {
-            var batches = pendingDomainEvents.Drain();
-            if (batches.Count == 0) break;
+			IReadOnlyCollection<PendingDomainEventsBatch> batches = pendingDomainEvents.Drain();
+            if (batches.Count == 0)
+			{
+				break;
+			}
 
-            foreach (var batch in batches)
+			foreach (PendingDomainEventsBatch batch in batches)
             {
                 await publisher.PublishAsync(batch.Events, cancellationToken).ConfigureAwait(false);
 

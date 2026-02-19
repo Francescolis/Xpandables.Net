@@ -72,14 +72,18 @@ public sealed class MinimalRouteBuilder : IEndpointRouteBuilder
         if (_options.EndpointPredicate is not null)
         {
             if (_options.ConfigureEndpoint is not null)
-                builder.AddEndpointFilter(CreateConditionalFilter(
+			{
+				builder.AddEndpointFilter(CreateConditionalFilter(
                     _options.EndpointPredicate, _options.ConfigureEndpoint, builder));
-        }
+			}
+		}
         else
         {
             if (_options.ConfigureEndpoint is not null)
-                _options.ConfigureEndpoint(builder);
-        }
+			{
+				_options.ConfigureEndpoint(builder);
+			}
+		}
 
         return builder;
     }

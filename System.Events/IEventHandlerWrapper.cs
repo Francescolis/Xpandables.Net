@@ -66,7 +66,7 @@ public sealed class EventHandlerWrapper<TEvent>(IEnumerable<IEventHandler<TEvent
             return;
         }
 
-        foreach (var handler in handlers)
+        foreach (IEventHandler<TEvent> handler in handlers)
         {
             await handler.HandleAsync(instance, cancellationToken).ConfigureAwait(false);
         }

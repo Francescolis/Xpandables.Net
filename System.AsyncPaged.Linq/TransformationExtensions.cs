@@ -1,4 +1,4 @@
-/*******************************************************************************
+﻿/*******************************************************************************
  * Copyright (C) 2025 Kamersoft
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
@@ -48,10 +48,10 @@ public static class TransformationExtensions
             {
                 ct.ThrowIfCancellationRequested();
 
-                await foreach (var outer in source.WithCancellation(ct).ConfigureAwait(false))
+                await foreach (TSource? outer in source.WithCancellation(ct).ConfigureAwait(false))
                 {
-                    var innerSeq = collectionSelector(outer) ?? throw new InvalidOperationException("Collection selector returned null.");
-                    foreach (var inner in innerSeq)
+					IEnumerable<TCollection> innerSeq = collectionSelector(outer) ?? throw new InvalidOperationException("Collection selector returned null.");
+                    foreach (TCollection? inner in innerSeq)
                     {
                         ct.ThrowIfCancellationRequested();
                         yield return inner;
@@ -84,10 +84,10 @@ public static class TransformationExtensions
             {
                 ct.ThrowIfCancellationRequested();
 
-                await foreach (var outer in source.WithCancellation(ct).ConfigureAwait(false))
+                await foreach (TSource? outer in source.WithCancellation(ct).ConfigureAwait(false))
                 {
-                    var innerSeq = collectionSelector(outer) ?? throw new InvalidOperationException("Collection selector returned null.");
-                    foreach (var inner in innerSeq)
+					IEnumerable<TCollection> innerSeq = collectionSelector(outer) ?? throw new InvalidOperationException("Collection selector returned null.");
+                    foreach (TCollection? inner in innerSeq)
                     {
                         ct.ThrowIfCancellationRequested();
                         yield return resultSelector(outer, inner);
@@ -116,12 +116,14 @@ public static class TransformationExtensions
             {
                 ct.ThrowIfCancellationRequested();
 
-                await foreach (var outer in source.WithCancellation(ct).ConfigureAwait(false))
+                await foreach (TSource? outer in source.WithCancellation(ct).ConfigureAwait(false))
                 {
-                    var innerAsync = asyncCollectionSelector(outer) ?? throw new InvalidOperationException("Collection selector returned null.");
-                    await foreach (var inner in innerAsync.WithCancellation(ct).ConfigureAwait(false))
-                        yield return inner;
-                }
+					IAsyncEnumerable<TCollection> innerAsync = asyncCollectionSelector(outer) ?? throw new InvalidOperationException("Collection selector returned null.");
+                    await foreach (TCollection? inner in innerAsync.WithCancellation(ct).ConfigureAwait(false))
+					{
+						yield return inner;
+					}
+				}
             }
 
             return AsyncPagedEnumerable.Create(
@@ -148,12 +150,14 @@ public static class TransformationExtensions
                 {
                     ct.ThrowIfCancellationRequested();
 
-                    await foreach (var outer in source.WithCancellation(ct).ConfigureAwait(false))
+                    await foreach (TSource? outer in source.WithCancellation(ct).ConfigureAwait(false))
                     {
-                        var innerAsync = asyncCollectionSelector(outer) ?? throw new InvalidOperationException("Collection selector returned null.");
-                        await foreach (var inner in innerAsync.WithCancellation(ct).ConfigureAwait(false))
-                            yield return resultSelector(outer, inner);
-                    }
+					IAsyncEnumerable<TCollection> innerAsync = asyncCollectionSelector(outer) ?? throw new InvalidOperationException("Collection selector returned null.");
+                        await foreach (TCollection? inner in innerAsync.WithCancellation(ct).ConfigureAwait(false))
+					{
+						yield return resultSelector(outer, inner);
+					}
+				}
                 }
 
                 return AsyncPagedEnumerable.Create(
@@ -176,12 +180,14 @@ public static class TransformationExtensions
                 {
                     ct.ThrowIfCancellationRequested();
 
-                    await foreach (var outer in source.WithCancellation(ct).ConfigureAwait(false))
+                    await foreach (TSource? outer in source.WithCancellation(ct).ConfigureAwait(false))
                     {
-                        var innerAsync = asyncCollectionSelector(outer, ct) ?? throw new InvalidOperationException("Collection selector returned null.");
-                        await foreach (var inner in innerAsync.WithCancellation(ct).ConfigureAwait(false))
-                            yield return inner;
-                    }
+					IAsyncEnumerable<TCollection> innerAsync = asyncCollectionSelector(outer, ct) ?? throw new InvalidOperationException("Collection selector returned null.");
+                        await foreach (TCollection? inner in innerAsync.WithCancellation(ct).ConfigureAwait(false))
+					{
+						yield return inner;
+					}
+				}
                 }
 
                 return AsyncPagedEnumerable.Create(
@@ -208,12 +214,14 @@ public static class TransformationExtensions
                 {
                     ct.ThrowIfCancellationRequested();
 
-                    await foreach (var outer in source.WithCancellation(ct).ConfigureAwait(false))
+                    await foreach (TSource? outer in source.WithCancellation(ct).ConfigureAwait(false))
                     {
-                        var innerAsync = asyncCollectionSelector(outer, ct) ?? throw new InvalidOperationException("Collection selector returned null.");
-                        await foreach (var inner in innerAsync.WithCancellation(ct).ConfigureAwait(false))
-                            yield return resultSelector(outer, inner);
-                    }
+					IAsyncEnumerable<TCollection> innerAsync = asyncCollectionSelector(outer, ct) ?? throw new InvalidOperationException("Collection selector returned null.");
+                        await foreach (TCollection? inner in innerAsync.WithCancellation(ct).ConfigureAwait(false))
+					{
+						yield return resultSelector(outer, inner);
+					}
+				}
                 }
 
                 return AsyncPagedEnumerable.Create(

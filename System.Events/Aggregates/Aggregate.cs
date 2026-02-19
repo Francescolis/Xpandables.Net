@@ -64,7 +64,7 @@ public abstract class Aggregate : IAggregate
     /// <inheritdoc />
     public IReadOnlyCollection<IDomainEvent> DequeueUncommittedEvents()
     {
-        var events = GetUncommittedEvents();
+		IReadOnlyCollection<IDomainEvent> events = GetUncommittedEvents();
         if (events.Count > 0)
         {
             MarkEventsAsCommitted();
@@ -85,13 +85,16 @@ public abstract class Aggregate : IAggregate
     {
         ArgumentNullException.ThrowIfNull(events);
 
-        var eventsArray = events as IDomainEvent[] ?? [.. events];
-        if (eventsArray.Length == 0) return;
+		IDomainEvent[] eventsArray = events as IDomainEvent[] ?? [.. events];
+        if (eventsArray.Length == 0)
+		{
+			return;
+		}
 
-        var span = eventsArray.AsSpan();
+		Span<IDomainEvent> span = eventsArray.AsSpan();
         span.Sort(static (a, b) => a.StreamVersion.CompareTo(b.StreamVersion));
 
-        foreach (ref readonly var domainEvent in span)
+        foreach (ref readonly IDomainEvent domainEvent in span)
         {
             LoadFromHistory(domainEvent);
         }

@@ -41,11 +41,13 @@ public sealed class RestResponseNoContentComposer : IRestResponseComposer
         ArgumentNullException.ThrowIfNull(context);
 
         if (!CanCompose(context))
-            throw new InvalidOperationException(
+		{
+			throw new InvalidOperationException(
                 $"{nameof(ComposeAsync)}: The response is not a success. " +
                 $"Status code: {context.Message.StatusCode} ({context.Message.ReasonPhrase}).");
+		}
 
-        return new(new RestResponse
+		return new(new RestResponse
         {
             StatusCode = context.Message.StatusCode,
             ReasonPhrase = context.Message.ReasonPhrase,

@@ -1,4 +1,4 @@
-/*******************************************************************************
+﻿/*******************************************************************************
  * Copyright (C) 2025 Kamersoft
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
@@ -65,9 +65,11 @@ public sealed class ElementCollectionJsonConverter : JsonConverter<ElementCollec
         while (reader.Read())
         {
             if (reader.TokenType == JsonTokenType.EndArray)
-                break;
+			{
+				break;
+			}
 
-            if (reader.TokenType == JsonTokenType.StartObject)
+			if (reader.TokenType == JsonTokenType.StartObject)
             {
                 var entry = (ElementEntry)JsonSerializer.Deserialize(ref reader, typeof(ElementEntry), ElementEntryContext.Default)!;
                 entries.Add(entry);
@@ -84,7 +86,7 @@ public sealed class ElementCollectionJsonConverter : JsonConverter<ElementCollec
 
         writer.WriteStartArray();
 
-        foreach (var entry in value)
+        foreach (ElementEntry entry in value)
         {
             JsonSerializer.Serialize(writer, entry, typeof(ElementEntry), ElementEntryContext.Default);
         }

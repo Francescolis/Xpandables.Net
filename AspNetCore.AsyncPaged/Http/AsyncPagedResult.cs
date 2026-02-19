@@ -17,6 +17,7 @@
 namespace Microsoft.AspNetCore.Http;
 
 using System.Diagnostics.CodeAnalysis;
+using System.IO.Pipelines;
 using System.Text.Json;
 using System.Text.Json.Serialization.Metadata;
 
@@ -56,11 +57,11 @@ public sealed class AsyncPagedResult<TResult>(
         ArgumentNullException.ThrowIfNull(httpContext);
 
         httpContext.Response.ContentType ??= httpContext.GetContentType("application/json; charset=utf-8");
-        var cancellationToken = httpContext.RequestAborted;
-        var pipeWriter = httpContext.Response.BodyWriter;
+		CancellationToken cancellationToken = httpContext.RequestAborted;
+		PipeWriter pipeWriter = httpContext.Response.BodyWriter;
 
-        var options = _serializerOptions ?? httpContext.GetJsonSerializerOptions();
-        var typeInfo = _jsonTypeInfo ?? ResolveJsonTypeInfo(options);
+		JsonSerializerOptions options = _serializerOptions ?? httpContext.GetJsonSerializerOptions();
+		JsonTypeInfo<TResult>? typeInfo = _jsonTypeInfo ?? ResolveJsonTypeInfo(options);
 
         if (typeInfo is not null)
         {

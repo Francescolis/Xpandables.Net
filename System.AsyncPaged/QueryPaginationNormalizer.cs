@@ -54,8 +54,8 @@ public static class QueryPaginationNormalizer
         ArgumentNullException.ThrowIfNull(queryable);
 
         var visitor = new SkipTakeVisitor();
-        var newExpression = visitor.Visit(queryable.Expression);
-        var newQueryable = queryable.Provider.CreateQuery<T>(newExpression);
+		Expression newExpression = visitor.Visit(queryable.Expression);
+		IQueryable<T> newQueryable = queryable.Provider.CreateQuery<T>(newExpression);
         return (newQueryable, visitor.Skip, visitor.Take);
     }
 
@@ -90,7 +90,7 @@ public static class QueryPaginationNormalizer
         ArgumentNullException.ThrowIfNull(queryable);
 
         var remover = new SkipTakeVisitor();
-        var newExpression = remover.Visit(queryable.Expression);
+		Expression newExpression = remover.Visit(queryable.Expression);
         return queryable.Provider.CreateQuery<T>(newExpression);
     }
 
@@ -103,7 +103,7 @@ public static class QueryPaginationNormalizer
         {
             if (node.Method.IsGenericMethod)
             {
-                var genericDef = node.Method.GetGenericMethodDefinition();
+				MethodInfo genericDef = node.Method.GetGenericMethodDefinition();
 
                 if (genericDef == SkipMethod)
                 {

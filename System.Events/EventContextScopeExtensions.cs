@@ -53,7 +53,7 @@ public static class EventContextScopeExtensions
                     $"'{nameof(accessor)}' must be an '{nameof(AsyncLocalEventContextAccessor)}' to use '{nameof(BeginScope)}'.");
             }
 
-            var prior = asyncLocalAccessor.Current;
+			EventContext prior = asyncLocalAccessor.Current;
             asyncLocalAccessor.SetCurrent(context);
             return new RestoreScope(asyncLocalAccessor, prior);
         }
@@ -67,8 +67,12 @@ public static class EventContextScopeExtensions
 
         public void Dispose()
         {
-            if (_disposed) return;
-            _disposed = true;
+            if (_disposed)
+			{
+				return;
+			}
+
+			_disposed = true;
 
             _accessor.SetCurrent(_prior);
         }

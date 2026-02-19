@@ -136,10 +136,10 @@ public static class IEventExtensions
 				typeof(IEventHandler<>),
 				(service, provider) =>
 				{
-					var handlerType = service.GetType();
+					Type handlerType = service.GetType();
 
 					// Find the IEventHandler<TEvent> interface implemented by this handler
-					var eventHandlerInterface = handlerType
+					Type? eventHandlerInterface = handlerType
 						.GetInterfaces()
 						.FirstOrDefault(i =>
 							i.IsGenericType &&
@@ -150,7 +150,7 @@ public static class IEventExtensions
 						return service;
 					}
 
-					var eventType = eventHandlerInterface.GenericTypeArguments[0];
+					Type eventType = eventHandlerInterface.GenericTypeArguments[0];
 
 					// TEvent : class, IIntegrationEvent
 					if (!typeof(IIntegrationEvent).IsAssignableFrom(eventType))
@@ -165,7 +165,7 @@ public static class IEventExtensions
 						return service;
 					}
 
-					var closedDecorator = typeof(InboxEventHandlerDecorator<,>)
+					Type closedDecorator = typeof(InboxEventHandlerDecorator<,>)
 						.MakeGenericType(eventType, handlerType);
 
 					return ActivatorUtilities.CreateInstance(
@@ -373,7 +373,7 @@ public static class IEventExtensions
 
 			services.Replace(ServiceDescriptor.Scoped<IEventPublisher>(sp =>
 			{
-				var publishers = sp.GetServices<IEventPublisher>()
+				IEventPublisher[] publishers = sp.GetServices<IEventPublisher>()
 					.Where(static p => p is not CompositeEventPublisher)
 					.ToArray();
 

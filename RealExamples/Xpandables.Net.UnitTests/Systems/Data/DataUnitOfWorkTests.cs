@@ -15,6 +15,7 @@
  *
 ********************************************************************************/
 using System.Data;
+using System.Data.Common;
 
 using FluentAssertions;
 
@@ -40,8 +41,8 @@ public sealed class DataUnitOfWorkTests : IDisposable
         using var scope = new DataDbConnectionScope(_connection);
         using var uow = new DataUnitOfWork(scope, new MsDataSqlBuilder(), new DataSqlMapper());
 
-        var repo1 = uow.GetRepository<Person>();
-        var repo2 = uow.GetRepository<Person>();
+		IDataRepository<Person> repo1 = uow.GetRepository<Person>();
+		IDataRepository<Person> repo2 = uow.GetRepository<Person>();
 
         repo1.Should().BeSameAs(repo2);
     }
@@ -52,8 +53,8 @@ public sealed class DataUnitOfWorkTests : IDisposable
         using var scope = new DataDbConnectionScope(_connection);
         using var uow = new DataUnitOfWork(scope, new MsDataSqlBuilder(), new DataSqlMapper());
 
-        var personRepo = uow.GetRepository<Person>();
-        var addressRepo = uow.GetRepository<Address>();
+		IDataRepository<Person> personRepo = uow.GetRepository<Person>();
+		IDataRepository<Address> addressRepo = uow.GetRepository<Address>();
 
         personRepo.Should().NotBeSameAs(addressRepo);
     }
@@ -66,7 +67,7 @@ public sealed class DataUnitOfWorkTests : IDisposable
 
         uow.Dispose();
 
-        var act = () => uow.GetRepository<Person>();
+		Func<IDataRepository<Person>> act = () => uow.GetRepository<Person>();
         act.Should().Throw<ObjectDisposedException>();
     }
 
@@ -78,7 +79,7 @@ public sealed class DataUnitOfWorkTests : IDisposable
 
         uow.Dispose();
 
-        var act = () => _ = uow.ConnectionScope;
+		Func<IDataDbConnectionScope> act = () => _ = uow.ConnectionScope;
         act.Should().Throw<ObjectDisposedException>();
     }
 
@@ -90,7 +91,7 @@ public sealed class DataUnitOfWorkTests : IDisposable
 
         uow.Dispose();
 
-        var act = () => _ = uow.CurrentTransaction;
+		Func<IDataTransaction> act = () => _ = uow.CurrentTransaction;
         act.Should().Throw<ObjectDisposedException>();
     }
 
@@ -102,7 +103,7 @@ public sealed class DataUnitOfWorkTests : IDisposable
 
         uow.Dispose();
 
-        var act = () => _ = uow.HasActiveTransaction;
+		Func<bool> act = () => _ = uow.HasActiveTransaction;
         act.Should().Throw<ObjectDisposedException>();
     }
 
@@ -112,7 +113,7 @@ public sealed class DataUnitOfWorkTests : IDisposable
         using var scope = new DataDbConnectionScope(_connection);
         using var uow = new DataUnitOfWork(scope, new MsDataSqlBuilder(), new DataSqlMapper());
 
-        var transaction = uow.BeginTransaction();
+		IDataTransaction transaction = uow.BeginTransaction();
 
         transaction.Should().NotBeNull();
         uow.HasActiveTransaction.Should().BeTrue();
@@ -125,7 +126,7 @@ public sealed class DataUnitOfWorkTests : IDisposable
         using var scope = new DataDbConnectionScope(_connection);
         using var uow = new DataUnitOfWork(scope, new MsDataSqlBuilder(), new DataSqlMapper());
 
-        var transaction = await uow.BeginTransactionAsync();
+		IDataTransaction transaction = await uow.BeginTransactionAsync();
 
         transaction.Should().NotBeNull();
         uow.HasActiveTransaction.Should().BeTrue();
@@ -150,7 +151,7 @@ public sealed class DataUnitOfWorkTests : IDisposable
 
         await uow.DisposeAsync();
 
-        var act = () => _ = scope.Connection;
+		Func<DbConnection> act = () => _ = scope.Connection;
         act.Should().Throw<ObjectDisposedException>();
     }
 
@@ -162,7 +163,7 @@ public sealed class DataUnitOfWorkTests : IDisposable
 
         uow.Dispose();
 
-        var act = () => uow.BeginTransaction();
+		Func<IDataTransaction> act = () => uow.BeginTransaction();
         act.Should().Throw<ObjectDisposedException>();
     }
 

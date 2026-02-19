@@ -133,7 +133,7 @@ public static class IEntityExtensions
 			ArgumentNullException.ThrowIfNull(repositoryRegistrations);
 			ArgumentOutOfRangeException.ThrowIfZero(repositoryRegistrations.Length, nameof(repositoryRegistrations));
 
-			foreach (var (interfaceType, implementationType) in repositoryRegistrations)
+			foreach ((Type? interfaceType, Type? implementationType) in repositoryRegistrations)
 			{
 				if (!typeof(IEntityRepository).IsAssignableFrom(interfaceType))
 				{
@@ -174,17 +174,17 @@ public static class IEntityExtensions
 			Assembly[] assembliesArray = assemblies as Assembly[] ?? [.. assemblies];
 			assembliesArray = assembliesArray is { Length: > 0 } ? assembliesArray : [Assembly.GetCallingAssembly()];
 
-			foreach (var assembly in assembliesArray)
+			foreach (Assembly assembly in assembliesArray)
 			{
-				var types = assembly.GetTypes();
-				var repositoryTypes = types
+				Type[] types = assembly.GetTypes();
+				IEnumerable<Type> repositoryTypes = types
 					.Where(t => t.IsClass && t.IsSealed && !t.IsAbstract && typeof(IEntityRepository).IsAssignableFrom(t));
 
-				foreach (var implementationType in repositoryTypes)
+				foreach (Type? implementationType in repositoryTypes)
 				{
-					var interfaceTypes = implementationType.GetInterfaces()
+					IEnumerable<Type> interfaceTypes = implementationType.GetInterfaces()
 						.Where(i => i != typeof(IEntityRepository) && typeof(IEntityRepository).IsAssignableFrom(i));
-					foreach (var interfaceType in interfaceTypes)
+					foreach (Type? interfaceType in interfaceTypes)
 					{
 						services.TryAdd(new ServiceDescriptor(interfaceType, implementationType, lifetime));
 					}

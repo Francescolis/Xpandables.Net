@@ -81,11 +81,13 @@ public static class IResultExtensions
             ArgumentNullException.ThrowIfNull(builder);
 
             if (builder.ApplicationServices.GetService<ResultMiddleware>() is null)
-                throw new InvalidOperationException(
+			{
+				throw new InvalidOperationException(
                     "ResultMiddleware is not registered. " +
                     "Please ensure AddXResultMiddleware() is called during service registration.");
+			}
 
-            builder.UseMiddleware<ResultMiddleware>();
+			builder.UseMiddleware<ResultMiddleware>();
             return builder;
         }
     }

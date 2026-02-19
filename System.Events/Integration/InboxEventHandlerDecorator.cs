@@ -1,4 +1,4 @@
-/*******************************************************************************
+﻿/*******************************************************************************
  * Copyright (C) 2025 Kamersoft
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
@@ -42,14 +42,14 @@ public sealed partial class InboxEventHandlerDecorator<TEvent, TEventHandler>(
     {
         ArgumentNullException.ThrowIfNull(@event);
 
-        var consumer = _inner.Consumer;
+		string consumer = _inner.Consumer;
 
         if (string.IsNullOrWhiteSpace(consumer))
         {
             consumer = _inner.GetType().FullName ?? _inner.GetType().Name;
         }
 
-        var receiveResult = await _inbox.ReceiveAsync(
+		InboxReceiveResult receiveResult = await _inbox.ReceiveAsync(
             @event,
             consumer,
             visibilityTimeout: null,

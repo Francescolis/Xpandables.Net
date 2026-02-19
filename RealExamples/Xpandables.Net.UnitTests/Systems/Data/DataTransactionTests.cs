@@ -1,4 +1,4 @@
-/*******************************************************************************
+﻿/*******************************************************************************
  * Copyright (C) 2025 Kamersoft
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
@@ -37,7 +37,7 @@ public sealed class DataTransactionTests : IDisposable
     [Fact]
     public void WhenCommitThenIsCommittedIsTrue()
     {
-        var dbTransaction = _connection.BeginTransaction();
+		SqliteTransaction dbTransaction = _connection.BeginTransaction();
         var transaction = new DataTransaction(dbTransaction);
 
         transaction.Commit();
@@ -50,7 +50,7 @@ public sealed class DataTransactionTests : IDisposable
     [Fact]
     public void WhenRollbackThenIsRolledBackIsTrue()
     {
-        var dbTransaction = _connection.BeginTransaction();
+		SqliteTransaction dbTransaction = _connection.BeginTransaction();
         var transaction = new DataTransaction(dbTransaction);
 
         transaction.Rollback();
@@ -63,7 +63,7 @@ public sealed class DataTransactionTests : IDisposable
     [Fact]
     public async Task WhenCommitAsyncThenIsCommittedIsTrue()
     {
-        var dbTransaction = _connection.BeginTransaction();
+		SqliteTransaction dbTransaction = _connection.BeginTransaction();
         var transaction = new DataTransaction(dbTransaction);
 
         await transaction.CommitAsync();
@@ -75,7 +75,7 @@ public sealed class DataTransactionTests : IDisposable
     [Fact]
     public async Task WhenRollbackAsyncThenIsRolledBackIsTrue()
     {
-        var dbTransaction = _connection.BeginTransaction();
+		SqliteTransaction dbTransaction = _connection.BeginTransaction();
         var transaction = new DataTransaction(dbTransaction);
 
         await transaction.RollbackAsync();
@@ -87,12 +87,12 @@ public sealed class DataTransactionTests : IDisposable
     [Fact]
     public void WhenCommitTwiceThenThrowsInvalidOperationException()
     {
-        var dbTransaction = _connection.BeginTransaction();
+		SqliteTransaction dbTransaction = _connection.BeginTransaction();
         var transaction = new DataTransaction(dbTransaction);
 
         transaction.Commit();
 
-        var act = () => transaction.Commit();
+		Action act = () => transaction.Commit();
         act.Should().Throw<InvalidOperationException>()
             .WithMessage("*already been committed*");
     }
@@ -100,12 +100,12 @@ public sealed class DataTransactionTests : IDisposable
     [Fact]
     public void WhenRollbackTwiceThenThrowsInvalidOperationException()
     {
-        var dbTransaction = _connection.BeginTransaction();
+		SqliteTransaction dbTransaction = _connection.BeginTransaction();
         var transaction = new DataTransaction(dbTransaction);
 
         transaction.Rollback();
 
-        var act = () => transaction.Rollback();
+		Action act = () => transaction.Rollback();
         act.Should().Throw<InvalidOperationException>()
             .WithMessage("*already been rolled back*");
     }
@@ -113,19 +113,19 @@ public sealed class DataTransactionTests : IDisposable
     [Fact]
     public void WhenCommitThenRollbackThenThrowsInvalidOperationException()
     {
-        var dbTransaction = _connection.BeginTransaction();
+		SqliteTransaction dbTransaction = _connection.BeginTransaction();
         var transaction = new DataTransaction(dbTransaction);
 
         transaction.Commit();
 
-        var act = () => transaction.Rollback();
+		Action act = () => transaction.Rollback();
         act.Should().Throw<InvalidOperationException>();
     }
 
     [Fact]
     public void WhenDisposeWithoutCommitThenAutoRollback()
     {
-        var dbTransaction = _connection.BeginTransaction();
+		SqliteTransaction dbTransaction = _connection.BeginTransaction();
         var transaction = new DataTransaction(dbTransaction);
 
         transaction.Dispose();
@@ -137,7 +137,7 @@ public sealed class DataTransactionTests : IDisposable
     [Fact]
     public async Task WhenDisposeAsyncWithoutCommitThenAutoRollback()
     {
-        var dbTransaction = _connection.BeginTransaction();
+		SqliteTransaction dbTransaction = _connection.BeginTransaction();
         var transaction = new DataTransaction(dbTransaction);
 
         await transaction.DisposeAsync();
@@ -149,7 +149,7 @@ public sealed class DataTransactionTests : IDisposable
     [Fact]
     public void WhenDisposeAfterCommitThenNoRollback()
     {
-        var dbTransaction = _connection.BeginTransaction();
+		SqliteTransaction dbTransaction = _connection.BeginTransaction();
         var transaction = new DataTransaction(dbTransaction);
 
         transaction.Commit();
@@ -162,8 +162,8 @@ public sealed class DataTransactionTests : IDisposable
     [Fact]
     public void WhenCallbackRegisteredThenFiresOnCommit()
     {
-        var callbackFired = false;
-        var dbTransaction = _connection.BeginTransaction();
+		bool callbackFired = false;
+		SqliteTransaction dbTransaction = _connection.BeginTransaction();
         var transaction = new DataTransaction(dbTransaction, () => callbackFired = true);
 
         transaction.Commit();
@@ -174,8 +174,8 @@ public sealed class DataTransactionTests : IDisposable
     [Fact]
     public void WhenCallbackRegisteredThenFiresOnRollback()
     {
-        var callbackFired = false;
-        var dbTransaction = _connection.BeginTransaction();
+		bool callbackFired = false;
+		SqliteTransaction dbTransaction = _connection.BeginTransaction();
         var transaction = new DataTransaction(dbTransaction, () => callbackFired = true);
 
         transaction.Rollback();
@@ -186,24 +186,24 @@ public sealed class DataTransactionTests : IDisposable
     [Fact]
     public void WhenDisposedThenCommitThrowsObjectDisposedException()
     {
-        var dbTransaction = _connection.BeginTransaction();
+		SqliteTransaction dbTransaction = _connection.BeginTransaction();
         var transaction = new DataTransaction(dbTransaction);
 
         transaction.Dispose();
 
-        var act = () => transaction.Commit();
+		Action act = () => transaction.Commit();
         act.Should().Throw<ObjectDisposedException>();
     }
 
     [Fact]
     public void WhenDisposedThenRollbackThrowsObjectDisposedException()
     {
-        var dbTransaction = _connection.BeginTransaction();
+		SqliteTransaction dbTransaction = _connection.BeginTransaction();
         var transaction = new DataTransaction(dbTransaction);
 
         transaction.Dispose();
 
-        var act = () => transaction.Rollback();
+		Action act = () => transaction.Rollback();
         act.Should().Throw<ObjectDisposedException>();
     }
 }

@@ -1,4 +1,4 @@
-/*******************************************************************************
+﻿/*******************************************************************************
  * Copyright (C) 2025 Kamersoft
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
@@ -63,17 +63,21 @@ public static class SetExtensions
 
                 var seen = new HashSet<TSource>(comparer);
 
-                await foreach (var item in source.WithCancellation(ct).ConfigureAwait(false))
+                await foreach (TSource? item in source.WithCancellation(ct).ConfigureAwait(false))
                 {
                     if (seen.Add(item))
-                        yield return item;
-                }
+					{
+						yield return item;
+					}
+				}
 
-                await foreach (var item in other.WithCancellation(ct).ConfigureAwait(false))
+                await foreach (TSource? item in other.WithCancellation(ct).ConfigureAwait(false))
                 {
                     if (seen.Add(item))
-                        yield return item;
-                }
+					{
+						yield return item;
+					}
+				}
             }
 
             return AsyncPagedEnumerable.Create(
@@ -111,17 +115,19 @@ public static class SetExtensions
                 ct.ThrowIfCancellationRequested();
 
                 var otherSet = new HashSet<TSource>(comparer);
-                await foreach (var item in other.WithCancellation(ct).ConfigureAwait(false))
+                await foreach (TSource? item in other.WithCancellation(ct).ConfigureAwait(false))
                 {
                     otherSet.Add(item);
                 }
 
                 var yielded = new HashSet<TSource>(comparer);
-                await foreach (var item in source.WithCancellation(ct).ConfigureAwait(false))
+                await foreach (TSource? item in source.WithCancellation(ct).ConfigureAwait(false))
                 {
                     if (otherSet.Contains(item) && yielded.Add(item))
-                        yield return item;
-                }
+					{
+						yield return item;
+					}
+				}
             }
 
             return AsyncPagedEnumerable.Create(
@@ -159,17 +165,19 @@ public static class SetExtensions
                 ct.ThrowIfCancellationRequested();
 
                 var otherSet = new HashSet<TSource>(comparer);
-                await foreach (var item in other.WithCancellation(ct).ConfigureAwait(false))
+                await foreach (TSource? item in other.WithCancellation(ct).ConfigureAwait(false))
                 {
                     otherSet.Add(item);
                 }
 
                 var yielded = new HashSet<TSource>(comparer);
-                await foreach (var item in source.WithCancellation(ct).ConfigureAwait(false))
+                await foreach (TSource? item in source.WithCancellation(ct).ConfigureAwait(false))
                 {
                     if (!otherSet.Contains(item) && yielded.Add(item))
-                        yield return item;
-                }
+					{
+						yield return item;
+					}
+				}
             }
 
             return AsyncPagedEnumerable.Create(
@@ -196,12 +204,12 @@ public static class SetExtensions
             {
                 ct.ThrowIfCancellationRequested();
 
-                await foreach (var item in source.WithCancellation(ct).ConfigureAwait(false))
+                await foreach (TSource? item in source.WithCancellation(ct).ConfigureAwait(false))
                 {
                     yield return item;
                 }
 
-                await foreach (var item in other.WithCancellation(ct).ConfigureAwait(false))
+                await foreach (TSource? item in other.WithCancellation(ct).ConfigureAwait(false))
                 {
                     yield return item;
                 }
@@ -228,7 +236,7 @@ public static class SetExtensions
 
                 yield return element;
 
-                await foreach (var item in source.WithCancellation(ct).ConfigureAwait(false))
+                await foreach (TSource? item in source.WithCancellation(ct).ConfigureAwait(false))
                 {
                     yield return item;
                 }
@@ -253,7 +261,7 @@ public static class SetExtensions
             {
                 ct.ThrowIfCancellationRequested();
 
-                await foreach (var item in source.WithCancellation(ct).ConfigureAwait(false))
+                await foreach (TSource? item in source.WithCancellation(ct).ConfigureAwait(false))
                 {
                     yield return item;
                 }
@@ -292,8 +300,8 @@ public static class SetExtensions
             {
                 ct.ThrowIfCancellationRequested();
 
-                await using var sourceEnumerator = source.GetAsyncEnumerator(ct);
-                await using var otherEnumerator = other.GetAsyncEnumerator(ct);
+                await using IAsyncPagedEnumerator<TSource> sourceEnumerator = source.GetAsyncEnumerator(ct);
+                await using IAsyncEnumerator<TOther> otherEnumerator = other.GetAsyncEnumerator(ct);
 
                 while (await sourceEnumerator.MoveNextAsync().ConfigureAwait(false) &&
                        await otherEnumerator.MoveNextAsync().ConfigureAwait(false))
@@ -348,15 +356,17 @@ public static class SetExtensions
                 ct.ThrowIfCancellationRequested();
 
                 bool hasElements = false;
-                await foreach (var item in source.WithCancellation(ct).ConfigureAwait(false))
+                await foreach (TSource? item in source.WithCancellation(ct).ConfigureAwait(false))
                 {
                     hasElements = true;
                     yield return item;
                 }
 
                 if (!hasElements)
-                    yield return defaultValue;
-            }
+				{
+					yield return defaultValue;
+				}
+			}
 
             return AsyncPagedEnumerable.Create(
                 Iterator(),
@@ -414,11 +424,13 @@ public static class SetExtensions
                         ct.ThrowIfCancellationRequested();
 
                         var seen = new HashSet<TSource>(comparer);
-                        await foreach (var item in source.WithCancellation(ct).ConfigureAwait(false))
+                        await foreach (TSource? item in source.WithCancellation(ct).ConfigureAwait(false))
                         {
                             if (seen.Add(item))
-                                yield return item;
-                        }
+					{
+						yield return item;
+					}
+				}
                     }
 
                     return AsyncPagedEnumerable.Create(
@@ -478,12 +490,14 @@ public static class SetExtensions
                         ct.ThrowIfCancellationRequested();
 
                         var seenKeys = new HashSet<TKey>(comparer);
-                        await foreach (var item in source.WithCancellation(ct).ConfigureAwait(false))
+                        await foreach (TSource? item in source.WithCancellation(ct).ConfigureAwait(false))
                         {
-                            var key = keySelector(item);
+					TKey? key = keySelector(item);
                             if (seenKeys.Add(key))
-                                yield return item;
-                        }
+					{
+						yield return item;
+					}
+				}
                     }
 
                             return AsyncPagedEnumerable.Create(
@@ -516,7 +530,7 @@ public static class SetExtensions
                         {
                             ct.ThrowIfCancellationRequested();
 
-                            await foreach (var item in source.WithCancellation(ct).ConfigureAwait(false))
+                            await foreach (TSource? item in source.WithCancellation(ct).ConfigureAwait(false))
                             {
                                 yield return (TResult)(object)item!;
                             }
@@ -548,11 +562,13 @@ public static class SetExtensions
                         {
                             ct.ThrowIfCancellationRequested();
 
-                            await foreach (var item in source.WithCancellation(ct).ConfigureAwait(false))
+                            await foreach (TSource? item in source.WithCancellation(ct).ConfigureAwait(false))
                             {
                                 if (item is TResult result)
-                                    yield return result;
-                            }
+					{
+						yield return result;
+					}
+				}
                         }
 
                         return AsyncPagedEnumerable.Create(

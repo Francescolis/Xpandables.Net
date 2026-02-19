@@ -32,16 +32,19 @@ public sealed class PendingDomainEventsBuffer : IPendingDomainEventsBuffer
     {
         ArgumentNullException.ThrowIfNull(events);
         ArgumentNullException.ThrowIfNull(onCommitted);
-        if (events.Count == 0) return;
+        if (events.Count == 0)
+		{
+			return;
+		}
 
-        _queue.Enqueue(new PendingDomainEventsBatch { Events = events, OnCommitted = onCommitted });
+		_queue.Enqueue(new PendingDomainEventsBatch { Events = events, OnCommitted = onCommitted });
     }
 
     /// <inheritdoc />
     public IReadOnlyCollection<PendingDomainEventsBatch> Drain()
     {
         var list = new List<PendingDomainEventsBatch>();
-        while (_queue.TryDequeue(out var batch))
+        while (_queue.TryDequeue(out PendingDomainEventsBatch? batch))
         {
             list.Add(batch);
         }

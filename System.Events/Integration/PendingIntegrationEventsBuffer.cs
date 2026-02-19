@@ -38,8 +38,11 @@ public sealed class PendingIntegrationEventsBuffer : IPendingIntegrationEventsBu
     public void AddRange(IEnumerable<IIntegrationEvent> events)
     {
         ArgumentNullException.ThrowIfNull(events);
-        foreach (var e in events) _queue.Enqueue(e);
-    }
+        foreach (IIntegrationEvent e in events)
+		{
+			_queue.Enqueue(e);
+		}
+	}
 
     /// <inheritdoc/>
     public IReadOnlyCollection<IIntegrationEvent> Snapshot() => [.. _queue];
@@ -47,6 +50,9 @@ public sealed class PendingIntegrationEventsBuffer : IPendingIntegrationEventsBu
     /// <inheritdoc/>
     public IEnumerable<IIntegrationEvent> Drain()
     {
-        while (_queue.TryDequeue(out var e)) yield return e;
-    }
+        while (_queue.TryDequeue(out IIntegrationEvent? e))
+		{
+			yield return e;
+		}
+	}
 }

@@ -191,7 +191,7 @@ public sealed class Scheduler : Disposable, IScheduler
 
         _optionsMonitor = options.OnChange(newOptions =>
         {
-            var oldMaxConcurrency = _options.MaxConcurrentProcessors;
+			int oldMaxConcurrency = _options.MaxConcurrentProcessors;
             _options = newOptions;
 
             AdjustConcurrencyLimiter(oldMaxConcurrency, newOptions.MaxConcurrentProcessors);
@@ -232,18 +232,18 @@ public sealed class Scheduler : Disposable, IScheduler
         }
 
         var stopwatch = Stopwatch.StartNew();
-        var processedCount = 0;
-        var errorCount = 0;
+		int processedCount = 0;
+		int errorCount = 0;
 
         try
         {
-            var serviceScope = _serviceScopeFactory.CreateAsyncScope();
+			AsyncServiceScope serviceScope = _serviceScopeFactory.CreateAsyncScope();
             await using (serviceScope.ConfigureAwait(false))
             {
-                var outbox = serviceScope.ServiceProvider.GetRequiredService<IOutboxStore>();
+				IOutboxStore outbox = serviceScope.ServiceProvider.GetRequiredService<IOutboxStore>();
 
-                // Claim a batch directly from the outbox (multi-instance safe)
-                var claimed = await outbox.DequeueAsync(_options.BatchSize, visibilityTimeout: null, cancellationToken: cancellationToken).ConfigureAwait(false);
+				// Claim a batch directly from the outbox (multi-instance safe)
+				IReadOnlyList<IIntegrationEvent> claimed = await outbox.DequeueAsync(_options.BatchSize, visibilityTimeout: null, cancellationToken: cancellationToken).ConfigureAwait(false);
                 if (claimed.Count == 0)
                 {
                     LogNoEventsToSchedule(_logger, null);
@@ -252,14 +252,14 @@ public sealed class Scheduler : Disposable, IScheduler
                     return;
                 }
 
-                // Partition into batches for parallel processing
-                var eventBatches = CreateBatches(claimed);
+				// Partition into batches for parallel processing
+				List<List<IIntegrationEvent>> eventBatches = CreateBatches(claimed);
                 LogProcessingBatches(_logger, eventBatches.Sum(b => b.Count), eventBatches.Count, null);
 
-                var processingTasks = eventBatches.Select(batch =>
+				IEnumerable<Task<BatchProcessingResult>> processingTasks = eventBatches.Select(batch =>
                     ProcessEventBatchAsync(batch, cancellationToken));
 
-                var batchResults = await Task.WhenAll(processingTasks).ConfigureAwait(false);
+				BatchProcessingResult[] batchResults = await Task.WhenAll(processingTasks).ConfigureAwait(false);
 
                 processedCount = batchResults.Sum(r => r.ProcessedCount);
                 errorCount = batchResults.Sum(r => r.ErrorCount);
@@ -317,7 +317,7 @@ public sealed class Scheduler : Disposable, IScheduler
     private static List<List<IIntegrationEvent>> CreateBatches(IReadOnlyList<IIntegrationEvent> events)
     {
         var list = events.ToList();
-        var batchSize = Math.Max(1, list.Count / Math.Max(1, Environment.ProcessorCount));
+		int batchSize = Math.Max(1, list.Count / Math.Max(1, Environment.ProcessorCount));
         var batches = new List<List<IIntegrationEvent>>();
         for (int i = 0; i < list.Count; i += batchSize)
         {
@@ -331,24 +331,26 @@ public sealed class Scheduler : Disposable, IScheduler
         List<IIntegrationEvent> events,
         CancellationToken cancellationToken)
     {
-        var processedCount = 0;
-        var errorCount = 0;
+		int processedCount = 0;
+		int errorCount = 0;
 
         var successIds = new List<CompletedOutboxEvent>(events.Count);
         var failures = new List<FailedOutboxEvent>(events.Count);
 
-        // Create a dedicated scope for this batch to isolate connections and avoid MARS issues
-        var batchScope = _serviceScopeFactory.CreateAsyncScope();
+		// Create a dedicated scope for this batch to isolate connections and avoid MARS issues
+		AsyncServiceScope batchScope = _serviceScopeFactory.CreateAsyncScope();
         await using (batchScope.ConfigureAwait(false))
         {
-            var eventPublisher = batchScope.ServiceProvider.GetRequiredService<IEventPublisher>();
+			IEventPublisher eventPublisher = batchScope.ServiceProvider.GetRequiredService<IEventPublisher>();
 
-            foreach (var @event in events)
+            foreach (IIntegrationEvent @event in events)
             {
                 if (cancellationToken.IsCancellationRequested)
-                    break;
+				{
+					break;
+				}
 
-                try
+				try
                 {
                     using var timeoutCts = CancellationTokenSource.CreateLinkedTokenSource(cancellationToken);
                     timeoutCts.CancelAfter(TimeSpan.FromMilliseconds(_options.EventProcessingTimeout));
@@ -360,7 +362,7 @@ public sealed class Scheduler : Disposable, IScheduler
                 catch (Exception exception) when (exception is not OperationCanceledException)
                 {
                     errorCount++;
-                    var errorMessage = exception is TimeoutException
+					string errorMessage = exception is TimeoutException
                         ? "Event processing timeout exceeded"
                         : exception.ToString();
                     failures.Add(new(@event.EventId, errorMessage));
@@ -375,19 +377,19 @@ public sealed class Scheduler : Disposable, IScheduler
     [MethodImpl(MethodImplOptions.AggressiveInlining)]
     private void HandleSchedulerException(Exception exception)
     {
-        var failures = Interlocked.Increment(ref _consecutiveFailures);
+		int failures = Interlocked.Increment(ref _consecutiveFailures);
         _metrics.IncrementError();
 
         LogSchedulerExecutionFailed(_logger, failures, exception);
 
         if (_circuitBreakerState != CircuitBreakerState.Open)
         {
-            var failureCount = Interlocked.Increment(ref _circuitBreakerFailureCount);
+			int failureCount = Interlocked.Increment(ref _circuitBreakerFailureCount);
 
             if (failureCount >= _options.CircuitBreakerFailureThreshold)
             {
                 _circuitBreakerState = CircuitBreakerState.Open;
-                var currentTime = DateTime.UtcNow;
+				DateTime currentTime = DateTime.UtcNow;
                 _circuitBreakerLastFailureTimeProvider = () => currentTime;
 
                 LogCircuitBreakerOpened(_logger, failureCount, null);
@@ -439,7 +441,7 @@ public sealed class Scheduler : Disposable, IScheduler
         var maxDelay = TimeSpan.FromMilliseconds(_options.BackoffMaxDelayMs);
 
         var exponentialDelay = TimeSpan.FromTicks(baseDelay.Ticks * (1L << Math.Min(_consecutiveFailures - 1, 20)));
-        var jitterMs = GenerateSecureRandomJitter((int)baseDelay.TotalMilliseconds);
+		int jitterMs = GenerateSecureRandomJitter((int)baseDelay.TotalMilliseconds);
         var jitter = TimeSpan.FromMilliseconds(jitterMs);
         var calculatedDelay = TimeSpan.FromTicks(Math.Min(exponentialDelay.Ticks + jitter.Ticks, maxDelay.Ticks));
 
@@ -449,11 +451,15 @@ public sealed class Scheduler : Disposable, IScheduler
     [MethodImpl(MethodImplOptions.AggressiveInlining)]
     private static int GenerateSecureRandomJitter(int maxValue)
     {
-        if (maxValue <= 0) return 0;
-        using var rng = RandomNumberGenerator.Create();
+        if (maxValue <= 0)
+		{
+			return 0;
+		}
+
+		using var rng = RandomNumberGenerator.Create();
         Span<byte> bytes = stackalloc byte[4];
         rng.GetBytes(bytes);
-        var randomValue = BitConverter.ToUInt32(bytes);
+		uint randomValue = BitConverter.ToUInt32(bytes);
         return (int)(randomValue % (uint)maxValue);
     }
 
@@ -463,9 +469,12 @@ public sealed class Scheduler : Disposable, IScheduler
 
     private void AdjustConcurrencyLimiter(int oldMaxConcurrency, int newMaxConcurrency)
     {
-        if (oldMaxConcurrency == newMaxConcurrency) return;
+        if (oldMaxConcurrency == newMaxConcurrency)
+		{
+			return;
+		}
 
-        var difference = newMaxConcurrency - oldMaxConcurrency;
+		int difference = newMaxConcurrency - oldMaxConcurrency;
 
         if (difference > 0)
         {
@@ -536,7 +545,7 @@ public sealed class Scheduler : Disposable, IScheduler
         {
             get
             {
-                var executions = Interlocked.Read(ref _totalExecutions);
+				long executions = Interlocked.Read(ref _totalExecutions);
                 return executions > 0
                     ? TimeSpan.FromTicks(Interlocked.Read(ref _totalProcessingTimeTicks) / executions)
                     : TimeSpan.Zero;

@@ -12,6 +12,7 @@
     <Authors>Francescolis</Authors>
     <Copyright>Copyright © Kamersoft 2025</Copyright>
     <NeutralLanguage>en-US</NeutralLanguage>
+    <LangVersion>Latest</LangVersion>
 
     <PackageProjectUrl>https://github.com/Francescolis/Xpandables.Net</PackageProjectUrl>
     <RepositoryUrl>https://github.com/Francescolis/Xpandables.Net</RepositoryUrl>

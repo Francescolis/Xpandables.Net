@@ -1,4 +1,4 @@
-/*******************************************************************************
+﻿/*******************************************************************************
  * Copyright (C) 2025 Kamersoft
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
@@ -26,8 +26,8 @@ public sealed class DataSpecificationTests
     [Fact]
     public void Where_WithPredicate_BuildsPredicate()
     {
-        // Arrange
-        var specification = DataSpecification.For<Person>()
+		// Arrange
+		DataSpecification<Person, Person> specification = DataSpecification.For<Person>()
             .Where(person => person.IsActive)
             .Build();
 
@@ -41,13 +41,13 @@ public sealed class DataSpecificationTests
     [Fact]
     public void InnerJoin_WithJoin_BuildsInnerJoin()
     {
-        // Arrange
-        var specification = DataSpecification.For<Person>()
+		// Arrange
+		DataSpecification<Person, Person> specification = DataSpecification.For<Person>()
             .InnerJoin<Address>((person, address) => person.AddressId == address.Id)
             .Build();
 
-        // Act
-        var join = specification.Joins.Single();
+		// Act
+		IJoinSpecification join = specification.Joins.Single();
 
         // Assert
         join.JoinType.Should().Be(SqlJoinType.Inner);
@@ -56,13 +56,13 @@ public sealed class DataSpecificationTests
     [Fact]
     public void LeftJoin_WithJoin_BuildsLeftJoin()
     {
-        // Arrange
-        var specification = DataSpecification.For<Person>()
+		// Arrange
+		DataSpecification<Person, Person> specification = DataSpecification.For<Person>()
             .LeftJoin<Address>((person, address) => person.AddressId == address.Id)
             .Build();
 
-        // Act
-        var join = specification.Joins.Single();
+		// Act
+		IJoinSpecification join = specification.Joins.Single();
 
         // Assert
         join.JoinType.Should().Be(SqlJoinType.Left);
@@ -71,13 +71,13 @@ public sealed class DataSpecificationTests
     [Fact]
     public void RightJoin_WithJoin_BuildsRightJoin()
     {
-        // Arrange
-        var specification = DataSpecification.For<Person>()
+		// Arrange
+		DataSpecification<Person, Person> specification = DataSpecification.For<Person>()
             .RightJoin<Address>((person, address) => person.AddressId == address.Id)
             .Build();
 
-        // Act
-        var join = specification.Joins.Single();
+		// Act
+		IJoinSpecification join = specification.Joins.Single();
 
         // Assert
         join.JoinType.Should().Be(SqlJoinType.Right);
@@ -86,13 +86,13 @@ public sealed class DataSpecificationTests
     [Fact]
     public void FullJoin_WithJoin_BuildsFullJoin()
     {
-        // Arrange
-        var specification = DataSpecification.For<Person>()
+		// Arrange
+		DataSpecification<Person, Person> specification = DataSpecification.For<Person>()
             .FullJoin<Address>((person, address) => person.AddressId == address.Id)
             .Build();
 
-        // Act
-        var join = specification.Joins.Single();
+		// Act
+		IJoinSpecification join = specification.Joins.Single();
 
         // Assert
         join.JoinType.Should().Be(SqlJoinType.Full);
@@ -101,13 +101,13 @@ public sealed class DataSpecificationTests
     [Fact]
     public void CrossJoin_WithJoin_BuildsCrossJoin()
     {
-        // Arrange
-        var specification = DataSpecification.For<Person>()
+		// Arrange
+		DataSpecification<Person, Person> specification = DataSpecification.For<Person>()
             .CrossJoin<Address>()
             .Build();
 
-        // Act
-        var join = specification.Joins.Single();
+		// Act
+		IJoinSpecification join = specification.Joins.Single();
 
         // Assert
         join.JoinType.Should().Be(SqlJoinType.Cross);
@@ -116,13 +116,13 @@ public sealed class DataSpecificationTests
     [Fact]
     public void GroupBy_WithKeySelector_BuildsGroupBy()
     {
-        // Arrange
-        var specification = DataSpecification.For<Person>()
+		// Arrange
+		DataSpecification<Person, Person> specification = DataSpecification.For<Person>()
             .GroupBy(person => person.AddressId)
             .Build();
 
-        // Act
-        var groupBy = specification.GroupBy.Single();
+		// Act
+		LambdaExpression groupBy = specification.GroupBy.Single();
 
         // Assert
         groupBy.Should().NotBeNull();
@@ -131,14 +131,14 @@ public sealed class DataSpecificationTests
     [Fact]
     public void Having_WithPredicate_BuildsHaving()
     {
-        // Arrange
-        var specification = DataSpecification.For<Person>()
+		// Arrange
+		DataSpecification<Person, Person> specification = DataSpecification.For<Person>()
             .GroupBy(person => person.AddressId)
             .Having(person => person.IsActive)
             .Build();
 
-        // Act
-        var having = specification.Having;
+		// Act
+		LambdaExpression? having = specification.Having;
 
         // Assert
         having.Should().NotBeNull();
@@ -147,13 +147,13 @@ public sealed class DataSpecificationTests
     [Fact]
     public void OrderBy_WithSelector_BuildsOrdering()
     {
-        // Arrange
-        var specification = DataSpecification.For<Person>()
+		// Arrange
+		DataSpecification<Person, Person> specification = DataSpecification.For<Person>()
             .OrderBy(person => person.Name)
             .Build();
 
-        // Act
-        var order = specification.OrderBy.Single();
+		// Act
+		OrderSpecification order = specification.OrderBy.Single();
 
         // Assert
         order.Descending.Should().BeFalse();
@@ -162,13 +162,13 @@ public sealed class DataSpecificationTests
     [Fact]
     public void OrderByDescending_WithSelector_BuildsDescendingOrdering()
     {
-        // Arrange
-        var specification = DataSpecification.For<Person>()
+		// Arrange
+		DataSpecification<Person, Person> specification = DataSpecification.For<Person>()
             .OrderByDescending(person => person.Name)
             .Build();
 
-        // Act
-        var order = specification.OrderBy.Single();
+		// Act
+		OrderSpecification order = specification.OrderBy.Single();
 
         // Assert
         order.Descending.Should().BeTrue();
@@ -177,13 +177,13 @@ public sealed class DataSpecificationTests
     [Fact]
     public void Select_WithJoinSelector_BuildsSelector()
     {
-        // Arrange
-        var specification = DataSpecification.For<Person>()
+		// Arrange
+		DataSpecification<Person, string> specification = DataSpecification.For<Person>()
             .InnerJoin<Address>((person, address) => person.AddressId == address.Id)
             .Select<Address, string>((person, address) => $"{person.Name}:{address.City}");
 
-        // Act
-        var selector = specification.Selector;
+		// Act
+		LambdaExpression selector = specification.Selector;
 
         // Assert
         selector.Should().NotBeNull();

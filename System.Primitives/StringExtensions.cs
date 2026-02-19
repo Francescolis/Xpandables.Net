@@ -310,8 +310,8 @@ public static partial class StringExtensions
         {
             ArgumentNullException.ThrowIfNull(value);
 
-            // Regex to split on transitions: lowercase→uppercase, acronym→normal, letter→digit, digit→letter
-            var parts = TypeNameFormaterRegex().Matches(value)
+			// Regex to split on transitions: lowercase→uppercase, acronym→normal, letter→digit, digit→letter
+			MatchCollection parts = TypeNameFormaterRegex().Matches(value)
                              ?? throw new InvalidOperationException("Regex failed");
 
             return string.Join(" ", parts);

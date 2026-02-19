@@ -1,4 +1,4 @@
-/*******************************************************************************
+﻿/*******************************************************************************
  * Copyright (C) 2025 Kamersoft
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
@@ -252,13 +252,13 @@ public sealed class DisposableTests
     {
         // Arrange
         var disposable = new ResourceHoldingDisposable();
-        var stream = disposable.ManagedResource;
+		MemoryStream? stream = disposable.ManagedResource;
 
         // Act
         disposable.Dispose();
 
-        // Assert
-        var act = () => stream!.ReadByte();
+		// Assert
+		Func<int> act = () => stream!.ReadByte();
         act.Should().Throw<ObjectDisposedException>();
     }
 
@@ -345,8 +345,8 @@ public sealed class DisposableTests
     [Fact]
     public void WhenFileHandlerDisposedThenFileShouldBeClosed()
     {
-        // Arrange
-        var tempFile = Path.GetTempFileName();
+		// Arrange
+		string tempFile = Path.GetTempFileName();
         var fileHandler = new SimulatedFileHandler(tempFile);
         fileHandler.Write("Test data");
 

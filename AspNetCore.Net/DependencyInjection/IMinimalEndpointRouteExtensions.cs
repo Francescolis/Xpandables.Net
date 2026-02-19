@@ -89,7 +89,7 @@ public static class IMinimalEndpointRouteExtensions
 			}
 				&& typeof(IMinimalEndpointRoute).IsAssignableFrom(type))];
 
-		foreach (var endpointType in endpointTypes)
+		foreach (Type endpointType in endpointTypes)
 		{
 			services.Add(new ServiceDescriptor(
 				typeof(IMinimalEndpointRoute),
@@ -116,7 +116,7 @@ public static class IMinimalEndpointRouteExtensions
 		IEnumerable<IMinimalEndpointRoute> endpointRoutes = application.Services
 			.GetServices<IMinimalEndpointRoute>();
 
-		foreach (var route in endpointRoutes)
+		foreach (IMinimalEndpointRoute route in endpointRoutes)
 		{
 			route.AddRoutes(new MinimalRouteBuilder(application, options));
 		}

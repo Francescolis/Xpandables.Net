@@ -1,4 +1,4 @@
-/*******************************************************************************
+﻿/*******************************************************************************
  * Copyright (C) 2025 Kamersoft
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
@@ -47,7 +47,7 @@ public sealed class DataSqlBuilderFactory : IDataSqlBuilderFactory
     {
         ArgumentException.ThrowIfNullOrWhiteSpace(providerInvariantName);
 
-        var dialect = GetDialectFromProvider(providerInvariantName);
+		SqlDialect dialect = GetDialectFromProvider(providerInvariantName);
         return Create(dialect);
     }
 
@@ -61,8 +61,8 @@ public sealed class DataSqlBuilderFactory : IDataSqlBuilderFactory
     {
         ArgumentException.ThrowIfNullOrWhiteSpace(providerInvariantName);
 
-        // Normalize for comparison
-        var normalized = providerInvariantName.ToUpperInvariant();
+		// Normalize for comparison
+		string normalized = providerInvariantName.ToUpperInvariant();
 
         return normalized switch
         {

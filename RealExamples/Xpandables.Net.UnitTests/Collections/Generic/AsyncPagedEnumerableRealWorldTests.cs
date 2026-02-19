@@ -1,4 +1,4 @@
-/*******************************************************************************
+﻿/*******************************************************************************
  * Copyright (C) 2025 Kamersoft
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
@@ -27,8 +27,8 @@ public sealed class AsyncPagedEnumerableRealWorldTests
     [Fact]
     public async Task DatabaseQuery_WithServerSidePagination_ShouldReturnPaginatedResults()
     {
-        // Arrange
-        var dataset = SimulateDatabase(totalRecords: 250);
+		// Arrange
+		List<DatabaseRecord> dataset = SimulateDatabase(totalRecords: 250);
         const int pageSize = 25;
         int currentPage = 1;
 
@@ -38,7 +38,7 @@ public sealed class AsyncPagedEnumerableRealWorldTests
 
         while (totalProcessed < 250)
         {
-            var pageData = dataset
+			IAsyncEnumerable<DatabaseRecord> pageData = dataset
                 .Skip((currentPage - 1) * pageSize)
                 .Take(pageSize)
                 .ToAsyncEnumerable();
@@ -48,8 +48,8 @@ public sealed class AsyncPagedEnumerableRealWorldTests
                 currentPage: currentPage,
                 totalCount: 250);
 
-            var paged = AsyncPagedEnumerable.Create(pageData, _ => ValueTask.FromResult(pagination));
-            var items = await paged.ToListAsync();
+			IAsyncPagedEnumerable<DatabaseRecord> paged = AsyncPagedEnumerable.Create(pageData, _ => ValueTask.FromResult(pagination));
+			List<DatabaseRecord> items = await paged.ToListAsync();
             pagedResults.Add((items, await paged.GetPaginationAsync()));
 
             totalProcessed += items.Count;
@@ -58,7 +58,7 @@ public sealed class AsyncPagedEnumerableRealWorldTests
 
         // Assert
         Assert.Equal(10, pagedResults.Count); // 250 records / 25 per page = 10 pages
-        foreach (var (items, pagination) in pagedResults)
+        foreach ((List<DatabaseRecord>? items, Pagination pagination) in pagedResults)
         {
             Assert.Equal(pageSize, items.Count);
             Assert.Equal(pageSize, pagination.PageSize);
@@ -74,19 +74,21 @@ public sealed class AsyncPagedEnumerableRealWorldTests
     {
         // Arrange
         const int totalItems = 5000;
-        var source = GenerateStreamData(totalItems);
+		IAsyncEnumerable<int> source = GenerateStreamData(totalItems);
         var pagination = Pagination.Create(pageSize: 500, currentPage: 1, totalCount: totalItems);
-        var paged = AsyncPagedEnumerable.Create(source, _ => ValueTask.FromResult(pagination));
+		IAsyncPagedEnumerable<int> paged = AsyncPagedEnumerable.Create(source, _ => ValueTask.FromResult(pagination));
 
         // Act
         int count = 0;
         int pageBreaks = 0;
-        await foreach (var item in paged)
+        await foreach (int item in paged)
         {
             count++;
             if (count % 500 == 0)
-                pageBreaks++;
-        }
+			{
+				pageBreaks++;
+			}
+		}
 
         // Assert
         Assert.Equal(totalItems, count);
@@ -101,41 +103,49 @@ public sealed class AsyncPagedEnumerableRealWorldTests
     {
         // Arrange
         const int dataSize = 1000;
-        var source = GenerateStreamData(dataSize);
+		IAsyncEnumerable<int> source = GenerateStreamData(dataSize);
         var pagination = Pagination.Create(pageSize: 100, currentPage: 1, totalCount: dataSize);
-        var paged = AsyncPagedEnumerable.Create(source, _ => ValueTask.FromResult(pagination));
+		IAsyncPagedEnumerable<int> paged = AsyncPagedEnumerable.Create(source, _ => ValueTask.FromResult(pagination));
 
-        // Act - Multiple consumers
-        var consumer1 = Task.Run(async () =>
+		// Act - Multiple consumers
+		Task<int> consumer1 = Task.Run(async () =>
         {
-            var sum = 0;
-            await foreach (var item in paged)
-                sum += item;
-            return sum;
+			int sum = 0;
+            await foreach (int item in paged)
+			{
+				sum += item;
+			}
+
+			return sum;
         });
 
-        var consumer2 = Task.Run(async () =>
+		Task<int> consumer2 = Task.Run(async () =>
         {
-            var count = 0;
-            await foreach (var item in paged)
-                count++;
-            return count;
+			int count = 0;
+            await foreach (int item in paged)
+			{
+				count++;
+			}
+
+			return count;
         });
 
-        var consumer3 = Task.Run(async () =>
+		Task<int> consumer3 = Task.Run(async () =>
         {
-            var max = 0;
-            await foreach (var item in paged)
+			int max = 0;
+            await foreach (int item in paged)
             {
                 if (item > max)
-                    max = item;
-            }
+				{
+					max = item;
+				}
+			}
             return max;
         });
 
-        var sum = await consumer1;
-        var count = await consumer2;
-        var max = await consumer3;
+		int sum = await consumer1;
+		int count = await consumer2;
+		int max = await consumer3;
 
         // Assert
         Assert.Equal(499500, sum); // Sum of 0 to 9999
@@ -154,7 +164,7 @@ public sealed class AsyncPagedEnumerableRealWorldTests
             .Select(i => new { Id = i, Value = i % 2 == 0 ? "even" : "odd" })
             .ToList();
 
-        var filteredData = fullDataset
+		IAsyncEnumerable<int> filteredData = fullDataset
             .Where(x => x.Value == "even")
             .Select(x => x.Id)
             .ToAsyncEnumerable();
@@ -166,11 +176,11 @@ public sealed class AsyncPagedEnumerableRealWorldTests
             return Pagination.Create(pageSize: 10, currentPage: 1, totalCount: 50); // 50 even numbers
         });
 
-        var paged = AsyncPagedEnumerable.Create(filteredData, paginationFactory);
+		IAsyncPagedEnumerable<int> paged = AsyncPagedEnumerable.Create(filteredData, paginationFactory);
 
-        // Act
-        var items = await paged.ToListAsync();
-        var pagination = await paged.GetPaginationAsync();
+		// Act
+		List<int> items = await paged.ToListAsync();
+		Pagination pagination = await paged.GetPaginationAsync();
 
         // Assert
         Assert.Equal(50, items.Count);
@@ -186,15 +196,15 @@ public sealed class AsyncPagedEnumerableRealWorldTests
         // Arrange
         const int totalRequests = 100;
         int requestCount = 0;
-        var lastRequestTime = DateTime.UtcNow;
+		DateTime lastRequestTime = DateTime.UtcNow;
         const int minDelayMs = 10;
 
         async IAsyncEnumerable<int> RateLimitedGenerator()
         {
             for (int i = 0; i < totalRequests; i++)
             {
-                var now = DateTime.UtcNow;
-                var elapsed = (now - lastRequestTime).TotalMilliseconds;
+				DateTime now = DateTime.UtcNow;
+				double elapsed = (now - lastRequestTime).TotalMilliseconds;
 
                 if (elapsed < minDelayMs)
                 {
@@ -207,13 +217,13 @@ public sealed class AsyncPagedEnumerableRealWorldTests
             }
         }
 
-        var source = RateLimitedGenerator();
-        var paged = AsyncPagedEnumerable.Create(source);
+		IAsyncEnumerable<int> source = RateLimitedGenerator();
+		IAsyncPagedEnumerable<int> paged = AsyncPagedEnumerable.Create(source);
 
-        // Act
-        var startTime = DateTime.UtcNow;
-        var items = await paged.ToListAsync();
-        var duration = DateTime.UtcNow - startTime;
+		// Act
+		DateTime startTime = DateTime.UtcNow;
+		List<int> items = await paged.ToListAsync();
+		TimeSpan duration = DateTime.UtcNow - startTime;
 
         // Assert
         Assert.Equal(totalRequests, items.Count);
@@ -239,7 +249,7 @@ public sealed class AsyncPagedEnumerableRealWorldTests
 
         // Act
         var items = await paged.ToListAsync();
-        var pagination = await paged.GetPaginationAsync();
+		Pagination pagination = await paged.GetPaginationAsync();
 
         // Assert
         Assert.NotEmpty(items);
@@ -256,8 +266,8 @@ public sealed class AsyncPagedEnumerableRealWorldTests
     [Fact]
     public async Task ErrorRecovery_ShouldContinueAfterTransientError()
     {
-        // Arrange
-        var attemptCount = 0;
+		// Arrange
+		int attemptCount = 0;
         var paginationFactory = new Func<CancellationToken, ValueTask<Pagination>>(
             async _ =>
             {
@@ -265,21 +275,23 @@ public sealed class AsyncPagedEnumerableRealWorldTests
                 Interlocked.Increment(ref attemptCount);
 
                 if (attemptCount == 1)
-                    throw new InvalidOperationException("Transient error");
+				{
+					throw new InvalidOperationException("Transient error");
+				}
 
-                return Pagination.Create(pageSize: 10, currentPage: 1, totalCount: 20);
+				return Pagination.Create(pageSize: 10, currentPage: 1, totalCount: 20);
             });
 
-        var source = GenerateStreamData(20);
-        var paged = AsyncPagedEnumerable.Create(source, paginationFactory);
+		IAsyncEnumerable<int> source = GenerateStreamData(20);
+		IAsyncPagedEnumerable<int> paged = AsyncPagedEnumerable.Create(source, paginationFactory);
 
-        // Act & Assert
-        var firstAttempt = await Assert.ThrowsAsync<InvalidOperationException>(
+		// Act & Assert
+		InvalidOperationException firstAttempt = await Assert.ThrowsAsync<InvalidOperationException>(
             () => paged.GetPaginationAsync());
 
-        // Second attempt should succeed (pagination is recomputable)
-        var paged2 = AsyncPagedEnumerable.Create(source, paginationFactory);
-        var pagination = await paged2.GetPaginationAsync();
+		// Second attempt should succeed (pagination is recomputable)
+		IAsyncPagedEnumerable<int> paged2 = AsyncPagedEnumerable.Create(source, paginationFactory);
+		Pagination pagination = await paged2.GetPaginationAsync();
 
         Assert.Equal(20, pagination.TotalCount);
     }
@@ -303,7 +315,7 @@ public sealed class AsyncPagedEnumerableRealWorldTests
         // Act
         for (int page = 0; page < 4; page++)
         {
-            var pageData = allResults
+			IAsyncEnumerable<SearchResult> pageData = allResults
                 .Skip(page * pageSize)
                 .Take(pageSize)
                 .ToAsyncEnumerable();
@@ -315,8 +327,8 @@ public sealed class AsyncPagedEnumerableRealWorldTests
                 continuationToken: continuationToken,
                 totalCount: totalResults);
 
-            var paged = AsyncPagedEnumerable.Create(pageData, _ => ValueTask.FromResult(pagination));
-            var items = await paged.ToListAsync();
+			IAsyncPagedEnumerable<SearchResult> paged = AsyncPagedEnumerable.Create(pageData, _ => ValueTask.FromResult(pagination));
+			List<SearchResult> items = await paged.ToListAsync();
             pages.Add(await paged.GetPaginationAsync());
 
             Assert.Equal(pageSize, items.Count);
@@ -341,15 +353,15 @@ public sealed class AsyncPagedEnumerableRealWorldTests
         // Arrange
         const int size = 100;
         var metrics = new PaginationMetrics();
-        var source = GenerateStreamData(size);
+		IAsyncEnumerable<int> source = GenerateStreamData(size);
         var pagination = Pagination.Create(pageSize: 10, currentPage: 1, totalCount: size);
-        var paged = AsyncPagedEnumerable.Create(source, _ => ValueTask.FromResult(pagination));
+		IAsyncPagedEnumerable<int> paged = AsyncPagedEnumerable.Create(source, _ => ValueTask.FromResult(pagination));
 
-        var startTime = DateTime.UtcNow;
+		DateTime startTime = DateTime.UtcNow;
 
         // Act
         int itemCount = 0;
-        await foreach (var item in paged)
+        await foreach (int item in paged)
         {
             itemCount++;
             metrics.ItemsProcessed++;
@@ -360,7 +372,7 @@ public sealed class AsyncPagedEnumerableRealWorldTests
             }
         }
 
-        var duration = DateTime.UtcNow - startTime;
+		TimeSpan duration = DateTime.UtcNow - startTime;
         metrics.ProcessingTimeMs = (long)duration.TotalMilliseconds;
 
         // Assert

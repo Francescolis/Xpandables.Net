@@ -116,7 +116,7 @@ public static class HttpContentExtensions
         return AsyncPagedEnumerable.Create(async ct =>
         {
             Stream contentStream = await GetContentStreamAsync(content, ct).ConfigureAwait(false);
-            PipeReader reader = PipeReader.Create(
+            var reader = PipeReader.Create(
                 contentStream,
                 new StreamPipeReaderOptions(leaveOpen: false));
 

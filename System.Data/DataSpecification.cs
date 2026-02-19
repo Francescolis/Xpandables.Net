@@ -1,4 +1,4 @@
-/*******************************************************************************
+﻿/*******************************************************************************
  * Copyright (C) 2025 Kamersoft
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
@@ -102,7 +102,7 @@ public readonly record struct DataSpecificationBuilder<TData>
     {
         ArgumentNullException.ThrowIfNull(predicate);
 
-        var combined = _predicate is null
+		Expression<Func<TData, bool>> combined = _predicate is null
             ? predicate
             : CombinePredicates((Expression<Func<TData, bool>>)_predicate, predicate);
 
@@ -423,12 +423,12 @@ public readonly record struct DataSpecificationBuilder<TData>
         Expression<Func<TData, bool>> left,
         Expression<Func<TData, bool>> right)
     {
-        var parameter = Expression.Parameter(typeof(TData), "x");
+		ParameterExpression parameter = Expression.Parameter(typeof(TData), "x");
 
-        var leftBody = ReplaceParameter(left.Body, left.Parameters[0], parameter);
-        var rightBody = ReplaceParameter(right.Body, right.Parameters[0], parameter);
+		Expression leftBody = ReplaceParameter(left.Body, left.Parameters[0], parameter);
+		Expression rightBody = ReplaceParameter(right.Body, right.Parameters[0], parameter);
 
-        var combined = Expression.AndAlso(leftBody, rightBody);
+		BinaryExpression combined = Expression.AndAlso(leftBody, rightBody);
         return Expression.Lambda<Func<TData, bool>>(combined, parameter);
     }
 

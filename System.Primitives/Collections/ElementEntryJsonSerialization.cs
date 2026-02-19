@@ -1,4 +1,4 @@
-/*******************************************************************************
+﻿/*******************************************************************************
  * Copyright (C) 2025 Kamersoft
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
@@ -67,11 +67,13 @@ public sealed class ElementEntryJsonConverter : JsonConverter<ElementEntry>
         while (reader.Read())
         {
             if (reader.TokenType == JsonTokenType.EndObject)
-                break;
+			{
+				break;
+			}
 
-            if (reader.TokenType == JsonTokenType.PropertyName)
+			if (reader.TokenType == JsonTokenType.PropertyName)
             {
-                var propertyName = reader.GetString();
+				string? propertyName = reader.GetString();
                 reader.Read();
 
                 switch (propertyName?.ToUpperInvariant())
@@ -87,16 +89,18 @@ public sealed class ElementEntryJsonConverter : JsonConverter<ElementEntry>
                             {
                                 if (reader.TokenType == JsonTokenType.String)
                                 {
-                                    var value = reader.GetString();
+									string? value = reader.GetString();
                                     if (value is not null)
-                                        valuesList.Add(value);
-                                }
+									{
+										valuesList.Add(value);
+									}
+								}
                             }
                             values = new StringValues([.. valuesList]);
                         }
                         else if (reader.TokenType == JsonTokenType.String)
                         {
-                            var singleValue = reader.GetString();
+							string? singleValue = reader.GetString();
                             values = singleValue is not null ? new StringValues(singleValue) : StringValues.Empty;
                         }
                         break;
@@ -133,7 +137,7 @@ public sealed class ElementEntryJsonConverter : JsonConverter<ElementEntry>
         else
         {
             writer.WriteStartArray();
-            foreach (var val in value.Values)
+            foreach (string? val in value.Values)
             {
                 writer.WriteStringValue(val);
             }

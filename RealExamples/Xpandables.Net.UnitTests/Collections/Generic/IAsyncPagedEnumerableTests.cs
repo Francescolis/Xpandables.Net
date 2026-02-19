@@ -1,4 +1,4 @@
-/*******************************************************************************
+﻿/*******************************************************************************
  * Copyright (C) 2025 Kamersoft
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
@@ -26,11 +26,11 @@ public sealed class IAsyncPagedEnumerableTests
     [Fact]
     public async Task Create_FromAsyncEnumerable_ShouldCreateValidPagedEnumerable()
     {
-        // Arrange
-        var source = CreateAsyncEnumerable(100);
+		// Arrange
+		IAsyncEnumerable<int> source = CreateAsyncEnumerable(100);
 
-        // Act
-        var paged = AsyncPagedEnumerable.Create(source);
+		// Act
+		IAsyncPagedEnumerable<int> paged = AsyncPagedEnumerable.Create(source);
 
         // Assert
         paged.Should().NotBeNull("paged enumerable should be created");
@@ -40,8 +40,8 @@ public sealed class IAsyncPagedEnumerableTests
     [Fact]
     public async Task Create_WithPaginationFactory_ShouldUsePaginationFactory()
     {
-        // Arrange
-        var source = CreateAsyncEnumerable(50);
+		// Arrange
+		IAsyncEnumerable<int> source = CreateAsyncEnumerable(50);
         var expectedPagination = Pagination.Create(
             pageSize: 10,
             currentPage: 1,
@@ -50,9 +50,9 @@ public sealed class IAsyncPagedEnumerableTests
         var paginationFactory = new Func<CancellationToken, ValueTask<Pagination>>(
             _ => ValueTask.FromResult(expectedPagination));
 
-        // Act
-        var paged = AsyncPagedEnumerable.Create(source, paginationFactory);
-        var pagination = await paged.GetPaginationAsync();
+		// Act
+		IAsyncPagedEnumerable<int> paged = AsyncPagedEnumerable.Create(source, paginationFactory);
+		Pagination pagination = await paged.GetPaginationAsync();
 
         // Assert
         pagination.PageSize.Should().Be(expectedPagination.PageSize, "pageSize should match expected");
@@ -63,13 +63,13 @@ public sealed class IAsyncPagedEnumerableTests
     [Fact]
     public async Task Empty_ShouldReturnEmptyEnumerable()
     {
-        // Act
-        var paged = AsyncPagedEnumerable.Empty<int>();
-        var items = await paged.ToListAsync();
+		// Act
+		IAsyncPagedEnumerable<int> paged = AsyncPagedEnumerable.Empty<int>();
+		List<int> items = await paged.ToListAsync();
 
         // Assert
         items.Should().BeEmpty("empty paged enumerable should have no items");
-        var pagination = await paged.GetPaginationAsync();
+		Pagination pagination = await paged.GetPaginationAsync();
         pagination.Should().Be(Pagination.Empty, "empty enumerable should have empty pagination");
     }
 
@@ -79,10 +79,10 @@ public sealed class IAsyncPagedEnumerableTests
         // Arrange
         var expectedPagination = Pagination.Create(pageSize: 10, currentPage: 1, totalCount: 0);
 
-        // Act
-        var paged = AsyncPagedEnumerable.Empty<string>(expectedPagination);
-        var items = await paged.ToListAsync();
-        var pagination = await paged.GetPaginationAsync();
+		// Act
+		IAsyncPagedEnumerable<string> paged = AsyncPagedEnumerable.Empty<string>(expectedPagination);
+		List<string> items = await paged.ToListAsync();
+		Pagination pagination = await paged.GetPaginationAsync();
 
         // Assert
         items.Should().BeEmpty("empty enumerable should have no items");
@@ -94,12 +94,12 @@ public sealed class IAsyncPagedEnumerableTests
     {
         // Arrange
         const int count = 25;
-        var source = CreateAsyncEnumerable(count);
-        var paged = AsyncPagedEnumerable.Create(source);
+		IAsyncEnumerable<int> source = CreateAsyncEnumerable(count);
+		IAsyncPagedEnumerable<int> paged = AsyncPagedEnumerable.Create(source);
 
         // Act
         var items = new List<int>();
-        await foreach (var item in paged)
+        await foreach (int item in paged)
         {
             items.Add(item);
         }
@@ -113,9 +113,9 @@ public sealed class IAsyncPagedEnumerableTests
     [Fact]
     public async Task GetPaginationAsync_ShouldComputePaginationOnce()
     {
-        // Arrange
-        var source = CreateAsyncEnumerable(100);
-        var callCount = 0;
+		// Arrange
+		IAsyncEnumerable<int> source = CreateAsyncEnumerable(100);
+		int callCount = 0;
         var paginationFactory = new Func<CancellationToken, ValueTask<Pagination>>(
             async ct =>
             {
@@ -124,11 +124,11 @@ public sealed class IAsyncPagedEnumerableTests
                 return Pagination.Create(pageSize: 10, currentPage: 1, totalCount: 100);
             });
 
-        var paged = AsyncPagedEnumerable.Create(source, paginationFactory);
+		IAsyncPagedEnumerable<int> paged = AsyncPagedEnumerable.Create(source, paginationFactory);
 
-        // Act
-        var pagination1 = await paged.GetPaginationAsync();
-        var pagination2 = await paged.GetPaginationAsync();
+		// Act
+		Pagination pagination1 = await paged.GetPaginationAsync();
+		Pagination pagination2 = await paged.GetPaginationAsync();
 
         // Assert
         callCount.Should().Be(1, "factory should be called only once due to caching");
@@ -138,12 +138,12 @@ public sealed class IAsyncPagedEnumerableTests
     [Fact]
     public async Task Pagination_Property_ShouldReturnEmptyBeforeComputation()
     {
-        // Arrange
-        var source = CreateAsyncEnumerable(50);
-        var paged = AsyncPagedEnumerable.Create(source);
+		// Arrange
+		IAsyncEnumerable<int> source = CreateAsyncEnumerable(50);
+		IAsyncPagedEnumerable<int> paged = AsyncPagedEnumerable.Create(source);
 
-        // Act
-        var pagination = paged.Pagination;
+		// Act
+		Pagination pagination = paged.Pagination;
 
         // Assert
         pagination.Should().Be(Pagination.Empty, "pagination should be empty before computation");
@@ -154,12 +154,12 @@ public sealed class IAsyncPagedEnumerableTests
     {
         // Arrange
         const int count = 20;
-        var source = CreateAsyncEnumerable(count);
-        var paged = AsyncPagedEnumerable.Create(source);
+		IAsyncEnumerable<int> source = CreateAsyncEnumerable(count);
+		IAsyncPagedEnumerable<int> paged = AsyncPagedEnumerable.Create(source);
 
-        // Act
-        var firstEnumeration = await paged.ToListAsync();
-        var secondEnumeration = await paged.ToListAsync();
+		// Act
+		List<int> firstEnumeration = await paged.ToListAsync();
+		List<int> secondEnumeration = await paged.ToListAsync();
 
         // Assert
         firstEnumeration.Should().HaveCount(count, "first enumeration should have all items");
@@ -169,9 +169,9 @@ public sealed class IAsyncPagedEnumerableTests
     [Fact]
     public async Task CancellationToken_ShouldBePropagated()
     {
-        // Arrange
-        var source = CreateAsyncEnumerable(1000);
-        var paged = AsyncPagedEnumerable.Create(source);
+		// Arrange
+		IAsyncEnumerable<int> source = CreateAsyncEnumerable(1000);
+		IAsyncPagedEnumerable<int> paged = AsyncPagedEnumerable.Create(source);
         var cts = new CancellationTokenSource();
         cts.CancelAfter(TimeSpan.FromMilliseconds(10));
 
@@ -181,7 +181,7 @@ public sealed class IAsyncPagedEnumerableTests
         await Assert.ThrowsAnyAsync<OperationCanceledException>(
             async () =>
             {
-                await foreach (var item in paged.WithCancellation(cts.Token))
+                await foreach (int item in paged.WithCancellation(cts.Token))
                 {
                     await Task.Delay(5, cts.Token);
                 }
@@ -191,9 +191,9 @@ public sealed class IAsyncPagedEnumerableTests
     [Fact]
     public async Task WithCancellation_ShouldRespectToken()
     {
-        // Arrange
-        var source = CreateAsyncEnumerable(100);
-        var paged = AsyncPagedEnumerable.Create(source);
+		// Arrange
+		IAsyncEnumerable<int> source = CreateAsyncEnumerable(100);
+		IAsyncPagedEnumerable<int> paged = AsyncPagedEnumerable.Create(source);
         var cts = new CancellationTokenSource();
 
         // Act
@@ -201,7 +201,7 @@ public sealed class IAsyncPagedEnumerableTests
         int count = 0;
         try
         {
-            await foreach (var item in paged.WithCancellation(cts.Token))
+            await foreach (int item in paged.WithCancellation(cts.Token))
             {
                 items.Add(item);
                 count++;
@@ -223,12 +223,12 @@ public sealed class IAsyncPagedEnumerableTests
     [Fact]
     public async Task Dispose_ShouldCleanupResources()
     {
-        // Arrange
-        var source = CreateAsyncEnumerable(100);
+		// Arrange
+		IAsyncEnumerable<int> source = CreateAsyncEnumerable(100);
         var paged = AsyncPagedEnumerable.Create(source) as IDisposable;
 
-        // Act & Assert - should not throw
-        var act = () => paged?.Dispose();
+		// Act & Assert - should not throw
+		Action act = () => paged?.Dispose();
         act.Should().NotThrow("dispose should complete without errors");
     }
 
@@ -267,8 +267,8 @@ public sealed class PaginationTests
     [Fact]
     public void Create_WithNegativePageSize_ShouldThrow()
     {
-        // Act & Assert
-        var act = () => Pagination.Create(pageSize: -1, currentPage: 1);
+		// Act & Assert
+		Func<Pagination> act = () => Pagination.Create(pageSize: -1, currentPage: 1);
         act.Should().Throw<ArgumentOutOfRangeException>("negative pageSize should throw");
     }
 
@@ -290,8 +290,8 @@ public sealed class PaginationTests
         // Arrange
         var pagination = Pagination.Create(pageSize: 10, currentPage: 1, totalCount: 100);
 
-        // Act
-        var nextPagination = pagination.NextPage();
+		// Act
+		Pagination nextPagination = pagination.NextPage();
 
         // Assert
         nextPagination.CurrentPage.Should().Be(2, "next page should increment current page");
@@ -303,8 +303,8 @@ public sealed class PaginationTests
         // Arrange
         var pagination = Pagination.Create(pageSize: 10, currentPage: 2, totalCount: 100);
 
-        // Act
-        var prevPagination = pagination.PreviousPage();
+		// Act
+		Pagination prevPagination = pagination.PreviousPage();
 
         // Assert
         prevPagination.CurrentPage.Should().Be(1, "previous page should decrement current page");
@@ -316,8 +316,8 @@ public sealed class PaginationTests
         // Arrange
         var pagination = Pagination.Create(pageSize: 10, currentPage: 1, totalCount: 100);
 
-        // Act
-        var prevPagination = pagination.PreviousPage();
+		// Act
+		Pagination prevPagination = pagination.PreviousPage();
 
         // Assert
         prevPagination.CurrentPage.Should().Be(1, "should remain on first page when already on first page");
@@ -450,8 +450,8 @@ public sealed class PaginationTests
         // Arrange
         var pagination = Pagination.Create(pageSize: 10, currentPage: 1, totalCount: 100);
 
-        // Act
-        var updated = pagination.WithTotalCount(200);
+		// Act
+		Pagination updated = pagination.WithTotalCount(200);
 
         // Assert
         updated.TotalCount.Should().Be(200, "should update total count");

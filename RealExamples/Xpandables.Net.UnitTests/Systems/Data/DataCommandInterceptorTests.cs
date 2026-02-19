@@ -34,7 +34,7 @@ public sealed class DataCommandInterceptorTests : IDisposable
 		_connection = new SqliteConnection("DataSource=:memory:");
 		_connection.Open();
 
-		using var cmd = _connection.CreateCommand();
+		using SqliteCommand cmd = _connection.CreateCommand();
 		cmd.CommandText = """
 			CREATE TABLE Product (
 				Id INTEGER PRIMARY KEY,
@@ -50,12 +50,12 @@ public sealed class DataCommandInterceptorTests : IDisposable
 	[Fact]
 	public void WhenDefaultInterceptorThenDoesNotThrow()
 	{
-		var interceptor = DataCommandInterceptor.Default;
+		DataCommandInterceptor interceptor = DataCommandInterceptor.Default;
 
 		var context = new DataCommandContext(
 			"SELECT 1", [], DataCommandOperationType.Scalar);
 
-		var act = async () =>
+		Func<Task> act = async () =>
 		{
 			await interceptor.CommandExecutingAsync(context);
 			await interceptor.CommandExecutedAsync(context, TimeSpan.FromMilliseconds(1), 0);
@@ -68,8 +68,8 @@ public sealed class DataCommandInterceptorTests : IDisposable
 	[Fact]
 	public void WhenDefaultInterceptorThenDefaultPropertyReturnsSameInstance()
 	{
-		var first = DataCommandInterceptor.Default;
-		var second = DataCommandInterceptor.Default;
+		DataCommandInterceptor first = DataCommandInterceptor.Default;
+		DataCommandInterceptor second = DataCommandInterceptor.Default;
 
 		first.Should().BeSameAs(second);
 	}
@@ -104,7 +104,7 @@ public sealed class DataCommandInterceptorTests : IDisposable
 		using var scope = new DataDbConnectionScope(_connection);
 		using var repo = new DataRepository<Product>(scope, new MsDataSqlBuilder(), new DataSqlMapper(), recording);
 
-		var spec = DataSpecification
+		DataSpecification<Product, Product> spec = DataSpecification
 			.For<Product>()
 			.Where(p => p.Price > 0)
 			.Select(p => p);
@@ -172,7 +172,7 @@ public sealed class DataCommandInterceptorTests : IDisposable
 		await repo.ExecuteAsync("INSERT INTO Product (Id, Name, Price) VALUES (1, 'Test', 5.0)");
 		recording.Clear();
 
-		await foreach (var _ in repo.QueryRawAsync<Product>("SELECT * FROM Product"))
+		await foreach (Product _ in repo.QueryRawAsync<Product>("SELECT * FROM Product"))
 		{
 			// consume the stream
 		}
@@ -192,7 +192,7 @@ public sealed class DataCommandInterceptorTests : IDisposable
 		using var scope = new DataDbConnectionScope(_connection);
 		using var uow = new DataUnitOfWork(scope, new MsDataSqlBuilder(), new DataSqlMapper(), recording);
 
-		var repo = uow.GetRepository<Product>();
+		IDataRepository<Product> repo = uow.GetRepository<Product>();
 
 		repo.Should().NotBeNull();
 	}
@@ -203,7 +203,7 @@ public sealed class DataCommandInterceptorTests : IDisposable
 		using var scope = new DataDbConnectionScope(_connection);
 		using var uow = new DataUnitOfWork(scope, new MsDataSqlBuilder(), new DataSqlMapper());
 
-		var repo = uow.GetRepository<Product>();
+		IDataRepository<Product> repo = uow.GetRepository<Product>();
 
 		repo.Should().NotBeNull();
 	}
@@ -215,8 +215,8 @@ public sealed class DataCommandInterceptorTests : IDisposable
 		services.AddLogging();
 		services.AddXDataCommandInterceptor();
 
-		var provider = services.BuildServiceProvider();
-		var interceptor = provider.GetRequiredService<IDataCommandInterceptor>();
+		ServiceProvider provider = services.BuildServiceProvider();
+		IDataCommandInterceptor interceptor = provider.GetRequiredService<IDataCommandInterceptor>();
 
 		interceptor.Should().BeOfType<DataLoggingCommandInterceptor>();
 	}
@@ -229,8 +229,8 @@ public sealed class DataCommandInterceptorTests : IDisposable
 		services.AddXDataCommandInterceptor();
 		services.AddXDataCommandInterceptor<RecordingCommandInterceptor>();
 
-		var provider = services.BuildServiceProvider();
-		var interceptor = provider.GetRequiredService<IDataCommandInterceptor>();
+		ServiceProvider provider = services.BuildServiceProvider();
+		IDataCommandInterceptor interceptor = provider.GetRequiredService<IDataCommandInterceptor>();
 
 		interceptor.Should().BeOfType<RecordingCommandInterceptor>();
 	}
@@ -243,8 +243,8 @@ public sealed class DataCommandInterceptorTests : IDisposable
 		services.AddXDataCommandInterceptor<RecordingCommandInterceptor>();
 		services.AddXDataCommandInterceptor();
 
-		var provider = services.BuildServiceProvider();
-		var interceptor = provider.GetRequiredService<IDataCommandInterceptor>();
+		ServiceProvider provider = services.BuildServiceProvider();
+		IDataCommandInterceptor interceptor = provider.GetRequiredService<IDataCommandInterceptor>();
 
 		interceptor.Should().BeOfType<RecordingCommandInterceptor>();
 	}
@@ -261,8 +261,8 @@ public sealed class DataCommandInterceptorTests : IDisposable
 			options.SlowCommandThreshold = TimeSpan.FromSeconds(5);
 		});
 
-		var provider = services.BuildServiceProvider();
-		var options = provider.GetRequiredService<IOptions<DataCommandInterceptorOptions>>();
+		ServiceProvider provider = services.BuildServiceProvider();
+		IOptions<DataCommandInterceptorOptions> options = provider.GetRequiredService<IOptions<DataCommandInterceptorOptions>>();
 
 		options.Value.EnableSensitiveDataLogging.Should().BeTrue();
 		options.Value.CategoryName.Should().Be("Test.Database");
@@ -276,8 +276,8 @@ public sealed class DataCommandInterceptorTests : IDisposable
 		services.AddLogging();
 		services.AddXDataCommandInterceptor();
 
-		var provider = services.BuildServiceProvider();
-		var options = provider.GetRequiredService<IOptions<DataCommandInterceptorOptions>>();
+		ServiceProvider provider = services.BuildServiceProvider();
+		IOptions<DataCommandInterceptorOptions> options = provider.GetRequiredService<IOptions<DataCommandInterceptorOptions>>();
 
 		options.Value.EnableSensitiveDataLogging.Should().BeFalse();
 		options.Value.CategoryName.Should().BeNull();
@@ -291,8 +291,8 @@ public sealed class DataCommandInterceptorTests : IDisposable
 		services.AddLogging(builder => builder.AddDebug().SetMinimumLevel(LogLevel.Debug));
 		services.AddXDataCommandInterceptor();
 
-		var provider = services.BuildServiceProvider();
-		var interceptor = provider.GetRequiredService<IDataCommandInterceptor>();
+		ServiceProvider provider = services.BuildServiceProvider();
+		IDataCommandInterceptor interceptor = provider.GetRequiredService<IDataCommandInterceptor>();
 
 		using var scope = new DataDbConnectionScope(_connection);
 		using var repo = new DataRepository<Product>(scope, new MsDataSqlBuilder(), new DataSqlMapper(), interceptor);
@@ -306,13 +306,10 @@ public sealed class DataCommandInterceptorTests : IDisposable
 	{
 		var services = new ServiceCollection();
 		services.AddLogging(builder => builder.AddDebug().SetMinimumLevel(LogLevel.Debug));
-		services.AddXDataCommandInterceptor(options =>
-		{
-			options.EnableSensitiveDataLogging = true;
-		});
+		services.AddXDataCommandInterceptor(options => options.EnableSensitiveDataLogging = true);
 
-		var provider = services.BuildServiceProvider();
-		var interceptor = provider.GetRequiredService<IDataCommandInterceptor>();
+		ServiceProvider provider = services.BuildServiceProvider();
+		IDataCommandInterceptor interceptor = provider.GetRequiredService<IDataCommandInterceptor>();
 
 		using var scope = new DataDbConnectionScope(_connection);
 		using var repo = new DataRepository<Product>(scope, new MsDataSqlBuilder(), new DataSqlMapper(), interceptor);

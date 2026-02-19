@@ -50,7 +50,7 @@ public sealed class DataDbConnectionFactory(string providerInvariantName, string
 	/// <inheritdoc />
 	public DbConnection CreateConnection()
 	{
-		var connection = _providerFactory.CreateConnection()
+		DbConnection connection = _providerFactory.CreateConnection()
 			?? throw new InvalidOperationException(
 				$"The provider '{ProviderInvariantName}' returned a null connection. " +
 				$"Ensure the provider factory is correctly implemented.");
@@ -62,7 +62,7 @@ public sealed class DataDbConnectionFactory(string providerInvariantName, string
 	/// <inheritdoc />
 	public async Task<DbConnection> CreateOpenConnectionAsync(CancellationToken cancellationToken = default)
 	{
-		var connection = CreateConnection();
+		DbConnection connection = CreateConnection();
 
 		try
 		{
@@ -79,7 +79,7 @@ public sealed class DataDbConnectionFactory(string providerInvariantName, string
 	/// <inheritdoc />
 	public DbConnection CreateOpenConnection()
 	{
-		var connection = CreateConnection();
+		DbConnection connection = CreateConnection();
 
 		try
 		{

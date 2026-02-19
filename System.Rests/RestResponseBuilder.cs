@@ -62,7 +62,7 @@ public sealed partial class RestResponseBuilder(
 
         try
         {
-            var response = await composer
+			RestResponse response = await composer
                 .ComposeAsync(context, cancellationToken)
                 .ConfigureAwait(false);
 
@@ -86,7 +86,7 @@ public sealed partial class RestResponseBuilder(
         CancellationToken cancellationToken)
     {
         RestResponse currentResponse = response;
-        foreach (var interceptor in _responseInterceptors)
+        foreach (IRestResponseInterceptor interceptor in _responseInterceptors)
         {
             cancellationToken.ThrowIfCancellationRequested();
 

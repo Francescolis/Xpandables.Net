@@ -1,4 +1,4 @@
-/*******************************************************************************
+﻿/*******************************************************************************
  * Copyright (C) 2025 Kamersoft
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
@@ -170,7 +170,7 @@ public static class IPipelineExtensions
             ArgumentNullException.ThrowIfNull(type);
             ArgumentNullException.ThrowIfNull(services);
 
-            var handlerInterface = type.GetInterfaces().FirstOrDefault(i =>
+			Type handlerInterface = type.GetInterfaces().FirstOrDefault(i =>
                 i.IsGenericType &&
                 i.GetGenericTypeDefinition() == typeof(IPipelineRequestHandler<>))
                 ?? throw new InvalidOperationException(
@@ -182,9 +182,9 @@ public static class IPipelineExtensions
                 return services.AddScoped(typeof(IPipelineRequestHandler<>), type);
             }
 
-            // Closed implementation: register specifically for the closed TRequest (IPipelineRequestHandler<TRequest>).
-            var requestType = handlerInterface.GenericTypeArguments[0];
-            var serviceType = typeof(IPipelineRequestHandler<>).MakeGenericType(requestType);
+			// Closed implementation: register specifically for the closed TRequest (IPipelineRequestHandler<TRequest>).
+			Type requestType = handlerInterface.GenericTypeArguments[0];
+			Type serviceType = typeof(IPipelineRequestHandler<>).MakeGenericType(requestType);
 
             return services.AddScoped(serviceType, type);
         }

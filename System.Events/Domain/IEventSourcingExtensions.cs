@@ -42,7 +42,7 @@ public static class IEventSourcingExtensions
         public IReadOnlyCollection<IDomainEvent> DequeueUncommittedEvents()
         {
             ArgumentNullException.ThrowIfNull(source);
-            var events = source.GetUncommittedEvents();
+			IReadOnlyCollection<IDomainEvent> events = source.GetUncommittedEvents();
             if (events.Count > 0)
             {
                 source.MarkEventsAsCommitted();

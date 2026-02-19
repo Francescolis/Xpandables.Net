@@ -1,4 +1,4 @@
-/*******************************************************************************
+﻿/*******************************************************************************
  * Copyright (C) 2025 Kamersoft
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
@@ -57,10 +57,10 @@ public sealed class MemoryAwareCacheTests : IDisposable
     {
         // Arrange
         _cache = new MemoryAwareCache<string, TestCacheItem>();
-        var factoryCallCount = 0;
+		int factoryCallCount = 0;
 
-        // Act
-        var result = _cache.GetOrAdd("key1", key =>
+		// Act
+		TestCacheItem result = _cache.GetOrAdd("key1", key =>
         {
             factoryCallCount++;
             return new TestCacheItem($"value-for-{key}");
@@ -77,16 +77,16 @@ public sealed class MemoryAwareCacheTests : IDisposable
     {
         // Arrange
         _cache = new MemoryAwareCache<string, TestCacheItem>();
-        var factoryCallCount = 0;
+		int factoryCallCount = 0;
 
-        var firstResult = _cache.GetOrAdd("key1", _ =>
+		TestCacheItem firstResult = _cache.GetOrAdd("key1", _ =>
         {
             factoryCallCount++;
             return new TestCacheItem("first");
         });
 
-        // Act
-        var secondResult = _cache.GetOrAdd("key1", _ =>
+		// Act
+		TestCacheItem secondResult = _cache.GetOrAdd("key1", _ =>
         {
             factoryCallCount++;
             return new TestCacheItem("second");
@@ -103,8 +103,8 @@ public sealed class MemoryAwareCacheTests : IDisposable
         // Arrange
         _cache = new MemoryAwareCache<string, TestCacheItem>();
 
-        // Act
-        var act = () => _cache.GetOrAdd("key", null!);
+		// Act
+		Func<TestCacheItem> act = () => _cache.GetOrAdd("key", null!);
 
         // Assert
         act.Should().Throw<ArgumentNullException>();
@@ -121,12 +121,12 @@ public sealed class MemoryAwareCacheTests : IDisposable
         _cache = new MemoryAwareCache<string, TestCacheItem>();
         var item = new TestCacheItem("new-value");
 
-        // Act
-        var result = _cache.AddOrUpdate("key1", item);
+		// Act
+		TestCacheItem result = _cache.AddOrUpdate("key1", item);
 
         // Assert
         result.Should().BeSameAs(item);
-        _cache.TryGetValue("key1", out var cached).Should().BeTrue();
+        _cache.TryGetValue("key1", out TestCacheItem? cached).Should().BeTrue();
         cached.Should().BeSameAs(item);
     }
 
@@ -140,12 +140,12 @@ public sealed class MemoryAwareCacheTests : IDisposable
 
         var newItem = new TestCacheItem("updated");
 
-        // Act
-        var result = _cache.AddOrUpdate("key1", newItem);
+		// Act
+		TestCacheItem result = _cache.AddOrUpdate("key1", newItem);
 
         // Assert
         result.Should().BeSameAs(newItem);
-        _cache.TryGetValue("key1", out var cached).Should().BeTrue();
+        _cache.TryGetValue("key1", out TestCacheItem? cached).Should().BeTrue();
         cached.Should().BeSameAs(newItem);
     }
 
@@ -155,8 +155,8 @@ public sealed class MemoryAwareCacheTests : IDisposable
         // Arrange
         _cache = new MemoryAwareCache<string, TestCacheItem>();
 
-        // Act
-        var act = () => _cache.AddOrUpdate("key", null!);
+		// Act
+		Func<TestCacheItem> act = () => _cache.AddOrUpdate("key", null!);
 
         // Assert
         act.Should().Throw<ArgumentNullException>();
@@ -169,8 +169,8 @@ public sealed class MemoryAwareCacheTests : IDisposable
         _cache = new MemoryAwareCache<string, TestCacheItem>();
         var item = new TestCacheItem("value");
 
-        // Act
-        var act = () => _cache.AddOrUpdate(null!, item);
+		// Act
+		Func<TestCacheItem> act = () => _cache.AddOrUpdate(null!, item);
 
         // Assert
         act.Should().Throw<ArgumentNullException>();
@@ -188,8 +188,8 @@ public sealed class MemoryAwareCacheTests : IDisposable
         var item = new TestCacheItem("test-value");
         _cache.AddOrUpdate("key1", item);
 
-        // Act
-        var result = _cache.TryGetValue("key1", out var value);
+		// Act
+		bool result = _cache.TryGetValue("key1", out TestCacheItem? value);
 
         // Assert
         result.Should().BeTrue();
@@ -202,8 +202,8 @@ public sealed class MemoryAwareCacheTests : IDisposable
         // Arrange
         _cache = new MemoryAwareCache<string, TestCacheItem>();
 
-        // Act
-        var result = _cache.TryGetValue("nonexistent", out var value);
+		// Act
+		bool result = _cache.TryGetValue("nonexistent", out TestCacheItem? value);
 
         // Assert
         result.Should().BeFalse();
@@ -250,7 +250,7 @@ public sealed class MemoryAwareCacheTests : IDisposable
         await Task.Delay(100);
 
         // Assert - Item should still be there
-        _cache.TryGetValue("key1", out var cached).Should().BeTrue();
+        _cache.TryGetValue("key1", out TestCacheItem? cached).Should().BeTrue();
         cached.Should().BeSameAs(item);
     }
 
@@ -265,8 +265,8 @@ public sealed class MemoryAwareCacheTests : IDisposable
         _cache = new MemoryAwareCache<string, TestCacheItem>();
         _cache.Dispose();
 
-        // Act
-        var act = () => _cache.GetOrAdd("key", _ => new TestCacheItem("value"));
+		// Act
+		Func<TestCacheItem> act = () => _cache.GetOrAdd("key", _ => new TestCacheItem("value"));
 
         // Assert
         act.Should().Throw<ObjectDisposedException>();
@@ -279,8 +279,8 @@ public sealed class MemoryAwareCacheTests : IDisposable
         _cache = new MemoryAwareCache<string, TestCacheItem>();
         _cache.Dispose();
 
-        // Act
-        var act = () => _cache.AddOrUpdate("key", new TestCacheItem("value"));
+		// Act
+		Func<TestCacheItem> act = () => _cache.AddOrUpdate("key", new TestCacheItem("value"));
 
         // Assert
         act.Should().Throw<ObjectDisposedException>();
@@ -294,8 +294,8 @@ public sealed class MemoryAwareCacheTests : IDisposable
         _cache.AddOrUpdate("key", new TestCacheItem("value"));
         _cache.Dispose();
 
-        // Act
-        var result = _cache.TryGetValue("key", out var value);
+		// Act
+		bool result = _cache.TryGetValue("key", out TestCacheItem? value);
 
         // Assert
         result.Should().BeFalse();
@@ -308,8 +308,8 @@ public sealed class MemoryAwareCacheTests : IDisposable
         // Arrange
         _cache = new MemoryAwareCache<string, TestCacheItem>();
 
-        // Act
-        var act = () =>
+		// Act
+		Action act = () =>
         {
             _cache.Dispose();
             _cache.Dispose();
@@ -340,9 +340,9 @@ public sealed class MemoryAwareCacheTests : IDisposable
         GC.WaitForPendingFinalizers();
         GC.Collect();
 
-        // Act - The weak reference might still have the value
-        // depending on GC behavior, so we just verify no crash
-        var result = _cache.TryGetValue("key1", out var value);
+		// Act - The weak reference might still have the value
+		// depending on GC behavior, so we just verify no crash
+		bool result = _cache.TryGetValue("key1", out TestCacheItem? value);
 
         // Assert - Either we get the value (GC hasn't collected) or we don't
         if (result)
@@ -372,7 +372,7 @@ public sealed class MemoryAwareCacheTests : IDisposable
         // Act - Concurrent reads and writes
         for (int i = 0; i < 100; i++)
         {
-            var key = $"key{i % 10}";
+			string key = $"key{i % 10}";
             tasks.Add(Task.Run(() =>
             {
                 try
@@ -402,11 +402,11 @@ public sealed class MemoryAwareCacheTests : IDisposable
     {
         // Arrange
         _cache = new MemoryAwareCache<string, TestCacheItem>();
-        var factoryCallCount = 0;
+		int factoryCallCount = 0;
         var barrier = new Barrier(10);
 
-        // Act
-        var tasks = Enumerable.Range(0, 10).Select(_ => Task.Run(() =>
+		// Act
+		IEnumerable<Task<TestCacheItem>> tasks = Enumerable.Range(0, 10).Select(_ => Task.Run(() =>
         {
             barrier.SignalAndWait();
             return _cache.GetOrAdd("shared-key", key =>
@@ -416,7 +416,7 @@ public sealed class MemoryAwareCacheTests : IDisposable
             });
         }));
 
-        var results = await Task.WhenAll(tasks);
+		TestCacheItem[] results = await Task.WhenAll(tasks);
 
         // Assert - Due to race conditions, factory might be called more than once
         // but all results should be the same value (first one cached)
@@ -432,7 +432,7 @@ public sealed class MemoryAwareCacheTests : IDisposable
     {
         // Arrange
         _cache = new MemoryAwareCache<string, TestCacheItem>();
-        var computationCount = 0;
+		int computationCount = 0;
 
         string ExpensiveComputation(string key)
         {
@@ -441,10 +441,10 @@ public sealed class MemoryAwareCacheTests : IDisposable
             return $"computed-{key}";
         }
 
-        // Act - Multiple requests for same data
-        var result1 = _cache.GetOrAdd("data", k => new TestCacheItem(ExpensiveComputation(k)));
-        var result2 = _cache.GetOrAdd("data", k => new TestCacheItem(ExpensiveComputation(k)));
-        var result3 = _cache.GetOrAdd("data", k => new TestCacheItem(ExpensiveComputation(k)));
+		// Act - Multiple requests for same data
+		TestCacheItem result1 = _cache.GetOrAdd("data", k => new TestCacheItem(ExpensiveComputation(k)));
+		TestCacheItem result2 = _cache.GetOrAdd("data", k => new TestCacheItem(ExpensiveComputation(k)));
+		TestCacheItem result3 = _cache.GetOrAdd("data", k => new TestCacheItem(ExpensiveComputation(k)));
 
         // Assert
         computationCount.Should().Be(1);
@@ -458,7 +458,7 @@ public sealed class MemoryAwareCacheTests : IDisposable
     {
         // Arrange
         _cache = new MemoryAwareCache<string, TestCacheItem>();
-        var queryCount = 0;
+		int queryCount = 0;
 
         TestCacheItem SimulateDatabaseQuery(string userId)
         {
@@ -490,7 +490,7 @@ public sealed class MemoryAwareCacheTests : IDisposable
         _cache.AddOrUpdate("config", configV2);
 
         // Assert
-        _cache.TryGetValue("config", out var current);
+        _cache.TryGetValue("config", out TestCacheItem? current);
         current.Should().BeSameAs(configV2);
         current!.Value.Should().Be("version2");
     }
@@ -507,9 +507,9 @@ public sealed class MemoryAwareCacheTests : IDisposable
         _cache.AddOrUpdate("/api/orders", new TestCacheItem("[{order1}, {order2}, {order3}]"));
 
         // Assert
-        _cache.TryGetValue("/api/users", out var users).Should().BeTrue();
-        _cache.TryGetValue("/api/products", out var products).Should().BeTrue();
-        _cache.TryGetValue("/api/orders", out var orders).Should().BeTrue();
+        _cache.TryGetValue("/api/users", out TestCacheItem? users).Should().BeTrue();
+        _cache.TryGetValue("/api/products", out TestCacheItem? products).Should().BeTrue();
+        _cache.TryGetValue("/api/orders", out TestCacheItem? orders).Should().BeTrue();
 
         users!.Value.Should().Contain("user1");
         products!.Value.Should().Contain("product1");
@@ -530,7 +530,7 @@ public sealed class MemoryAwareCacheTests : IDisposable
         _cache.AddOrUpdate("key", new TestCacheItem("value"));
 
         // Assert
-        _cache.TryGetValue("key", out var item).Should().BeTrue();
+        _cache.TryGetValue("key", out TestCacheItem? item).Should().BeTrue();
         item!.Value.Should().Be("value");
     }
 
@@ -562,7 +562,7 @@ public sealed class MemoryAwareCacheTests : IDisposable
         var entry = new WeakCacheEntry<TestCacheItem>(item);
 
         // Assert
-        entry.TryGetValue(out var retrieved).Should().BeTrue();
+        entry.TryGetValue(out TestCacheItem? retrieved).Should().BeTrue();
         retrieved.Should().BeSameAs(item);
     }
 
@@ -573,8 +573,8 @@ public sealed class MemoryAwareCacheTests : IDisposable
         var item = new TestCacheItem("test");
         var entry = new WeakCacheEntry<TestCacheItem>(item);
 
-        // Act
-        var isExpired = entry.IsExpired(TimeSpan.FromHours(1));
+		// Act
+		bool isExpired = entry.IsExpired(TimeSpan.FromHours(1));
 
         // Assert
         isExpired.Should().BeFalse();
@@ -587,8 +587,8 @@ public sealed class MemoryAwareCacheTests : IDisposable
         var item = new TestCacheItem("test");
         var entry = new WeakCacheEntry<TestCacheItem>(item);
 
-        // Act
-        var isExpired = entry.IsExpired(TimeSpan.Zero);
+		// Act
+		bool isExpired = entry.IsExpired(TimeSpan.Zero);
 
         // Assert
         isExpired.Should().BeFalse();
@@ -636,11 +636,11 @@ public sealed class MemoryAwareCacheTests : IDisposable
     [Fact]
     public void WhenAccessingLastAccessTimeThenShouldBeCloseToNow()
     {
-        // Arrange
-        var beforeCreation = DateTime.UtcNow;
+		// Arrange
+		DateTime beforeCreation = DateTime.UtcNow;
         var item = new TestCacheItem("test");
         var entry = new WeakCacheEntry<TestCacheItem>(item);
-        var afterCreation = DateTime.UtcNow;
+		DateTime afterCreation = DateTime.UtcNow;
 
         // Assert
         entry.LastAccessTime.Should().BeOnOrAfter(beforeCreation);

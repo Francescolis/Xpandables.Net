@@ -1,4 +1,4 @@
-/*******************************************************************************
+﻿/*******************************************************************************
  * Copyright (C) 2025 Kamersoft
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
@@ -29,12 +29,12 @@ public sealed class AsyncPagedEnumerablePerformanceTests
     {
         // Arrange
         const int largeSize = 100000;
-        var source = GenerateStreamData(largeSize);
+		IAsyncEnumerable<int> source = GenerateStreamData(largeSize);
         var pagination = Pagination.Create(pageSize: 1000, currentPage: 1, totalCount: largeSize);
-        var paged = AsyncPagedEnumerable.Create(source, _ => ValueTask.FromResult(pagination));
+		IAsyncPagedEnumerable<int> paged = AsyncPagedEnumerable.Create(source, _ => ValueTask.FromResult(pagination));
 
         // Warmup to reduce JIT/tiered compilation noise in the actual measurement.
-        await foreach (var _ in AsyncPagedEnumerable.Create(GenerateStreamData(1000)))
+        await foreach (int _ in AsyncPagedEnumerable.Create(GenerateStreamData(1000)))
         {
         }
 
@@ -43,11 +43,11 @@ public sealed class AsyncPagedEnumerablePerformanceTests
         GC.WaitForPendingFinalizers();
         GC.Collect();
 
-        var initialMemory = GC.GetTotalMemory(forceFullCollection: true);
+		long initialMemory = GC.GetTotalMemory(forceFullCollection: true);
 
         // Act
         int count = 0;
-        await foreach (var item in paged)
+        await foreach (int item in paged)
         {
             count++;
             if (count % 10000 == 0)
@@ -61,8 +61,8 @@ public sealed class AsyncPagedEnumerablePerformanceTests
         GC.WaitForPendingFinalizers();
         GC.Collect();
 
-        var finalMemory = GC.GetTotalMemory(forceFullCollection: true);
-        var memoryDelta = finalMemory - initialMemory;
+		long finalMemory = GC.GetTotalMemory(forceFullCollection: true);
+		long memoryDelta = finalMemory - initialMemory;
 
         // Assert
         Assert.Equal(largeSize, count);
@@ -80,8 +80,8 @@ public sealed class AsyncPagedEnumerablePerformanceTests
     [Fact]
     public async Task ConcurrentPaginationComputation_ShouldSerializeAccess()
     {
-        // Arrange
-        var source = GenerateStreamData(100);
+		// Arrange
+		IAsyncEnumerable<int> source = GenerateStreamData(100);
         int computationCount = 0;
         var paginationFactory = new Func<CancellationToken, ValueTask<Pagination>>(
             async _ =>
@@ -91,7 +91,7 @@ public sealed class AsyncPagedEnumerablePerformanceTests
                 return Pagination.Create(pageSize: 10, currentPage: 1, totalCount: 100);
             });
 
-        var paged = AsyncPagedEnumerable.Create(source, paginationFactory);
+		IAsyncPagedEnumerable<int> paged = AsyncPagedEnumerable.Create(source, paginationFactory);
 
         // Act
         var tasks = Enumerable.Range(0, 10)
@@ -112,20 +112,20 @@ public sealed class AsyncPagedEnumerablePerformanceTests
     {
         // Arrange
         const int size = 50000;
-        var source = GenerateStreamData(size);
+		IAsyncEnumerable<int> source = GenerateStreamData(size);
         var pagination = Pagination.Create(pageSize: 100, currentPage: 1, totalCount: size);
-        var paged = AsyncPagedEnumerable.Create(source, _ => ValueTask.FromResult(pagination));
+		IAsyncPagedEnumerable<int> paged = AsyncPagedEnumerable.Create(source, _ => ValueTask.FromResult(pagination));
 
-        var startTime = DateTime.UtcNow;
+		DateTime startTime = DateTime.UtcNow;
 
         // Act
         int count = 0;
-        await foreach (var item in paged)
+        await foreach (int item in paged)
         {
             count++;
         }
 
-        var elapsed = DateTime.UtcNow - startTime;
+		TimeSpan elapsed = DateTime.UtcNow - startTime;
 
         // Assert
         Assert.Equal(size, count);
@@ -141,16 +141,16 @@ public sealed class AsyncPagedEnumerablePerformanceTests
         // Arrange
         const int dataSize = 10000;
         const int consumerCount = 10;
-        var source = GenerateStreamData(dataSize);
+		IAsyncEnumerable<int> source = GenerateStreamData(dataSize);
         var pagination = Pagination.Create(pageSize: 100, currentPage: 1, totalCount: dataSize);
-        var paged = AsyncPagedEnumerable.Create(source, _ => ValueTask.FromResult(pagination));
+		IAsyncPagedEnumerable<int> paged = AsyncPagedEnumerable.Create(source, _ => ValueTask.FromResult(pagination));
 
         // Act
         var tasks = Enumerable.Range(0, consumerCount)
             .Select(async _ =>
             {
                 var items = new List<int>();
-                await foreach (var item in paged)
+                await foreach (int item in paged)
                 {
                     items.Add(item);
                 }
@@ -158,7 +158,7 @@ public sealed class AsyncPagedEnumerablePerformanceTests
             })
             .ToList();
 
-        var results = await Task.WhenAll(tasks);
+		int[] results = await Task.WhenAll(tasks);
 
         // Assert
         Assert.All(results, count => Assert.Equal(dataSize, count));
@@ -177,15 +177,15 @@ public sealed class AsyncPagedEnumerablePerformanceTests
         // Act
         for (int i = 0; i < iterations; i++)
         {
-            var source = GenerateStreamData(itemsPerIteration);
+			IAsyncEnumerable<int> source = GenerateStreamData(itemsPerIteration);
             var pagination = Pagination.Create(
                 pageSize: 10,
                 currentPage: 1,
                 totalCount: itemsPerIteration);
-            var paged = AsyncPagedEnumerable.Create(source, _ => ValueTask.FromResult(pagination));
+			IAsyncPagedEnumerable<int> paged = AsyncPagedEnumerable.Create(source, _ => ValueTask.FromResult(pagination));
 
-            var count = 0;
-            await foreach (var item in paged)
+			int count = 0;
+            await foreach (int item in paged)
             {
                 count++;
             }
@@ -194,8 +194,10 @@ public sealed class AsyncPagedEnumerablePerformanceTests
 
             // Dispose explicitly
             if (paged is IDisposable disposable)
-                disposable.Dispose();
-        }
+			{
+				disposable.Dispose();
+			}
+		}
 
         // Assert - if we got here without OOM, test passed
         Assert.True(true);
@@ -214,15 +216,15 @@ public sealed class AsyncPagedEnumerablePerformanceTests
         // Act
         for (int i = 0; i < iterations; i++)
         {
-            var source = GenerateStreamData(1000);
-            var paged = AsyncPagedEnumerable.Create(source);
+			IAsyncEnumerable<int> source = GenerateStreamData(1000);
+			IAsyncPagedEnumerable<int> paged = AsyncPagedEnumerable.Create(source);
             var cts = new CancellationTokenSource();
 
             try
             {
                 cts.CancelAfter(TimeSpan.FromMilliseconds(1));
                 int count = 0;
-                await foreach (var item in paged.WithCancellation(cts.Token))
+                await foreach (int item in paged.WithCancellation(cts.Token))
                 {
                     count++;
                 }
@@ -249,13 +251,13 @@ public sealed class AsyncPagedEnumerablePerformanceTests
     {
         // Arrange
         const int size = 50000;
-        var source = GenerateStreamData(size);
+		IAsyncEnumerable<int> source = GenerateStreamData(size);
         var pagination = Pagination.Create(pageSize: 100, currentPage: 1, totalCount: size);
-        var paged = AsyncPagedEnumerable.Create(source, _ => ValueTask.FromResult(pagination));
+		IAsyncPagedEnumerable<int> paged = AsyncPagedEnumerable.Create(source, _ => ValueTask.FromResult(pagination));
 
         // Act
         int count = 0;
-        await foreach (var item in paged)
+        await foreach (int item in paged)
         {
             count++;
             if (count % 1000 == 0)
@@ -275,13 +277,13 @@ public sealed class AsyncPagedEnumerablePerformanceTests
     [Fact]
     public async Task ZeroSizePagination_ShouldHandleGracefully()
     {
-        // Arrange
-        var source = GenerateStreamData(0);
+		// Arrange
+		IAsyncEnumerable<int> source = GenerateStreamData(0);
         var pagination = Pagination.Create(pageSize: 0, currentPage: 0, totalCount: 0);
-        var paged = AsyncPagedEnumerable.Create(source, _ => ValueTask.FromResult(pagination));
+		IAsyncPagedEnumerable<int> paged = AsyncPagedEnumerable.Create(source, _ => ValueTask.FromResult(pagination));
 
-        // Act
-        var items = await paged.ToListAsync();
+		// Act
+		List<int> items = await paged.ToListAsync();
 
         // Assert
         Assert.Empty(items);
@@ -295,16 +297,16 @@ public sealed class AsyncPagedEnumerablePerformanceTests
     {
         // Arrange
         const int size = 10000;
-        var source = GenerateStreamData(size);
+		IAsyncEnumerable<int> source = GenerateStreamData(size);
         var pagination = Pagination.Create(pageSize: 100, currentPage: 1, totalCount: size);
-        var paged = AsyncPagedEnumerable.Create(source, _ => ValueTask.FromResult(pagination));
+		IAsyncPagedEnumerable<int> paged = AsyncPagedEnumerable.Create(source, _ => ValueTask.FromResult(pagination));
 
-        var startTime = DateTime.UtcNow;
+		DateTime startTime = DateTime.UtcNow;
 
         // Act
         int count = 0;
         int taskCount = 0;
-        await foreach (var item in paged)
+        await foreach (int item in paged)
         {
             count++;
             taskCount++;
@@ -315,7 +317,7 @@ public sealed class AsyncPagedEnumerablePerformanceTests
             }
         }
 
-        var elapsed = DateTime.UtcNow - startTime;
+		TimeSpan elapsed = DateTime.UtcNow - startTime;
 
         // Assert
         Assert.Equal(size, count);
@@ -336,9 +338,9 @@ public sealed class AsyncPagedEnumerablePerformanceTests
         var allItems = new List<int>();
         for (int i = 0; i < outerSize; i++)
         {
-            var innerSource = GenerateStreamData(innerSize);
-            var paged = AsyncPagedEnumerable.Create(innerSource);
-            var items = await paged.ToListAsync();
+			IAsyncEnumerable<int> innerSource = GenerateStreamData(innerSize);
+			IAsyncPagedEnumerable<int> paged = AsyncPagedEnumerable.Create(innerSource);
+			List<int> items = await paged.ToListAsync();
             allItems.AddRange(items);
         }
 
@@ -368,7 +370,7 @@ public sealed class AsyncPagedEnumerableStressTests
         // Arrange
         const int size = 100;
         const int delayMs = 100;
-        var source = GenerateStreamData(size);
+		IAsyncEnumerable<int> source = GenerateStreamData(size);
 
         var paginationFactory = new Func<CancellationToken, ValueTask<Pagination>>(
             async ct =>
@@ -377,14 +379,14 @@ public sealed class AsyncPagedEnumerableStressTests
                 return Pagination.Create(pageSize: 10, currentPage: 1, totalCount: size);
             });
 
-        var paged = AsyncPagedEnumerable.Create(source, paginationFactory);
+		IAsyncPagedEnumerable<int> paged = AsyncPagedEnumerable.Create(source, paginationFactory);
 
-        // Act
-        var paginationTask1 = paged.GetPaginationAsync();
-        var paginationTask2 = paged.GetPaginationAsync();
-        var paginationTask3 = paged.GetPaginationAsync();
+		// Act
+		Task<Pagination> paginationTask1 = paged.GetPaginationAsync();
+		Task<Pagination> paginationTask2 = paged.GetPaginationAsync();
+		Task<Pagination> paginationTask3 = paged.GetPaginationAsync();
 
-        var results = await Task.WhenAll(paginationTask1, paginationTask2, paginationTask3);
+		Pagination[] results = await Task.WhenAll(paginationTask1, paginationTask2, paginationTask3);
 
         // Assert
         Assert.Equal(3, results.Length);

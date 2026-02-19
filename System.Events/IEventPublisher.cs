@@ -93,7 +93,7 @@ public static partial class IEventPublisherExtensions
             ArgumentNullException.ThrowIfNull(eventPublisher);
             ArgumentNullException.ThrowIfNull(events);
 
-            var tasks = events.Select(@event => eventPublisher.PublishAsync(@event, cancellationToken));
+			IEnumerable<Task> tasks = events.Select(@event => eventPublisher.PublishAsync(@event, cancellationToken));
 
             try
             {

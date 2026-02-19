@@ -1,4 +1,4 @@
-using System.ComponentModel.DataAnnotations;
+﻿using System.ComponentModel.DataAnnotations;
 
 using Microsoft.Extensions.DependencyInjection;
 
@@ -14,8 +14,8 @@ public sealed class ValidatorFactoryTests
         var resolver = new ResolverStub(typeof(TestValidatable), validator);
         var factory = new ValidatorFactory(new ServiceCollection().BuildServiceProvider(), [resolver]);
 
-        // Act
-        var result = factory.CreateValidator(typeof(TestValidatable));
+		// Act
+		IValidator? result = factory.CreateValidator(typeof(TestValidatable));
 
         // Assert
         Assert.Same(validator, result);
@@ -27,11 +27,11 @@ public sealed class ValidatorFactoryTests
         // Arrange
         var services = new ServiceCollection();
         services.AddSingleton<IValidator<TestValidatable>, TestValidator>();
-        var provider = services.BuildServiceProvider();
+		ServiceProvider provider = services.BuildServiceProvider();
         var factory = (IValidatorFactory)new ValidatorFactory(provider, []);
 
-        // Act
-        var result = factory.CreateValidator<TestValidatable>();
+		// Act
+		IValidator<TestValidatable>? result = factory.CreateValidator<TestValidatable>();
 
         // Assert
         Assert.IsType<TestValidator>(result);
@@ -43,8 +43,8 @@ public sealed class ValidatorFactoryTests
         // Arrange
         var factory = new ValidatorFactory(new ServiceCollection().BuildServiceProvider(), []);
 
-        // Act
-        var action = () => factory.CreateValidator(null!);
+		// Act
+		Func<IValidator> action = () => factory.CreateValidator(null!);
 
         // Assert
         Assert.Throws<ArgumentNullException>(action);
@@ -56,8 +56,8 @@ public sealed class ValidatorFactoryTests
         // Arrange
         var factory = new ValidatorFactory(new ServiceCollection().BuildServiceProvider(), []);
 
-        // Act
-        var result = factory.CreateValidator(typeof(TestValidatable));
+		// Act
+		IValidator? result = factory.CreateValidator(typeof(TestValidatable));
 
         // Assert
         Assert.Null(result);

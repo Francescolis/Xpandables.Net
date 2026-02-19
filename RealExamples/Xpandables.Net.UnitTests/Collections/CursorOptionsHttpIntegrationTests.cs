@@ -14,6 +14,7 @@
  * limitations under the License.
  *
 ********************************************************************************/
+using System.Collections.Specialized;
 using System.Net;
 using System.Rests.Abstractions;
 using System.Text;
@@ -49,7 +50,7 @@ public sealed class CursorOptionsHttpIntegrationTests : IDisposable
 		var cursorOptions = CursorOptions.Create<ProductDto, int>(x => x.Id);
 
 		var handler = new FakeProductHandler(pageSize: 3, totalProducts: 9);
-		var (provider, client) = BuildRestClient(handler);
+		(IServiceProvider? provider, IRestClient? client) = BuildRestClient(handler);
 		using var scope = provider as IDisposable;
 
 		var request = new GetProductsRequest(
@@ -57,7 +58,7 @@ public sealed class CursorOptionsHttpIntegrationTests : IDisposable
 			Cursor: cursorOptions.FormatToken(null));
 
 		// Act
-		var response = await client.SendAsync(request);
+		RestResponse response = await client.SendAsync(request);
 		var typed = response.ToRestResponse<PagedResult<ProductDto>>();
 
 		// Assert
@@ -74,7 +75,7 @@ public sealed class CursorOptionsHttpIntegrationTests : IDisposable
 		// Arrange
 		var cursorOptions = CursorOptions.Create<ProductDto, int>(x => x.Id);
 		var handler = new FakeProductHandler(pageSize: 3, totalProducts: 7);
-		var (provider, client) = BuildRestClient(handler);
+		(IServiceProvider? provider, IRestClient? client) = BuildRestClient(handler);
 		using var scope = provider as IDisposable;
 
 		var allItems = new List<ProductDto>();
@@ -84,7 +85,7 @@ public sealed class CursorOptionsHttpIntegrationTests : IDisposable
 		do
 		{
 			var request = new GetProductsRequest(PageSize: 3, Cursor: cursor);
-			var response = await client.SendAsync(request);
+			RestResponse response = await client.SendAsync(request);
 			var typed = response.ToRestResponse<PagedResult<ProductDto>>();
 
 			typed.IsSuccess.Should().BeTrue();
@@ -107,19 +108,19 @@ public sealed class CursorOptionsHttpIntegrationTests : IDisposable
 		// Arrange
 		var cursorOptions = CursorOptions.Create<ProductDto, int>(x => x.Id);
 		var handler = new FakeProductHandler(pageSize: 2, totalProducts: 5);
-		var (provider, client) = BuildRestClient(handler);
+		(IServiceProvider? provider, IRestClient? client) = BuildRestClient(handler);
 		using var scope = provider as IDisposable;
 
 		var firstRequest = new GetProductsRequest(PageSize: 2, Cursor: null);
-		var firstResponse = await client.SendAsync(firstRequest);
+		RestResponse firstResponse = await client.SendAsync(firstRequest);
 		var firstTyped = firstResponse.ToRestResponse<PagedResult<ProductDto>>();
 
 		firstTyped.IsSuccess.Should().BeTrue();
-		var nextCursorToken = firstTyped.Result!.NextCursor;
+		string? nextCursorToken = firstTyped.Result!.NextCursor;
 
 		// Act — parse cursor from response and format it back
-		var parsedCursor = cursorOptions.ParseToken(nextCursorToken);
-		var reformatted = cursorOptions.FormatToken(parsedCursor);
+		object? parsedCursor = cursorOptions.ParseToken(nextCursorToken);
+		string? reformatted = cursorOptions.FormatToken(parsedCursor);
 
 		// Assert — roundtrip produces the same token
 		reformatted.Should().Be(nextCursorToken);
@@ -141,7 +142,7 @@ public sealed class CursorOptionsHttpIntegrationTests : IDisposable
 			.ToList();
 
 		var handler = new FakeOrderHandler(orders, pageSize: 2);
-		var (provider, client) = BuildRestClient(handler);
+		(IServiceProvider? provider, IRestClient? client) = BuildRestClient(handler);
 		using var scope = provider as IDisposable;
 
 		var allItems = new List<OrderDto>();
@@ -151,7 +152,7 @@ public sealed class CursorOptionsHttpIntegrationTests : IDisposable
 		do
 		{
 			var request = new GetOrdersRequest(PageSize: 2, Cursor: cursor);
-			var response = await client.SendAsync(request);
+			RestResponse response = await client.SendAsync(request);
 			var typed = response.ToRestResponse<PagedResult<OrderDto>>();
 
 			typed.IsSuccess.Should().BeTrue();
@@ -161,8 +162,8 @@ public sealed class CursorOptionsHttpIntegrationTests : IDisposable
 
 			if (typed.Result.NextCursor is not null)
 			{
-				var parsedToken = cursorOptions.ParseToken(typed.Result.NextCursor);
-				var reformatted = cursorOptions.FormatToken(parsedToken);
+				object? parsedToken = cursorOptions.ParseToken(typed.Result.NextCursor);
+				string? reformatted = cursorOptions.FormatToken(parsedToken);
 				reformatted.Should().Be(typed.Result.NextCursor);
 			}
 
@@ -185,25 +186,25 @@ public sealed class CursorOptionsHttpIntegrationTests : IDisposable
 			parser: s => int.Parse(Encoding.UTF8.GetString(Convert.FromBase64String(s!))));
 
 		var handler = new FakeProductHandler(pageSize: 3, totalProducts: 6, useBase64Cursor: true);
-		var (provider, client) = BuildRestClient(handler);
+		(IServiceProvider? provider, IRestClient? client) = BuildRestClient(handler);
 		using var scope = provider as IDisposable;
 
 		// Act — first page
 		var request = new GetProductsRequest(PageSize: 3, Cursor: null);
-		var response = await client.SendAsync(request);
+		RestResponse response = await client.SendAsync(request);
 		var typed = response.ToRestResponse<PagedResult<ProductDto>>();
 
 		typed.IsSuccess.Should().BeTrue();
 		typed.Result.Should().NotBeNull();
 		typed.Result!.Items.Should().HaveCount(3);
 
-		var nextCursor = typed.Result.NextCursor!;
-		var parsedId = cursorOptions.ParseToken(nextCursor);
+		string nextCursor = typed.Result.NextCursor!;
+		object? parsedId = cursorOptions.ParseToken(nextCursor);
 		parsedId.Should().Be(3);
 
 		// Act — second page
 		var request2 = new GetProductsRequest(PageSize: 3, Cursor: nextCursor);
-		var response2 = await client.SendAsync(request2);
+		RestResponse response2 = await client.SendAsync(request2);
 		var typed2 = response2.ToRestResponse<PagedResult<ProductDto>>();
 
 		typed2.IsSuccess.Should().BeTrue();
@@ -224,12 +225,12 @@ public sealed class CursorOptionsHttpIntegrationTests : IDisposable
 		cursorOptions.IsInclusive.Should().BeTrue();
 
 		var handler = new FakeProductHandler(pageSize: 5, totalProducts: 5);
-		var (provider, client) = BuildRestClient(handler);
+		(IServiceProvider? provider, IRestClient? client) = BuildRestClient(handler);
 		using var scope = provider as IDisposable;
 
 		// Act
 		var request = new GetProductsRequest(PageSize: 5, Cursor: null);
-		var response = await client.SendAsync(request);
+		RestResponse response = await client.SendAsync(request);
 		var typed = response.ToRestResponse<PagedResult<ProductDto>>();
 
 		// Assert
@@ -244,12 +245,12 @@ public sealed class CursorOptionsHttpIntegrationTests : IDisposable
 		// Arrange
 		var cursorOptions = CursorOptions.Create<ProductDto, int>(x => x.Id);
 		var handler = new FakeErrorHandler();
-		var (provider, client) = BuildRestClient(handler);
+		(IServiceProvider? provider, IRestClient? client) = BuildRestClient(handler);
 		using var scope = provider as IDisposable;
 
 		// Act
 		var request = new GetProductsRequest(PageSize: 10, Cursor: null);
-		var response = await client.SendAsync(request);
+		RestResponse response = await client.SendAsync(request);
 
 		// Assert — API failure doesn't break cursor options
 		response.IsFailure.Should().BeTrue();
@@ -281,14 +282,14 @@ public sealed class CursorOptionsHttpIntegrationTests : IDisposable
 			.ConfigurePrimaryHttpMessageHandler(sp =>
 				sp.GetRequiredService<HttpMessageHandler>());
 
-		var provider = services.BuildServiceProvider();
-		var client = provider.GetRequiredService<IRestClient>();
+		ServiceProvider provider = services.BuildServiceProvider();
+		IRestClient client = provider.GetRequiredService<IRestClient>();
 		return (provider, client);
 	}
 
 	private static IDisposable UseDefaultSerializerOptions()
 	{
-		var previous = RestSettings.SerializerOptions;
+		JsonSerializerOptions previous = RestSettings.SerializerOptions;
 		RestSettings.SerializerOptions = new JsonSerializerOptions(JsonSerializerDefaults.Web)
 		{
 			TypeInfoResolver = new DefaultJsonTypeInfoResolver()
@@ -356,9 +357,9 @@ public sealed class CursorOptionsHttpIntegrationTests : IDisposable
 			HttpRequestMessage request,
 			CancellationToken cancellationToken)
 		{
-			var uri = request.RequestUri!;
-			var query = System.Web.HttpUtility.ParseQueryString(uri.Query);
-			var cursorStr = query["cursor"];
+			Uri uri = request.RequestUri!;
+			NameValueCollection query = System.Web.HttpUtility.ParseQueryString(uri.Query);
+			string? cursorStr = query["cursor"];
 
 			int startAfter = 0;
 			if (!string.IsNullOrEmpty(cursorStr))
@@ -374,8 +375,8 @@ public sealed class CursorOptionsHttpIntegrationTests : IDisposable
 				.Select(id => new ProductDto(id, $"Product-{id}"))
 				.ToList();
 
-			var lastId = items.Count > 0 ? items[^1].Id : (int?)null;
-			var hasMore = lastId.HasValue && lastId.Value < totalProducts;
+			int? lastId = items.Count > 0 ? items[^1].Id : (int?)null;
+			bool hasMore = lastId.HasValue && lastId.Value < totalProducts;
 
 			string? nextCursor = null;
 			if (hasMore)
@@ -386,7 +387,7 @@ public sealed class CursorOptionsHttpIntegrationTests : IDisposable
 			}
 
 			var result = new PagedResult<ProductDto>(items, nextCursor);
-			var json = JsonSerializer.Serialize(result, RestSettings.SerializerOptions);
+			string json = JsonSerializer.Serialize(result, RestSettings.SerializerOptions);
 
 			var response = new HttpResponseMessage(HttpStatusCode.OK)
 			{
@@ -404,9 +405,9 @@ public sealed class CursorOptionsHttpIntegrationTests : IDisposable
 			HttpRequestMessage request,
 			CancellationToken cancellationToken)
 		{
-			var uri = request.RequestUri!;
-			var query = System.Web.HttpUtility.ParseQueryString(uri.Query);
-			var cursorStr = query["cursor"];
+			Uri uri = request.RequestUri!;
+			NameValueCollection query = System.Web.HttpUtility.ParseQueryString(uri.Query);
+			string? cursorStr = query["cursor"];
 
 			IEnumerable<OrderDto> filtered = orders;
 			if (!string.IsNullOrEmpty(cursorStr))
@@ -416,12 +417,12 @@ public sealed class CursorOptionsHttpIntegrationTests : IDisposable
 			}
 
 			var items = filtered.Take(pageSize).ToList();
-			var lastId = items.Count > 0 ? items[^1].OrderId : (Guid?)null;
-			var hasMore = lastId.HasValue && orders.Any(o => o.OrderId.CompareTo(lastId.Value) > 0);
+			Guid? lastId = items.Count > 0 ? items[^1].OrderId : (Guid?)null;
+			bool hasMore = lastId.HasValue && orders.Any(o => o.OrderId.CompareTo(lastId.Value) > 0);
 
-			var nextCursor = hasMore ? lastId!.Value.ToString() : null;
+			string? nextCursor = hasMore ? lastId!.Value.ToString() : null;
 			var result = new PagedResult<OrderDto>(items, nextCursor);
-			var json = JsonSerializer.Serialize(result, RestSettings.SerializerOptions);
+			string json = JsonSerializer.Serialize(result, RestSettings.SerializerOptions);
 
 			var response = new HttpResponseMessage(HttpStatusCode.OK)
 			{

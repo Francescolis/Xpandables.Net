@@ -35,26 +35,26 @@ public sealed class EventPublisherSubscriber(
     {
         ArgumentNullException.ThrowIfNull(@event);
 
-        var eventType = @event.GetType();
+		Type eventType = @event.GetType();
         var tasks = new List<Task>();
-        var handlers = GetHandlersOf(eventType);
+		EventHandlerCollection handlers = GetHandlersOf(eventType);
 
-        foreach (var action in handlers.SyncHandlers.Cast<Action<TEvent>>())
+        foreach (Action<TEvent> action in handlers.SyncHandlers.Cast<Action<TEvent>>())
         {
             tasks.Add(ExecuteHandlerSafelyAsync(() => { action(@event); return Task.CompletedTask; }));
         }
 
-        foreach (var func in handlers.AsyncHandlers.Cast<Func<TEvent, CancellationToken, Task>>())
+        foreach (Func<TEvent, CancellationToken, Task> func in handlers.AsyncHandlers.Cast<Func<TEvent, CancellationToken, Task>>())
         {
             tasks.Add(ExecuteHandlerSafelyAsync(() => func(@event, cancellationToken)));
         }
 
-        foreach (var serviceHandler in handlers.ServiceHandlers.Cast<IEventHandler<TEvent>>())
+        foreach (IEventHandler<TEvent> serviceHandler in handlers.ServiceHandlers.Cast<IEventHandler<TEvent>>())
         {
             tasks.Add(ExecuteHandlerSafelyAsync(() => serviceHandler.HandleAsync(@event, cancellationToken)));
         }
 
-        if (handlerRegistry.TryGetWrapper(eventType, out var wrapper))
+        if (handlerRegistry.TryGetWrapper(eventType, out IEventHandlerWrapper? wrapper))
         {
             tasks.Add(ExecuteHandlerSafelyAsync(() => wrapper.HandleAsync(@event, cancellationToken)));
         }
@@ -104,15 +104,15 @@ public sealed class EventPublisherSubscriber(
 
     /// <inheritdoc/>
     public bool Unsubscribe<TEvent>(Action<TEvent> handler) where TEvent : class, IEvent
-        => _subscribers.TryGetValue(typeof(TEvent), out var handlers) && handlers.RemoveSyncHandler(handler);
+        => _subscribers.TryGetValue(typeof(TEvent), out EventHandlerCollection? handlers) && handlers.RemoveSyncHandler(handler);
 
     /// <inheritdoc/>
     public bool Unsubscribe<TEvent>(Func<TEvent, CancellationToken, Task> handler) where TEvent : class, IEvent
-        => _subscribers.TryGetValue(typeof(TEvent), out var handlers) && handlers.RemoveAsyncHandler(handler);
+        => _subscribers.TryGetValue(typeof(TEvent), out EventHandlerCollection? handlers) && handlers.RemoveAsyncHandler(handler);
 
     /// <inheritdoc/>
     public bool Unsubscribe<TEvent>(IEventHandler<TEvent> handler) where TEvent : class, IEvent
-        => _subscribers.TryGetValue(typeof(TEvent), out var handlers) && handlers.RemoveServiceHandler(handler);
+        => _subscribers.TryGetValue(typeof(TEvent), out EventHandlerCollection? handlers) && handlers.RemoveServiceHandler(handler);
 
     /// <inheritdoc/>
     protected override void Dispose(bool disposing)
@@ -132,7 +132,7 @@ public sealed class EventPublisherSubscriber(
         => _subscribers.GetOrAdd(typeof(TEvent), _ => new EventHandlerCollection());
 
     private EventHandlerCollection GetHandlersOf(Type eventType)
-        => _subscribers.TryGetValue(eventType, out var handlers) ? handlers : EventHandlerCollection.Empty;
+        => _subscribers.TryGetValue(eventType, out EventHandlerCollection? handlers) ? handlers : EventHandlerCollection.Empty;
 
     private sealed class EventHandlerCollection
     {
@@ -175,10 +175,14 @@ public sealed class EventPublisherSubscriber(
 
         public void Dispose()
         {
-            if (_disposed) return;
-            _disposed = true;
+            if (_disposed)
+			{
+				return;
+			}
 
-            var success = _handlerType switch
+			_disposed = true;
+
+			bool success = _handlerType switch
             {
                 HandlerType.Sync => _subscriber.Unsubscribe((Action<TEvent>)_handler),
                 HandlerType.Async => _subscriber.Unsubscribe((Func<TEvent, CancellationToken, Task>)_handler),

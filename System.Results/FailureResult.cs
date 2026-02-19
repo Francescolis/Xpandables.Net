@@ -26,34 +26,34 @@ namespace System.Results;
 /// diagnostics and user feedback. This type is not generic and always indicates a failure state.</remarks>
 public sealed record FailureResult : Result
 {
-    /// <inheritdoc/>
-    public sealed override bool IsGeneric => false;
+	/// <inheritdoc/>
+	public sealed override bool IsGeneric => false;
 
-    /// <inheritdoc/>
-    public sealed override bool IsFailure => true;
+	/// <inheritdoc/>
+	public sealed override bool IsFailure => true;
 
-    /// <inheritdoc/>
-    public sealed override bool IsSuccess => false;
+	/// <inheritdoc/>
+	public sealed override bool IsSuccess => false;
 
-    /// <summary>
-    /// Represents an exception associated with the result, if any.
-    /// </summary>
-    public new Exception? Exception { get => base.Exception; init => base.Exception = value; }
+	/// <summary>
+	/// Represents an exception associated with the result, if any.
+	/// </summary>
+	public new Exception? Exception { get => base.Exception; init => base.Exception = value; }
 
-    /// <summary>
-    /// Represents a collection of errors associated with the result.
-    /// </summary>
-    public required new ElementCollection Errors { get => base.Errors; init => base.Errors = value; }
+	/// <summary>
+	/// Represents a collection of errors associated with the result.
+	/// </summary>
+	public new required ElementCollection Errors { get => base.Errors; init => base.Errors = value; }
 
-    /// <summary>
-    /// Represents a short, human-readable summary of the problem type.
-    /// </summary>
-    public new string? Title { get => base.Title; init => base.Title = value; }
+	/// <summary>
+	/// Represents a short, human-readable summary of the problem type.
+	/// </summary>
+	public new string? Title { get => base.Title; init => base.Title = value; }
 
-    /// <summary>
-    /// Represents a detailed, human-readable explanation specific to this occurrence of the problem.
-    /// </summary>
-    public new string? Detail { get => base.Detail; init => base.Detail = value; }
+	/// <summary>
+	/// Represents a detailed, human-readable explanation specific to this occurrence of the problem.
+	/// </summary>
+	public new string? Detail { get => base.Detail; init => base.Detail = value; }
 }
 
 /// <summary>
@@ -67,80 +67,80 @@ public sealed record FailureResult : Result
 /// <typeparam name="TValue">The type of the value associated with the result, if applicable.</typeparam>
 public sealed record FailureResult<TValue> : Result<TValue>
 {
-    /// <inheritdoc/>
-    public sealed override bool IsFailure => true;
+	/// <inheritdoc/>
+	public sealed override bool IsFailure => true;
 
-    /// <inheritdoc/>
-    public sealed override bool IsSuccess => false;
+	/// <inheritdoc/>
+	public sealed override bool IsSuccess => false;
 
-    /// <summary>
-    /// Represents an exception associated with the result, if any.
-    /// </summary>
-    public new Exception? Exception { get => base.Exception; init => base.Exception = value; }
+	/// <summary>
+	/// Represents an exception associated with the result, if any.
+	/// </summary>
+	public new Exception? Exception { get => base.Exception; init => base.Exception = value; }
 
-    /// <summary>
-    /// Represents a collection of errors associated with the result.
-    /// </summary>
-    public required new ElementCollection Errors { get => base.Errors; init => base.Errors = value; }
+	/// <summary>
+	/// Represents a collection of errors associated with the result.
+	/// </summary>
+	public new required ElementCollection Errors { get => base.Errors; init => base.Errors = value; }
 
-    /// <summary>
-    /// Represents a short, human-readable summary of the problem type.
-    /// </summary>
-    public new string? Title { get => base.Title; init => base.Title = value; }
+	/// <summary>
+	/// Represents a short, human-readable summary of the problem type.
+	/// </summary>
+	public new string? Title { get => base.Title; init => base.Title = value; }
 
-    /// <summary>
-    /// Represents a detailed, human-readable explanation specific to this occurrence of the problem.
-    /// </summary>
-    public new string? Detail { get => base.Detail; init => base.Detail = value; }
+	/// <summary>
+	/// Represents a detailed, human-readable explanation specific to this occurrence of the problem.
+	/// </summary>
+	public new string? Detail { get => base.Detail; init => base.Detail = value; }
 
-    /// <summary>
-    /// Converts a generic failure result to a non-generic <see cref="FailureResult"/> instance, preserving all error
-    /// details.
-    /// </summary>
-    /// <remarks>Use this operator to simplify handling of failure results when the value type is not needed.
-    /// All error information, including status code, title, details, errors, headers, extensions, and exception, is
-    /// retained in the conversion.</remarks>
-    /// <param name="failure">The generic failure result to convert. Cannot be <see langword="null"/>.</param>
-    [Diagnostics.CodeAnalysis.SuppressMessage("Usage", "CA2225:Operator overloads have named alternates", Justification = "<Pending>")]
-    public static implicit operator FailureResult(FailureResult<TValue> failure)
-    {
-        ArgumentNullException.ThrowIfNull(failure);
+	/// <summary>
+	/// Converts a generic failure result to a non-generic <see cref="FailureResult"/> instance, preserving all error
+	/// details.
+	/// </summary>
+	/// <remarks>Use this operator to simplify handling of failure results when the value type is not needed.
+	/// All error information, including status code, title, details, errors, headers, extensions, and exception, is
+	/// retained in the conversion.</remarks>
+	/// <param name="failure">The generic failure result to convert. Cannot be <see langword="null"/>.</param>
+	[Diagnostics.CodeAnalysis.SuppressMessage("Usage", "CA2225:Operator overloads have named alternates", Justification = "<Pending>")]
+	public static implicit operator FailureResult(FailureResult<TValue> failure)
+	{
+		ArgumentNullException.ThrowIfNull(failure);
 
-        return new()
-        {
-            StatusCode = failure.StatusCode,
-            Title = failure.Title,
-            Detail = failure.Detail,
-            Location = failure.Location,
-            Errors = failure.Errors,
-            Headers = failure.Headers,
-            Extensions = failure.Extensions,
-            Exception = failure.Exception
-        };
-    }
+		return new()
+		{
+			StatusCode = failure.StatusCode,
+			Title = failure.Title,
+			Detail = failure.Detail,
+			Location = failure.Location,
+			Errors = failure.Errors,
+			Headers = failure.Headers,
+			Extensions = failure.Extensions,
+			Exception = failure.Exception
+		};
+	}
 
-    /// <summary>
-    /// Converts a non-generic FailureResult instance to a FailureResult generic instance, preserving all failure
-    /// details.
-    /// </summary>
-    /// <remarks>This operator enables seamless conversion from a non-generic failure result to a generic
-    /// failure result, allowing code that expects FailureResult generic to handle failures without loss of information.
-    /// All properties from the original FailureResult are copied to the new instance.</remarks>
-    /// <param name="failure">The FailureResult instance to convert. Cannot be null.</param>
-    [Diagnostics.CodeAnalysis.SuppressMessage("Usage", "CA2225:Operator overloads have named alternates", Justification = "<Pending>")]
-    public static implicit operator FailureResult<TValue>(FailureResult failure)
-    {
-        ArgumentNullException.ThrowIfNull(failure);
-        return new()
-        {
-            StatusCode = failure.StatusCode,
-            Title = failure.Title,
-            Detail = failure.Detail,
-            Location = failure.Location,
-            Errors = failure.Errors,
-            Headers = failure.Headers,
-            Extensions = failure.Extensions,
-            Exception = failure.Exception
-        };
-    }
+	/// <summary>
+	/// Converts a non-generic FailureResult instance to a FailureResult generic instance, preserving all failure
+	/// details.
+	/// </summary>
+	/// <remarks>This operator enables seamless conversion from a non-generic failure result to a generic
+	/// failure result, allowing code that expects FailureResult generic to handle failures without loss of information.
+	/// All properties from the original FailureResult are copied to the new instance.</remarks>
+	/// <param name="failure">The FailureResult instance to convert. Cannot be null.</param>
+	[Diagnostics.CodeAnalysis.SuppressMessage("Usage", "CA2225:Operator overloads have named alternates", Justification = "<Pending>")]
+	public static implicit operator FailureResult<TValue>(FailureResult failure)
+	{
+		ArgumentNullException.ThrowIfNull(failure);
+		return new()
+		{
+			StatusCode = failure.StatusCode,
+			Title = failure.Title,
+			Detail = failure.Detail,
+			Location = failure.Location,
+			Errors = failure.Errors,
+			Headers = failure.Headers,
+			Extensions = failure.Extensions,
+			Exception = failure.Exception
+		};
+	}
 }

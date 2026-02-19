@@ -10,7 +10,7 @@ builder.AddServiceDefaults();
 
 builder.AddSqlServerClient("eventDB");
 
-var connectionString = builder.Configuration.GetConnectionString("eventDB");
+string? connectionString = builder.Configuration.GetConnectionString("eventDB");
 
 using var connection = new SqlConnection(connectionString);
 await connection.OpenAsync().ConfigureAwait(false);

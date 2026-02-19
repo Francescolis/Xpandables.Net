@@ -88,7 +88,7 @@ public static class ResultExtensions
 		bool isDevelopment = false;
 #endif
 
-		HttpStatusCode statusCode = (HttpStatusCode)exception.StatusCode;
+		var statusCode = (HttpStatusCode)exception.StatusCode;
 
 		try
 		{
@@ -167,7 +167,10 @@ public static class ResultExtensions
 				foreach (string? value in entry.Values)
 				{
 					if (string.IsNullOrWhiteSpace(value))
+					{
 						continue;
+					}
+
 					modelStateDictionary.AddModelError(entry.Key, value);
 				}
 			}
@@ -215,12 +218,12 @@ public static class ResultExtensions
 				.GetRequiredService<IWebHostEnvironment>()
 				.IsDevelopment();
 
-			var title = result.Title ?? statusCodeExtension.GetTitle(result.StatusCode);
-			var detail = result.Detail ?? statusCodeExtension.GetDetail(result.StatusCode);
-			var status = (int)result.StatusCode;
-			var instance = $"{context.Request.Method} {context.Request.Path}{context.Request.QueryString.Value}";
-			var type = isDevelopment ? result.GetType().Name : null;
-			var extensions = result.Extensions.ToDictionaryObject();
+			string title = result.Title ?? statusCodeExtension.GetTitle(result.StatusCode);
+			string detail = result.Detail ?? statusCodeExtension.GetDetail(result.StatusCode);
+			int status = (int)result.StatusCode;
+			string instance = $"{context.Request.Method} {context.Request.Path}{context.Request.QueryString.Value}";
+			string? type = isDevelopment ? result.GetType().Name : null;
+			IDictionary<string, object?> extensions = result.Extensions.ToDictionaryObject();
 
 			ProblemDetails problemDetails = result.StatusCode.IsValidationProblem
 					? new ValidationProblemDetails(result.ToModelStateDictionary(isDevelopment))

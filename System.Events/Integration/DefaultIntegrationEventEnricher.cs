@@ -36,9 +36,9 @@ public sealed class DefaultIntegrationEventEnricher(IEventContextAccessor access
     {
         ArgumentNullException.ThrowIfNull(@event);
 
-        // Prefer values already set on the integration event
-        var correlationId = @event.CorrelationId;
-        var causationId = @event.CausationId;
+		// Prefer values already set on the integration event
+		string? correlationId = @event.CorrelationId;
+		string? causationId = @event.CausationId;
 
         // If it wraps a domain event, prefer that next
         if (@event is IntegrationEvent<IDomainEvent> wrapper)
@@ -47,8 +47,8 @@ public sealed class DefaultIntegrationEventEnricher(IEventContextAccessor access
             causationId ??= wrapper.DomainEvent.CausationId;
         }
 
-        // Finally fallback to ambient context
-        var context = _accessor.Current;
+		// Finally fallback to ambient context
+		EventContext context = _accessor.Current;
         correlationId ??= context.CorrelationId;
         causationId ??= context.CausationId;
 
@@ -57,9 +57,16 @@ public sealed class DefaultIntegrationEventEnricher(IEventContextAccessor access
             return @event;
         }
 
-        if (!string.IsNullOrWhiteSpace(correlationId)) @event = (TIntegrationEvent)@event.WithCorrelation(correlationId);
-        if (!string.IsNullOrWhiteSpace(causationId)) @event = (TIntegrationEvent)@event.WithCausation(causationId);
+        if (!string.IsNullOrWhiteSpace(correlationId))
+		{
+			@event = (TIntegrationEvent)@event.WithCorrelation(correlationId);
+		}
 
-        return @event;
+		if (!string.IsNullOrWhiteSpace(causationId))
+		{
+			@event = (TIntegrationEvent)@event.WithCausation(causationId);
+		}
+
+		return @event;
     }
 }

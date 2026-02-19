@@ -1,4 +1,4 @@
-/*******************************************************************************
+﻿/*******************************************************************************
  * Copyright (C) 2025 Kamersoft
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
@@ -68,11 +68,11 @@ public static class GroupingExtensions
 
                 var groups = new Dictionary<TKey, List<TSource>>(comparer);
 
-                await foreach (var item in source.WithCancellation(ct).ConfigureAwait(false))
+                await foreach (TSource? item in source.WithCancellation(ct).ConfigureAwait(false))
                 {
-                    var key = keySelector(item)
+                    TKey key = keySelector(item)
                         ?? throw new InvalidOperationException($"Key selector returned null for element of type '{typeof(TSource).Name}'.");
-                    if (!groups.TryGetValue(key, out var group))
+                    if (!groups.TryGetValue(key, out List<TSource>? group))
                     {
                         group = [];
                         groups[key] = group;
@@ -80,7 +80,7 @@ public static class GroupingExtensions
                     group.Add(item);
                 }
 
-                foreach (var kvp in groups)
+                foreach (KeyValuePair<TKey, List<TSource>> kvp in groups)
                 {
                     ct.ThrowIfCancellationRequested();
                     yield return new Grouping<TKey, TSource>(kvp.Key, kvp.Value);
@@ -137,12 +137,12 @@ public static class GroupingExtensions
 
                 var groups = new Dictionary<TKey, List<TElement>>(comparer);
 
-                await foreach (var item in source.WithCancellation(ct).ConfigureAwait(false))
+                await foreach (TSource? item in source.WithCancellation(ct).ConfigureAwait(false))
                 {
-                    var key = keySelector(item)
+                    TKey key = keySelector(item)
                         ?? throw new InvalidOperationException($"Key selector returned null for element of type '{typeof(TSource).Name}'.");
-                    var element = elementSelector(item);
-                    if (!groups.TryGetValue(key, out var group))
+					TElement? element = elementSelector(item);
+                    if (!groups.TryGetValue(key, out List<TElement>? group))
                     {
                         group = [];
                         groups[key] = group;
@@ -150,7 +150,7 @@ public static class GroupingExtensions
                     group.Add(element);
                 }
 
-                foreach (var kvp in groups)
+                foreach (KeyValuePair<TKey, List<TElement>> kvp in groups)
                 {
                     ct.ThrowIfCancellationRequested();
                     yield return new Grouping<TKey, TElement>(kvp.Key, kvp.Value);
@@ -207,11 +207,11 @@ public static class GroupingExtensions
 
                 var groups = new Dictionary<TKey, List<TSource>>(comparer);
 
-                await foreach (var item in source.WithCancellation(ct).ConfigureAwait(false))
+                await foreach (TSource? item in source.WithCancellation(ct).ConfigureAwait(false))
                 {
-                    var key = keySelector(item)
+                    TKey key = keySelector(item)
                         ?? throw new InvalidOperationException($"Key selector returned null for element of type '{typeof(TSource).Name}'.");
-                    if (!groups.TryGetValue(key, out var group))
+                    if (!groups.TryGetValue(key, out List<TSource>? group))
                     {
                         group = [];
                         groups[key] = group;
@@ -219,7 +219,7 @@ public static class GroupingExtensions
                     group.Add(item);
                 }
 
-                foreach (var kvp in groups)
+                foreach (KeyValuePair<TKey, List<TSource>> kvp in groups)
                 {
                     ct.ThrowIfCancellationRequested();
                     yield return resultSelector(kvp.Key, kvp.Value);

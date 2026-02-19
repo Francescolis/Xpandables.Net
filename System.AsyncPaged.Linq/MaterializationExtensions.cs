@@ -1,4 +1,4 @@
-/*******************************************************************************
+﻿/*******************************************************************************
  * Copyright (C) 2025 Kamersoft
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
@@ -83,8 +83,8 @@ public static class MaterializationExtensions
     {
         ArgumentNullException.ThrowIfNull(source);
 
-        // Enumerate and collect all items
-        var items = await source.ToListAsync(cancellationToken).ConfigureAwait(false);
+		// Enumerate and collect all items
+		List<T> items = await source.ToListAsync(cancellationToken).ConfigureAwait(false);
 
         // Create pagination with accurate count
         var pagination = Pagination.Create(
@@ -123,8 +123,8 @@ public static class MaterializationExtensions
         ArgumentOutOfRangeException.ThrowIfNegativeOrZero(pageSize);
         ArgumentOutOfRangeException.ThrowIfNegativeOrZero(currentPage);
 
-        // Enumerate and collect all items
-        var items = await source.ToListAsync(cancellationToken).ConfigureAwait(false);
+		// Enumerate and collect all items
+		List<T> items = await source.ToListAsync(cancellationToken).ConfigureAwait(false);
 
         // Create pagination with accurate count and specified page size
         var pagination = Pagination.Create(
@@ -157,8 +157,8 @@ public static class MaterializationExtensions
     {
         ArgumentNullException.ThrowIfNull(source);
 
-        // Enumerate and collect all items in one pass
-        var items = await source.ToListAsync(cancellationToken).ConfigureAwait(false);
+		// Enumerate and collect all items in one pass
+		List<T> items = await source.ToListAsync(cancellationToken).ConfigureAwait(false);
 
         // Create pagination with accurate count
         var pagination = Pagination.FromTotalCount(items.Count);
@@ -190,8 +190,8 @@ public static class MaterializationExtensions
         ArgumentOutOfRangeException.ThrowIfNegativeOrZero(pageSize);
         ArgumentOutOfRangeException.ThrowIfNegativeOrZero(currentPage);
 
-        // Enumerate and collect all items
-        var items = await source.ToListAsync(cancellationToken).ConfigureAwait(false);
+		// Enumerate and collect all items
+		List<T> items = await source.ToListAsync(cancellationToken).ConfigureAwait(false);
 
         // Create pagination with specified parameters
         var pagination = Pagination.Create(

@@ -52,11 +52,13 @@ public static class IEventContextAppExtensions
             ArgumentNullException.ThrowIfNull(app);
 
             if (app.Services.GetService<TEventContextMiddleware>() is null)
-                throw new InvalidOperationException(
+			{
+				throw new InvalidOperationException(
                     $"{typeof(TEventContextMiddleware).Name} is not registered. " +
                     $"Please ensure AddXEventContextMiddleware<{typeof(TEventContextMiddleware).Name}>() is called during service registration.");
+			}
 
-            app.UseMiddleware<TEventContextMiddleware>();
+			app.UseMiddleware<TEventContextMiddleware>();
             return app;
         }
 

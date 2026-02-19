@@ -1,4 +1,4 @@
-/*******************************************************************************
+﻿/*******************************************************************************
  * Copyright (C) 2025 Kamersoft
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
@@ -43,7 +43,7 @@ public sealed class OptionalJsonConverter<T> : JsonConverter<Optional<T>>
         JsonTypeInfo<T>? typeInfo = (JsonTypeInfo<T>?)options.GetTypeInfo(typeof(T))
             ?? throw new JsonException($"No type info found for type {typeof(T)}.");
 
-        var valueT = JsonSerializer.Deserialize(ref reader, typeInfo);
+		T? valueT = JsonSerializer.Deserialize(ref reader, typeInfo);
 
         return valueT is not null ? Optional.Some(valueT) : Optional.Empty<T>();
     }

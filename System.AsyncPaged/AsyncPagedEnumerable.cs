@@ -25,377 +25,383 @@ namespace System.Collections.Generic;
 /// <typeparam name="T">The type of elements in the sequence.</typeparam>
 public sealed class AsyncPagedEnumerable<T> : IAsyncPagedEnumerable<T>, IAsyncDisposable, IDisposable
 {
-    private readonly IAsyncEnumerable<T>? _source;
-    private readonly IQueryable<T>? _queryable;
-    private readonly Func<CancellationToken, ValueTask<Pagination>> _paginationFactory;
-    private readonly PaginationStrategy _strategy;
-    private readonly CursorOptions<T>? _cursorOptions;
+	private readonly IAsyncEnumerable<T>? _source;
+	private readonly IQueryable<T>? _queryable;
+	private readonly Func<CancellationToken, ValueTask<Pagination>> _paginationFactory;
+	private readonly PaginationStrategy _strategy;
+	private readonly CursorOptions<T>? _cursorOptions;
 
-    // Lazy materialization
-    private List<T>? _materializedItems;
-    private readonly SemaphoreSlim _materializationLock = new(1, 1);
+	// Lazy materialization
+	private List<T>? _materializedItems;
+	private readonly SemaphoreSlim _materializationLock = new(1, 1);
 
-    private volatile int _paginationState; // 0 = not started, 1 = computing, 2 = computed, 3 = faulted
-    private Task<Pagination>? _paginationTask;
-    private Exception? _paginationError;
-    private Pagination _pagination; // backing store
+	private volatile int _paginationState; // 0 = not started, 1 = computing, 2 = computed, 3 = faulted
+	private Task<Pagination>? _paginationTask;
+	private Exception? _paginationError;
+	private Pagination _pagination; // backing store
 
-    /// <inheritdoc/>
-    public Pagination Pagination => _paginationState == 2 ? _pagination : Pagination.Empty;
+	/// <inheritdoc/>
+	public Pagination Pagination => _paginationState == 2 ? _pagination : Pagination.Empty;
 
-    /// <summary>
-    /// Initializes a new instance of the <see cref="AsyncPagedEnumerable{T}"/> class with an async enumerable source.
-    /// </summary>
-    /// <remarks>
-    /// This constructor is designed for scenarios where pagination metadata can be provided via a factory function.
-    /// The pagination state is computed lazily when <see cref="GetPaginationAsync"/> is called.
-    /// </remarks>
-    /// <param name="source">The asynchronous enumerable representing the data source. Cannot be <see langword="null"/>.</param>
-    /// <param name="paginationFactory">A factory function that creates <see cref="Pagination"/> metadata.
-    /// If null, pagination will be inferred from the source that gets materialized.</param>
-    /// <param name="strategy">The pagination strategy to apply.</param>
-    /// <exception cref="ArgumentNullException">Thrown when <paramref name="source"/> or <paramref name="paginationFactory"/> is null.</exception>
-    internal AsyncPagedEnumerable(
-        IAsyncEnumerable<T> source,
-        Func<CancellationToken, ValueTask<Pagination>>? paginationFactory = default,
-        PaginationStrategy strategy = PaginationStrategy.None)
-    {
-        ArgumentNullException.ThrowIfNull(source);
+	/// <summary>
+	/// Initializes a new instance of the <see cref="AsyncPagedEnumerable{T}"/> class with an async enumerable source.
+	/// </summary>
+	/// <remarks>
+	/// This constructor is designed for scenarios where pagination metadata can be provided via a factory function.
+	/// The pagination state is computed lazily when <see cref="GetPaginationAsync"/> is called.
+	/// </remarks>
+	/// <param name="source">The asynchronous enumerable representing the data source. Cannot be <see langword="null"/>.</param>
+	/// <param name="paginationFactory">A factory function that creates <see cref="Pagination"/> metadata.
+	/// If null, pagination will be inferred from the source that gets materialized.</param>
+	/// <param name="strategy">The pagination strategy to apply.</param>
+	/// <exception cref="ArgumentNullException">Thrown when <paramref name="source"/> or <paramref name="paginationFactory"/> is null.</exception>
+	internal AsyncPagedEnumerable(
+		IAsyncEnumerable<T> source,
+		Func<CancellationToken, ValueTask<Pagination>>? paginationFactory = default,
+		PaginationStrategy strategy = PaginationStrategy.None)
+	{
+		ArgumentNullException.ThrowIfNull(source);
 
-        _source = source;
-        _paginationFactory = paginationFactory ?? AsyncEnumerablePaginationFactory(source);
-        _pagination = Pagination.Empty;
-        _strategy = strategy;
-        _cursorOptions = null;
-    }
+		_source = source;
+		_paginationFactory = paginationFactory ?? AsyncEnumerablePaginationFactory(source);
+		_pagination = Pagination.Empty;
+		_strategy = strategy;
+		_cursorOptions = null;
+	}
 
-    /// <summary>
-    /// Initializes a new instance of the <see cref="AsyncPagedEnumerable{T}"/> class with a queryable source.
-    /// </summary>
-    /// <remarks>
-    /// This constructor is designed for IQueryable sources where pagination metadata can be extracted from
-    /// the query expression or via a custom factory.
-    /// </remarks>
-    /// <param name="query">The queryable data source. Cannot be <see langword="null"/>.</param>
-    /// <param name="cursorOptions">Optional cursor metadata used to drive continuation token formatting.</param>
-    /// <param name="paginationFactory">A factory function that creates <see cref="Pagination"/> metadata. 
-    /// If null, pagination will be inferred from the query.</param>
-    /// <param name="strategy">The pagination strategy to apply.</param>
-    /// <exception cref="ArgumentNullException">Thrown when <paramref name="query"/> is null.</exception>
-    internal AsyncPagedEnumerable(
-        IQueryable<T> query,
-        CursorOptions<T>? cursorOptions = null,
-        Func<CancellationToken, ValueTask<Pagination>>? paginationFactory = default,
-        PaginationStrategy strategy = PaginationStrategy.None)
-    {
-        ArgumentNullException.ThrowIfNull(query);
+	/// <summary>
+	/// Initializes a new instance of the <see cref="AsyncPagedEnumerable{T}"/> class with a queryable source.
+	/// </summary>
+	/// <remarks>
+	/// This constructor is designed for IQueryable sources where pagination metadata can be extracted from
+	/// the query expression or via a custom factory.
+	/// </remarks>
+	/// <param name="query">The queryable data source. Cannot be <see langword="null"/>.</param>
+	/// <param name="cursorOptions">Optional cursor metadata used to drive continuation token formatting.</param>
+	/// <param name="paginationFactory">A factory function that creates <see cref="Pagination"/> metadata. 
+	/// If null, pagination will be inferred from the query.</param>
+	/// <param name="strategy">The pagination strategy to apply.</param>
+	/// <exception cref="ArgumentNullException">Thrown when <paramref name="query"/> is null.</exception>
+	internal AsyncPagedEnumerable(
+		IQueryable<T> query,
+		CursorOptions<T>? cursorOptions = null,
+		Func<CancellationToken, ValueTask<Pagination>>? paginationFactory = default,
+		PaginationStrategy strategy = PaginationStrategy.None)
+	{
+		ArgumentNullException.ThrowIfNull(query);
 
-        _queryable = query;
-        _cursorOptions = cursorOptions;
-        _paginationFactory = paginationFactory ?? QueryablePaginationFactory(query, cursorOptions);
-        _pagination = Pagination.Empty;
-        _strategy = strategy;
-    }
+		_queryable = query;
+		_cursorOptions = cursorOptions;
+		_paginationFactory = paginationFactory ?? QueryablePaginationFactory(query, cursorOptions);
+		_pagination = Pagination.Empty;
+		_strategy = strategy;
+	}
 
-    /// <inheritdoc/>
-    public IAsyncPagedEnumerable<T> WithStrategy(PaginationStrategy strategy)
-    {
-        // Return a new instance with the updated strategy but sharing the same source definition.
-        // Note: This creates a new view. If the source is an IAsyncEnumerable that cannot be iterated twice,
-        // this should be used with caution. However, for IQueryable or List-based sources, it is safe.
+	/// <inheritdoc/>
+	public IAsyncPagedEnumerable<T> WithStrategy(PaginationStrategy strategy)
+	{
+		// Return a new instance with the updated strategy but sharing the same source definition.
+		// Note: This creates a new view. If the source is an IAsyncEnumerable that cannot be iterated twice,
+		// this should be used with caution. However, for IQueryable or List-based sources, it is safe.
 
-        if (_strategy == strategy)
-        {
-            return this;
-        }
+		if (_strategy == strategy)
+		{
+			return this;
+		}
 
-        if (_source is not null)
-        {
-            return new AsyncPagedEnumerable<T>(_source, _paginationFactory, strategy);
-        }
+		if (_source is not null)
+		{
+			return new AsyncPagedEnumerable<T>(_source, _paginationFactory, strategy);
+		}
 
-        if (_queryable is not null)
-        {
-            return new AsyncPagedEnumerable<T>(_queryable, _cursorOptions, _paginationFactory, strategy);
-        }
+		if (_queryable is not null)
+		{
+			return new AsyncPagedEnumerable<T>(_queryable, _cursorOptions, _paginationFactory, strategy);
+		}
 
-        return this;
-    }
+		return this;
+	}
 
-    /// <inheritdoc/>
-    public IAsyncPagedEnumerator<T> GetAsyncEnumerator(CancellationToken cancellationToken = default)
-    {
-        Pagination initial = Pagination;
+	/// <inheritdoc/>
+	public IAsyncPagedEnumerator<T> GetAsyncEnumerator(CancellationToken cancellationToken = default)
+	{
+		Pagination initial = Pagination;
 
-        var enumerator = (_source, _queryable) switch
-        {
-            (not null, _) when (_materializedItems is not null) => _materializedItems.ToAsyncEnumerable().GetAsyncEnumerator(cancellationToken),
-            (not null, _) => _source.GetAsyncEnumerator(cancellationToken),
-            (null, not null) => _queryable.ToAsyncEnumerable().GetAsyncEnumerator(cancellationToken),
-            _ => AsyncPagedEnumerator.Empty<T>(initial)
-        };
+		IAsyncEnumerator<T> enumerator = (_source, _queryable) switch
+		{
+			(not null, _) when _materializedItems is not null => _materializedItems.ToAsyncEnumerable().GetAsyncEnumerator(cancellationToken),
+			(not null, _) => _source.GetAsyncEnumerator(cancellationToken),
+			(null, not null) => _queryable.ToAsyncEnumerable().GetAsyncEnumerator(cancellationToken),
+			_ => AsyncPagedEnumerator.Empty<T>(initial)
+		};
 
-        return AsyncPagedEnumerator.Create(enumerator, initial, _strategy, cancellationToken);
-    }
+		return AsyncPagedEnumerator.Create(enumerator, initial, _strategy, cancellationToken);
+	}
 
-    /// <inheritdoc/>
-    public Task<Pagination> GetPaginationAsync(CancellationToken cancellationToken = default)
-    {
-        // Fast path if already computed.
-        if (_paginationState == 2)
-        {
-            return Task.FromResult(_pagination);
-        }
+	/// <inheritdoc/>
+	public Task<Pagination> GetPaginationAsync(CancellationToken cancellationToken = default)
+	{
+		// Fast path if already computed.
+		if (_paginationState == 2)
+		{
+			return Task.FromResult(_pagination);
+		}
 
-        // If a previous attempt faulted, propagate.
-        if (_paginationState == 3)
-        {
-            ExceptionDispatchInfo.Capture(_paginationError!).Throw();
-        }
+		// If a previous attempt faulted, propagate.
+		if (_paginationState == 3)
+		{
+			ExceptionDispatchInfo.Capture(_paginationError!).Throw();
+		}
 
-        // Try to start computation atomically.
-        if (Interlocked.CompareExchange(ref _paginationState, 1, 0) == 0)
-        {
-            var task = ComputeAndStoreAsync(cancellationToken);
-            Volatile.Write(ref _paginationTask, task);
-            return task;
-        }
+		// Try to start computation atomically.
+		if (Interlocked.CompareExchange(ref _paginationState, 1, 0) == 0)
+		{
+			Task<Pagination> task = ComputeAndStoreAsync(cancellationToken);
+			Volatile.Write(ref _paginationTask, task);
+			return task;
+		}
 
-        // Another thread is or has already computed the page context.
-        // Wait until the task reference becomes visible (handles publication reordering/race).
-        var existing = Volatile.Read(ref _paginationTask);
-        if (existing is null)
-        {
-            SpinWait sw = new();
-            do
-            {
-                sw.SpinOnce();
-                existing = Volatile.Read(ref _paginationTask);
+		// Another thread is or has already computed the page context.
+		// Wait until the task reference becomes visible (handles publication reordering/race).
+		Task<Pagination>? existing = Volatile.Read(ref _paginationTask);
+		if (existing is null)
+		{
+			SpinWait sw = new();
+			do
+			{
+				sw.SpinOnce();
+				existing = Volatile.Read(ref _paginationTask);
 
-                // Safety check: if state changed to computed or faulted but task is still null,
-                // break to avoid infinite loop due to potential memory ordering issues.
-                int currentState = _paginationState;
-                if (currentState >= 2 && existing is null)
-                {
-                    return currentState == 2
-                        ? Task.FromResult(_pagination)
-                        : Task.FromException<Pagination>(_paginationError ?? new InvalidOperationException("Pagination computation failed."));
-                }
-            } while (existing is null);
-        }
-        return existing;
+				// Safety check: if state changed to computed or faulted but task is still null,
+				// break to avoid infinite loop due to potential memory ordering issues.
+				int currentState = _paginationState;
+				if (currentState >= 2 && existing is null)
+				{
+					return currentState == 2
+						? Task.FromResult(_pagination)
+						: Task.FromException<Pagination>(_paginationError ?? new InvalidOperationException("Pagination computation failed."));
+				}
+			} while (existing is null);
+		}
+		return existing;
 
-        async Task<Pagination> ComputeAndStoreAsync(CancellationToken ct)
-        {
-            try
-            {
-                Pagination ctx = await _paginationFactory(ct).ConfigureAwait(false);
-                _pagination = ctx;
+		async Task<Pagination> ComputeAndStoreAsync(CancellationToken ct)
+		{
+			try
+			{
+				Pagination ctx = await _paginationFactory(ct).ConfigureAwait(false);
+				_pagination = ctx;
 
-                _ = Interlocked.Exchange(ref _paginationState, 2);
-                return ctx;
-            }
-            catch (Exception ex)
-            {
-                _paginationError = ex;
-                _ = Interlocked.Exchange(ref _paginationState, 3);
-                throw;
-            }
-        }
-    }
+				_ = Interlocked.Exchange(ref _paginationState, 2);
+				return ctx;
+			}
+			catch (Exception ex)
+			{
+				_paginationError = ex;
+				_ = Interlocked.Exchange(ref _paginationState, 3);
+				throw;
+			}
+		}
+	}
 
-    /// <inheritdoc/>
-    public void Dispose() => _materializationLock.Dispose();
+	/// <inheritdoc/>
+	public void Dispose() => _materializationLock.Dispose();
 
-    /// <inheritdoc/>
-    public ValueTask DisposeAsync()
-    {
-        _materializationLock.Dispose();
-        return ValueTask.CompletedTask;
-    }
+	/// <inheritdoc/>
+	public ValueTask DisposeAsync()
+	{
+		_materializationLock.Dispose();
+		return ValueTask.CompletedTask;
+	}
 
-    private static Func<CancellationToken, ValueTask<Pagination>> QueryablePaginationFactory(
-        IQueryable<T> queryable,
-        CursorOptions<T>? cursorOptions)
-    {
-        var (normalizedQuery, skip, take) = QueryPaginationNormalizer.Normalize(queryable);
-        return async cancellationToken =>
-        {
-            cancellationToken.ThrowIfCancellationRequested();
-            long totalCountLong = normalizedQuery.LongCount();
-            int? totalCount = totalCountLong switch
-            {
-                < 0 => null,
-                > int.MaxValue => int.MaxValue,
-                _ => (int)totalCountLong
-            };
+	private static Func<CancellationToken, ValueTask<Pagination>> QueryablePaginationFactory(
+		IQueryable<T> queryable,
+		CursorOptions<T>? cursorOptions)
+	{
+		(IQueryable<T>? normalizedQuery, int? skip, int? take) = QueryPaginationNormalizer.Normalize(queryable);
+		return async cancellationToken =>
+		{
+			cancellationToken.ThrowIfCancellationRequested();
+			long totalCountLong = normalizedQuery.LongCount();
+			int? totalCount = totalCountLong switch
+			{
+				< 0 => null,
+				> int.MaxValue => int.MaxValue,
+				_ => (int)totalCountLong
+			};
 
-            int pageSize = take ?? 0;
-            string? cursorToken = cursorOptions?.FormatAppliedToken();
-            string? continuationToken = !string.IsNullOrWhiteSpace(cursorToken)
-                ? $"cursor:{cursorToken}"
-                : (skip, take) switch
-                {
-                    (not null and > 0, not null and > 0) => $"offset:{skip.Value + take.Value}",
-                    _ => null
-                };
+			int pageSize = take ?? 0;
+			string? cursorToken = cursorOptions?.FormatAppliedToken();
+			string? continuationToken = !string.IsNullOrWhiteSpace(cursorToken)
+				? $"cursor:{cursorToken}"
+				: (skip, take) switch
+				{
+					(not null and > 0, not null and > 0) => $"offset:{skip.Value + take.Value}",
+					_ => null
+				};
 
-            int currentPage = (take, skip) switch
-            {
-                (not null and > 0, not null and >= 0) => (skip.Value / take.Value) + 1,
-                _ => pageSize > 0 ? 1 : 0
-            };
+			int currentPage = (take, skip) switch
+			{
+				(not null and > 0, not null and >= 0) => (skip.Value / take.Value) + 1,
+				_ => pageSize > 0 ? 1 : 0
+			};
 
-            return Pagination.Create(pageSize, currentPage, continuationToken: continuationToken, totalCount);
-        };
-    }
+			return Pagination.Create(pageSize, currentPage, continuationToken: continuationToken, totalCount);
+		};
+	}
 
-    private Func<CancellationToken, ValueTask<Pagination>> AsyncEnumerablePaginationFactory(IAsyncEnumerable<T> source)
-    {
-        return async cancellationToken =>
-        {
-            await _materializationLock.WaitAsync(cancellationToken).ConfigureAwait(false);
-            try
-            {
-                if (_materializedItems is not null)
-                {
-                    int count = _materializedItems.Count;
-                    return Pagination.Create(pageSize: count, currentPage: count > 0 ? 1 : 0, totalCount: count);
-                }
+	private Func<CancellationToken, ValueTask<Pagination>> AsyncEnumerablePaginationFactory(IAsyncEnumerable<T> source)
+	{
+		return async cancellationToken =>
+		{
+			await _materializationLock.WaitAsync(cancellationToken).ConfigureAwait(false);
+			try
+			{
+				if (_materializedItems is not null)
+				{
+					int count = _materializedItems.Count;
+					return Pagination.Create(pageSize: count, currentPage: count > 0 ? 1 : 0, totalCount: count);
+				}
 
-                _materializedItems = await source.ToListAsync(cancellationToken).ConfigureAwait(false);
-                int totalCount = _materializedItems.Count;
+				_materializedItems = await source.ToListAsync(cancellationToken).ConfigureAwait(false);
+				int totalCount = _materializedItems.Count;
 
-                return Pagination.Create(pageSize: totalCount, currentPage: totalCount > 0 ? 1 : 0, totalCount: totalCount);
-            }
-            finally
-            {
-                _materializationLock.Release();
-            }
-        };
-    }
+				return Pagination.Create(pageSize: totalCount, currentPage: totalCount > 0 ? 1 : 0, totalCount: totalCount);
+			}
+			finally
+			{
+				_materializationLock.Release();
+			}
+		};
+	}
 
 }
 
 internal sealed class AsyncPagedFactoryEnumerable<T> : IAsyncPagedEnumerable<T>, IDisposable
 {
-    private readonly Func<CancellationToken, ValueTask<IAsyncPagedEnumerable<T>>> _factory;
-    private readonly PaginationStrategy _strategy;
-    private readonly SemaphoreSlim _initializationLock = new(1, 1);
-    private bool _disposed;
-    private IAsyncPagedEnumerable<T>? _inner;
-    private Pagination _pagination = Pagination.Empty;
-    private volatile bool _initialized;
+	private readonly Func<CancellationToken, ValueTask<IAsyncPagedEnumerable<T>>> _factory;
+	private readonly PaginationStrategy _strategy;
+	private readonly SemaphoreSlim _initializationLock = new(1, 1);
+	private bool _disposed;
+	private IAsyncPagedEnumerable<T>? _inner;
+	private Pagination _pagination = Pagination.Empty;
+	private volatile bool _initialized;
 
-    internal AsyncPagedFactoryEnumerable(
-        Func<CancellationToken, ValueTask<IAsyncPagedEnumerable<T>>> factory,
-        PaginationStrategy strategy)
-    {
-        ArgumentNullException.ThrowIfNull(factory);
-        _factory = factory;
-        _strategy = strategy;
-    }
+	internal AsyncPagedFactoryEnumerable(
+		Func<CancellationToken, ValueTask<IAsyncPagedEnumerable<T>>> factory,
+		PaginationStrategy strategy)
+	{
+		ArgumentNullException.ThrowIfNull(factory);
+		_factory = factory;
+		_strategy = strategy;
+	}
 
-    /// <inheritdoc/>
-    public Pagination Pagination => _pagination;
+	/// <inheritdoc/>
+	public Pagination Pagination => _pagination;
 
-    /// <inheritdoc/>
-    public IAsyncPagedEnumerator<T> GetAsyncEnumerator(CancellationToken cancellationToken = default) =>
-        new Enumerator(this, cancellationToken);
+	/// <inheritdoc/>
+	public IAsyncPagedEnumerator<T> GetAsyncEnumerator(CancellationToken cancellationToken = default) =>
+		new Enumerator(this, cancellationToken);
 
-    /// <inheritdoc/>
-    public async Task<Pagination> GetPaginationAsync(CancellationToken cancellationToken = default)
-    {
-        if (_initialized)
-        {
-            return _pagination;
-        }
+	/// <inheritdoc/>
+	public async Task<Pagination> GetPaginationAsync(CancellationToken cancellationToken = default)
+	{
+		if (_initialized)
+		{
+			return _pagination;
+		}
 
-        await _initializationLock.WaitAsync(cancellationToken).ConfigureAwait(false);
-        try
-        {
-            if (!_initialized)
-            {
-                _inner = await _factory(cancellationToken).ConfigureAwait(false);
-                _pagination = _inner.Pagination;
-                _initialized = true;
-            }
-            return _pagination;
-        }
-        finally
-        {
-            _initializationLock.Release();
-        }
-    }
+		await _initializationLock.WaitAsync(cancellationToken).ConfigureAwait(false);
+		try
+		{
+			if (!_initialized)
+			{
+				_inner = await _factory(cancellationToken).ConfigureAwait(false);
+				_pagination = _inner.Pagination;
+				_initialized = true;
+			}
+			return _pagination;
+		}
+		finally
+		{
+			_initializationLock.Release();
+		}
+	}
 
-    /// <inheritdoc/>
-    public IAsyncPagedEnumerable<T> WithStrategy(PaginationStrategy strategy)
-    {
-        if (_strategy == strategy)
-        {
-            return this;
-        }
+	/// <inheritdoc/>
+	public IAsyncPagedEnumerable<T> WithStrategy(PaginationStrategy strategy)
+	{
+		if (_strategy == strategy)
+		{
+			return this;
+		}
 
-        return new AsyncPagedFactoryEnumerable<T>(_factory, strategy);
-    }
+		return new AsyncPagedFactoryEnumerable<T>(_factory, strategy);
+	}
 
-    /// <inheritdoc/>
-    public void Dispose()
-    {
-        if (_disposed) return;
-        _initializationLock.Dispose();
-        _disposed = true;
-    }
+	/// <inheritdoc/>
+	public void Dispose()
+	{
+		if (_disposed)
+		{
+			return;
+		}
 
-    private sealed class Enumerator : IAsyncPagedEnumerator<T>
-    {
-        private readonly AsyncPagedFactoryEnumerable<T> _parent;
-        private readonly CancellationToken _token;
-        private IAsyncPagedEnumerator<T>? _inner;
-        private readonly Pagination _fallbackPagination = Pagination.Empty;
+		_initializationLock.Dispose();
+		_disposed = true;
+	}
 
-        public Enumerator(AsyncPagedFactoryEnumerable<T> parent, CancellationToken token)
-        {
-            _parent = parent;
-            _token = token;
-        }
+	private sealed class Enumerator : IAsyncPagedEnumerator<T>
+	{
+		private readonly AsyncPagedFactoryEnumerable<T> _parent;
+		private readonly CancellationToken _token;
+		private IAsyncPagedEnumerator<T>? _inner;
+		private readonly Pagination _fallbackPagination = Pagination.Empty;
 
-        public T Current => _inner is not null ? _inner.Current : default!;
+		public Enumerator(AsyncPagedFactoryEnumerable<T> parent, CancellationToken token)
+		{
+			_parent = parent;
+			_token = token;
+		}
 
-        public ref readonly Pagination Pagination => ref (_inner is not null ? ref _inner.Pagination : ref _fallbackPagination);
+		public T Current => _inner is not null ? _inner.Current : default!;
 
-        public PaginationStrategy Strategy => _inner?.Strategy ?? _parent._strategy;
+		public ref readonly Pagination Pagination => ref (_inner is not null ? ref _inner.Pagination : ref _fallbackPagination);
 
-        public async ValueTask<bool> MoveNextAsync()
-        {
-            _token.ThrowIfCancellationRequested();
+		public PaginationStrategy Strategy => _inner?.Strategy ?? _parent._strategy;
 
-            if (!_parent._initialized)
-            {
-                await _parent._initializationLock.WaitAsync(_token).ConfigureAwait(false);
-                try
-                {
-                    if (!_parent._initialized)
-                    {
-                        _parent._inner = await _parent._factory(_token).ConfigureAwait(false);
-                        _parent._pagination = _parent._inner.Pagination;
-                        _parent._initialized = true;
-                    }
-                }
-                finally
-                {
-                    _parent._initializationLock.Release();
-                }
-            }
+		public async ValueTask<bool> MoveNextAsync()
+		{
+			_token.ThrowIfCancellationRequested();
 
-            _inner ??= _parent._inner!.GetAsyncEnumerator(_token);
-            return await _inner.MoveNextAsync().ConfigureAwait(false);
-        }
+			if (!_parent._initialized)
+			{
+				await _parent._initializationLock.WaitAsync(_token).ConfigureAwait(false);
+				try
+				{
+					if (!_parent._initialized)
+					{
+						_parent._inner = await _parent._factory(_token).ConfigureAwait(false);
+						_parent._pagination = _parent._inner.Pagination;
+						_parent._initialized = true;
+					}
+				}
+				finally
+				{
+					_parent._initializationLock.Release();
+				}
+			}
 
-        public async ValueTask DisposeAsync()
-        {
-            if (_inner is not null)
-                await _inner.DisposeAsync().ConfigureAwait(false);
-        }
-    }
+			_inner ??= _parent._inner!.GetAsyncEnumerator(_token);
+			return await _inner.MoveNextAsync().ConfigureAwait(false);
+		}
+
+		public async ValueTask DisposeAsync()
+		{
+			if (_inner is not null)
+			{
+				await _inner.DisposeAsync().ConfigureAwait(false);
+			}
+		}
+	}
 }

@@ -36,196 +36,196 @@ namespace System.Events;
 public readonly record struct EventStatus : IPrimitive<EventStatus, string>
 #pragma warning restore CA1036 // Override methods on comparable types
 {
-    private static readonly FrozenSet<string> _validStatusNames = CreateValidStatusNames();
-    private static FrozenSet<string> CreateValidStatusNames()
-    {
-        return new[] { nameof(ACTIVE), nameof(PENDING), nameof(PROCESSING), nameof(DELETED), nameof(ACCEPTED),
-                      nameof(SUSPENDED), nameof(ONERROR), nameof(PUBLISHED), nameof(DUPLICATE) }
-            .ToFrozenSet(StringComparer.OrdinalIgnoreCase);
-    }
+	private static readonly FrozenSet<string> s_validStatusNames = CreateValidStatusNames();
+	private static FrozenSet<string> CreateValidStatusNames()
+	{
+		return new[] { nameof(ACTIVE), nameof(PENDING), nameof(PROCESSING), nameof(DELETED), nameof(ACCEPTED),
+					  nameof(SUSPENDED), nameof(ONERROR), nameof(PUBLISHED), nameof(DUPLICATE) }
+			.ToFrozenSet(StringComparer.OrdinalIgnoreCase);
+	}
 
-    /// <inheritdoc/>
-    public string Value { get; }
+	/// <inheritdoc/>
+	public string Value { get; }
 
-    private EventStatus(string value) => Value = value;
-    /// <inheritdoc/>
-    public static bool TryParse(string? s, IFormatProvider? provider, out EventStatus result)
-    {
-        result = default;
-        if (string.IsNullOrWhiteSpace(s))
-        {
-            return false;
-        }
-        try
-        {
-            result = Create(s);
-            return true;
-        }
-        catch (ValidationException)
-        {
-            return false;
-        }
-    }
+	private EventStatus(string value) => Value = value;
+	/// <inheritdoc/>
+	public static bool TryParse(string? s, IFormatProvider? provider, out EventStatus result)
+	{
+		result = default;
+		if (string.IsNullOrWhiteSpace(s))
+		{
+			return false;
+		}
+		try
+		{
+			result = Create(s);
+			return true;
+		}
+		catch (ValidationException)
+		{
+			return false;
+		}
+	}
 
-    /// <inheritdoc/>
-    public override string ToString() => Value;
+	/// <inheritdoc/>
+	public override string ToString() => Value;
 
-    /// <summary>
-    /// Converts an <see cref="EventStatus"/> instance to its underlying string value.
-    /// </summary>
-    /// <param name="self">The <see cref="EventStatus"/> instance to convert.</param>
-    public static implicit operator string(EventStatus self) => self.Value;
+	/// <summary>
+	/// Converts an <see cref="EventStatus"/> instance to its underlying string value.
+	/// </summary>
+	/// <param name="self">The <see cref="EventStatus"/> instance to convert.</param>
+	public static implicit operator string(EventStatus self) => self.Value;
 
-    /// <inheritdoc/>
-    public static string DefaultValue => ACTIVE;
+	/// <inheritdoc/>
+	public static string DefaultValue => ACTIVE;
 #pragma warning disable CA2225 // Operator overloads have named alternates
-    /// <summary>
-    /// Converts a string value to an EntityStatus instance using implicit conversion.
-    /// </summary>
-    /// <remarks>This operator enables seamless assignment of string values to EntityStatus variables. If the
-    /// provided string does not correspond to a valid status, the resulting EntityStatus may represent an undefined or
-    /// custom status, depending on the implementation of the Create method.</remarks>
-    /// <param name="value">The string value to convert to an EntityStatus. Cannot be null.</param>
-    public static implicit operator EventStatus(string value)
+	/// <summary>
+	/// Converts a string value to an EntityStatus instance using implicit conversion.
+	/// </summary>
+	/// <remarks>This operator enables seamless assignment of string values to EntityStatus variables. If the
+	/// provided string does not correspond to a valid status, the resulting EntityStatus may represent an undefined or
+	/// custom status, depending on the implementation of the Create method.</remarks>
+	/// <param name="value">The string value to convert to an EntityStatus. Cannot be null.</param>
+	public static implicit operator EventStatus(string value)
 #pragma warning restore CA2225 // Operator overloads have named alternates
-    {
-        ArgumentNullException.ThrowIfNull(value);
-        return Create(value);
-    }
+	{
+		ArgumentNullException.ThrowIfNull(value);
+		return Create(value);
+	}
 
-    /// <inheritdoc/>
-    public bool Equals(EventStatus other) => Value.Equals(other.Value, StringComparison.Ordinal);
+	/// <inheritdoc/>
+	public bool Equals(EventStatus other) => Value.Equals(other.Value, StringComparison.Ordinal);
 
-    /// <inheritdoc/>
-    public override int GetHashCode() => Value.GetHashCode(StringComparison.Ordinal);
+	/// <inheritdoc/>
+	public override int GetHashCode() => Value.GetHashCode(StringComparison.Ordinal);
 
-    /// <inheritdoc/>
-    /// <remarks>You can enable custom statuses by setting the static property <see cref="EnableCustomStatuses"/> to
-    /// <c>true</c>. When enabled, any non-null, non-whitespace string will be accepted as a valid status.</remarks>
-    public static EventStatus Create(string value)
-    {
-        ArgumentNullException.ThrowIfNull(value);
-        if (_validStatusNames.Contains(value))
-        {
-            return new EventStatus(value);
-        }
+	/// <inheritdoc/>
+	/// <remarks>You can enable custom statuses by setting the static property <see cref="EnableCustomStatuses"/> to
+	/// <c>true</c>. When enabled, any non-null, non-whitespace string will be accepted as a valid status.</remarks>
+	public static EventStatus Create(string value)
+	{
+		ArgumentNullException.ThrowIfNull(value);
+		if (s_validStatusNames.Contains(value))
+		{
+			return new EventStatus(value);
+		}
 
-        if (EnableCustomStatuses && !string.IsNullOrWhiteSpace(value))
-        {
-            return new EventStatus(value);
-        }
+		if (EnableCustomStatuses && !string.IsNullOrWhiteSpace(value))
+		{
+			return new EventStatus(value);
+		}
 
-        throw new ValidationException(
-           new ValidationResult($"'{value}' is not a valid entity status.", [nameof(EventStatus)]), null, value);
-    }
+		throw new ValidationException(
+		   new ValidationResult($"'{value}' is not a valid entity status.", [nameof(EventStatus)]), null, value);
+	}
 
-    /// <summary>
-    /// Gets or sets a value indicating whether custom statuses are enabled.
-    /// </summary>
-    /// <remarks>When set to <see langword="true"/>, custom statuses can be utilized within the application.
-    /// This property is useful for applications that require dynamic status updates based on user-defined
-    /// criteria.</remarks>
-    public static bool EnableCustomStatuses { get; set; }
+	/// <summary>
+	/// Gets or sets a value indicating whether custom statuses are enabled.
+	/// </summary>
+	/// <remarks>When set to <see langword="true"/>, custom statuses can be utilized within the application.
+	/// This property is useful for applications that require dynamic status updates based on user-defined
+	/// criteria.</remarks>
+	public static bool EnableCustomStatuses { get; set; }
 
-    /// <summary>
-    /// The entity is currently active and functioning.
-    /// </summary>
-    public static readonly EventStatus ACTIVE = nameof(ACTIVE);
+	/// <summary>
+	/// The entity is currently active and functioning.
+	/// </summary>
+	public static readonly EventStatus ACTIVE = nameof(ACTIVE);
 
-    /// <summary>
-    /// The entity has been accepted for processing (not seen or recoverable).
-    /// </summary>
-    public static readonly EventStatus ACCEPTED = nameof(ACCEPTED);
+	/// <summary>
+	/// The entity has been accepted for processing (not seen or recoverable).
+	/// </summary>
+	public static readonly EventStatus ACCEPTED = nameof(ACCEPTED);
 
-    /// <summary>
-    /// The entity was already present and is a duplicate. It must be ignored.
-    /// </summary>
-    public static readonly EventStatus DUPLICATE = nameof(DUPLICATE);
+	/// <summary>
+	/// The entity was already present and is a duplicate. It must be ignored.
+	/// </summary>
+	public static readonly EventStatus DUPLICATE = nameof(DUPLICATE);
 
-    /// <summary>
-    /// The entity is pending processing or approval.
-    /// </summary>
-    public static readonly EventStatus PENDING = nameof(PENDING);
+	/// <summary>
+	/// The entity is pending processing or approval.
+	/// </summary>
+	public static readonly EventStatus PENDING = nameof(PENDING);
 
-    /// <summary>
-    /// The entity is currently being processed.
-    /// </summary>
-    public static readonly EventStatus PROCESSING = nameof(PROCESSING);
+	/// <summary>
+	/// The entity is currently being processed.
+	/// </summary>
+	public static readonly EventStatus PROCESSING = nameof(PROCESSING);
 
-    /// <summary>
-    /// The entity has been logically deleted.
-    /// </summary>
-    public static readonly EventStatus DELETED = nameof(DELETED);
+	/// <summary>
+	/// The entity has been logically deleted.
+	/// </summary>
+	public static readonly EventStatus DELETED = nameof(DELETED);
 
-    /// <summary>
-    /// The entity is temporarily suspended.
-    /// </summary>
-    public static readonly EventStatus SUSPENDED = nameof(SUSPENDED);
+	/// <summary>
+	/// The entity is temporarily suspended.
+	/// </summary>
+	public static readonly EventStatus SUSPENDED = nameof(SUSPENDED);
 
-    /// <summary>
-    /// The entity is in an error state requiring attention.
-    /// </summary>
-    public static readonly EventStatus ONERROR = nameof(ONERROR);
+	/// <summary>
+	/// The entity is in an error state requiring attention.
+	/// </summary>
+	public static readonly EventStatus ONERROR = nameof(ONERROR);
 
-    /// <summary>
-    /// The entity has been published and is available.
-    /// </summary>
-    public static readonly EventStatus PUBLISHED = nameof(PUBLISHED);
+	/// <summary>
+	/// The entity has been published and is available.
+	/// </summary>
+	public static readonly EventStatus PUBLISHED = nameof(PUBLISHED);
 
-    #region Utility Methods
+	#region Utility Methods
 
-    /// <summary>
-    /// Gets all predefined entity status values.
-    /// </summary>
-    /// <value>A frozen dictionary containing all predefined status values.</value>
-    public static FrozenSet<string> AllStatuses => _validStatusNames;
+	/// <summary>
+	/// Gets all predefined entity status values.
+	/// </summary>
+	/// <value>A frozen dictionary containing all predefined status values.</value>
+	public static FrozenSet<string> AllStatuses => s_validStatusNames;
 
-    /// <summary>
-    /// Determines whether the specified status name is a valid predefined status.
-    /// </summary>
-    /// <param name="statusName">The status name to validate.</param>
-    /// <returns>true if the status name is valid; otherwise, false.</returns>
-    [MethodImpl(MethodImplOptions.AggressiveInlining)]
-    public static bool IsValidStatus(string? statusName) =>
-        !string.IsNullOrWhiteSpace(statusName) && _validStatusNames.Contains(statusName);
+	/// <summary>
+	/// Determines whether the specified status name is a valid predefined status.
+	/// </summary>
+	/// <param name="statusName">The status name to validate.</param>
+	/// <returns>true if the status name is valid; otherwise, false.</returns>
+	[MethodImpl(MethodImplOptions.AggressiveInlining)]
+	public static bool IsValidStatus(string? statusName) =>
+		!string.IsNullOrWhiteSpace(statusName) && s_validStatusNames.Contains(statusName);
 
-    /// <summary>
-    /// Determines whether this status represents a terminal state (DELETED, ONERROR).
-    /// </summary>
-    /// <returns>true if the status is terminal; otherwise, false.</returns>
-    [MethodImpl(MethodImplOptions.AggressiveInlining)]
-    public static bool IsTerminal(string statusName)
-    {
-        ArgumentNullException.ThrowIfNull(statusName);
-        return statusName.Equals(DELETED, StringComparison.Ordinal)
-            || statusName.Equals(ONERROR, StringComparison.Ordinal);
-    }
+	/// <summary>
+	/// Determines whether this status represents a terminal state (DELETED, ONERROR).
+	/// </summary>
+	/// <returns>true if the status is terminal; otherwise, false.</returns>
+	[MethodImpl(MethodImplOptions.AggressiveInlining)]
+	public static bool IsTerminal(string statusName)
+	{
+		ArgumentNullException.ThrowIfNull(statusName);
+		return statusName.Equals(DELETED, StringComparison.Ordinal)
+			|| statusName.Equals(ONERROR, StringComparison.Ordinal);
+	}
 
-    /// <summary>
-    /// Determines whether this status represents an active state (ACTIVE, PUBLISHED).
-    /// </summary>
-    /// <returns>true if the status is active; otherwise, false.</returns>
-    [MethodImpl(MethodImplOptions.AggressiveInlining)]
-    public static bool IsActive(string statusName)
-    {
-        ArgumentNullException.ThrowIfNull(statusName);
-        return statusName.Equals(ACTIVE, StringComparison.Ordinal)
-            || statusName.Equals(PUBLISHED, StringComparison.Ordinal);
-    }
+	/// <summary>
+	/// Determines whether this status represents an active state (ACTIVE, PUBLISHED).
+	/// </summary>
+	/// <returns>true if the status is active; otherwise, false.</returns>
+	[MethodImpl(MethodImplOptions.AggressiveInlining)]
+	public static bool IsActive(string statusName)
+	{
+		ArgumentNullException.ThrowIfNull(statusName);
+		return statusName.Equals(ACTIVE, StringComparison.Ordinal)
+			|| statusName.Equals(PUBLISHED, StringComparison.Ordinal);
+	}
 
-    /// <summary>
-    /// Determines whether this status represents a transitional state (PENDING, PROCESSING).
-    /// </summary>
-    /// <returns>true if the status is transitional; otherwise, false.</returns>
-    [MethodImpl(MethodImplOptions.AggressiveInlining)]
-    public static bool IsTransitional(string statusName)
-    {
-        ArgumentNullException.ThrowIfNull(statusName);
-        return statusName.Equals(PENDING, StringComparison.Ordinal)
-            || statusName.Equals(PROCESSING, StringComparison.Ordinal);
-    }
+	/// <summary>
+	/// Determines whether this status represents a transitional state (PENDING, PROCESSING).
+	/// </summary>
+	/// <returns>true if the status is transitional; otherwise, false.</returns>
+	[MethodImpl(MethodImplOptions.AggressiveInlining)]
+	public static bool IsTransitional(string statusName)
+	{
+		ArgumentNullException.ThrowIfNull(statusName);
+		return statusName.Equals(PENDING, StringComparison.Ordinal)
+			|| statusName.Equals(PROCESSING, StringComparison.Ordinal);
+	}
 
-    #endregion
+	#endregion
 }
 
 /// <summary>
@@ -238,53 +238,53 @@ public readonly record struct EventStatus : IPrimitive<EventStatus, string>
 [AttributeUsage(AttributeTargets.Property | AttributeTargets.Field | AttributeTargets.Parameter)]
 public sealed class EntityStatusValidationAttribute : ValidationAttribute
 {
-    /// <summary>
-    /// Initializes a new instance of the <see cref="EntityStatusValidationAttribute"/> class.
-    /// </summary>
-    /// <param name="allowCustomStatuses">Whether to allow custom status values beyond predefined ones.</param>
-    public EntityStatusValidationAttribute(bool allowCustomStatuses = false)
-    {
-        AllowCustomStatuses = allowCustomStatuses;
-        ErrorMessage = allowCustomStatuses
-            ? "Status value cannot be null or whitespace."
-            : "Status must be one of the predefined values: {0}.";
-    }
+	/// <summary>
+	/// Initializes a new instance of the <see cref="EntityStatusValidationAttribute"/> class.
+	/// </summary>
+	/// <param name="allowCustomStatuses">Whether to allow custom status values beyond predefined ones.</param>
+	public EntityStatusValidationAttribute(bool allowCustomStatuses = false)
+	{
+		AllowCustomStatuses = allowCustomStatuses;
+		ErrorMessage = allowCustomStatuses
+			? "Status value cannot be null or whitespace."
+			: "Status must be one of the predefined values: {0}.";
+	}
 
-    /// <summary>
-    /// Gets whether custom status values beyond predefined ones are allowed.
-    /// </summary>
-    public bool AllowCustomStatuses { get; }
+	/// <summary>
+	/// Gets whether custom status values beyond predefined ones are allowed.
+	/// </summary>
+	public bool AllowCustomStatuses { get; }
 
-    /// <summary>
-    /// Gets or sets whether null values are permitted.
-    /// </summary>
-    public bool AllowNull { get; set; }
+	/// <summary>
+	/// Gets or sets whether null values are permitted.
+	/// </summary>
+	public bool AllowNull { get; set; }
 
-    /// <inheritdoc />
-    public override bool RequiresValidationContext => false;
+	/// <inheritdoc />
+	public override bool RequiresValidationContext => false;
 
-    /// <inheritdoc />
-    [MethodImpl(MethodImplOptions.AggressiveInlining)]
-    public override bool IsValid(object? value) => value switch
-    {
-        null => AllowNull,
-        string { Length: 0 } => false,
-        string status when AllowCustomStatuses => !string.IsNullOrWhiteSpace(status),
-        string status => EventStatus.IsValidStatus(status),
-        _ => false
-    };
+	/// <inheritdoc />
+	[MethodImpl(MethodImplOptions.AggressiveInlining)]
+	public override bool IsValid(object? value) => value switch
+	{
+		null => AllowNull,
+		string { Length: 0 } => false,
+		string status when AllowCustomStatuses => !string.IsNullOrWhiteSpace(status),
+		string status => EventStatus.IsValidStatus(status),
+		_ => false
+	};
 
-    /// <inheritdoc />
-    public override string FormatErrorMessage(string name)
-    {
-        if (AllowCustomStatuses)
-        {
-            return string.Format(System.Globalization.CultureInfo.CurrentCulture,
-                ErrorMessageString, name);
-        }
+	/// <inheritdoc />
+	public override string FormatErrorMessage(string name)
+	{
+		if (AllowCustomStatuses)
+		{
+			return string.Format(System.Globalization.CultureInfo.CurrentCulture,
+				ErrorMessageString, name);
+		}
 
-        var validStatuses = string.Join(", ", EventStatus.AllStatuses);
-        return string.Format(System.Globalization.CultureInfo.CurrentCulture,
-            ErrorMessageString, validStatuses);
-    }
+		string validStatuses = string.Join(", ", EventStatus.AllStatuses);
+		return string.Format(System.Globalization.CultureInfo.CurrentCulture,
+			ErrorMessageString, validStatuses);
+	}
 }

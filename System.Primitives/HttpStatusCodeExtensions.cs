@@ -39,7 +39,7 @@ public static class HttpStatusCodeExtensions
 		/// Determines whether the specified HTTP status code represents a successful response.
 		/// </summary>
 		/// <returns><see langword="true"/>if the status code is in the range 200-299; otherwise, <see langword="false"/>.</returns>
-		public bool IsSuccess => ((int)statusCode >= 200) && ((int)statusCode <= 299);
+		public bool IsSuccess => (int)statusCode is >= 200 and <= 299;
 
 		/// <summary>
 		/// Determines whether the current status code represents a failure condition.

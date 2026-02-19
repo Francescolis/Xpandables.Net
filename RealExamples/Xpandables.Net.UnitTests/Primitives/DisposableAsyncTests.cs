@@ -1,4 +1,4 @@
-/*******************************************************************************
+﻿/*******************************************************************************
  * Copyright (C) 2025 Kamersoft
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
@@ -287,13 +287,13 @@ public sealed class DisposableAsyncTests
     {
         // Arrange
         var disposable = new AsyncResourceHolder();
-        var stream = disposable.ManagedStream;
+		MemoryStream? stream = disposable.ManagedStream;
 
         // Act
         await disposable.DisposeAsync();
 
-        // Assert
-        var act = () => stream!.ReadByte();
+		// Assert
+		Func<int> act = () => stream!.ReadByte();
         act.Should().Throw<ObjectDisposedException>();
     }
 
@@ -327,7 +327,7 @@ public sealed class DisposableAsyncTests
     {
         // Arrange
         var wrapper = new AsyncHttpClientWrapper();
-        var response = await wrapper.GetAsync("http://example.com/api/data");
+		string response = await wrapper.GetAsync("http://example.com/api/data");
 
         response.Should().Contain("example.com");
         wrapper.RequestsMade.Should().HaveCount(1);
@@ -346,8 +346,8 @@ public sealed class DisposableAsyncTests
         var wrapper = new AsyncHttpClientWrapper();
         await wrapper.DisposeAsync();
 
-        // Act
-        var act = async () => await wrapper.GetAsync("http://example.com/api/data");
+		// Act
+		Func<Task<string>> act = async () => await wrapper.GetAsync("http://example.com/api/data");
 
         // Assert
         await act.Should().ThrowAsync<ObjectDisposedException>();
@@ -382,8 +382,8 @@ public sealed class DisposableAsyncTests
         // Arrange
         TestDisposableAsync? disposable = null;
 
-        // Act
-        var act = async () =>
+		// Act
+		Func<Task> act = async () =>
         {
             await using (disposable = new TestDisposableAsync())
             {
@@ -408,8 +408,8 @@ public sealed class DisposableAsyncTests
         // Arrange
         var disposable = new AsyncResourceHolder();
 
-        // Act
-        var tasks = Enumerable.Range(0, 10)
+		// Act
+		Task[] tasks = Enumerable.Range(0, 10)
             .Select(_ => disposable.DisposeAsync().AsTask())
             .ToArray();
 
@@ -478,8 +478,8 @@ public sealed class DisposableAsyncTests
     [Fact]
     public async Task WhenAsyncFileWriterDisposedThenFileShouldBeFlushedAndClosed()
     {
-        // Arrange
-        var tempFile = Path.GetTempFileName();
+		// Arrange
+		string tempFile = Path.GetTempFileName();
         var writer = new AsyncFileWriter(tempFile);
 
         // Act
@@ -491,7 +491,7 @@ public sealed class DisposableAsyncTests
         writer.IsClosed.Should().BeTrue();
         writer.WasFlushed.Should().BeTrue();
 
-        var content = await File.ReadAllTextAsync(tempFile);
+		string content = await File.ReadAllTextAsync(tempFile);
         content.Should().Contain("Line 1");
         content.Should().Contain("Line 2");
 

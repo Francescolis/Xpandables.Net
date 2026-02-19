@@ -1,4 +1,4 @@
-/*******************************************************************************
+﻿/*******************************************************************************
  * Copyright (C) 2025 Kamersoft
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
@@ -272,8 +272,8 @@ public sealed class StateContextTests
         // Arrange
         var context = new OrderContext("ORD-001", new PendingState());
 
-        // Act
-        var act = () => context.TransitionToState(null!);
+		// Act
+		Action act = () => context.TransitionToState(null!);
 
         // Assert
         act.Should().Throw<ArgumentNullException>();
@@ -462,8 +462,8 @@ public sealed class StateContextTests
         var allowedTransitions = new HashSet<Type> { typeof(InitialState) };
         var context = new ValidatedStateContext(new InitialState(), allowedTransitions);
 
-        // Act
-        var act = () => context.TransitionToState(new FinalState());
+		// Act
+		Action act = () => context.TransitionToState(new FinalState());
 
         // Assert
         act.Should().Throw<InvalidOperationException>()
@@ -487,7 +487,7 @@ public sealed class StateContextTests
             readTasks.Add(Task.Run(() => context.CurrentState.Color));
         }
 
-        var results = await Task.WhenAll(readTasks);
+		string[] results = await Task.WhenAll(readTasks);
 
         // Assert
         results.Should().AllSatisfy(color => color.Should().BeOneOf("Red", "Green", "Yellow"));
@@ -568,7 +568,7 @@ public sealed class StateContextTests
         // Arrange
         var previous = new PendingState();
         var next = new ProcessingState();
-        var time = DateTimeOffset.UtcNow;
+		DateTimeOffset time = DateTimeOffset.UtcNow;
 
         // Act
         var args = new StateTransitionEventArgs

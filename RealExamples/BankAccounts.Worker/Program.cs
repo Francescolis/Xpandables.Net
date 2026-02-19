@@ -28,13 +28,13 @@ DbProviderFactories.RegisterFactory(
 
 builder.Services
 	.AddXJsonSerializerOptions()
-	.AddXServiceExports(builder.Configuration, typeof(AccountDataContext).Assembly)
+	.AddXServiceExports(builder.Configuration, [typeof(AccountDataContext).Assembly])
 	.AddXScheduler()
 	.AddXHostedScheduler()
 	.AddXEventContextAccessor()
 	.AddXEventConverterContext()
 	.AddXEventConverterFactory()
-	.AddXCacheTypeResolver(type => typeof(IIntegrationEvent).IsAssignableFrom(type), typeof(Account).Assembly)
+	.AddXCacheTypeResolver(type => typeof(IIntegrationEvent).IsAssignableFrom(type), [typeof(Account).Assembly])
 	.AddXEventHandlers()
 	.AddXEventHandlerInboxDecorator()
 	.AddXEventPublisher()

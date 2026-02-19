@@ -48,12 +48,12 @@ public static class IAsyncPagedEnumerableExtensions
         [RequiresUnreferencedCode("This method uses reflection to discover implemented interfaces, which may be incompatible with trimming.")]
         public Type GetArgumentType()
         {
-            var sourceType = source.GetType();
+			Type sourceType = source.GetType();
 
             // Check if the concrete type itself is a generic type matching IAsyncPagedEnumerable<T>
             if (sourceType.IsGenericType)
             {
-                var genericDef = sourceType.GetGenericTypeDefinition();
+				Type genericDef = sourceType.GetGenericTypeDefinition();
                 if (genericDef == typeof(IAsyncPagedEnumerable<>))
                 {
                     return sourceType.GetGenericArguments()[0];
@@ -61,7 +61,7 @@ public static class IAsyncPagedEnumerableExtensions
             }
 
             // Search implemented interfaces for IAsyncPagedEnumerable<T>
-            foreach (var iface in sourceType.GetInterfaces())
+            foreach (Type iface in sourceType.GetInterfaces())
             {
                 if (iface.IsGenericType && iface.GetGenericTypeDefinition() == typeof(IAsyncPagedEnumerable<>))
                 {

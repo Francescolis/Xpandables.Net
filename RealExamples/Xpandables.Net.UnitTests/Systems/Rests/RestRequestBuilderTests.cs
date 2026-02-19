@@ -1,4 +1,4 @@
-/*******************************************************************************
+﻿/*******************************************************************************
  * Copyright (C) 2025 Kamersoft
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
@@ -31,7 +31,7 @@ public sealed class RestRequestBuilderTests
     [Fact]
     public async Task BuildRequestAsync_WithContext_ExecutesComposers()
     {
-        using var serializerScope = UseDefaultSerializerOptions();
+        using IDisposable serializerScope = UseDefaultSerializerOptions();
 
         // Arrange
         var fakeComposer = new FakeRequestComposer();
@@ -69,7 +69,7 @@ public sealed class RestRequestBuilderTests
     [Fact]
     public async Task BuildRequestAsync_WhenInterceptorAborts_ReturnsEmptyRequest()
     {
-        using var serializerScope = UseDefaultSerializerOptions();
+        using IDisposable serializerScope = UseDefaultSerializerOptions();
 
         // Arrange
         var interceptor = new AbortingRequestInterceptor();
@@ -112,7 +112,7 @@ public sealed class RestRequestBuilderTests
     [Fact]
     public async Task BuildRequestAsync_NoComposerFound_Throws()
     {
-        using var serializerScope = UseDefaultSerializerOptions();
+        using IDisposable serializerScope = UseDefaultSerializerOptions();
 
         // Arrange - no composers registered
         IServiceProvider services = new ServiceCollection()

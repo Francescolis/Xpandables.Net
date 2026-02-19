@@ -49,7 +49,7 @@ public sealed class PipelineEventStoreEventDecorator<TRequest>() :
         }
         finally
         {
-            foreach (var batch in PipelineDomainEventsDecorator<TRequest>.DomainEventCommitBuffer.Drain())
+            foreach (PendingDomainEventsBatch batch in PipelineDomainEventsDecorator<TRequest>.DomainEventCommitBuffer.Drain())
             {
                 batch.OnCommitted();
             }

@@ -1,4 +1,4 @@
-/*******************************************************************************
+﻿/*******************************************************************************
  * Copyright (C) 2025 Kamersoft
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
@@ -67,7 +67,7 @@ public sealed class ElementCollectionTests
 
         // Assert
         collection.Count.Should().Be(1);
-        var entry = collection["colors"];
+		ElementEntry? entry = collection["colors"];
         entry.Should().NotBeNull();
         entry!.Value.Values.Count.Should().Be(3);
     }
@@ -89,8 +89,8 @@ public sealed class ElementCollectionTests
     [Fact]
     public void WhenCreatingWithEnumerableThenShouldContainAllEntries()
     {
-        // Arrange
-        var entries = new[]
+		// Arrange
+		ElementEntry[] entries = new[]
         {
             new ElementEntry("key1", "value1"),
             new ElementEntry("key2", "value2")
@@ -169,7 +169,7 @@ public sealed class ElementCollectionTests
 
         // Assert
         collection.Count.Should().Be(1);
-        var entry = collection["errors"];
+		ElementEntry? entry = collection["errors"];
         entry!.Value.Values.Count.Should().Be(2);
         entry.Value.Values.Should().Contain("Error 1");
         entry.Value.Values.Should().Contain("Error 2");
@@ -232,7 +232,7 @@ public sealed class ElementCollectionTests
     {
         // Arrange
         var collection = new ElementCollection();
-        var entries = new[]
+		ElementEntry[] entries = new[]
         {
             new ElementEntry("key1", "value1"),
             new ElementEntry("key2", "value2"),
@@ -256,8 +256,8 @@ public sealed class ElementCollectionTests
         // Arrange
         var collection = ElementCollection.With("name", "John");
 
-        // Act
-        var result = collection.Remove("name");
+		// Act
+		bool result = collection.Remove("name");
 
         // Assert
         result.Should().BeTrue();
@@ -270,8 +270,8 @@ public sealed class ElementCollectionTests
         // Arrange
         var collection = ElementCollection.With("name", "John");
 
-        // Act
-        var result = collection.Remove("nonexistent");
+		// Act
+		bool result = collection.Remove("nonexistent");
 
         // Assert
         result.Should().BeFalse();
@@ -309,8 +309,8 @@ public sealed class ElementCollectionTests
         // Arrange
         var collection = ElementCollection.With("name", "John");
 
-        // Act
-        var result = collection.TryGetValue("name", out var entry);
+		// Act
+		bool result = collection.TryGetValue("name", out ElementEntry entry);
 
         // Assert
         result.Should().BeTrue();
@@ -324,8 +324,8 @@ public sealed class ElementCollectionTests
         // Arrange
         var collection = ElementCollection.With("name", "John");
 
-        // Act
-        var result = collection.TryGetValue("nonexistent", out var entry);
+		// Act
+		bool result = collection.TryGetValue("nonexistent", out ElementEntry entry);
 
         // Assert
         result.Should().BeFalse();
@@ -338,8 +338,8 @@ public sealed class ElementCollectionTests
         // Arrange
         var collection = ElementCollection.With("name", "John");
 
-        // Act
-        var entry = collection["name"];
+		// Act
+		ElementEntry? entry = collection["name"];
 
         // Assert
         entry.Should().NotBeNull();
@@ -352,8 +352,8 @@ public sealed class ElementCollectionTests
         // Arrange
         var collection = ElementCollection.With("name", "John");
 
-        // Act
-        var entry = collection["nonexistent"];
+		// Act
+		ElementEntry? entry = collection["nonexistent"];
 
         // Assert
         entry.Should().BeNull();
@@ -365,8 +365,8 @@ public sealed class ElementCollectionTests
         // Arrange
         var collection = new ElementCollection();
 
-        // Act
-        var act = () => _ = collection[null!];
+		// Act
+		Func<ElementEntry?> act = () => _ = collection[null!];
 
         // Assert
         act.Should().Throw<ArgumentException>();
@@ -448,8 +448,8 @@ public sealed class ElementCollectionTests
         // Arrange
         var original = ElementCollection.With("key", "value");
 
-        // Act
-        var copy = original.Copy();
+		// Act
+		ElementCollection copy = original.Copy();
         copy.Add("newKey", "newValue");
 
         // Assert
@@ -460,8 +460,8 @@ public sealed class ElementCollectionTests
     [Fact]
     public void WhenCopyingEmptyCollectionThenShouldReturnEmpty()
     {
-        // Act
-        var copy = ElementCollection.Empty.Copy();
+		// Act
+		ElementCollection copy = ElementCollection.Empty.Copy();
 
         // Assert
         copy.IsEmpty.Should().BeTrue();
@@ -478,8 +478,8 @@ public sealed class ElementCollectionTests
         var collection = ElementCollection.With("key1", "value1");
         var entry = new ElementEntry("key2", "value2");
 
-        // Act
-        var result = collection + entry;
+		// Act
+		ElementCollection result = collection + entry;
 
         // Assert
         result.Count.Should().Be(2);
@@ -493,8 +493,8 @@ public sealed class ElementCollectionTests
         var left = ElementCollection.With("key1", "value1");
         var right = ElementCollection.With("key2", "value2");
 
-        // Act
-        var result = left + right;
+		// Act
+		ElementCollection result = left + right;
 
         // Assert
         result.Count.Should().Be(2);
@@ -512,8 +512,8 @@ public sealed class ElementCollectionTests
             { "key2", "value2" }
         };
 
-        // Act
-        var result = collection - "key1";
+		// Act
+		ElementCollection result = collection - "key1";
 
         // Assert
         result.Count.Should().Be(1);
@@ -528,8 +528,8 @@ public sealed class ElementCollectionTests
         var collection = ElementCollection.With("key", "value");
         var entry = new ElementEntry("key", "value");
 
-        // Act
-        var result = collection - entry;
+		// Act
+		ElementCollection result = collection - entry;
 
         // Assert
         result.IsEmpty.Should().BeTrue();
@@ -548,8 +548,8 @@ public sealed class ElementCollectionTests
 
         var right = ElementCollection.With("key2", "value2");
 
-        // Act
-        var result = left - right;
+		// Act
+		ElementCollection result = left - right;
 
         // Assert
         result.Count.Should().Be(2);
@@ -674,8 +674,8 @@ public sealed class ElementCollectionTests
     [Fact]
     public void WhenCallingToStringOnEmptyCollectionThenShouldReturnEmptyString()
     {
-        // Act
-        var result = ElementCollection.Empty.ToString();
+		// Act
+		string result = ElementCollection.Empty.ToString();
 
         // Assert
         result.Should().BeEmpty();
@@ -691,8 +691,8 @@ public sealed class ElementCollectionTests
             { "email", "john@example.com" }
         };
 
-        // Act
-        var result = collection.ToString();
+		// Act
+		string result = collection.ToString();
 
         // Assert
         result.Should().Contain("name=John");
@@ -705,8 +705,8 @@ public sealed class ElementCollectionTests
         // Arrange
         var collection = ElementCollection.With("key", "value");
 
-        // Act
-        var result = collection.ToDebugString();
+		// Act
+		string result = collection.ToDebugString();
 
         // Assert
         result.Should().Contain("ElementCollection");
@@ -728,8 +728,8 @@ public sealed class ElementCollectionTests
             { "age", "30" }
         };
 
-        // Act
-        var json = JsonSerializer.Serialize(collection, ElementCollectionContext.Default.ElementCollection);
+		// Act
+		string json = JsonSerializer.Serialize(collection, ElementCollectionContext.Default.ElementCollection);
 
         // Assert
         json.Should().NotBeNullOrEmpty();
@@ -745,10 +745,10 @@ public sealed class ElementCollectionTests
             { "field2", "value2", "value3" }
         };
 
-        var json = JsonSerializer.Serialize(original, ElementCollectionContext.Default.ElementCollection);
+		string json = JsonSerializer.Serialize(original, ElementCollectionContext.Default.ElementCollection);
 
-        // Act
-        var deserialized = JsonSerializer.Deserialize(json, ElementCollectionContext.Default.ElementCollection);
+		// Act
+		ElementCollection deserialized = JsonSerializer.Deserialize(json, ElementCollectionContext.Default.ElementCollection);
 
         // Assert
         deserialized.Count.Should().Be(2);
@@ -824,8 +824,8 @@ public sealed class ElementCollectionTests
         var backendErrors = ElementCollection.With("Email", "Already exists");
         var securityErrors = ElementCollection.With("Password", "Too weak");
 
-        // Act
-        var allErrors = frontendErrors + backendErrors + securityErrors;
+		// Act
+		ElementCollection allErrors = frontendErrors + backendErrors + securityErrors;
 
         // Assert
         allErrors.Count.Should().Be(2);
@@ -843,8 +843,8 @@ public sealed class ElementCollectionTests
             { "info", "Request processed" }
         };
 
-        // Act
-        var criticalOnly = errors.Where(e => e.Key.StartsWith("critical", StringComparison.Ordinal));
+		// Act
+		IEnumerable<ElementEntry> criticalOnly = errors.Where(e => e.Key.StartsWith("critical", StringComparison.Ordinal));
 
         // Assert
         criticalOnly.Should().HaveCount(1);
@@ -860,9 +860,9 @@ public sealed class ElementCollectionTests
         // Arrange
         var collection = new ElementCollection();
 
-        // Act
-        var actNull = () => collection.Add(null!, "value");
-        var actEmpty = () => collection.Add("", "value");
+		// Act
+		Action actNull = () => collection.Add(null!, "value");
+		Action actEmpty = () => collection.Add("", "value");
 
         // Assert
         actNull.Should().Throw<ArgumentNullException>();
@@ -875,9 +875,9 @@ public sealed class ElementCollectionTests
         // Arrange
         var collection = new ElementCollection();
 
-        // Act
-        var actNull = () => collection.Remove(null!);
-        var actEmpty = () => collection.Remove("");
+		// Act
+		Func<bool> actNull = () => collection.Remove(null!);
+		Func<bool> actEmpty = () => collection.Remove("");
 
         // Assert
         actNull.Should().Throw<ArgumentException>();

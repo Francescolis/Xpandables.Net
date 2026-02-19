@@ -1,4 +1,4 @@
-/*******************************************************************************
+﻿/*******************************************************************************
  * Copyright (C) 2025 Kamersoft
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
@@ -17,6 +17,7 @@
 namespace Microsoft.AspNetCore.Http;
 
 using System.Diagnostics.CodeAnalysis;
+using System.IO.Pipelines;
 using System.Text.Json;
 
 /// <summary>
@@ -41,10 +42,10 @@ internal sealed class AsyncPagedNonGenericResult(IAsyncPagedEnumerable results) 
         ArgumentNullException.ThrowIfNull(httpContext);
 
         httpContext.Response.ContentType ??= httpContext.GetContentType("application/json; charset=utf-8");
-        var cancellationToken = httpContext.RequestAborted;
-        var pipeWriter = httpContext.Response.BodyWriter;
+		CancellationToken cancellationToken = httpContext.RequestAborted;
+		PipeWriter pipeWriter = httpContext.Response.BodyWriter;
 
-        var options = httpContext.GetJsonSerializerOptions();
+		JsonSerializerOptions options = httpContext.GetJsonSerializerOptions();
 
         await JsonSerializer
             .SerializeAsyncPaged(pipeWriter, _results, options, cancellationToken)

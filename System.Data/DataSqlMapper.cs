@@ -50,13 +50,17 @@ public sealed class DataSqlMapper : IDataSqlMapper
         if (specification.Selector is not Expression<Func<TData, TResult>> typedSelector)
         {
             if (specification.Selector.Parameters.Count != 1)
-                throw new InvalidOperationException("Selector must have a single parameter.");
+			{
+				throw new InvalidOperationException("Selector must have a single parameter.");
+			}
 
-            var parameter = specification.Selector.Parameters[0];
+			ParameterExpression parameter = specification.Selector.Parameters[0];
             if (!parameter.Type.IsAssignableTo(typeof(TData)))
-                throw new InvalidOperationException("Selector parameter type must match the data type.");
+			{
+				throw new InvalidOperationException("Selector parameter type must match the data type.");
+			}
 
-            var body = specification.Selector.Body;
+			Expression body = specification.Selector.Body;
             if (body.Type != typeof(TResult))
             {
                 body = Expression.Convert(body, typeof(TResult));
@@ -65,13 +69,13 @@ public sealed class DataSqlMapper : IDataSqlMapper
             typedSelector = Expression.Lambda<Func<TData, TResult>>(body, parameter);
         }
 
-        var entity = MapToResult<TData>(reader);
+        TData entity = MapToResult<TData>(reader);
         if (typedSelector.Body is ParameterExpression && typeof(TResult) == typeof(TData))
         {
             return (TResult)(object)entity;
         }
 
-        var projector = CompileSelector(typedSelector);
+		Func<TData, TResult> projector = CompileSelector(typedSelector);
         return projector(entity);
     }
 
@@ -89,24 +93,24 @@ public sealed class DataSqlMapper : IDataSqlMapper
     {
         ArgumentNullException.ThrowIfNull(reader);
 
-        var resultType = typeof(TResult);
+		Type resultType = typeof(TResult);
 
         if (IsScalarType(resultType))
         {
             return MapScalar<TResult>(reader, resultType);
         }
 
-        var metadata = GetOrCreateTypeMetadata(resultType);
-        var columns = BuildColumnLookup(reader);
+		TypeMetadata metadata = GetOrCreateTypeMetadata(resultType);
+		Dictionary<string, int> columns = BuildColumnLookup(reader);
 
         if (metadata.HasParameterlessConstructor)
         {
-            var instance = Activator.CreateInstance<TResult>();
+			TResult? instance = Activator.CreateInstance<TResult>();
             PopulateProperties(instance!, metadata, reader, columns, paramNames: null);
             return instance!;
         }
 
-        var constructor = SelectConstructor(metadata, columns);
+		ConstructorInfo? constructor = SelectConstructor(metadata, columns);
         if (constructor is null)
         {
             throw new InvalidOperationException(
@@ -115,7 +119,7 @@ public sealed class DataSqlMapper : IDataSqlMapper
 
         var result = (TResult)CreateWithConstructor(constructor, reader, columns);
 
-        var ctorParamNames = GetCachedCtorParamNames(constructor);
+		HashSet<string> ctorParamNames = GetCachedCtorParamNames(constructor);
 
         PopulateProperties(result!, metadata, reader, columns, ctorParamNames);
         return result;
@@ -124,9 +128,11 @@ public sealed class DataSqlMapper : IDataSqlMapper
     private static bool IsScalarType(Type type)
     {
         if (type == typeof(string))
-            return true;
+		{
+			return true;
+		}
 
-        var underlying = Nullable.GetUnderlyingType(type) ?? type;
+		Type underlying = Nullable.GetUnderlyingType(type) ?? type;
 
         return underlying.IsPrimitive
                || underlying.IsEnum
@@ -141,20 +147,22 @@ public sealed class DataSqlMapper : IDataSqlMapper
     [UnconditionalSuppressMessage("Trimming", "IL2072:Calling members annotated with 'RequiresDynamicCodeAttribute' may break functionality when AOT compiling.", Justification = "<Pending>")]
     private static TResult MapScalar<TResult>(DbDataReader reader, [DynamicallyAccessedMembers(DynamicallyAccessedMemberTypes.PublicConstructors)] Type resultType)
     {
-        var value = reader.GetValue(0);
+		object value = reader.GetValue(0);
         if (value == DBNull.Value)
-            return default!;
+		{
+			return default!;
+		}
 
-        var converted = value.ChangeTypeNullable(resultType, CultureInfo.InvariantCulture);
+		object? converted = value.ChangeTypeNullable(resultType, CultureInfo.InvariantCulture);
         return (TResult)converted!;
     }
 
     private static Dictionary<string, int> BuildColumnLookup(DbDataReader reader)
     {
         var columns = new Dictionary<string, int>(reader.FieldCount, StringComparer.OrdinalIgnoreCase);
-        for (var i = 0; i < reader.FieldCount; i++)
+        for (int i = 0; i < reader.FieldCount; i++)
         {
-            var name = reader.GetName(i);
+			string name = reader.GetName(i);
             columns.TryAdd(name, i);
         }
         return columns;
@@ -163,16 +171,18 @@ public sealed class DataSqlMapper : IDataSqlMapper
     private static ConstructorInfo? SelectConstructor(TypeMetadata metadata, Dictionary<string, int> columns)
     {
         ConstructorInfo? best = null;
-        var bestScore = -1;
+		int bestScore = -1;
 
-        foreach (var ctor in metadata.Constructors)
+        foreach (ConstructorInfo ctor in metadata.Constructors)
         {
-            var parameters = ctor.GetParameters();
+			ParameterInfo[] parameters = ctor.GetParameters();
             if (parameters.Length == 0)
-                continue;
+			{
+				continue;
+			}
 
-            var matches = true;
-            foreach (var param in parameters)
+			bool matches = true;
+            foreach (ParameterInfo param in parameters)
             {
                 if (param.Name is null || !columns.ContainsKey(param.Name))
                 {
@@ -196,18 +206,18 @@ public sealed class DataSqlMapper : IDataSqlMapper
     [UnconditionalSuppressMessage("Trimming", "IL2072:Calling members annotated with 'RequiresDynamicCodeAttribute' may break functionality when AOT compiling.", Justification = "<Pending>")]
     private static object CreateWithConstructor(ConstructorInfo constructor, DbDataReader reader, Dictionary<string, int> columns)
     {
-        var parameters = constructor.GetParameters();
-        var args = new object?[parameters.Length];
+		ParameterInfo[] parameters = constructor.GetParameters();
+		object?[] args = new object?[parameters.Length];
 
-        for (var i = 0; i < parameters.Length; i++)
+        for (int i = 0; i < parameters.Length; i++)
         {
-            var param = parameters[i];
-            var ordinal = columns[param.Name!];
-            var value = reader.GetValue(ordinal);
+			ParameterInfo param = parameters[i];
+			int ordinal = columns[param.Name!];
+			object value = reader.GetValue(ordinal);
             args[i] = value.ChangeTypeNullable(param.ParameterType, CultureInfo.InvariantCulture);
         }
 
-        var factory = GetCompiledCtorFactory(constructor);
+		Func<object?[], object> factory = GetCompiledCtorFactory(constructor);
         return factory(args);
     }
 
@@ -221,24 +231,32 @@ public sealed class DataSqlMapper : IDataSqlMapper
         Dictionary<string, int> columns,
         HashSet<string>? paramNames)
     {
-        for (var i = 0; i < reader.FieldCount; i++)
+        for (int i = 0; i < reader.FieldCount; i++)
         {
-            var columnName = reader.GetName(i);
-            if (!metadata.PropertyByName.TryGetValue(columnName, out var property))
-                continue;
+			string columnName = reader.GetName(i);
+            if (!metadata.PropertyByName.TryGetValue(columnName, out PropertyInfo? property))
+			{
+				continue;
+			}
 
-            if (!property.CanWrite)
-                continue;
+			if (!property.CanWrite)
+			{
+				continue;
+			}
 
-            if (paramNames is not null && paramNames.Contains(property.Name))
-                continue;
+			if (paramNames is not null && paramNames.Contains(property.Name))
+			{
+				continue;
+			}
 
-            var value = reader.GetValue(i);
+			object value = reader.GetValue(i);
             if (value == DBNull.Value)
-                continue;
+			{
+				continue;
+			}
 
-            var convertedValue = value.ChangeTypeNullable(property.PropertyType, CultureInfo.InvariantCulture);
-            var setter = GetCompiledSetter(property);
+			object? convertedValue = value.ChangeTypeNullable(property.PropertyType, CultureInfo.InvariantCulture);
+			Action<object, object?> setter = GetCompiledSetter(property);
             setter(instance, convertedValue);
         }
     }
@@ -249,11 +267,11 @@ public sealed class DataSqlMapper : IDataSqlMapper
     {
         return _setterCache.GetOrAdd(property, static prop =>
         {
-            var instance = Expression.Parameter(typeof(object), "instance");
-            var value = Expression.Parameter(typeof(object), "value");
-            var castInstance = Expression.Convert(instance, prop.DeclaringType!);
-            var castValue = Expression.Convert(value, prop.PropertyType);
-            var setExpr = Expression.Assign(Expression.Property(castInstance, prop), castValue);
+			ParameterExpression instance = Expression.Parameter(typeof(object), "instance");
+			ParameterExpression value = Expression.Parameter(typeof(object), "value");
+			UnaryExpression castInstance = Expression.Convert(instance, prop.DeclaringType!);
+			UnaryExpression castValue = Expression.Convert(value, prop.PropertyType);
+			BinaryExpression setExpr = Expression.Assign(Expression.Property(castInstance, prop), castValue);
             return Expression.Lambda<Action<object, object?>>(setExpr, instance, value).Compile();
         });
     }
@@ -269,15 +287,15 @@ public sealed class DataSqlMapper : IDataSqlMapper
     {
         return _typeMetadataCache.GetOrAdd(type, static t =>
         {
-            var properties = t.GetProperties(BindingFlags.Public | BindingFlags.Instance);
+			PropertyInfo[] properties = t.GetProperties(BindingFlags.Public | BindingFlags.Instance);
             var propertyByName = new Dictionary<string, PropertyInfo>(properties.Length, StringComparer.OrdinalIgnoreCase);
-            foreach (var prop in properties)
+            foreach (PropertyInfo prop in properties)
             {
                 propertyByName.TryAdd(prop.Name, prop);
             }
 
-            var constructors = t.GetConstructors(BindingFlags.Public | BindingFlags.Instance);
-            var hasParameterlessCtor = t.GetConstructor(Type.EmptyTypes) is not null;
+			ConstructorInfo[] constructors = t.GetConstructors(BindingFlags.Public | BindingFlags.Instance);
+			bool hasParameterlessCtor = t.GetConstructor(Type.EmptyTypes) is not null;
 
             return new TypeMetadata(properties, propertyByName, constructors, hasParameterlessCtor);
         });
@@ -289,16 +307,16 @@ public sealed class DataSqlMapper : IDataSqlMapper
     {
         return _ctorDelegateCache.GetOrAdd(constructor, static ctor =>
         {
-            var argsParam = Expression.Parameter(typeof(object?[]), "args");
-            var ctorParams = ctor.GetParameters();
+			ParameterExpression argsParam = Expression.Parameter(typeof(object?[]), "args");
+			ParameterInfo[] ctorParams = ctor.GetParameters();
             var argExpressions = new Expression[ctorParams.Length];
-            for (var i = 0; i < ctorParams.Length; i++)
+            for (int i = 0; i < ctorParams.Length; i++)
             {
-                var index = Expression.ArrayIndex(argsParam, Expression.Constant(i));
+				BinaryExpression index = Expression.ArrayIndex(argsParam, Expression.Constant(i));
                 argExpressions[i] = Expression.Convert(index, ctorParams[i].ParameterType);
             }
-            var newExpr = Expression.New(ctor, argExpressions);
-            var body = Expression.Convert(newExpr, typeof(object));
+			NewExpression newExpr = Expression.New(ctor, argExpressions);
+			UnaryExpression body = Expression.Convert(newExpr, typeof(object));
             return Expression.Lambda<Func<object?[], object>>(body, argsParam).Compile();
         });
     }
@@ -309,13 +327,15 @@ public sealed class DataSqlMapper : IDataSqlMapper
     {
         return _ctorParamNamesCache.GetOrAdd(constructor, static ctor =>
         {
-            var parameters = ctor.GetParameters();
+			ParameterInfo[] parameters = ctor.GetParameters();
             var names = new HashSet<string>(parameters.Length, StringComparer.OrdinalIgnoreCase);
-            foreach (var p in parameters)
+            foreach (ParameterInfo p in parameters)
             {
                 if (p.Name is not null)
-                    names.Add(p.Name);
-            }
+				{
+					names.Add(p.Name);
+				}
+			}
             return names;
         });
     }

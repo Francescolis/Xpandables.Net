@@ -1,4 +1,4 @@
-/*******************************************************************************
+﻿/*******************************************************************************
  * Copyright (C) 2025 Kamersoft
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
@@ -357,7 +357,7 @@ public static class JsonSerializerExtensions
         writer.WritePropertyName("items"u8);
         writer.WriteStartArray();
 
-        FlushStrategy flushStrategy = FlushStrategy.Create(pagination.TotalCount);
+        var flushStrategy = FlushStrategy.Create(pagination.TotalCount);
         int itemCount = 0;
 
         await foreach (T item in paged.WithCancellation(cancellationToken).ConfigureAwait(false))
@@ -408,9 +408,9 @@ public static class JsonSerializerExtensions
         JsonSerializerOptions? options = null,
         CancellationToken cancellationToken = default)
     {
-        var method = SerializeAsyncPagedMethod.MakeGenericMethod(paged.GetArgumentType());
-        var jsonTypeInfo = JsonSerializer.GetJsonTypeInfo(paged.GetArgumentType(), options);
-        var result = method.Invoke(null, [output, paged, jsonTypeInfo, cancellationToken]);
+		MethodInfo method = SerializeAsyncPagedMethod.MakeGenericMethod(paged.GetArgumentType());
+		JsonTypeInfo jsonTypeInfo = JsonSerializer.GetJsonTypeInfo(paged.GetArgumentType(), options);
+		object? result = method.Invoke(null, [output, paged, jsonTypeInfo, cancellationToken]);
         return result as Task ?? throw new InvalidOperationException($"Expected Task from {method.Name}, but got null.");
     }
 
@@ -425,10 +425,10 @@ public static class JsonSerializerExtensions
         CancellationToken cancellationToken = default)
     {
         Type argumentType = paged.GetArgumentType();
-        var method = SerializeAsyncPagedMethod.MakeGenericMethod(argumentType);
-        var jsonTypeInfo = context.GetTypeInfo(argumentType)
+		MethodInfo method = SerializeAsyncPagedMethod.MakeGenericMethod(argumentType);
+		JsonTypeInfo jsonTypeInfo = context.GetTypeInfo(argumentType)
             ?? throw new InvalidOperationException($"The type '{argumentType}' is not registered in the provided JsonSerializerContext.");
-        var result = method.Invoke(null, [output, paged, jsonTypeInfo, cancellationToken]);
+		object? result = method.Invoke(null, [output, paged, jsonTypeInfo, cancellationToken]);
         return result as Task ?? throw new InvalidOperationException($"Expected Task from {method.Name}, but got null.");
     }
 
@@ -442,8 +442,8 @@ public static class JsonSerializerExtensions
         JsonTypeInfo jsonTypeInfo,
         CancellationToken cancellationToken = default)
     {
-        var method = SerializeAsyncPagedMethod.MakeGenericMethod(paged.GetArgumentType());
-        var result = method.Invoke(null, [output, paged, jsonTypeInfo, cancellationToken]);
+		MethodInfo method = SerializeAsyncPagedMethod.MakeGenericMethod(paged.GetArgumentType());
+		object? result = method.Invoke(null, [output, paged, jsonTypeInfo, cancellationToken]);
         return result as Task ?? throw new InvalidOperationException($"Expected Task from {method.Name}, but got null.");
     }
 

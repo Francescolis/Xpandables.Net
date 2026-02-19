@@ -139,16 +139,20 @@ public class DataUnitOfWork : IDataUnitOfWork
     public void Dispose()
     {
         if (_isDisposed)
-            return;
+		{
+			return;
+		}
 
-        _isDisposed = true;
+		_isDisposed = true;
 
         // Dispose all cached repositories
-        foreach (var repo in _repositories.Values)
+        foreach (object repo in _repositories.Values)
         {
             if (repo is IDisposable disposable)
-                disposable.Dispose();
-        }
+			{
+				disposable.Dispose();
+			}
+		}
 
         _repositories.Clear();
         _connectionScope.Dispose();
@@ -160,18 +164,24 @@ public class DataUnitOfWork : IDataUnitOfWork
     public async ValueTask DisposeAsync()
     {
         if (_isDisposed)
-            return;
+		{
+			return;
+		}
 
-        _isDisposed = true;
+		_isDisposed = true;
 
         // Dispose all cached repositories
-        foreach (var repo in _repositories.Values)
+        foreach (object repo in _repositories.Values)
         {
             if (repo is IAsyncDisposable asyncDisposable)
-                await asyncDisposable.DisposeAsync().ConfigureAwait(false);
-            else if (repo is IDisposable disposable)
-                disposable.Dispose();
-        }
+			{
+				await asyncDisposable.DisposeAsync().ConfigureAwait(false);
+			}
+			else if (repo is IDisposable disposable)
+			{
+				disposable.Dispose();
+			}
+		}
 
         _repositories.Clear();
         await _connectionScope.DisposeAsync().ConfigureAwait(false);
@@ -219,11 +229,11 @@ public class DataUnitOfWorkFactory : IDataUnitOfWorkFactory
     /// <inheritdoc />
     public async Task<IDataUnitOfWork> CreateAsync(CancellationToken cancellationToken = default)
     {
-        var connectionScope = await _connectionScopeFactory
+		IDataDbConnectionScope connectionScope = await _connectionScopeFactory
             .CreateScopeAsync(cancellationToken)
             .ConfigureAwait(false);
 
-        var sqlBuilder = _sqlBuilderFactory.Create(_providerInvariantName);
+		IDataSqlBuilder sqlBuilder = _sqlBuilderFactory.Create(_providerInvariantName);
 
         return new DataUnitOfWork(connectionScope, sqlBuilder, _sqlMapper, _interceptor);
     }
@@ -231,8 +241,8 @@ public class DataUnitOfWorkFactory : IDataUnitOfWorkFactory
     /// <inheritdoc />
     public IDataUnitOfWork Create()
     {
-        var connectionScope = _connectionScopeFactory.CreateScope();
-        var sqlBuilder = _sqlBuilderFactory.Create(_providerInvariantName);
+		IDataDbConnectionScope connectionScope = _connectionScopeFactory.CreateScope();
+		IDataSqlBuilder sqlBuilder = _sqlBuilderFactory.Create(_providerInvariantName);
 
         return new DataUnitOfWork(connectionScope, sqlBuilder, _sqlMapper, _interceptor);
     }

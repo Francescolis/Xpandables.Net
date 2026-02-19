@@ -1,4 +1,4 @@
-/*******************************************************************************
+﻿/*******************************************************************************
  * Copyright (C) 2025 Kamersoft
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
@@ -27,29 +27,29 @@ public sealed class AsyncEnumerableExtensionsTests
     [Fact]
     public async Task ToAsyncPagedEnumerable_ShouldConvertToPagedEnumerable()
     {
-        // Arrange
-        var source = CreateAsyncEnumerable(50);
+		// Arrange
+		IAsyncEnumerable<int> source = CreateAsyncEnumerable(50);
 
-        // Act
-        var paged = source.ToAsyncPagedEnumerable();
+		// Act
+		IAsyncPagedEnumerable<int> paged = source.ToAsyncPagedEnumerable();
 
         // Assert
         Assert.NotNull(paged);
-        var items = await paged.ToListAsync();
+		List<int> items = await paged.ToListAsync();
         Assert.Equal(50, items.Count);
     }
 
     [Fact]
     public async Task ToAsyncPagedEnumerable_WithPaginationFactory_ShouldUsePagination()
     {
-        // Arrange
-        var source = CreateAsyncEnumerable(30);
+		// Arrange
+		IAsyncEnumerable<int> source = CreateAsyncEnumerable(30);
         var expectedPagination = Pagination.Create(pageSize: 10, currentPage: 1, totalCount: 30);
 
-        // Act
-        var paged = source.ToAsyncPagedEnumerable(
+		// Act
+		IAsyncPagedEnumerable<int> paged = source.ToAsyncPagedEnumerable(
             _ => ValueTask.FromResult(expectedPagination));
-        var pagination = await paged.GetPaginationAsync();
+		Pagination pagination = await paged.GetPaginationAsync();
 
         // Assert
         Assert.Equal(expectedPagination.PageSize, pagination.PageSize);
@@ -59,13 +59,13 @@ public sealed class AsyncEnumerableExtensionsTests
     [Fact]
     public async Task ToAsyncPagedEnumerable_WithPagination_ShouldUsePagination()
     {
-        // Arrange
-        var source = CreateAsyncEnumerable(40);
+		// Arrange
+		IAsyncEnumerable<int> source = CreateAsyncEnumerable(40);
         var pagination = Pagination.Create(pageSize: 5, currentPage: 1, totalCount: 40);
 
-        // Act
-        var paged = source.ToAsyncPagedEnumerable(pagination);
-        var result = await paged.GetPaginationAsync();
+		// Act
+		IAsyncPagedEnumerable<int> paged = source.ToAsyncPagedEnumerable(pagination);
+		Pagination result = await paged.GetPaginationAsync();
 
         // Assert
         Assert.Equal(pagination.PageSize, result.PageSize);
@@ -75,13 +75,13 @@ public sealed class AsyncEnumerableExtensionsTests
     [Fact]
     public async Task ToAsyncPagedEnumerable_WithTotalCount_ShouldUseCount()
     {
-        // Arrange
-        var source = CreateAsyncEnumerable(25);
+		// Arrange
+		IAsyncEnumerable<int> source = CreateAsyncEnumerable(25);
         const int totalCount = 25;
 
-        // Act
-        var paged = source.ToAsyncPagedEnumerable(totalCount);
-        var pagination = await paged.GetPaginationAsync();
+		// Act
+		IAsyncPagedEnumerable<int> paged = source.ToAsyncPagedEnumerable(totalCount);
+		Pagination pagination = await paged.GetPaginationAsync();
 
         // Assert
         Assert.Equal(totalCount, pagination.TotalCount);
@@ -101,8 +101,8 @@ public sealed class AsyncEnumerableExtensionsTests
     [Fact]
     public void ToAsyncPagedEnumerable_WithNullFactory_ShouldThrow()
     {
-        // Arrange
-        var source = CreateAsyncEnumerable(10);
+		// Arrange
+		IAsyncEnumerable<int> source = CreateAsyncEnumerable(10);
         Func<CancellationToken, ValueTask<Pagination>>? factory = null;
 
         // Act & Assert
@@ -113,8 +113,8 @@ public sealed class AsyncEnumerableExtensionsTests
     [Fact]
     public void ToAsyncPagedEnumerable_WithNegativeTotalCount_ShouldThrow()
     {
-        // Arrange
-        var source = CreateAsyncEnumerable(10);
+		// Arrange
+		IAsyncEnumerable<int> source = CreateAsyncEnumerable(10);
 
         // Act & Assert
         Assert.Throws<ArgumentOutOfRangeException>(
@@ -139,12 +139,12 @@ public sealed class IAsyncPagedEnumerableExtensionsTests
     [Fact]
     public void GetArgumentType_ShouldReturnElementType()
     {
-        // Arrange
-        var source = CreateAsyncEnumerable(10);
+		// Arrange
+		IAsyncEnumerable<int> source = CreateAsyncEnumerable(10);
         IAsyncPagedEnumerable paged = AsyncPagedEnumerable.Create(source);
 
-        // Act
-        var argumentType = paged.GetArgumentType();
+		// Act
+		Type argumentType = paged.GetArgumentType();
 
         // Assert
         Assert.Equal(typeof(int), argumentType);
@@ -153,12 +153,12 @@ public sealed class IAsyncPagedEnumerableExtensionsTests
     [Fact]
     public void GetArgumentType_WithStringEnumerable_ShouldReturnStringType()
     {
-        // Arrange
-        var source = CreateAsyncStringEnumerable(5);
+		// Arrange
+		IAsyncEnumerable<string> source = CreateAsyncStringEnumerable(5);
         IAsyncPagedEnumerable paged = AsyncPagedEnumerable.Create(source);
 
-        // Act
-        var argumentType = paged.GetArgumentType();
+		// Act
+		Type argumentType = paged.GetArgumentType();
 
         // Assert
         Assert.Equal(typeof(string), argumentType);
@@ -201,20 +201,20 @@ public sealed class AsyncPagedEnumerableIntegrationTests
         // Arrange
         const int datasetSize = 10000;
         const int pageSize = 100;
-        var source = CreateAsyncEnumerable(datasetSize);
+		IAsyncEnumerable<int> source = CreateAsyncEnumerable(datasetSize);
         var pagination = Pagination.Create(pageSize: pageSize, currentPage: 1, totalCount: datasetSize);
-        var paged = AsyncPagedEnumerable.Create(source, _ => ValueTask.FromResult(pagination));
+		IAsyncPagedEnumerable<int> paged = AsyncPagedEnumerable.Create(source, _ => ValueTask.FromResult(pagination));
 
         // Act
         int count = 0;
-        await foreach (var item in paged)
+        await foreach (int item in paged)
         {
             count++;
         }
 
         // Assert
         Assert.Equal(datasetSize, count);
-        var finalPagination = await paged.GetPaginationAsync();
+		Pagination finalPagination = await paged.GetPaginationAsync();
         Assert.Equal(datasetSize, finalPagination.TotalCount);
     }
 
@@ -223,32 +223,32 @@ public sealed class AsyncPagedEnumerableIntegrationTests
     {
         // Arrange
         const int size = 100;
-        var source = CreateAsyncEnumerable(size);
-        var paged = AsyncPagedEnumerable.Create(source);
+		IAsyncEnumerable<int> source = CreateAsyncEnumerable(size);
+		IAsyncPagedEnumerable<int> paged = AsyncPagedEnumerable.Create(source);
 
-        // Act
-        var task1 = Task.Run(async () =>
+		// Act
+		Task<List<int>> task1 = Task.Run(async () =>
         {
             var items = new List<int>();
-            await foreach (var item in paged)
+            await foreach (int item in paged)
             {
                 items.Add(item);
             }
             return items;
         });
 
-        var task2 = Task.Run(async () =>
+		Task<List<int>> task2 = Task.Run(async () =>
         {
             var items = new List<int>();
-            await foreach (var item in paged)
+            await foreach (int item in paged)
             {
                 items.Add(item);
             }
             return items;
         });
 
-        var results1 = await task1;
-        var results2 = await task2;
+		List<int> results1 = await task1;
+		List<int> results2 = await task2;
 
         // Assert
         Assert.Equal(size, results1.Count);
@@ -258,16 +258,16 @@ public sealed class AsyncPagedEnumerableIntegrationTests
     [Fact]
     public async Task WithCancellation_ShouldStopProcessing()
     {
-        // Arrange
-        var source = CreateAsyncEnumerable(1000);
-        var paged = AsyncPagedEnumerable.Create(source);
+		// Arrange
+		IAsyncEnumerable<int> source = CreateAsyncEnumerable(1000);
+		IAsyncPagedEnumerable<int> paged = AsyncPagedEnumerable.Create(source);
         var cts = new CancellationTokenSource();
 
         // Act
         int count = 0;
         try
         {
-            await foreach (var item in paged.WithCancellation(cts.Token))
+            await foreach (int item in paged.WithCancellation(cts.Token))
             {
                 count++;
                 if (count == 500)
@@ -288,19 +288,19 @@ public sealed class AsyncPagedEnumerableIntegrationTests
     [Fact]
     public async Task ConcurrentEnumeration_WithDifferentTokens_ShouldRespectEachToken()
     {
-        // Arrange
-        var source = CreateAsyncEnumerable(500);
-        var paged = AsyncPagedEnumerable.Create(source);
+		// Arrange
+		IAsyncEnumerable<int> source = CreateAsyncEnumerable(500);
+		IAsyncPagedEnumerable<int> paged = AsyncPagedEnumerable.Create(source);
         var cts1 = new CancellationTokenSource();
         var cts2 = new CancellationTokenSource();
 
-        // Act
-        var task1 = Task.Run(async () =>
+		// Act
+		Task<int> task1 = Task.Run(async () =>
         {
             int count = 0;
             try
             {
-                await foreach (var item in paged.WithCancellation(cts1.Token))
+                await foreach (int item in paged.WithCancellation(cts1.Token))
                 {
                     count++;
                     if (count == 100)
@@ -313,12 +313,12 @@ public sealed class AsyncPagedEnumerableIntegrationTests
             return count;
         });
 
-        var task2 = Task.Run(async () =>
+		Task<int> task2 = Task.Run(async () =>
         {
             int count = 0;
             try
             {
-                await foreach (var item in paged.WithCancellation(cts2.Token))
+                await foreach (int item in paged.WithCancellation(cts2.Token))
                 {
                     count++;
                     if (count == 200)
@@ -342,16 +342,16 @@ public sealed class AsyncPagedEnumerableIntegrationTests
     [Fact]
     public async Task PaginationFactory_WithException_ShouldPropagateException()
     {
-        // Arrange
-        var source = CreateAsyncEnumerable(10);
-        var exceptionMessage = "Test pagination error";
+		// Arrange
+		IAsyncEnumerable<int> source = CreateAsyncEnumerable(10);
+		string exceptionMessage = "Test pagination error";
         var paginationFactory = new Func<CancellationToken, ValueTask<Pagination>>(
             _ => throw new InvalidOperationException(exceptionMessage));
 
-        var paged = AsyncPagedEnumerable.Create(source, paginationFactory);
+		IAsyncPagedEnumerable<int> paged = AsyncPagedEnumerable.Create(source, paginationFactory);
 
-        // Act & Assert
-        var exception = await Assert.ThrowsAsync<InvalidOperationException>(
+		// Act & Assert
+		InvalidOperationException exception = await Assert.ThrowsAsync<InvalidOperationException>(
             () => paged.GetPaginationAsync());
         Assert.Equal(exceptionMessage, exception.Message);
     }
@@ -359,8 +359,8 @@ public sealed class AsyncPagedEnumerableIntegrationTests
     [Fact]
     public async Task PaginationFactory_CalledMultipleTimes_ShouldCacheResult()
     {
-        // Arrange
-        var source = CreateAsyncEnumerable(20);
+		// Arrange
+		IAsyncEnumerable<int> source = CreateAsyncEnumerable(20);
         int callCount = 0;
         var paginationFactory = new Func<CancellationToken, ValueTask<Pagination>>(
             async _ =>
@@ -370,7 +370,7 @@ public sealed class AsyncPagedEnumerableIntegrationTests
                 return Pagination.Create(pageSize: 5, currentPage: 1, totalCount: 20);
             });
 
-        var paged = AsyncPagedEnumerable.Create(source, paginationFactory);
+		IAsyncPagedEnumerable<int> paged = AsyncPagedEnumerable.Create(source, paginationFactory);
 
         // Act
         await paged.GetPaginationAsync();
@@ -384,8 +384,8 @@ public sealed class AsyncPagedEnumerableIntegrationTests
     [Fact]
     public async Task ThreadSafePaginationComputation_ConcurrentCalls()
     {
-        // Arrange
-        var source = CreateAsyncEnumerable(100);
+		// Arrange
+		IAsyncEnumerable<int> source = CreateAsyncEnumerable(100);
         int callCount = 0;
         var paginationFactory = new Func<CancellationToken, ValueTask<Pagination>>(
             async _ =>
@@ -395,7 +395,7 @@ public sealed class AsyncPagedEnumerableIntegrationTests
                 return Pagination.Create(pageSize: 10, currentPage: 1, totalCount: 100);
             });
 
-        var paged = AsyncPagedEnumerable.Create(source, paginationFactory);
+		IAsyncPagedEnumerable<int> paged = AsyncPagedEnumerable.Create(source, paginationFactory);
 
         // Act
         var tasks = Enumerable.Range(0, 5)

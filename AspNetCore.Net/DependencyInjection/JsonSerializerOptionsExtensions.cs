@@ -14,6 +14,8 @@
  * limitations under the License.
  *
 ********************************************************************************/
+using System.Text.Json;
+
 using Microsoft.AspNetCore.Http.Json;
 using Microsoft.Extensions.Options;
 
@@ -44,7 +46,7 @@ public static class JsonSerializerOptionsExtensions
             ArgumentNullException.ThrowIfNull(services);
             return services.AddSingleton(provider =>
             {
-                var options = provider.GetRequiredService<IOptions<JsonOptions>>().Value.SerializerOptions;
+				JsonSerializerOptions options = provider.GetRequiredService<IOptions<JsonOptions>>().Value.SerializerOptions;
                 return options;
             });
         }

@@ -94,7 +94,7 @@ public sealed class ResultEndpointFilter : IEndpointFilter
 
     internal static async ValueTask WriteProblemDetailsAsync(HttpContext context, Result result)
     {
-        ProblemDetails problem = result.ToProblemDetails(context);
+        var problem = result.ToProblemDetails(context);
         if (context.RequestServices.GetService<IProblemDetailsService>() is { } problemDetailsService)
         {
             await problemDetailsService.WriteAsync(new ProblemDetailsContext

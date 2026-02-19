@@ -1,4 +1,4 @@
-/*******************************************************************************
+﻿/*******************************************************************************
  * Copyright (C) 2025 Kamersoft
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
@@ -56,10 +56,14 @@ public static class PaginationExtensions
                 ct.ThrowIfCancellationRequested();
 
                 int taken = 0;
-                await foreach (var item in source.WithCancellation(ct).ConfigureAwait(false))
+                await foreach (TSource? item in source.WithCancellation(ct).ConfigureAwait(false))
                 {
-                    if (taken >= count) yield break;
-                    yield return item;
+                    if (taken >= count)
+					{
+						yield break;
+					}
+
+					yield return item;
                     taken++;
                 }
             }
@@ -81,14 +85,17 @@ public static class PaginationExtensions
             ArgumentNullException.ThrowIfNull(source);
             ArgumentOutOfRangeException.ThrowIfNegative(count);
 
-            if (count == 0) return source;
+            if (count == 0)
+			{
+				return source;
+			}
 
-            async IAsyncEnumerable<TSource> Iterator([EnumeratorCancellation] CancellationToken ct = default)
+			async IAsyncEnumerable<TSource> Iterator([EnumeratorCancellation] CancellationToken ct = default)
             {
                 ct.ThrowIfCancellationRequested();
 
                 int skipped = 0;
-                await foreach (var item in source.WithCancellation(ct).ConfigureAwait(false))
+                await foreach (TSource? item in source.WithCancellation(ct).ConfigureAwait(false))
                 {
                     if (skipped < count)
                     {
@@ -119,10 +126,14 @@ public static class PaginationExtensions
                 {
                     ct.ThrowIfCancellationRequested();
 
-                    await foreach (var item in source.WithCancellation(ct).ConfigureAwait(false))
+                    await foreach (TSource? item in source.WithCancellation(ct).ConfigureAwait(false))
                     {
-                        if (!predicate(item)) yield break;
-                        yield return item;
+                        if (!predicate(item))
+					{
+						yield break;
+					}
+
+					yield return item;
                     }
                 }
 
@@ -147,10 +158,14 @@ public static class PaginationExtensions
                     ct.ThrowIfCancellationRequested();
 
                     int index = 0;
-                    await foreach (var item in source.WithCancellation(ct).ConfigureAwait(false))
+                    await foreach (TSource? item in source.WithCancellation(ct).ConfigureAwait(false))
                     {
-                        if (!predicate(item, index)) yield break;
-                        yield return item;
+                        if (!predicate(item, index))
+					{
+						yield break;
+					}
+
+					yield return item;
                         index++;
                     }
                 }
@@ -176,14 +191,18 @@ public static class PaginationExtensions
                     ct.ThrowIfCancellationRequested();
 
                     bool yielding = false;
-                    await foreach (var item in source.WithCancellation(ct).ConfigureAwait(false))
+                    await foreach (TSource? item in source.WithCancellation(ct).ConfigureAwait(false))
                     {
                         if (!yielding && !predicate(item))
-                            yielding = true;
+					{
+						yielding = true;
+					}
 
-                        if (yielding)
-                            yield return item;
-                    }
+					if (yielding)
+					{
+						yield return item;
+					}
+				}
                 }
 
                 return AsyncPagedEnumerable.Create(
@@ -208,15 +227,19 @@ public static class PaginationExtensions
 
                     bool yielding = false;
                     int index = 0;
-                    await foreach (var item in source.WithCancellation(ct).ConfigureAwait(false))
+                    await foreach (TSource? item in source.WithCancellation(ct).ConfigureAwait(false))
                     {
                         if (!yielding && !predicate(item, index))
-                            yielding = true;
+					{
+						yielding = true;
+					}
 
-                        if (yielding)
-                            yield return item;
+					if (yielding)
+					{
+						yield return item;
+					}
 
-                        index++;
+					index++;
                     }
                 }
 
@@ -249,11 +272,14 @@ public static class PaginationExtensions
                 ct.ThrowIfCancellationRequested();
 
                 var buffer = new Queue<TSource>(count);
-                await foreach (var item in source.WithCancellation(ct).ConfigureAwait(false))
+                await foreach (TSource? item in source.WithCancellation(ct).ConfigureAwait(false))
                 {
                     if (buffer.Count == count)
-                        buffer.Dequeue();
-                    buffer.Enqueue(item);
+					{
+						buffer.Dequeue();
+					}
+
+					buffer.Enqueue(item);
                 }
 
                 while (buffer.Count > 0)
@@ -280,19 +306,24 @@ public static class PaginationExtensions
             ArgumentNullException.ThrowIfNull(source);
             ArgumentOutOfRangeException.ThrowIfNegative(count);
 
-            if (count == 0) return source;
+            if (count == 0)
+			{
+				return source;
+			}
 
-            async IAsyncEnumerable<TSource> Iterator([EnumeratorCancellation] CancellationToken ct = default)
+			async IAsyncEnumerable<TSource> Iterator([EnumeratorCancellation] CancellationToken ct = default)
             {
                 ct.ThrowIfCancellationRequested();
 
                 var buffer = new Queue<TSource>(count + 1);
-                await foreach (var item in source.WithCancellation(ct).ConfigureAwait(false))
+                await foreach (TSource? item in source.WithCancellation(ct).ConfigureAwait(false))
                 {
                     buffer.Enqueue(item);
                     if (buffer.Count > count)
-                        yield return buffer.Dequeue();
-                }
+					{
+						yield return buffer.Dequeue();
+					}
+				}
             }
 
             return AsyncPagedEnumerable.Create(
@@ -321,7 +352,7 @@ public static class PaginationExtensions
                 ct.ThrowIfCancellationRequested();
 
                 var chunk = new List<TSource>(size);
-                await foreach (var item in source.WithCancellation(ct).ConfigureAwait(false))
+                await foreach (TSource? item in source.WithCancellation(ct).ConfigureAwait(false))
                 {
                     chunk.Add(item);
                     if (chunk.Count == size)
@@ -332,8 +363,10 @@ public static class PaginationExtensions
                 }
 
                 if (chunk.Count > 0)
-                    yield return [.. chunk];
-            }
+				{
+					yield return [.. chunk];
+				}
+			}
 
             return AsyncPagedEnumerable.Create(
                 Iterator(),
@@ -366,11 +399,13 @@ public static class PaginationExtensions
                 {
                     ct.ThrowIfCancellationRequested();
 
-                    await foreach (var item in source.WithCancellation(ct).ConfigureAwait(false))
+                    await foreach (TSource? item in source.WithCancellation(ct).ConfigureAwait(false))
                     {
                         if (predicate(item))
-                            yield return item;
-                    }
+					{
+						yield return item;
+					}
+				}
                 }
 
                 return AsyncPagedEnumerable.Create(
@@ -394,11 +429,14 @@ public static class PaginationExtensions
                     ct.ThrowIfCancellationRequested();
 
                     int index = 0;
-                    await foreach (var item in source.WithCancellation(ct).ConfigureAwait(false))
+                    await foreach (TSource? item in source.WithCancellation(ct).ConfigureAwait(false))
                     {
                         if (predicate(item, index))
-                            yield return item;
-                        index++;
+					{
+						yield return item;
+					}
+
+					index++;
                     }
                 }
 
@@ -425,11 +463,13 @@ public static class PaginationExtensions
                         {
                             ct.ThrowIfCancellationRequested();
 
-                            await foreach (var item in source.WithCancellation(ct).ConfigureAwait(false))
+                            await foreach (TSource? item in source.WithCancellation(ct).ConfigureAwait(false))
                             {
                                 if (await predicate(item).ConfigureAwait(false))
-                                    yield return item;
-                            }
+					{
+						yield return item;
+					}
+				}
                         }
 
                         return AsyncPagedEnumerable.Create(
@@ -455,11 +495,13 @@ public static class PaginationExtensions
                         {
                             ct.ThrowIfCancellationRequested();
 
-                            await foreach (var item in source.WithCancellation(ct).ConfigureAwait(false))
+                            await foreach (TSource? item in source.WithCancellation(ct).ConfigureAwait(false))
                             {
                                 if (await predicate(item, ct).ConfigureAwait(false))
-                                    yield return item;
-                            }
+					{
+						yield return item;
+					}
+				}
                         }
 
                         return AsyncPagedEnumerable.Create(
@@ -482,10 +524,14 @@ public static class PaginationExtensions
                         {
                             ct.ThrowIfCancellationRequested();
 
-                            await foreach (var item in source.WithCancellation(ct).ConfigureAwait(false))
+                            await foreach (TSource? item in source.WithCancellation(ct).ConfigureAwait(false))
                             {
-                                if (!await predicate(item).ConfigureAwait(false)) yield break;
-                                yield return item;
+                                if (!await predicate(item).ConfigureAwait(false))
+					{
+						yield break;
+					}
+
+					yield return item;
                             }
                         }
 
@@ -509,10 +555,14 @@ public static class PaginationExtensions
                         {
                             ct.ThrowIfCancellationRequested();
 
-                            await foreach (var item in source.WithCancellation(ct).ConfigureAwait(false))
+                            await foreach (TSource? item in source.WithCancellation(ct).ConfigureAwait(false))
                             {
-                                if (!await predicate(item, ct).ConfigureAwait(false)) yield break;
-                                yield return item;
+                                if (!await predicate(item, ct).ConfigureAwait(false))
+					{
+						yield break;
+					}
+
+					yield return item;
                             }
                         }
 
@@ -537,14 +587,18 @@ public static class PaginationExtensions
                             ct.ThrowIfCancellationRequested();
 
                             bool yielding = false;
-                            await foreach (var item in source.WithCancellation(ct).ConfigureAwait(false))
+                            await foreach (TSource? item in source.WithCancellation(ct).ConfigureAwait(false))
                             {
                                 if (!yielding && !await predicate(item).ConfigureAwait(false))
-                                    yielding = true;
+					{
+						yielding = true;
+					}
 
-                                if (yielding)
-                                    yield return item;
-                            }
+					if (yielding)
+					{
+						yield return item;
+					}
+				}
                         }
 
                         return AsyncPagedEnumerable.Create(
@@ -568,14 +622,18 @@ public static class PaginationExtensions
                             ct.ThrowIfCancellationRequested();
 
                             bool yielding = false;
-                            await foreach (var item in source.WithCancellation(ct).ConfigureAwait(false))
+                            await foreach (TSource? item in source.WithCancellation(ct).ConfigureAwait(false))
                             {
                                 if (!yielding && !await predicate(item, ct).ConfigureAwait(false))
-                                    yielding = true;
+					{
+						yielding = true;
+					}
 
-                                if (yielding)
-                                    yield return item;
-                            }
+					if (yielding)
+					{
+						yield return item;
+					}
+				}
                         }
 
                         return AsyncPagedEnumerable.Create(

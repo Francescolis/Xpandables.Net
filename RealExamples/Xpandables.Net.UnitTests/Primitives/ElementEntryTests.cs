@@ -1,4 +1,4 @@
-/*******************************************************************************
+﻿/*******************************************************************************
  * Copyright (C) 2025 Kamersoft
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
@@ -69,8 +69,8 @@ public sealed class ElementEntryTests
     [Fact]
     public void WhenCreatingWithNullKeyThenShouldThrowArgumentNullException()
     {
-        // Act
-        var act = () => new ElementEntry(null!, "value");
+		// Act
+		Func<ElementEntry> act = () => new ElementEntry(null!, "value");
 
         // Assert
         act.Should().Throw<ArgumentNullException>();
@@ -79,8 +79,8 @@ public sealed class ElementEntryTests
     [Fact]
     public void WhenCreatingWithNullValuesThenShouldThrowArgumentException()
     {
-        // Act
-        var act = () => new ElementEntry("key", (string[])null!);
+		// Act
+		Func<ElementEntry> act = () => new ElementEntry("key", (string[])null!);
 
         // Assert
         act.Should().Throw<ArgumentException>();
@@ -92,8 +92,8 @@ public sealed class ElementEntryTests
         // Arrange
         string[] emptyArray = [];
 
-        // Act
-        var act = () => new ElementEntry("key", emptyArray);
+		// Act
+		Func<ElementEntry> act = () => new ElementEntry("key", emptyArray);
 
         // Assert
         act.Should().Throw<ArgumentException>()
@@ -106,8 +106,8 @@ public sealed class ElementEntryTests
         // Arrange
         StringValues values = new([]);
 
-        // Act
-        var act = () => new ElementEntry("key", values);
+		// Act
+		Func<ElementEntry> act = () => new ElementEntry("key", values);
 
         // Assert
         act.Should().Throw<ArgumentOutOfRangeException>();
@@ -173,8 +173,8 @@ public sealed class ElementEntryTests
         // Arrange
         var entry = new ElementEntry("name", "John");
 
-        // Act
-        var result = entry.ToString();
+		// Act
+		string result = entry.ToString();
 
         // Assert
         result.Should().Be("name: John");
@@ -186,8 +186,8 @@ public sealed class ElementEntryTests
         // Arrange
         var entry = new ElementEntry("colors", "red", "green", "blue");
 
-        // Act
-        var result = entry.ToString();
+		// Act
+		string result = entry.ToString();
 
         // Assert
         result.Should().Be("colors: red,green,blue");
@@ -203,8 +203,8 @@ public sealed class ElementEntryTests
         // Arrange
         var entry = new ElementEntry("name", "John");
 
-        // Act
-        var json = JsonSerializer.Serialize(entry, ElementEntryContext.Default.ElementEntry);
+		// Act
+		string json = JsonSerializer.Serialize(entry, ElementEntryContext.Default.ElementEntry);
 
         // Assert
         json.Should().NotBeNullOrEmpty();
@@ -217,10 +217,10 @@ public sealed class ElementEntryTests
     {
         // Arrange
         var original = new ElementEntry("email", "test@example.com");
-        var json = JsonSerializer.Serialize(original, ElementEntryContext.Default.ElementEntry);
+		string json = JsonSerializer.Serialize(original, ElementEntryContext.Default.ElementEntry);
 
-        // Act
-        var deserialized = JsonSerializer.Deserialize(json, ElementEntryContext.Default.ElementEntry);
+		// Act
+		ElementEntry deserialized = JsonSerializer.Deserialize(json, ElementEntryContext.Default.ElementEntry);
 
         // Assert
         deserialized.Key.Should().Be(original.Key);
@@ -230,15 +230,15 @@ public sealed class ElementEntryTests
     [Fact]
     public void WhenSerializingElementEntryArrayThenShouldProduceValidJson()
     {
-        // Arrange
-        var entries = new[]
+		// Arrange
+		ElementEntry[] entries = new[]
         {
             new ElementEntry("name", "John"),
             new ElementEntry("age", "30")
         };
 
-        // Act
-        var json = JsonSerializer.Serialize(entries, ElementEntryContext.Default.ElementEntryArray);
+		// Act
+		string json = JsonSerializer.Serialize(entries, ElementEntryContext.Default.ElementEntryArray);
 
         // Assert
         json.Should().NotBeNullOrEmpty();
@@ -247,16 +247,16 @@ public sealed class ElementEntryTests
     [Fact]
     public void WhenDeserializingElementEntryArrayThenShouldRecreateAll()
     {
-        // Arrange
-        var original = new[]
+		// Arrange
+		ElementEntry[] original = new[]
         {
             new ElementEntry("field1", "value1"),
             new ElementEntry("field2", "value2", "value3")
         };
-        var json = JsonSerializer.Serialize(original, ElementEntryContext.Default.ElementEntryArray);
+		string json = JsonSerializer.Serialize(original, ElementEntryContext.Default.ElementEntryArray);
 
-        // Act
-        var deserialized = JsonSerializer.Deserialize(json, ElementEntryContext.Default.ElementEntryArray);
+		// Act
+		ElementEntry[]? deserialized = JsonSerializer.Deserialize(json, ElementEntryContext.Default.ElementEntryArray);
 
         // Assert
         deserialized.Should().HaveCount(2);
@@ -270,9 +270,9 @@ public sealed class ElementEntryTests
         // Arrange
         var original = new ElementEntry("errors", "Error 1", "Error 2", "Error 3");
 
-        // Act
-        var json = JsonSerializer.Serialize(original, ElementEntryContext.Default.ElementEntry);
-        var deserialized = JsonSerializer.Deserialize(json, ElementEntryContext.Default.ElementEntry);
+		// Act
+		string json = JsonSerializer.Serialize(original, ElementEntryContext.Default.ElementEntry);
+		ElementEntry deserialized = JsonSerializer.Deserialize(json, ElementEntryContext.Default.ElementEntry);
 
         // Assert
         deserialized.Key.Should().Be("errors");
@@ -310,7 +310,7 @@ public sealed class ElementEntryTests
         var collected = new List<string?>();
 
         // Act
-        foreach (var value in entry.Values)
+        foreach (string? value in entry.Values)
         {
             collected.Add(value);
         }
@@ -325,8 +325,8 @@ public sealed class ElementEntryTests
         // Arrange
         var entry = new ElementEntry("numbers", "1", "2", "3");
 
-        // Act
-        var array = entry.Values.ToArray();
+		// Act
+		string?[] array = entry.Values.ToArray();
 
         // Assert
         array.Should().BeEquivalentTo(["1", "2", "3"]);
@@ -342,8 +342,8 @@ public sealed class ElementEntryTests
         // Arrange
         var original = new ElementEntry("key", "value1");
 
-        // Act
-        var modified = original with { Key = "newKey" };
+		// Act
+		ElementEntry modified = original with { Key = "newKey" };
 
         // Assert
         modified.Key.Should().Be("newKey");
@@ -415,9 +415,9 @@ public sealed class ElementEntryTests
         // Arrange - Query string like ?category=electronics&category=books&category=games
         var entry = new ElementEntry("category", "electronics", "books", "games");
 
-        // Act
-        var values = entry.Values.ToArray();
-        var queryPart = $"{entry.Key}={string.Join($"&{entry.Key}=", values!)}";
+		// Act
+		string?[] values = entry.Values.ToArray();
+		string queryPart = $"{entry.Key}={string.Join($"&{entry.Key}=", values!)}";
 
         // Assert
         queryPart.Should().Be("category=electronics&category=books&category=games");
@@ -426,16 +426,16 @@ public sealed class ElementEntryTests
     [Fact]
     public void WhenBuildingErrorResponseThenShouldFormatCorrectly()
     {
-        // Arrange
-        var errors = new[]
+		// Arrange
+		ElementEntry[] errors = new[]
         {
             new ElementEntry("Email", "Invalid email format"),
             new ElementEntry("Password", "Too short", "Missing number"),
             new ElementEntry("Username", "Already taken")
         };
 
-        // Act
-        var errorDict = errors.ToDictionary(
+		// Act
+		Dictionary<string, string?[]> errorDict = errors.ToDictionary(
             e => e.Key,
             e => e.Values.ToArray());
 
@@ -487,8 +487,8 @@ public sealed class ElementEntryTests
     [Fact]
     public void WhenCreatingManyEntriesThenShouldAllBeIndependent()
     {
-        // Arrange
-        var entries = Enumerable.Range(1, 100)
+		// Arrange
+		ElementEntry[] entries = Enumerable.Range(1, 100)
             .Select(i => new ElementEntry($"key{i}", $"value{i}"))
             .ToArray();
 

@@ -37,7 +37,7 @@ public sealed class CompositeValidator<TArgument>(IEnumerable<IValidator<TArgume
         List<ValidationResult> validationResults = [];
         foreach (IValidator<TArgument> validator in _validators.OrderBy(v => v.Order))
         {
-            var results = validator.Validate(instance);
+			IReadOnlyCollection<ValidationResult> results = validator.Validate(instance);
             if (results is { Count: > 0 })
             {
                 validationResults.AddRange(results);
@@ -54,7 +54,7 @@ public sealed class CompositeValidator<TArgument>(IEnumerable<IValidator<TArgume
 
         foreach (IValidator<TArgument> validator in _validators.OrderBy(v => v.Order))
         {
-            var results = await validator
+			IReadOnlyCollection<ValidationResult> results = await validator
                 .ValidateAsync(instance)
                 .ConfigureAwait(false);
 

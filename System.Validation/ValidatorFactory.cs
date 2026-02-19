@@ -37,7 +37,7 @@ public sealed class ValidatorFactory(
     public IValidator? CreateValidator(Type type)
     {
         ArgumentNullException.ThrowIfNull(type);
-        var resolver = validatorResolvers.FirstOrDefault(r => r.TargetType == type);
+		IValidatorResolver? resolver = validatorResolvers.FirstOrDefault(r => r.TargetType == type);
         return resolver?.Resolve(serviceProvider);
     }
 

@@ -60,7 +60,7 @@ public sealed class DataDbConnectionScope(DbConnection connection) : IDataDbConn
 		ThrowIfDisposed();
 		ThrowIfTransactionActive();
 
-		var transaction = await _connection
+		DbTransaction transaction = await _connection
 			.BeginTransactionAsync(isolationLevel, cancellationToken)
 			.ConfigureAwait(false);
 
@@ -74,7 +74,7 @@ public sealed class DataDbConnectionScope(DbConnection connection) : IDataDbConn
 		ThrowIfDisposed();
 		ThrowIfTransactionActive();
 
-		var transaction = _connection.BeginTransaction(isolationLevel);
+		DbTransaction transaction = _connection.BeginTransaction(isolationLevel);
 		_currentTransaction = new DataTransaction(transaction, OnTransactionCompleted);
 		return _currentTransaction;
 	}
@@ -84,7 +84,7 @@ public sealed class DataDbConnectionScope(DbConnection connection) : IDataDbConn
 	{
 		ThrowIfDisposed();
 
-		var command = _connection.CreateCommand();
+		DbCommand command = _connection.CreateCommand();
 
 		if (_currentTransaction is { IsCompleted: false })
 		{
@@ -98,7 +98,7 @@ public sealed class DataDbConnectionScope(DbConnection connection) : IDataDbConn
 	[Diagnostics.CodeAnalysis.SuppressMessage("Security", "CA2100:Review SQL queries for security vulnerabilities", Justification = "<Pending>")]
 	public DbCommand CreateCommand(SqlQueryResult queryResult)
 	{
-		var command = CreateCommand();
+		DbCommand command = CreateCommand();
 		command.CommandText = queryResult.Sql;
 		queryResult.ApplyParameters(command);
 		return command;
@@ -108,7 +108,9 @@ public sealed class DataDbConnectionScope(DbConnection connection) : IDataDbConn
 	public void Dispose()
 	{
 		if (_isDisposed)
+		{
 			return;
+		}
 
 		_isDisposed = true;
 
@@ -126,7 +128,9 @@ public sealed class DataDbConnectionScope(DbConnection connection) : IDataDbConn
 	public async ValueTask DisposeAsync()
 	{
 		if (_isDisposed)
+		{
 			return;
+		}
 
 		_isDisposed = true;
 
@@ -181,7 +185,7 @@ public sealed class DataDbConnectionScopeFactory(IDataDbConnectionFactory connec
 	/// <inheritdoc />
 	public async Task<IDataDbConnectionScope> CreateScopeAsync(CancellationToken cancellationToken = default)
 	{
-		var connection = await _connectionFactory
+		DbConnection connection = await _connectionFactory
 			.CreateOpenConnectionAsync(cancellationToken)
 			.ConfigureAwait(false);
 
@@ -191,7 +195,7 @@ public sealed class DataDbConnectionScopeFactory(IDataDbConnectionFactory connec
 	/// <inheritdoc />
 	public IDataDbConnectionScope CreateScope()
 	{
-		var connection = _connectionFactory.CreateOpenConnection();
+		DbConnection connection = _connectionFactory.CreateOpenConnection();
 		return new DataDbConnectionScope(connection);
 	}
 }

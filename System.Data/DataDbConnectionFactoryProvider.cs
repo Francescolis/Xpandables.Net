@@ -54,7 +54,7 @@ public sealed class DataDbConnectionFactoryProvider : IDataDbConnectionFactoryPr
 	public IDataDbConnectionFactory GetFactory(string name)
 	{
 		ArgumentNullException.ThrowIfNull(name);
-		if (TryGetFactory(name, out var factory))
+		if (TryGetFactory(name, out IDataDbConnectionFactory? factory))
 		{
 			return factory;
 		}
@@ -68,7 +68,7 @@ public sealed class DataDbConnectionFactoryProvider : IDataDbConnectionFactoryPr
 		ArgumentNullException.ThrowIfNull(name);
 		ArgumentException.ThrowIfNullOrWhiteSpace(providerInvariantName);
 
-		if (!TryGetFactory(name, providerInvariantName, out var factory))
+		if (!TryGetFactory(name, providerInvariantName, out IDataDbConnectionFactory? factory))
 		{
 			throw new InvalidOperationException($"No connection string named '{name}' was found.");
 		}
@@ -81,15 +81,15 @@ public sealed class DataDbConnectionFactoryProvider : IDataDbConnectionFactoryPr
 	{
 		ArgumentNullException.ThrowIfNull(name);
 
-		var connectionString = _configuration.GetConnectionString(name);
+		string? connectionString = _configuration.GetConnectionString(name);
 		if (string.IsNullOrWhiteSpace(connectionString))
 		{
 			factory = null;
 			return false;
 		}
 
-		var resolvedProvider = ResolveProviderInvariantName(connectionString, null);
-		var cacheKey = $"{name}|{resolvedProvider}";
+		string resolvedProvider = ResolveProviderInvariantName(connectionString, null);
+		string cacheKey = $"{name}|{resolvedProvider}";
 
 		factory = _factories.GetOrAdd(cacheKey,
 			_ => new DataDbConnectionFactory(resolvedProvider, connectionString));
@@ -102,15 +102,15 @@ public sealed class DataDbConnectionFactoryProvider : IDataDbConnectionFactoryPr
 	{
 		ArgumentNullException.ThrowIfNull(name);
 
-		var connectionString = _configuration.GetConnectionString(name);
+		string? connectionString = _configuration.GetConnectionString(name);
 		if (string.IsNullOrWhiteSpace(connectionString))
 		{
 			factory = null;
 			return false;
 		}
 
-		var resolvedProvider = ResolveProviderInvariantName(connectionString, providerInvariantName);
-		var cacheKey = $"{name}|{resolvedProvider}";
+		string resolvedProvider = ResolveProviderInvariantName(connectionString, providerInvariantName);
+		string cacheKey = $"{name}|{resolvedProvider}";
 
 		factory = _factories.GetOrAdd(cacheKey,
 			_ => new DataDbConnectionFactory(resolvedProvider, connectionString));
@@ -131,9 +131,9 @@ public sealed class DataDbConnectionFactoryProvider : IDataDbConnectionFactoryPr
 		try
 		{
 			var builder = new DbConnectionStringBuilder { ConnectionString = connectionString };
-			if (builder.TryGetValue("Provider", out var provider))
+			if (builder.TryGetValue("Provider", out object? provider))
 			{
-				var value = Convert.ToString(provider, CultureInfo.InvariantCulture);
+				string? value = Convert.ToString(provider, CultureInfo.InvariantCulture);
 				if (!string.IsNullOrWhiteSpace(value))
 				{
 					return value;

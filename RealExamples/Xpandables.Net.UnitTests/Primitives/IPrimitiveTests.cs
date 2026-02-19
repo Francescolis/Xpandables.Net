@@ -1,4 +1,4 @@
-/*******************************************************************************
+﻿/*******************************************************************************
  * Copyright (C) 2025 Kamersoft
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
@@ -40,7 +40,7 @@ public sealed class IPrimitiveTests
                 return false;
             }
 
-            if (Guid.TryParse(s, provider, out var guid))
+            if (Guid.TryParse(s, provider, out Guid guid))
             {
                 result = Create(guid);
                 return true;
@@ -93,7 +93,7 @@ public sealed class IPrimitiveTests
             {
                 return false;
             }
-            if (decimal.TryParse(s, provider, out var decimalValue))
+            if (decimal.TryParse(s, provider, out decimal decimalValue))
             {
                 result = Create(decimalValue);
                 return true;
@@ -120,7 +120,7 @@ public sealed class IPrimitiveTests
             {
                 return false;
             }
-            if (int.TryParse(s, provider, out var intValue))
+            if (int.TryParse(s, provider, out int intValue))
             {
                 result = Create(intValue);
                 return true;
@@ -147,7 +147,7 @@ public sealed class IPrimitiveTests
             {
                 return false;
             }
-            if (DateTime.TryParse(s, provider, System.Globalization.DateTimeStyles.RoundtripKind, out var dateValue))
+            if (DateTime.TryParse(s, provider, System.Globalization.DateTimeStyles.RoundtripKind, out DateTime dateValue))
             {
                 result = Create(dateValue);
                 return true;
@@ -429,8 +429,8 @@ public sealed class IPrimitiveTests
     [Fact]
     public void WhenSortingPrimitiveCollectionThenShouldBeSorted()
     {
-        // Arrange
-        var prices = new[]
+		// Arrange
+		Price[] prices = new[]
         {
             Price.Create(50.00m),
             Price.Create(10.00m),
@@ -438,8 +438,8 @@ public sealed class IPrimitiveTests
             Price.Create(20.00m)
         };
 
-        // Act
-        var sortedPrices = prices.OrderBy(p => p.Value).ToArray();
+		// Act
+		Price[] sortedPrices = prices.OrderBy(p => p.Value).ToArray();
 
         // Assert
         sortedPrices[0].Value.Should().Be(10.00m);
@@ -458,8 +458,8 @@ public sealed class IPrimitiveTests
         // Arrange
         var price = Price.Create(1234.56m);
 
-        // Act
-        var formatted = ((IFormattable)price).ToString("C", System.Globalization.CultureInfo.GetCultureInfo("en-US"));
+		// Act
+		string formatted = ((IFormattable)price).ToString("C", System.Globalization.CultureInfo.GetCultureInfo("en-US"));
 
         // Assert
         formatted.Should().Contain("1,234.56");
@@ -471,8 +471,8 @@ public sealed class IPrimitiveTests
         // Arrange
         var date = CreatedDate.Create(new DateTime(2025, 6, 15));
 
-        // Act
-        var formatted = ((IFormattable)date).ToString("yyyy-MM-dd", System.Globalization.CultureInfo.InvariantCulture);
+		// Act
+		string formatted = ((IFormattable)date).ToString("yyyy-MM-dd", System.Globalization.CultureInfo.InvariantCulture);
 
         // Assert
         formatted.Should().Be("2025-06-15");
@@ -485,8 +485,8 @@ public sealed class IPrimitiveTests
         var id = Guid.NewGuid();
         var customerId = CustomerId.Create(id);
 
-        // Act
-        var result = customerId.ToString();
+		// Act
+		string result = customerId.ToString();
 
         // Assert
         result.Should().Be(id.ToString());
@@ -502,8 +502,8 @@ public sealed class IPrimitiveTests
         // Arrange
         var customerId = CustomerId.Create(Guid.Parse("12345678-1234-1234-1234-123456789012"));
 
-        // Act
-        var json = JsonSerializer.Serialize(customerId);
+		// Act
+		string json = JsonSerializer.Serialize(customerId);
 
         // Assert
         json.Should().Be("\"12345678-1234-1234-1234-123456789012\"");
@@ -515,8 +515,8 @@ public sealed class IPrimitiveTests
         // Arrange
         const string json = "\"12345678-1234-1234-1234-123456789012\"";
 
-        // Act
-        var customerId = JsonSerializer.Deserialize<CustomerId>(json);
+		// Act
+		CustomerId customerId = JsonSerializer.Deserialize<CustomerId>(json);
 
         // Assert
         customerId.Value.Should().Be(Guid.Parse("12345678-1234-1234-1234-123456789012"));
@@ -528,8 +528,8 @@ public sealed class IPrimitiveTests
         // Arrange
         var productName = ProductName.Create("Test Widget");
 
-        // Act
-        var json = JsonSerializer.Serialize(productName);
+		// Act
+		string json = JsonSerializer.Serialize(productName);
 
         // Assert
         json.Should().Be("\"Test Widget\"");
@@ -541,8 +541,8 @@ public sealed class IPrimitiveTests
         // Arrange
         const string json = "\"Premium Widget\"";
 
-        // Act
-        var productName = JsonSerializer.Deserialize<ProductName>(json);
+		// Act
+		ProductName productName = JsonSerializer.Deserialize<ProductName>(json);
 
         // Assert
         productName.Value.Should().Be("Premium Widget");
@@ -554,8 +554,8 @@ public sealed class IPrimitiveTests
         // Arrange
         var price = Price.Create(99.99m);
 
-        // Act
-        var json = JsonSerializer.Serialize(price);
+		// Act
+		string json = JsonSerializer.Serialize(price);
 
         // Assert
         json.Should().Be("99.99");
@@ -567,8 +567,8 @@ public sealed class IPrimitiveTests
         // Arrange
         const string json = "149.95";
 
-        // Act
-        var price = JsonSerializer.Deserialize<Price>(json);
+		// Act
+		Price price = JsonSerializer.Deserialize<Price>(json);
 
         // Assert
         price.Value.Should().Be(149.95m);
@@ -580,8 +580,8 @@ public sealed class IPrimitiveTests
         // Arrange
         var quantity = Quantity.Create(42);
 
-        // Act
-        var json = JsonSerializer.Serialize(quantity);
+		// Act
+		string json = JsonSerializer.Serialize(quantity);
 
         // Assert
         json.Should().Be("42");
@@ -595,14 +595,14 @@ public sealed class IPrimitiveTests
         var originalName = ProductName.Create("Test Product");
         var originalPrice = Price.Create(199.99m);
 
-        // Act
-        var idJson = JsonSerializer.Serialize(originalId);
-        var nameJson = JsonSerializer.Serialize(originalName);
-        var priceJson = JsonSerializer.Serialize(originalPrice);
+		// Act
+		string idJson = JsonSerializer.Serialize(originalId);
+		string nameJson = JsonSerializer.Serialize(originalName);
+		string priceJson = JsonSerializer.Serialize(originalPrice);
 
-        var deserializedId = JsonSerializer.Deserialize<CustomerId>(idJson);
-        var deserializedName = JsonSerializer.Deserialize<ProductName>(nameJson);
-        var deserializedPrice = JsonSerializer.Deserialize<Price>(priceJson);
+		CustomerId deserializedId = JsonSerializer.Deserialize<CustomerId>(idJson);
+		ProductName deserializedName = JsonSerializer.Deserialize<ProductName>(nameJson);
+		Price deserializedPrice = JsonSerializer.Deserialize<Price>(priceJson);
 
         // Assert
         deserializedId.Should().Be(originalId);
@@ -622,9 +622,9 @@ public sealed class IPrimitiveTests
             Quantity = Quantity.Create(3)
         };
 
-        // Act
-        var json = JsonSerializer.Serialize(order);
-        var deserialized = JsonSerializer.Deserialize<TestOrder>(json);
+		// Act
+		string json = JsonSerializer.Serialize(order);
+		TestOrder? deserialized = JsonSerializer.Deserialize<TestOrder>(json);
 
         // Assert
         deserialized.Should().NotBeNull();
@@ -697,8 +697,8 @@ public sealed class IPrimitiveTests
         var price1 = Price.Create(10.00m);
         var price2 = Price.Create(20.00m);
 
-        // Act
-        var result = ((IComparable)price1).CompareTo(price2);
+		// Act
+		int result = ((IComparable)price1).CompareTo(price2);
 
         // Assert
         result.Should().BeNegative();
@@ -710,8 +710,8 @@ public sealed class IPrimitiveTests
         // Arrange
         var price = Price.Create(10.00m);
 
-        // Act
-        var act = () => ((IComparable)price).CompareTo("invalid");
+		// Act
+		Func<int> act = () => ((IComparable)price).CompareTo("invalid");
 
         // Assert
         act.Should().Throw<ArgumentException>();

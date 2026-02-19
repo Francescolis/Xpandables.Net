@@ -1,10 +1,10 @@
-﻿var builder = DistributedApplication.CreateBuilder(args);
+﻿IDistributedApplicationBuilder builder = DistributedApplication.CreateBuilder(args);
 
 IResourceBuilder<ParameterResource> saPassword = builder.AddParameter("sa-password", "DevPass123!");
-var sqlServer = builder.AddSqlServer("sqlserver", password: saPassword, port: 1433);
+IResourceBuilder<SqlServerServerResource> sqlServer = builder.AddSqlServer("sqlserver", password: saPassword, port: 1433);
 
-var accountDB = sqlServer.AddDatabase("accountDB", "AccountDB");
-var eventDB = sqlServer.AddDatabase("eventDB", "EventDB");
+IResourceBuilder<SqlServerDatabaseResource> accountDB = sqlServer.AddDatabase("accountDB", "AccountDB");
+IResourceBuilder<SqlServerDatabaseResource> eventDB = sqlServer.AddDatabase("eventDB", "EventDB");
 
 builder.AddProject<Projects.BankAccounts_EventDbInitialiazer>("eventdb-initializer")
 	.WithReference(eventDB)

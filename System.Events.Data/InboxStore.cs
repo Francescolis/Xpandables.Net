@@ -69,12 +69,12 @@ public sealed class InboxStore<
 		ArgumentException.ThrowIfNullOrWhiteSpace(consumer);
 
 		// Check for existing entry
-		var specification = DataSpecification
+		DataSpecification<TEntityEventInbox, TEntityEventInbox> specification = DataSpecification
 			.For<TEntityEventInbox>()
 			.Where(e => e.KeyId == @event.EventId && e.Consumer == consumer)
 			.Build();
 
-		var existing = await _inboxRepository
+		TEntityEventInbox? existing = await _inboxRepository
 			.QueryFirstOrDefaultAsync(specification, cancellationToken)
 			.ConfigureAwait(false);
 
@@ -99,7 +99,7 @@ public sealed class InboxStore<
 				}
 
 				// Lease expired or NextAttemptOn is null — allow retry by updating existing record
-				var updater = DataUpdater
+				DataUpdater<TEntityEventInbox> updater = DataUpdater
 					.For<TEntityEventInbox>()
 					.SetProperty(e => e.Status, EventStatus.PROCESSING.Value)
 					.SetProperty(e => e.ErrorMessage, (string?)null)
@@ -138,16 +138,16 @@ public sealed class InboxStore<
 		ArgumentNullException.ThrowIfNull(events);
 		ArgumentOutOfRangeException.ThrowIfEqual(events.Length, 0);
 
-		var now = DateTime.UtcNow;
+		DateTime now = DateTime.UtcNow;
 
-		foreach (var evt in events)
+		foreach (CompletedInboxEvent evt in events)
 		{
-			var specification = DataSpecification
+			DataSpecification<TEntityEventInbox, TEntityEventInbox> specification = DataSpecification
 				.For<TEntityEventInbox>()
 				.Where(e => e.KeyId == evt.EventId && e.Consumer == evt.Consumer)
 				.Build();
 
-			var updater = DataUpdater
+			DataUpdater<TEntityEventInbox> updater = DataUpdater
 				.For<TEntityEventInbox>()
 				.SetProperty(e => e.Status, EventStatus.PUBLISHED.Value)
 				.SetProperty(e => e.ErrorMessage, (string?)null)
@@ -169,33 +169,33 @@ public sealed class InboxStore<
 		ArgumentNullException.ThrowIfNull(failures);
 		ArgumentOutOfRangeException.ThrowIfEqual(failures.Length, 0);
 
-		var now = DateTime.UtcNow;
+		DateTime now = DateTime.UtcNow;
 
-		foreach (var failure in failures)
+		foreach (FailedInboxEvent failure in failures)
 		{
 			// Get current attempt count
-			var getSpec = DataSpecification
+			DataSpecification<TEntityEventInbox, int> getSpec = DataSpecification
 				.For<TEntityEventInbox>()
 				.Where(e => e.KeyId == failure.EventId && e.Consumer == failure.Consumer)
 				.Select(e => e.AttemptCount);
 
-			var currentAttempt = await _inboxRepository
+			int currentAttempt = await _inboxRepository
 				.QueryFirstOrDefaultAsync(getSpec, cancellationToken)
 				.ConfigureAwait(false);
 
-			var nextAttempt = currentAttempt + 1;
-			var backoffSeconds = nextAttempt < 1 ? 10 :
+			int nextAttempt = currentAttempt + 1;
+			int backoffSeconds = nextAttempt < 1 ? 10 :
 								 nextAttempt < 2 ? 20 :
 								 nextAttempt < 3 ? 40 :
 								 nextAttempt < 4 ? 80 :
 								 nextAttempt < 5 ? 160 : 320;
 
-			var specification = DataSpecification
+			DataSpecification<TEntityEventInbox, TEntityEventInbox> specification = DataSpecification
 				.For<TEntityEventInbox>()
 				.Where(e => e.KeyId == failure.EventId && e.Consumer == failure.Consumer)
 				.Build();
 
-			var updater = DataUpdater
+			DataUpdater<TEntityEventInbox> updater = DataUpdater
 				.For<TEntityEventInbox>()
 				.SetProperty(e => e.Status, EventStatus.ONERROR.Value)
 				.SetProperty(e => e.ErrorMessage, failure.Error)

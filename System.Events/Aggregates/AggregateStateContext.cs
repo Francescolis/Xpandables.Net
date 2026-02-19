@@ -66,7 +66,7 @@ public abstract class AggregateStateContext<TState> : Aggregate, IStateContext<T
 
         lock (_stateLock)
         {
-            var previousState = _currentState;
+			TState? previousState = _currentState;
             var transitionArgs = new StateTransitionEventArgs
             {
                 PreviousState = previousState,

@@ -47,11 +47,13 @@ public sealed class RestResponseResultComposer : IRestResponseComposer
         JsonSerializerOptions options = context.SerializerOptions;
 
         if (!CanCompose(context))
-            throw new InvalidOperationException(
+		{
+			throw new InvalidOperationException(
                 $"{nameof(ComposeAsync)}: The response is not a success. " +
                 $"Status code: {response.StatusCode} ({response.ReasonPhrase}).");
+		}
 
-        try
+		try
         {
             string stringContent = await response.Content
                 .ReadAsStringAsync(cancellationToken)

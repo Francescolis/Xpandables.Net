@@ -67,7 +67,7 @@ public sealed class RequestContext<TRequest>(TRequest request) : IEnumerable<Key
     /// <exception cref="ArgumentNullException">Thrown when the key/value is <see langword="null"/>.</exception>
     public object? this[string key]
     {
-        get => Items.TryGetValue(key, out var value) ? value : null;
+        get => Items.TryGetValue(key, out object? value) ? value : null;
         set => Items[key] = value ?? throw new ArgumentNullException(nameof(value), "Value cannot be null.");
     }
 
@@ -113,7 +113,7 @@ public sealed class RequestContext<TRequest>(TRequest request) : IEnumerable<Key
     [MethodImpl(MethodImplOptions.AggressiveInlining)]
     public bool TryGetItem<TItem>(string key, [NotNullWhen(true)] out TItem? item)
     {
-        if (Items.TryGetValue(key, out var value) && value is TItem castedItem)
+        if (Items.TryGetValue(key, out object? value) && value is TItem castedItem)
         {
             item = castedItem;
             return true;
@@ -134,7 +134,7 @@ public sealed class RequestContext<TRequest>(TRequest request) : IEnumerable<Key
     [MethodImpl(MethodImplOptions.AggressiveInlining)]
     public TItem GetItem<TItem>(string key)
     {
-        if (TryGetItem<TItem>(key, out var value))
+        if (TryGetItem<TItem>(key, out TItem? value))
         {
             return value;
         }

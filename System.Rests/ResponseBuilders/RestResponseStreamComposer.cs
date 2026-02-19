@@ -16,6 +16,7 @@
 ********************************************************************************/
 using System.Collections;
 using System.Net.Http.Json;
+using System.Reflection;
 using System.Rests.Abstractions;
 using System.Text.Json;
 using System.Text.Json.Serialization.Metadata;
@@ -51,11 +52,13 @@ public sealed class RestResponseStreamComposer : IRestResponseComposer
         JsonSerializerOptions options = context.SerializerOptions;
 
         if (!CanCompose(context))
-            throw new InvalidOperationException(
+		{
+			throw new InvalidOperationException(
                 $"{nameof(ComposeAsync)}: The response is not a success. " +
                 $"Status code: {response.StatusCode} ({response.ReasonPhrase}).");
+		}
 
-        try
+		try
         {
             await Task.Yield();
 
@@ -113,14 +116,14 @@ public sealed class RestResponseStreamComposer : IRestResponseComposer
         JsonTypeInfo jsonTypeInfo,
         CancellationToken cancellationToken)
     {
-        var method = typeof(HttpContentJsonExtensions)
+		MethodInfo method = typeof(HttpContentJsonExtensions)
             .GetMethod(nameof(HttpContentJsonExtensions.ReadFromJsonAsAsyncEnumerable),
             [typeof(HttpContent), typeof(JsonSerializerOptions), typeof(CancellationToken)])
             ?? throw new InvalidOperationException(
                 $"Could not find method {nameof(HttpContentJsonExtensions.ReadFromJsonAsAsyncEnumerable)}. " +
                 $"For AOT compatibility, implement {nameof(IRestStreamDeserializer)} on your request type.");
 
-        var genericMethod = method.MakeGenericMethod(jsonTypeInfo.Type);
+		MethodInfo genericMethod = method.MakeGenericMethod(jsonTypeInfo.Type);
         return genericMethod.Invoke(null, [content, jsonTypeInfo.Options, cancellationToken]);
     }
 #pragma warning restore IL3050

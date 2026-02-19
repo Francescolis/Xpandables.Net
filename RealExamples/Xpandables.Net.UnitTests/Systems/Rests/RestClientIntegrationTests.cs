@@ -1,4 +1,4 @@
-/*******************************************************************************
+﻿/*******************************************************************************
  * Copyright (C) 2025 Kamersoft
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
@@ -31,7 +31,7 @@ public sealed class RestClientIntegrationTests
     [Fact]
     public async Task SendAsync_WithValidRequest_ComposesRequestAndParsesResponse()
     {
-        using var serializerScope = UseDefaultSerializerOptions();
+        using IDisposable serializerScope = UseDefaultSerializerOptions();
 
         // Arrange
         ServiceCollection services = new();
@@ -54,7 +54,7 @@ public sealed class RestClientIntegrationTests
 
         // Act
         RestResponse rawResponse = await client.SendAsync(new GetWidgetRequest("42"));
-        RestResponse<WidgetDto> typedResponse = rawResponse.ToRestResponse<WidgetDto>();
+        var typedResponse = rawResponse.ToRestResponse<WidgetDto>();
 
         // Assert
         typedResponse.StatusCode.Should().Be(HttpStatusCode.OK);

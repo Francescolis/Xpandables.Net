@@ -1,4 +1,4 @@
-/*******************************************************************************
+﻿/*******************************************************************************
  * Copyright (C) 2025 Kamersoft
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
@@ -264,11 +264,11 @@ public sealed class HttpStatusCodeExtensionsTests
     [Fact]
     public void WhenStatusCodeIsSuccessAndEnsureSuccessThenShouldNotThrow()
     {
-        // Arrange
-        var statusCode = HttpStatusCode.OK;
+		// Arrange
+		HttpStatusCode statusCode = HttpStatusCode.OK;
 
-        // Act
-        var act = () => statusCode.EnsureSuccess();
+		// Act
+		Action act = () => statusCode.EnsureSuccess();
 
         // Assert
         act.Should().NotThrow();
@@ -277,11 +277,11 @@ public sealed class HttpStatusCodeExtensionsTests
     [Fact]
     public void WhenStatusCodeIsFailureAndEnsureSuccessThenShouldThrow()
     {
-        // Arrange
-        var statusCode = HttpStatusCode.BadRequest;
+		// Arrange
+		HttpStatusCode statusCode = HttpStatusCode.BadRequest;
 
-        // Act
-        var act = () => statusCode.EnsureSuccess();
+		// Act
+		Action act = () => statusCode.EnsureSuccess();
 
         // Assert
         act.Should().Throw<InvalidOperationException>()
@@ -291,11 +291,11 @@ public sealed class HttpStatusCodeExtensionsTests
     [Fact]
     public void WhenStatusCodeIsFailureAndEnsureFailureThenShouldNotThrow()
     {
-        // Arrange
-        var statusCode = HttpStatusCode.BadRequest;
+		// Arrange
+		HttpStatusCode statusCode = HttpStatusCode.BadRequest;
 
-        // Act
-        var act = () => statusCode.EnsureFailure();
+		// Act
+		Action act = () => statusCode.EnsureFailure();
 
         // Assert
         act.Should().NotThrow();
@@ -304,11 +304,11 @@ public sealed class HttpStatusCodeExtensionsTests
     [Fact]
     public void WhenStatusCodeIsSuccessAndEnsureFailureThenShouldThrow()
     {
-        // Arrange
-        var statusCode = HttpStatusCode.OK;
+		// Arrange
+		HttpStatusCode statusCode = HttpStatusCode.OK;
 
-        // Act
-        var act = () => statusCode.EnsureFailure();
+		// Act
+		Action act = () => statusCode.EnsureFailure();
 
         // Assert
         act.Should().Throw<InvalidOperationException>()
@@ -366,11 +366,11 @@ public sealed class HttpStatusCodeExtensionsTests
     [Fact]
     public void WhenBadRequestThenShouldReturnArgumentException()
     {
-        // Arrange
-        var statusCode = HttpStatusCode.BadRequest;
+		// Arrange
+		HttpStatusCode statusCode = HttpStatusCode.BadRequest;
 
-        // Act
-        var exception = statusCode.GetException("Invalid input");
+		// Act
+		Exception exception = statusCode.GetException("Invalid input");
 
         // Assert
         exception.Should().BeOfType<ArgumentException>();
@@ -380,11 +380,11 @@ public sealed class HttpStatusCodeExtensionsTests
     [Fact]
     public void WhenUnauthorizedThenShouldReturnUnauthorizedAccessException()
     {
-        // Arrange
-        var statusCode = HttpStatusCode.Unauthorized;
+		// Arrange
+		HttpStatusCode statusCode = HttpStatusCode.Unauthorized;
 
-        // Act
-        var exception = statusCode.GetException("Access denied");
+		// Act
+		Exception exception = statusCode.GetException("Access denied");
 
         // Assert
         exception.Should().BeOfType<UnauthorizedAccessException>();
@@ -393,11 +393,11 @@ public sealed class HttpStatusCodeExtensionsTests
     [Fact]
     public void WhenForbiddenThenShouldReturnSecurityException()
     {
-        // Arrange
-        var statusCode = HttpStatusCode.Forbidden;
+		// Arrange
+		HttpStatusCode statusCode = HttpStatusCode.Forbidden;
 
-        // Act
-        var exception = statusCode.GetException("Forbidden");
+		// Act
+		Exception exception = statusCode.GetException("Forbidden");
 
         // Assert
         exception.Should().BeOfType<SecurityException>();
@@ -406,11 +406,11 @@ public sealed class HttpStatusCodeExtensionsTests
     [Fact]
     public void WhenNotFoundThenShouldReturnKeyNotFoundException()
     {
-        // Arrange
-        var statusCode = HttpStatusCode.NotFound;
+		// Arrange
+		HttpStatusCode statusCode = HttpStatusCode.NotFound;
 
-        // Act
-        var exception = statusCode.GetException("Resource not found");
+		// Act
+		Exception exception = statusCode.GetException("Resource not found");
 
         // Assert
         exception.Should().BeOfType<KeyNotFoundException>();
@@ -419,11 +419,11 @@ public sealed class HttpStatusCodeExtensionsTests
     [Fact]
     public void WhenMethodNotAllowedThenShouldReturnNotSupportedException()
     {
-        // Arrange
-        var statusCode = HttpStatusCode.MethodNotAllowed;
+		// Arrange
+		HttpStatusCode statusCode = HttpStatusCode.MethodNotAllowed;
 
-        // Act
-        var exception = statusCode.GetException("Method not allowed");
+		// Act
+		Exception exception = statusCode.GetException("Method not allowed");
 
         // Assert
         exception.Should().BeOfType<NotSupportedException>();
@@ -432,11 +432,11 @@ public sealed class HttpStatusCodeExtensionsTests
     [Fact]
     public void WhenRequestTimeoutThenShouldReturnTimeoutException()
     {
-        // Arrange
-        var statusCode = HttpStatusCode.RequestTimeout;
+		// Arrange
+		HttpStatusCode statusCode = HttpStatusCode.RequestTimeout;
 
-        // Act
-        var exception = statusCode.GetException("Request timed out");
+		// Act
+		Exception exception = statusCode.GetException("Request timed out");
 
         // Assert
         exception.Should().BeOfType<TimeoutException>();
@@ -445,11 +445,11 @@ public sealed class HttpStatusCodeExtensionsTests
     [Fact]
     public void WhenConflictThenShouldReturnIOException()
     {
-        // Arrange
-        var statusCode = HttpStatusCode.Conflict;
+		// Arrange
+		HttpStatusCode statusCode = HttpStatusCode.Conflict;
 
-        // Act
-        var exception = statusCode.GetException("Conflict");
+		// Act
+		Exception exception = statusCode.GetException("Conflict");
 
         // Assert
         exception.Should().BeOfType<IOException>();
@@ -458,11 +458,11 @@ public sealed class HttpStatusCodeExtensionsTests
     [Fact]
     public void WhenNotImplementedThenShouldReturnNotImplementedException()
     {
-        // Arrange
-        var statusCode = HttpStatusCode.NotImplemented;
+		// Arrange
+		HttpStatusCode statusCode = HttpStatusCode.NotImplemented;
 
-        // Act
-        var exception = statusCode.GetException("Not implemented");
+		// Act
+		Exception exception = statusCode.GetException("Not implemented");
 
         // Assert
         exception.Should().BeOfType<NotImplementedException>();
@@ -471,11 +471,11 @@ public sealed class HttpStatusCodeExtensionsTests
     [Fact]
     public void WhenBadGatewayThenShouldReturnWebException()
     {
-        // Arrange
-        var statusCode = HttpStatusCode.BadGateway;
+		// Arrange
+		HttpStatusCode statusCode = HttpStatusCode.BadGateway;
 
-        // Act
-        var exception = statusCode.GetException("Bad gateway");
+		// Act
+		Exception exception = statusCode.GetException("Bad gateway");
 
         // Assert
         exception.Should().BeOfType<WebException>();
@@ -484,11 +484,11 @@ public sealed class HttpStatusCodeExtensionsTests
     [Fact]
     public void WhenGatewayTimeoutThenShouldReturnTimeoutException()
     {
-        // Arrange
-        var statusCode = HttpStatusCode.GatewayTimeout;
+		// Arrange
+		HttpStatusCode statusCode = HttpStatusCode.GatewayTimeout;
 
-        // Act
-        var exception = statusCode.GetException("Gateway timeout");
+		// Act
+		Exception exception = statusCode.GetException("Gateway timeout");
 
         // Assert
         exception.Should().BeOfType<TimeoutException>();
@@ -497,11 +497,11 @@ public sealed class HttpStatusCodeExtensionsTests
     [Fact]
     public void WhenInternalServerErrorThenShouldReturnInvalidOperationException()
     {
-        // Arrange
-        var statusCode = HttpStatusCode.InternalServerError;
+		// Arrange
+		HttpStatusCode statusCode = HttpStatusCode.InternalServerError;
 
-        // Act
-        var exception = statusCode.GetException("Server error");
+		// Act
+		Exception exception = statusCode.GetException("Server error");
 
         // Assert
         exception.Should().BeOfType<InvalidOperationException>();
@@ -510,11 +510,11 @@ public sealed class HttpStatusCodeExtensionsTests
     [Fact]
     public void WhenGetExceptionWithNullMessageThenShouldThrow()
     {
-        // Arrange
-        var statusCode = HttpStatusCode.BadRequest;
+		// Arrange
+		HttpStatusCode statusCode = HttpStatusCode.BadRequest;
 
-        // Act
-        var act = () => statusCode.GetException(null!);
+		// Act
+		Func<Exception> act = () => statusCode.GetException(null!);
 
         // Assert
         act.Should().Throw<ArgumentNullException>();
@@ -526,8 +526,8 @@ public sealed class HttpStatusCodeExtensionsTests
         // Arrange
         var statusCode = (HttpStatusCode)999;
 
-        // Act
-        var exception = statusCode.GetException("Unknown error");
+		// Act
+		Exception exception = statusCode.GetException("Unknown error");
 
         // Assert
         exception.Should().BeOfType<InvalidOperationException>();
@@ -540,8 +540,8 @@ public sealed class HttpStatusCodeExtensionsTests
     [Fact]
     public void WhenBuildingApiResponseThenShouldHaveCorrectProperties()
     {
-        // Arrange
-        var statusCode = HttpStatusCode.BadRequest;
+		// Arrange
+		HttpStatusCode statusCode = HttpStatusCode.BadRequest;
 
         // Act - Building a standardized error response
         var response = new
@@ -563,8 +563,8 @@ public sealed class HttpStatusCodeExtensionsTests
     [Fact]
     public void WhenHandlingDifferentHttpResponsesThenShouldCategorizeCorrectly()
     {
-        // Arrange
-        var responses = new[]
+		// Arrange
+		HttpStatusCode[] responses = new[]
         {
             HttpStatusCode.OK,
             HttpStatusCode.Created,
@@ -583,8 +583,8 @@ public sealed class HttpStatusCodeExtensionsTests
     [Fact]
     public void WhenImplementingRetryLogicThenShouldIdentifyRetryableErrors()
     {
-        // Arrange
-        var retryableStatuses = new[]
+		// Arrange
+		HttpStatusCode[] retryableStatuses = new[]
         {
             HttpStatusCode.RequestTimeout,
             HttpStatusCode.TooManyRequests,
@@ -593,9 +593,9 @@ public sealed class HttpStatusCodeExtensionsTests
         };
 
         // Act & Assert
-        foreach (var status in retryableStatuses)
+        foreach (HttpStatusCode status in retryableStatuses)
         {
-            var isRetryable = status.IsRequestTimeout ||
+			bool isRetryable = status.IsRequestTimeout ||
                              status.IsTooManyRequests ||
                              status.IsServiceUnavailable ||
                              status.IsGatewayTimeout;
@@ -610,12 +610,12 @@ public sealed class HttpStatusCodeExtensionsTests
     [Fact]
     public void WhenConvertingStatusToExceptionThenShouldPreserveMessage()
     {
-        // Arrange
-        var statusCode = HttpStatusCode.NotFound;
+		// Arrange
+		HttpStatusCode statusCode = HttpStatusCode.NotFound;
         const string message = "Customer with ID 12345 was not found";
 
-        // Act
-        var exception = statusCode.GetException(message);
+		// Act
+		Exception exception = statusCode.GetException(message);
 
         // Assert
         exception.Message.Should().Be(message);
@@ -634,9 +634,9 @@ public sealed class HttpStatusCodeExtensionsTests
             ["delete_user"] = HttpStatusCode.NoContent
         };
 
-        // Act
-        var hasValidationProblems = responses.Any(r => r.Value.IsValidationProblem);
-        var problemOperations = responses.Where(r => r.Value.IsValidationProblem).Select(r => r.Key);
+		// Act
+		bool hasValidationProblems = responses.Any(r => r.Value.IsValidationProblem);
+		IEnumerable<string> problemOperations = responses.Where(r => r.Value.IsValidationProblem).Select(r => r.Key);
 
         // Assert
         hasValidationProblems.Should().BeTrue();

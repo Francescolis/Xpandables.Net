@@ -48,7 +48,7 @@ public static class ValidationResultExtensions
             ArgumentNullException.ThrowIfNull(validations);
             ArgumentOutOfRangeException.ThrowIfZero(validations.Count());
 
-            ElementCollection elements = validations.ToElementCollection();
+            var elements = validations.ToElementCollection();
             return Result
                 .BadRequest()
                 .WithTitle(HttpStatusCode.BadRequest.Title)

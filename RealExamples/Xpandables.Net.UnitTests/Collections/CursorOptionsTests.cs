@@ -152,8 +152,8 @@ public sealed class CursorOptionsTests
         // Arrange
         var options = CursorOptions.Create<TestEntity, int>(x => x.Id);
 
-        // Act
-        var result = options.FormatToken(null);
+		// Act
+		string? result = options.FormatToken(null);
 
         // Assert
         result.Should().BeNull();
@@ -170,8 +170,8 @@ public sealed class CursorOptionsTests
         // Arrange
         var options = CursorOptions.Create<TestEntity, int>(x => x.Id);
 
-        // Act
-        var result = options.FormatToken(token);
+		// Act
+		string? result = options.FormatToken(token);
 
         // Assert
         result.Should().Be(expected);
@@ -186,8 +186,8 @@ public sealed class CursorOptionsTests
         // Arrange
         var options = CursorOptions.Create<TestEntity, long>(x => x.Id);
 
-        // Act
-        var result = options.FormatToken(token);
+		// Act
+		string? result = options.FormatToken(token);
 
         // Assert
         result.Should().Be(expected);
@@ -204,8 +204,8 @@ public sealed class CursorOptionsTests
         // Arrange
         var options = CursorOptions.Create<TestEntity, double>(x => x.Score);
 
-        // Act
-        var result = options.FormatToken(token);
+		// Act
+		string? result = options.FormatToken(token);
 
         // Assert
         result.Should().Be(expected);
@@ -219,8 +219,8 @@ public sealed class CursorOptionsTests
         // Arrange
         var options = CursorOptions.Create<TestEntity, bool>(x => true);
 
-        // Act
-        var result = options.FormatToken(token);
+		// Act
+		string? result = options.FormatToken(token);
 
         // Assert
         result.Should().Be(expected);
@@ -232,10 +232,10 @@ public sealed class CursorOptionsTests
         // Arrange
         var options = CursorOptions.Create<TestEntity, DateTime>(x => x.CreatedAt);
         var token = new DateTime(2025, 1, 15, 10, 30, 45, DateTimeKind.Utc);
-        var expected = token.ToString(CultureInfo.InvariantCulture);
+		string expected = token.ToString(CultureInfo.InvariantCulture);
 
-        // Act
-        var result = options.FormatToken(token);
+		// Act
+		string? result = options.FormatToken(token);
 
         // Assert
         result.Should().Be(expected);
@@ -248,8 +248,8 @@ public sealed class CursorOptionsTests
         var options = CursorOptions.Create<TestEntity, Guid>(x => x.UniqueId);
         var guid = Guid.Parse("12345678-1234-1234-1234-123456789012");
 
-        // Act
-        var result = options.FormatToken(guid);
+		// Act
+		string? result = options.FormatToken(guid);
 
         // Assert
         result.Should().Be(guid.ToString());
@@ -264,8 +264,8 @@ public sealed class CursorOptionsTests
         // Arrange
         var options = CursorOptions.Create<TestEntity, string>(x => x.Name);
 
-        // Act
-        var result = options.FormatToken(token);
+		// Act
+		string? result = options.FormatToken(token);
 
         // Assert
         result.Should().Be(token);
@@ -281,8 +281,8 @@ public sealed class CursorOptionsTests
         // Arrange
         var options = CursorOptions.Create<TestEntity, int>(x => x.Id);
 
-        // Act
-        var result = options.ParseToken(null);
+		// Act
+		object? result = options.ParseToken(null);
 
         // Assert
         result.Should().BeNull();
@@ -299,8 +299,8 @@ public sealed class CursorOptionsTests
         // Arrange
         var options = CursorOptions.Create<TestEntity, int>(x => x.Id);
 
-        // Act
-        var result = options.ParseToken(token);
+		// Act
+		object? result = options.ParseToken(token);
 
         // Assert
         result.Should().Be(expected);
@@ -315,8 +315,8 @@ public sealed class CursorOptionsTests
         // Arrange
         var options = CursorOptions.Create<TestEntity, long>(x => x.Id);
 
-        // Act
-        var result = options.ParseToken(token);
+		// Act
+		object? result = options.ParseToken(token);
 
         // Assert
         result.Should().Be(expected);
@@ -330,8 +330,8 @@ public sealed class CursorOptionsTests
         // Arrange
         var options = CursorOptions.Create<TestEntity, double>(x => x.Score);
 
-        // Act
-        var result = options.ParseToken(token);
+		// Act
+		object? result = options.ParseToken(token);
 
         // Assert
         result.Should().Be(expected);
@@ -347,8 +347,8 @@ public sealed class CursorOptionsTests
         // Arrange
         var options = CursorOptions.Create<TestEntity, bool>(x => true);
 
-        // Act
-        var result = options.ParseToken(token);
+		// Act
+		object? result = options.ParseToken(token);
 
         // Assert
         result.Should().Be(expected);
@@ -360,8 +360,8 @@ public sealed class CursorOptionsTests
         // Arrange
         var options = CursorOptions.Create<TestEntity, DateTime>(x => x.CreatedAt);
 
-        // Act
-        var result = options.ParseToken("01/15/2025 10:30:00");
+		// Act
+		object? result = options.ParseToken("01/15/2025 10:30:00");
 
         // Assert
         result.Should().Be(new DateTime(2025, 1, 15, 10, 30, 0));
@@ -374,8 +374,8 @@ public sealed class CursorOptionsTests
         var options = CursorOptions.Create<TestEntity, Guid>(x => x.UniqueId);
         var expected = Guid.Parse("12345678-1234-1234-1234-123456789012");
 
-        // Act
-        var result = options.ParseToken("12345678-1234-1234-1234-123456789012");
+		// Act
+		object? result = options.ParseToken("12345678-1234-1234-1234-123456789012");
 
         // Assert
         result.Should().Be(expected);
@@ -390,8 +390,8 @@ public sealed class CursorOptionsTests
             parser: s => s is null ? Guid.Empty : Guid.Parse(s));
         var expected = Guid.Parse("12345678-1234-1234-1234-123456789012");
 
-        // Act
-        var result = options.ParseToken("12345678-1234-1234-1234-123456789012");
+		// Act
+		object? result = options.ParseToken("12345678-1234-1234-1234-123456789012");
 
         // Assert
         result.Should().Be(expected);
@@ -406,8 +406,8 @@ public sealed class CursorOptionsTests
         // Arrange
         var options = CursorOptions.Create<TestEntity, string>(x => x.Name);
 
-        // Act
-        var result = options.ParseToken(token);
+		// Act
+		object? result = options.ParseToken(token);
 
         // Assert
         result.Should().Be(token);
@@ -450,9 +450,9 @@ public sealed class CursorOptionsTests
         var options = CursorOptions.Create<TestEntity, int>(x => x.Id);
         const int original = 42;
 
-        // Act
-        var formatted = options.FormatToken(original);
-        var parsed = options.ParseToken(formatted);
+		// Act
+		string? formatted = options.FormatToken(original);
+		object? parsed = options.ParseToken(formatted);
 
         // Assert
         parsed.Should().Be(original);
@@ -465,9 +465,9 @@ public sealed class CursorOptionsTests
         var options = CursorOptions.Create<TestEntity, Guid>(x => x.UniqueId);
         var original = Guid.NewGuid();
 
-        // Act
-        var formatted = options.FormatToken(original);
-        var parsed = options.ParseToken(formatted);
+		// Act
+		string? formatted = options.FormatToken(original);
+		object? parsed = options.ParseToken(formatted);
 
         // Assert
         parsed.Should().Be(original);
@@ -480,9 +480,9 @@ public sealed class CursorOptionsTests
         var options = CursorOptions.Create<TestEntity, string>(x => x.Name);
         const string original = "cursor-value-123";
 
-        // Act
-        var formatted = options.FormatToken(original);
-        var parsed = options.ParseToken(formatted);
+		// Act
+		string? formatted = options.FormatToken(original);
+		object? parsed = options.ParseToken(formatted);
 
         // Assert
         parsed.Should().Be(original);
@@ -495,9 +495,9 @@ public sealed class CursorOptionsTests
         var options = CursorOptions.Create<TestEntity, long>(x => x.Id);
         const long original = 9_876_543_210L;
 
-        // Act
-        var formatted = options.FormatToken(original);
-        var parsed = options.ParseToken(formatted);
+		// Act
+		string? formatted = options.FormatToken(original);
+		object? parsed = options.ParseToken(formatted);
 
         // Assert
         parsed.Should().Be(original);
@@ -509,9 +509,9 @@ public sealed class CursorOptionsTests
         // Arrange
         var options = CursorOptions.Create<TestEntity, int>(x => x.Id);
 
-        // Act
-        var formatted = options.FormatToken(null);
-        var parsed = options.ParseToken(formatted);
+		// Act
+		string? formatted = options.FormatToken(null);
+		object? parsed = options.ParseToken(formatted);
 
         // Assert
         formatted.Should().BeNull();
@@ -530,8 +530,8 @@ public sealed class CursorOptionsTests
             x => x.Id,
             formatter: v => $"custom-{v}");
 
-        // Act
-        var result = options.FormatToken(42);
+		// Act
+		string? result = options.FormatToken(42);
 
         // Assert
         result.Should().Be("custom-42");
@@ -545,8 +545,8 @@ public sealed class CursorOptionsTests
             x => x.Id,
             parser: s => int.Parse(s!, CultureInfo.InvariantCulture) * 2);
 
-        // Act
-        var result = options.ParseToken("21");
+		// Act
+		object? result = options.ParseToken("21");
 
         // Assert
         result.Should().Be(42);
@@ -561,9 +561,9 @@ public sealed class CursorOptionsTests
             formatter: v => $"prefix-{v}",
             parser: s => int.Parse(s!.Replace("prefix-", ""), CultureInfo.InvariantCulture));
 
-        // Act
-        var formatted = options.FormatToken(99);
-        var parsed = options.ParseToken(formatted);
+		// Act
+		string? formatted = options.FormatToken(99);
+		object? parsed = options.ParseToken(formatted);
 
         // Assert
         formatted.Should().Be("prefix-99");
@@ -621,10 +621,10 @@ public sealed class CursorOptionsTests
         // Arrange
         var guid = Guid.NewGuid();
         var options = CursorOptions.Create<TestEntity, Guid>(x => x.UniqueId);
-        var optionsWithToken = options with { AppliedToken = guid };
+		CursorOptions<TestEntity> optionsWithToken = options with { AppliedToken = guid };
 
-        // Act
-        var result = optionsWithToken.FormatAppliedToken();
+		// Act
+		string? result = optionsWithToken.FormatAppliedToken();
 
         // Assert
         result.Should().Be(guid.ToString());
@@ -636,8 +636,8 @@ public sealed class CursorOptionsTests
         // Arrange
         var options = CursorOptions.Create<TestEntity, int>(x => x.Id);
 
-        // Act
-        var result = options.FormatAppliedToken();
+		// Act
+		string? result = options.FormatAppliedToken();
 
         // Assert
         result.Should().BeNull();
@@ -695,7 +695,7 @@ public sealed class CursorOptionsTests
             TokenFormatter = t => { captured = t; return "ok"; },
             TokenParser = _ => null!
         };
-        var token = new object();
+		object token = new object();
 
         // Act
         options.FormatToken(token);
@@ -734,8 +734,8 @@ public sealed class CursorOptionsTests
         // Arrange
         var options = CursorOptions.Create<TestEntity, int>(x => x.Id);
 
-        // Act
-        var modified = options with { Direction = CursorDirection.Backward, IsInclusive = true };
+		// Act
+		CursorOptions<TestEntity> modified = options with { Direction = CursorDirection.Backward, IsInclusive = true };
 
         // Assert
         modified.Direction.Should().Be(CursorDirection.Backward);
@@ -753,8 +753,8 @@ public sealed class CursorOptionsTests
             CursorDirection.Backward,
             isInclusive: true);
 
-        // Act
-        var withToken = options with { AppliedToken = 99 };
+		// Act
+		CursorOptions<TestEntity> withToken = options with { AppliedToken = 99 };
 
         // Assert
         withToken.AppliedToken.Should().Be(99);

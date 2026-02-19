@@ -45,11 +45,13 @@ public sealed class RestResponseFailureComposer(
         HttpResponseMessage response = context.Message;
 
         if (!CanCompose(context))
-            throw new InvalidOperationException(
+		{
+			throw new InvalidOperationException(
                 $"{nameof(ComposeAsync)}: The response is not a failure. " +
                 $"Status code: {response.StatusCode} ({response.ReasonPhrase}).");
+		}
 
-        try
+		try
         {
             string? errorContent = default;
             if (response.Content is not null)

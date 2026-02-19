@@ -1,4 +1,4 @@
-/*******************************************************************************
+﻿/*******************************************************************************
  * Copyright (C) 2025 Kamersoft
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
@@ -47,7 +47,7 @@ public class DataSqlMapperBenchmark
     [Benchmark]
     public PersonEntity MapToResult_Identity()
     {
-        using var reader = _table.CreateDataReader();
+        using DataTableReader reader = _table.CreateDataReader();
         reader.Read();
         return _mapper.MapToResult(_identitySpec, reader);
     }
@@ -55,7 +55,7 @@ public class DataSqlMapperBenchmark
     [Benchmark]
     public PersonRecord MapToResult_CtorProjection()
     {
-        using var reader = _table.CreateDataReader();
+        using DataTableReader reader = _table.CreateDataReader();
         reader.Read();
         return _mapper.MapToResult(_ctorSpec, reader);
     }
@@ -63,7 +63,7 @@ public class DataSqlMapperBenchmark
     [Benchmark]
     public PersonInitDto MapToResult_MemberInit()
     {
-        using var reader = _table.CreateDataReader();
+        using DataTableReader reader = _table.CreateDataReader();
         reader.Read();
         return _mapper.MapToResult(_memberInitSpec, reader);
     }
@@ -71,7 +71,7 @@ public class DataSqlMapperBenchmark
     [Benchmark]
     public string MapToResult_ScalarProjection()
     {
-        using var reader = _table.CreateDataReader();
+        using DataTableReader reader = _table.CreateDataReader();
         reader.Read();
         return _mapper.MapToResult(_scalarSpec, reader);
     }

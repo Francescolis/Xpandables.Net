@@ -31,130 +31,130 @@ namespace Microsoft.AspNetCore.Http;
 /// <param name="validatorProvider">The provider used to retrieve validators for endpoint arguments requiring validation.</param>
 public sealed class ResultEndpointValidator(IValidatorProvider validatorProvider) : IResultEndpointValidator
 {
-    /// <inheritdoc/>
-    public async ValueTask<object?> ValidateAsync(
-        EndpointFilterInvocationContext context,
-        EndpointFilterDelegate nextDelegate)
-    {
-        ArgumentNullException.ThrowIfNull(context);
-        ArgumentNullException.ThrowIfNull(nextDelegate);
+	/// <inheritdoc/>
+	public async ValueTask<object?> ValidateAsync(
+		EndpointFilterInvocationContext context,
+		EndpointFilterDelegate nextDelegate)
+	{
+		ArgumentNullException.ThrowIfNull(context);
+		ArgumentNullException.ThrowIfNull(nextDelegate);
 
-        List<ArgumentDescriptor> arguments = GetArgumentDescriptors(context);
+		List<ArgumentDescriptor> arguments = GetArgumentDescriptors(context);
 
-        if (arguments.Count == 0)
-        {
-            return await nextDelegate(context).ConfigureAwait(false);
-        }
+		if (arguments.Count == 0)
+		{
+			return await nextDelegate(context).ConfigureAwait(false);
+		}
 
-        List<ValidatorDescriptor> validators = GetAppropriateValidators(arguments, validatorProvider);
+		List<ValidatorDescriptor> validators = GetAppropriateValidators(arguments, validatorProvider);
 
-        Result result = await ApplyValidationAsync(validators).ConfigureAwait(false);
+		Result result = await ApplyValidationAsync(validators).ConfigureAwait(false);
 
-        if (!result.Errors.IsEmpty)
-        {
-            return result;
-        }
+		if (!result.Errors.IsEmpty)
+		{
+			return result;
+		}
 
-        return await nextDelegate(context).ConfigureAwait(false);
-    }
+		return await nextDelegate(context).ConfigureAwait(false);
+	}
 
-    static async Task<Result> ApplyValidationAsync(List<ValidatorDescriptor> validators)
-    {
-        FailureResultBuilder failureBuilder = Result.BadRequest();
+	private static async Task<Result> ApplyValidationAsync(List<ValidatorDescriptor> validators)
+	{
+		FailureResultBuilder failureBuilder = Result.BadRequest();
 
-        foreach (ValidatorDescriptor descriptor in validators)
-        {
-            try
-            {
-                var validationResults = await descriptor.Validator
-                    .ValidateAsync(descriptor.Argument)
-                    .ConfigureAwait(false);
+		foreach (ValidatorDescriptor descriptor in validators)
+		{
+			try
+			{
+				IReadOnlyCollection<ValidationResult> validationResults = await descriptor.Validator
+					.ValidateAsync(descriptor.Argument)
+					.ConfigureAwait(false);
 
-                if (validationResults.Count == 0)
-                {
-                    continue;
-                }
+				if (validationResults.Count == 0)
+				{
+					continue;
+				}
 
-                _ = failureBuilder.Merge(validationResults.ToResult());
+				_ = failureBuilder.Merge(validationResults.ToResult());
 
-            }
-            catch (ValidationException validationException)
-            {
-                _ = failureBuilder.Merge(validationException.ToResult());
-            }
-            catch (ResultException executionException)
-            {
-                _ = failureBuilder.Merge(executionException.Result);
-            }
-            catch (Exception exception)
-            {
-                throw new InvalidOperationException(
-                    $"An error occurred while validating the argument " +
-                    $"'{descriptor.ArgumentType.Name}' at index '{descriptor.ArgumentIndex}'.",
-                    exception);
-            }
-        }
+			}
+			catch (ValidationException validationException)
+			{
+				_ = failureBuilder.Merge(validationException.ToResult());
+			}
+			catch (ResultException executionException)
+			{
+				_ = failureBuilder.Merge(executionException.Result);
+			}
+			catch (Exception exception)
+			{
+				throw new InvalidOperationException(
+					$"An error occurred while validating the argument " +
+					$"'{descriptor.ArgumentType.Name}' at index '{descriptor.ArgumentIndex}'.",
+					exception);
+			}
+		}
 
-        return failureBuilder.Build();
-    }
+		return failureBuilder.Build();
+	}
 
-    static List<ArgumentDescriptor> GetArgumentDescriptors(EndpointFilterInvocationContext context)
-    {
-        List<ArgumentDescriptor> arguments = [];
-        int index = 0;
+	private static List<ArgumentDescriptor> GetArgumentDescriptors(EndpointFilterInvocationContext context)
+	{
+		List<ArgumentDescriptor> arguments = [];
+		int index = 0;
 
-        foreach (object? arg in context.Arguments)
-        {
-            if (arg is IRequiresValidation parameter)
-            {
-                arguments.Add(new ArgumentDescriptor
-                {
-                    Index = index,
-                    Parameter = parameter,
-                    ParameterType = parameter.GetType()
-                });
-            }
-            index++;
-        }
+		foreach (object? arg in context.Arguments)
+		{
+			if (arg is IRequiresValidation parameter)
+			{
+				arguments.Add(new ArgumentDescriptor
+				{
+					Index = index,
+					Parameter = parameter,
+					ParameterType = parameter.GetType()
+				});
+			}
+			index++;
+		}
 
-        return arguments;
-    }
+		return arguments;
+	}
 
-    static List<ValidatorDescriptor> GetAppropriateValidators(
-        List<ArgumentDescriptor> arguments, IValidatorProvider provider)
-    {
-        List<ValidatorDescriptor> validators = new(arguments.Count);
+	private static List<ValidatorDescriptor> GetAppropriateValidators(
+		List<ArgumentDescriptor> arguments, IValidatorProvider provider)
+	{
+		List<ValidatorDescriptor> validators = new(arguments.Count);
 
-        foreach (ArgumentDescriptor argument in arguments)
-        {
-            IValidator? validator = provider.TryGetValidator(argument.ParameterType);
-            if (validator is not null)
-            {
-                validators.Add(new ValidatorDescriptor
-                {
-                    ArgumentIndex = argument.Index,
-                    ArgumentType = argument.ParameterType,
-                    Argument = argument.Parameter,
-                    Validator = validator
-                });
-            }
-        }
+		foreach (ArgumentDescriptor argument in arguments)
+		{
+			IValidator? validator = provider.TryGetValidator(argument.ParameterType);
+			if (validator is not null)
+			{
+				validators.Add(new ValidatorDescriptor
+				{
+					ArgumentIndex = argument.Index,
+					ArgumentType = argument.ParameterType,
+					Argument = argument.Parameter,
+					Validator = validator
+				});
+			}
+		}
 
-        return validators;
-    }
+		return validators;
+	}
 }
 
 internal readonly record struct ArgumentDescriptor
 {
-    public readonly required int Index { get; init; }
-    public readonly required IRequiresValidation Parameter { get; init; }
-    public readonly required Type ParameterType { get; init; }
+	public readonly required int Index { get; init; }
+	public readonly required IRequiresValidation Parameter { get; init; }
+	public readonly required Type ParameterType { get; init; }
 }
 
 internal readonly record struct ValidatorDescriptor
 {
-    public readonly required int ArgumentIndex { get; init; }
-    public readonly required Type ArgumentType { get; init; }
-    public readonly required IRequiresValidation Argument { get; init; }
-    public readonly required IValidator Validator { get; init; }
+	public readonly required int ArgumentIndex { get; init; }
+	public readonly required Type ArgumentType { get; init; }
+	public readonly required IRequiresValidation Argument { get; init; }
+	public readonly required IValidator Validator { get; init; }
 }

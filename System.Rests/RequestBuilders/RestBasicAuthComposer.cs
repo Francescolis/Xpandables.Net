@@ -42,9 +42,11 @@ public sealed class RestBasicAuthComposer : IRestRequestComposer
         cancellationToken.ThrowIfCancellationRequested();
 
         if (!CanCompose(context))
-            throw new InvalidOperationException("The current composer cannot compose the given request context.");
+		{
+			throw new InvalidOperationException("The current composer cannot compose the given request context.");
+		}
 
-        AuthenticationHeaderValue value = ((IRestBasicAuthentication)context.Request).GetAuthenticationHeaderValue();
+		AuthenticationHeaderValue value = ((IRestBasicAuthentication)context.Request).GetAuthenticationHeaderValue();
 
         context.Message.Headers.Authorization = value;
         return ValueTask.CompletedTask;

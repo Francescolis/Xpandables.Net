@@ -54,14 +54,14 @@ public sealed class AggregateStore<TAggregate>(
             MaxCount = int.MaxValue
         };
 
-        var history = await _eventStore
+		List<IDomainEvent> history = await _eventStore
             .ReadStreamAsync(request, cancellationToken)
             .Select(e => e.Event)
             .OfType<IDomainEvent>()
             .ToListAsync(cancellationToken)
             .ConfigureAwait(false);
 
-        var aggregate = TAggregate.Initialize();
+        TAggregate aggregate = TAggregate.Initialize();
 
         aggregate.Replay(history);
 
@@ -82,14 +82,17 @@ public sealed class AggregateStore<TAggregate>(
     {
         ArgumentNullException.ThrowIfNull(aggregate);
 
-        var pending = aggregate.DequeueUncommittedEvents();
-        if (pending.Count == 0) return;
+		IReadOnlyCollection<IDomainEvent> pending = aggregate.DequeueUncommittedEvents();
+        if (pending.Count == 0)
+		{
+			return;
+		}
 
-        var enriched = pending.Select(_eventEnricher.Enrich).ToArray();
+		IDomainEvent[] enriched = pending.Select(_eventEnricher.Enrich).ToArray();
 
-        // The aggregate.StreamVersion has already been advanced by pending.Count.
-        // expectedVersion must reflect the persisted version before those events.
-        var expectedVersion = aggregate.StreamVersion - pending.Count;
+		// The aggregate.StreamVersion has already been advanced by pending.Count.
+		// expectedVersion must reflect the persisted version before those events.
+		long expectedVersion = aggregate.StreamVersion - pending.Count;
 
         AppendRequest request = new()
         {

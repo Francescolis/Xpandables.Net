@@ -14,6 +14,7 @@
  * limitations under the License.
  *
 ********************************************************************************/
+using System.Data.Common;
 using System.Diagnostics;
 using System.Diagnostics.CodeAnalysis;
 using System.Globalization;
@@ -71,13 +72,13 @@ public class DataRepository<[DynamicallyAccessedMembers(DynamicallyAccessedMembe
         ThrowIfDisposed();
         ArgumentNullException.ThrowIfNull(specification);
 
-        var queryResult = _sqlBuilder.BuildSelect(specification);
+		SqlQueryResult queryResult = _sqlBuilder.BuildSelect(specification);
         var context = new DataCommandContext(queryResult.Sql, queryResult.Parameters, DataCommandOperationType.Reader, _entityTypeName);
 
-        var command = _connectionScope.CreateCommand(queryResult);
+		DbCommand command = _connectionScope.CreateCommand(queryResult);
         await using (command.ConfigureAwait(false))
         {
-            var reader = await ExecuteReaderInterceptedAsync(command, context, cancellationToken)
+			DbDataReader reader = await ExecuteReaderInterceptedAsync(command, context, cancellationToken)
                 .ConfigureAwait(false);
 
             await using (reader.ConfigureAwait(false))
@@ -99,19 +100,19 @@ public class DataRepository<[DynamicallyAccessedMembers(DynamicallyAccessedMembe
         ThrowIfDisposed();
         ArgumentNullException.ThrowIfNull(specification);
 
-        var selectResult = _sqlBuilder.BuildSelect(specification);
-        var countResult = _sqlBuilder.BuildCount(specification);
+		SqlQueryResult selectResult = _sqlBuilder.BuildSelect(specification);
+		SqlQueryResult countResult = _sqlBuilder.BuildCount(specification);
         var paginationTcs = new TaskCompletionSource<int>(TaskCreationOptions.RunContinuationsAsynchronously);
 
         async IAsyncEnumerable<TResult> ReadPagedAsync([EnumeratorCancellation] CancellationToken ct = default)
         {
-            var command = _connectionScope.CreateCommand();
+			DbCommand command = _connectionScope.CreateCommand();
             command.CommandText = $"{selectResult.Sql};{countResult.Sql}";
 
-            var mergedParams = MergeParameters(selectResult.Parameters, countResult.Parameters);
-            foreach (var param in mergedParams)
+			List<SqlParameter> mergedParams = MergeParameters(selectResult.Parameters, countResult.Parameters);
+            foreach (SqlParameter param in mergedParams)
             {
-                var dbParam = command.CreateParameter();
+				DbParameter dbParam = command.CreateParameter();
                 dbParam.ParameterName = param.Name;
                 dbParam.Value = param.Value ?? DBNull.Value;
                 command.Parameters.Add(dbParam);
@@ -121,7 +122,7 @@ public class DataRepository<[DynamicallyAccessedMembers(DynamicallyAccessedMembe
 
             await using (command.ConfigureAwait(false))
             {
-                var reader = await ExecuteReaderInterceptedAsync(command, pagedContext, ct).ConfigureAwait(false);
+				DbDataReader reader = await ExecuteReaderInterceptedAsync(command, pagedContext, ct).ConfigureAwait(false);
                 await using (reader.ConfigureAwait(false))
                 {
                     try
@@ -134,7 +135,7 @@ public class DataRepository<[DynamicallyAccessedMembers(DynamicallyAccessedMembe
                         if (await reader.NextResultAsync(ct).ConfigureAwait(false) &&
                             await reader.ReadAsync(ct).ConfigureAwait(false))
                         {
-                            var totalCount = Convert.ToInt64(reader.GetValue(0), CultureInfo.InvariantCulture);
+							long totalCount = Convert.ToInt64(reader.GetValue(0), CultureInfo.InvariantCulture);
                             paginationTcs.TrySetResult(checked((int)totalCount));
                         }
                         else
@@ -167,13 +168,13 @@ public class DataRepository<[DynamicallyAccessedMembers(DynamicallyAccessedMembe
             {
                 if (!paginationTcs.Task.IsCompleted)
                 {
-                    var count = await CountAsync(specification, ct).ConfigureAwait(false);
+					long count = await CountAsync(specification, ct).ConfigureAwait(false);
                     paginationTcs.TrySetResult(checked((int)count));
                 }
 
-                var totalCount = await paginationTcs.Task.WaitAsync(ct).ConfigureAwait(false);
-                var pageSize = specification.Take ?? totalCount;
-                var currentPage = pageSize > 0 && specification.Skip.HasValue
+				int totalCount = await paginationTcs.Task.WaitAsync(ct).ConfigureAwait(false);
+				int pageSize = specification.Take ?? totalCount;
+				int currentPage = pageSize > 0 && specification.Skip.HasValue
                     ? (specification.Skip.Value / pageSize) + 1
                     : pageSize > 0 ? 1 : 0;
 
@@ -187,12 +188,12 @@ public class DataRepository<[DynamicallyAccessedMembers(DynamicallyAccessedMembe
         {
             var merged = new Dictionary<string, SqlParameter>(StringComparer.OrdinalIgnoreCase);
 
-            foreach (var param in first)
+            foreach (SqlParameter param in first)
             {
                 merged[param.Name] = param;
             }
 
-            foreach (var param in second)
+            foreach (SqlParameter param in second)
             {
                 merged.TryAdd(param.Name, param);
             }
@@ -210,9 +211,9 @@ public class DataRepository<[DynamicallyAccessedMembers(DynamicallyAccessedMembe
         ArgumentNullException.ThrowIfNull(specification);
 
         TResult? first = default;
-        var count = 0;
+		int count = 0;
 
-        await foreach (var result in QueryAsync(specification, cancellationToken).ConfigureAwait(false))
+        await foreach (TResult? result in QueryAsync(specification, cancellationToken).ConfigureAwait(false))
         {
             count++;
             if (count == 1)
@@ -239,9 +240,9 @@ public class DataRepository<[DynamicallyAccessedMembers(DynamicallyAccessedMembe
         ArgumentNullException.ThrowIfNull(specification);
 
         TResult? first = default;
-        var count = 0;
+		int count = 0;
 
-        await foreach (var result in QueryAsync(specification, cancellationToken).ConfigureAwait(false))
+        await foreach (TResult? result in QueryAsync(specification, cancellationToken).ConfigureAwait(false))
         {
             count++;
             if (count == 1)
@@ -265,7 +266,7 @@ public class DataRepository<[DynamicallyAccessedMembers(DynamicallyAccessedMembe
         ThrowIfDisposed();
         ArgumentNullException.ThrowIfNull(specification);
 
-        await foreach (var result in QueryAsync(specification, cancellationToken).ConfigureAwait(false))
+        await foreach (TResult? result in QueryAsync(specification, cancellationToken).ConfigureAwait(false))
         {
             return result;
         }
@@ -281,7 +282,7 @@ public class DataRepository<[DynamicallyAccessedMembers(DynamicallyAccessedMembe
         ThrowIfDisposed();
         ArgumentNullException.ThrowIfNull(specification);
 
-        await foreach (var result in QueryAsync(specification, cancellationToken).ConfigureAwait(false))
+        await foreach (TResult? result in QueryAsync(specification, cancellationToken).ConfigureAwait(false))
         {
             return result;
         }
@@ -297,13 +298,13 @@ public class DataRepository<[DynamicallyAccessedMembers(DynamicallyAccessedMembe
         ThrowIfDisposed();
         ArgumentNullException.ThrowIfNull(specification);
 
-        var queryResult = _sqlBuilder.BuildCount(specification);
+		SqlQueryResult queryResult = _sqlBuilder.BuildCount(specification);
         var context = new DataCommandContext(queryResult.Sql, queryResult.Parameters, DataCommandOperationType.Scalar, _entityTypeName);
 
-        var command = _connectionScope.CreateCommand(queryResult);
+		DbCommand command = _connectionScope.CreateCommand(queryResult);
         await using (command.ConfigureAwait(false))
         {
-            var result = await ExecuteScalarInterceptedAsync(command, context, cancellationToken).ConfigureAwait(false);
+			object? result = await ExecuteScalarInterceptedAsync(command, context, cancellationToken).ConfigureAwait(false);
             return Convert.ToInt64(result, CultureInfo.InvariantCulture);
         }
     }
@@ -313,7 +314,7 @@ public class DataRepository<[DynamicallyAccessedMembers(DynamicallyAccessedMembe
         IDataSpecification<TData, TResult> specification,
         CancellationToken cancellationToken = default)
     {
-        var count = await CountAsync(specification, cancellationToken).ConfigureAwait(false);
+		long count = await CountAsync(specification, cancellationToken).ConfigureAwait(false);
         return count > 0;
     }
 
@@ -328,15 +329,15 @@ public class DataRepository<[DynamicallyAccessedMembers(DynamicallyAccessedMembe
         ThrowIfDisposed();
         ArgumentException.ThrowIfNullOrWhiteSpace(sql);
 
-        var paramList = parameters as IReadOnlyList<SqlParameter> ?? [.. (parameters ?? [])];
+		IReadOnlyList<SqlParameter> paramList = parameters as IReadOnlyList<SqlParameter> ?? [.. (parameters ?? [])];
         var context = new DataCommandContext(sql, paramList, DataCommandOperationType.Reader, _entityTypeName);
 
-        var command = _connectionScope.CreateCommand();
+		DbCommand command = _connectionScope.CreateCommand();
         command.CommandText = sql;
 
-        foreach (var param in paramList)
+        foreach (SqlParameter param in paramList)
         {
-            var dbParam = command.CreateParameter();
+			DbParameter dbParam = command.CreateParameter();
             dbParam.ParameterName = param.Name;
             dbParam.Value = param.Value ?? DBNull.Value;
             command.Parameters.Add(dbParam);
@@ -344,7 +345,7 @@ public class DataRepository<[DynamicallyAccessedMembers(DynamicallyAccessedMembe
 
         await using (command.ConfigureAwait(false))
         {
-            var reader = await ExecuteReaderInterceptedAsync(command, context, cancellationToken)
+			DbDataReader reader = await ExecuteReaderInterceptedAsync(command, context, cancellationToken)
                 .ConfigureAwait(false);
 
             await using (reader.ConfigureAwait(false))
@@ -366,15 +367,15 @@ public class DataRepository<[DynamicallyAccessedMembers(DynamicallyAccessedMembe
         ThrowIfDisposed();
         ArgumentException.ThrowIfNullOrWhiteSpace(sql);
 
-        var paramList = parameters as IReadOnlyList<SqlParameter> ?? [.. (parameters ?? [])];
+		IReadOnlyList<SqlParameter> paramList = parameters as IReadOnlyList<SqlParameter> ?? [.. (parameters ?? [])];
         var context = new DataCommandContext(sql, paramList, DataCommandOperationType.NonQuery, _entityTypeName);
 
-        var command = _connectionScope.CreateCommand();
+		DbCommand command = _connectionScope.CreateCommand();
         command.CommandText = sql;
 
-        foreach (var param in paramList)
+        foreach (SqlParameter param in paramList)
         {
-            var dbParam = command.CreateParameter();
+			DbParameter dbParam = command.CreateParameter();
             dbParam.ParameterName = param.Name;
             dbParam.Value = param.Value ?? DBNull.Value;
             command.Parameters.Add(dbParam);
@@ -394,10 +395,10 @@ public class DataRepository<[DynamicallyAccessedMembers(DynamicallyAccessedMembe
         ThrowIfDisposed();
         ArgumentNullException.ThrowIfNull(data);
 
-        var queryResult = _sqlBuilder.BuildInsert(data);
+		SqlQueryResult queryResult = _sqlBuilder.BuildInsert(data);
         var context = new DataCommandContext(queryResult.Sql, queryResult.Parameters, DataCommandOperationType.NonQuery, _entityTypeName);
 
-        var command = _connectionScope.CreateCommand(queryResult);
+		DbCommand command = _connectionScope.CreateCommand(queryResult);
         await using (command.ConfigureAwait(false))
         {
             return await ExecuteNonQueryInterceptedAsync(command, context, cancellationToken).ConfigureAwait(false);
@@ -414,16 +415,20 @@ public class DataRepository<[DynamicallyAccessedMembers(DynamicallyAccessedMembe
 
         var dataList = entities.ToList();
         if (dataList.Count == 0)
-            return 0;
+		{
+			return 0;
+		}
 
-        var queryResult = _sqlBuilder.BuildInsertBatch(dataList);
+		SqlQueryResult queryResult = _sqlBuilder.BuildInsertBatch(dataList);
 
         if (string.IsNullOrEmpty(queryResult.Sql))
-            return 0;
+		{
+			return 0;
+		}
 
-        var context = new DataCommandContext(queryResult.Sql, queryResult.Parameters, DataCommandOperationType.NonQuery, _entityTypeName);
+		var context = new DataCommandContext(queryResult.Sql, queryResult.Parameters, DataCommandOperationType.NonQuery, _entityTypeName);
 
-        var command = _connectionScope.CreateCommand(queryResult);
+		DbCommand command = _connectionScope.CreateCommand(queryResult);
         await using (command.ConfigureAwait(false))
         {
             return await ExecuteNonQueryInterceptedAsync(command, context, cancellationToken).ConfigureAwait(false);
@@ -441,12 +446,14 @@ public class DataRepository<[DynamicallyAccessedMembers(DynamicallyAccessedMembe
         ArgumentNullException.ThrowIfNull(updater);
 
         if (updater.Updates.Count == 0)
-            throw new InvalidOperationException("The updater must contain at least one property update.");
+		{
+			throw new InvalidOperationException("The updater must contain at least one property update.");
+		}
 
-        var queryResult = _sqlBuilder.BuildUpdate(specification, updater);
+		SqlQueryResult queryResult = _sqlBuilder.BuildUpdate(specification, updater);
         var context = new DataCommandContext(queryResult.Sql, queryResult.Parameters, DataCommandOperationType.NonQuery, _entityTypeName);
 
-        var command = _connectionScope.CreateCommand(queryResult);
+		DbCommand command = _connectionScope.CreateCommand(queryResult);
         await using (command.ConfigureAwait(false))
         {
             return await ExecuteNonQueryInterceptedAsync(command, context, cancellationToken).ConfigureAwait(false);
@@ -461,10 +468,10 @@ public class DataRepository<[DynamicallyAccessedMembers(DynamicallyAccessedMembe
         ThrowIfDisposed();
         ArgumentNullException.ThrowIfNull(specification);
 
-        var queryResult = _sqlBuilder.BuildDelete(specification);
+		SqlQueryResult queryResult = _sqlBuilder.BuildDelete(specification);
         var context = new DataCommandContext(queryResult.Sql, queryResult.Parameters, DataCommandOperationType.NonQuery, _entityTypeName);
 
-        var command = _connectionScope.CreateCommand(queryResult);
+		DbCommand command = _connectionScope.CreateCommand(queryResult);
         await using (command.ConfigureAwait(false))
         {
             return await ExecuteNonQueryInterceptedAsync(command, context, cancellationToken).ConfigureAwait(false);
@@ -478,17 +485,17 @@ public class DataRepository<[DynamicallyAccessedMembers(DynamicallyAccessedMembe
     {
         await _interceptor.CommandExecutingAsync(context, cancellationToken).ConfigureAwait(false);
 
-        var startTimestamp = Stopwatch.GetTimestamp();
+		long startTimestamp = Stopwatch.GetTimestamp();
         try
         {
-            var reader = await command.ExecuteReaderAsync(cancellationToken).ConfigureAwait(false);
-            var duration = Stopwatch.GetElapsedTime(startTimestamp);
+			DbDataReader reader = await command.ExecuteReaderAsync(cancellationToken).ConfigureAwait(false);
+			TimeSpan duration = Stopwatch.GetElapsedTime(startTimestamp);
             await _interceptor.CommandExecutedAsync(context, duration, null, cancellationToken).ConfigureAwait(false);
             return reader;
         }
         catch (Exception ex)
         {
-            var duration = Stopwatch.GetElapsedTime(startTimestamp);
+			TimeSpan duration = Stopwatch.GetElapsedTime(startTimestamp);
             await _interceptor.CommandFailedAsync(context, duration, ex, cancellationToken).ConfigureAwait(false);
             throw;
         }
@@ -501,17 +508,17 @@ public class DataRepository<[DynamicallyAccessedMembers(DynamicallyAccessedMembe
     {
         await _interceptor.CommandExecutingAsync(context, cancellationToken).ConfigureAwait(false);
 
-        var startTimestamp = Stopwatch.GetTimestamp();
+		long startTimestamp = Stopwatch.GetTimestamp();
         try
         {
-            var result = await command.ExecuteScalarAsync(cancellationToken).ConfigureAwait(false);
-            var duration = Stopwatch.GetElapsedTime(startTimestamp);
+			object? result = await command.ExecuteScalarAsync(cancellationToken).ConfigureAwait(false);
+			TimeSpan duration = Stopwatch.GetElapsedTime(startTimestamp);
             await _interceptor.CommandExecutedAsync(context, duration, null, cancellationToken).ConfigureAwait(false);
             return result;
         }
         catch (Exception ex)
         {
-            var duration = Stopwatch.GetElapsedTime(startTimestamp);
+			TimeSpan duration = Stopwatch.GetElapsedTime(startTimestamp);
             await _interceptor.CommandFailedAsync(context, duration, ex, cancellationToken).ConfigureAwait(false);
             throw;
         }
@@ -524,17 +531,17 @@ public class DataRepository<[DynamicallyAccessedMembers(DynamicallyAccessedMembe
     {
         await _interceptor.CommandExecutingAsync(context, cancellationToken).ConfigureAwait(false);
 
-        var startTimestamp = Stopwatch.GetTimestamp();
+		long startTimestamp = Stopwatch.GetTimestamp();
         try
         {
-            var rowsAffected = await command.ExecuteNonQueryAsync(cancellationToken).ConfigureAwait(false);
-            var duration = Stopwatch.GetElapsedTime(startTimestamp);
+			int rowsAffected = await command.ExecuteNonQueryAsync(cancellationToken).ConfigureAwait(false);
+			TimeSpan duration = Stopwatch.GetElapsedTime(startTimestamp);
             await _interceptor.CommandExecutedAsync(context, duration, rowsAffected, cancellationToken).ConfigureAwait(false);
             return rowsAffected;
         }
         catch (Exception ex)
         {
-            var duration = Stopwatch.GetElapsedTime(startTimestamp);
+			TimeSpan duration = Stopwatch.GetElapsedTime(startTimestamp);
             await _interceptor.CommandFailedAsync(context, duration, ex, cancellationToken).ConfigureAwait(false);
             throw;
         }
@@ -552,9 +559,11 @@ public class DataRepository<[DynamicallyAccessedMembers(DynamicallyAccessedMembe
     public void Dispose()
     {
         if (_isDisposed)
-            return;
+		{
+			return;
+		}
 
-        _isDisposed = true;
+		_isDisposed = true;
         // Connection is owned by the unit of work, not disposed here
         GC.SuppressFinalize(this);
     }
@@ -563,9 +572,11 @@ public class DataRepository<[DynamicallyAccessedMembers(DynamicallyAccessedMembe
     public ValueTask DisposeAsync()
     {
         if (_isDisposed)
-            return ValueTask.CompletedTask;
+		{
+			return ValueTask.CompletedTask;
+		}
 
-        _isDisposed = true;
+		_isDisposed = true;
         // Connection is owned by the unit of work, not disposed here
         GC.SuppressFinalize(this);
         return ValueTask.CompletedTask;

@@ -1,4 +1,4 @@
-/*******************************************************************************
+﻿/*******************************************************************************
  * Copyright (C) 2025 Kamersoft
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
@@ -18,6 +18,8 @@ using System.Diagnostics.CodeAnalysis;
 using System.Linq.Expressions;
 
 using Microsoft.EntityFrameworkCore;
+using Microsoft.EntityFrameworkCore.ChangeTracking;
+using Microsoft.EntityFrameworkCore.Query;
 
 namespace System.Entities.EntityFramework;
 
@@ -70,7 +72,7 @@ public class EntityRepository<[DynamicallyAccessedMembers(DynamicallyAccessedMem
         ObjectDisposedException.ThrowIf(IsDisposed, Context);
         ArgumentNullException.ThrowIfNull(specification);
 
-        var query = ApplySpecification(specification);
+		IQueryable<TResult> query = ApplySpecification(specification);
         return query.ToAsyncPagedEnumerable();
     }
 
@@ -82,7 +84,7 @@ public class EntityRepository<[DynamicallyAccessedMembers(DynamicallyAccessedMem
         ObjectDisposedException.ThrowIf(IsDisposed, Context);
         ArgumentNullException.ThrowIfNull(specification);
 
-        var query = ApplySpecification(specification);
+		IQueryable<TResult> query = ApplySpecification(specification);
         return await query.SingleAsync(cancellationToken).ConfigureAwait(false);
     }
 
@@ -94,7 +96,7 @@ public class EntityRepository<[DynamicallyAccessedMembers(DynamicallyAccessedMem
         ObjectDisposedException.ThrowIf(IsDisposed, Context);
         ArgumentNullException.ThrowIfNull(specification);
 
-        var query = ApplySpecification(specification);
+		IQueryable<TResult> query = ApplySpecification(specification);
         return await query.SingleOrDefaultAsync(cancellationToken).ConfigureAwait(false);
     }
 
@@ -106,7 +108,7 @@ public class EntityRepository<[DynamicallyAccessedMembers(DynamicallyAccessedMem
         ObjectDisposedException.ThrowIf(IsDisposed, Context);
         ArgumentNullException.ThrowIfNull(specification);
 
-        var query = ApplySpecification(specification);
+		IQueryable<TResult> query = ApplySpecification(specification);
         return await query.FirstAsync(cancellationToken).ConfigureAwait(false);
     }
 
@@ -118,7 +120,7 @@ public class EntityRepository<[DynamicallyAccessedMembers(DynamicallyAccessedMem
         ObjectDisposedException.ThrowIf(IsDisposed, Context);
         ArgumentNullException.ThrowIfNull(specification);
 
-        var query = ApplySpecification(specification);
+		IQueryable<TResult> query = ApplySpecification(specification);
         return await query.FirstOrDefaultAsync(cancellationToken).ConfigureAwait(false);
     }
 
@@ -130,7 +132,7 @@ public class EntityRepository<[DynamicallyAccessedMembers(DynamicallyAccessedMem
         ObjectDisposedException.ThrowIf(IsDisposed, Context);
         ArgumentNullException.ThrowIfNull(entities);
 
-        var entityList = entities as IList<TEntity> ?? [.. entities];
+		IList<TEntity> entityList = entities as IList<TEntity> ?? [.. entities];
         ArgumentOutOfRangeException.ThrowIfLessThan(entityList.Count, 1, nameof(entities));
 
         if (entityList.Count == 1)
@@ -153,7 +155,7 @@ public class EntityRepository<[DynamicallyAccessedMembers(DynamicallyAccessedMem
         ObjectDisposedException.ThrowIf(IsDisposed, Context);
         ArgumentNullException.ThrowIfNull(entities);
 
-        var entityList = entities as IList<TEntity> ?? [.. entities];
+		IList<TEntity> entityList = entities as IList<TEntity> ?? [.. entities];
         ArgumentOutOfRangeException.ThrowIfLessThan(entityList.Count, 1, nameof(entities));
 
         Context.Set<TEntity>().UpdateRange(entityList);
@@ -171,9 +173,9 @@ public class EntityRepository<[DynamicallyAccessedMembers(DynamicallyAccessedMem
         ArgumentNullException.ThrowIfNull(specification);
         ArgumentNullException.ThrowIfNull(updateExpression);
 
-        var query = ApplyEntitySpecification(specification);
+		IQueryable<TEntity> query = ApplyEntitySpecification(specification);
 
-        var compiled = updateExpression.Compile();
+		Func<TEntity, TEntity> compiled = updateExpression.Compile();
         var entities = new List<TEntity>();
         await foreach (TEntity entity in query.AsAsyncEnumerable()
             .WithCancellation(cancellationToken)
@@ -202,7 +204,7 @@ public class EntityRepository<[DynamicallyAccessedMembers(DynamicallyAccessedMem
         ArgumentNullException.ThrowIfNull(specification);
         ArgumentNullException.ThrowIfNull(updateAction);
 
-        var query = ApplyEntitySpecification(specification);
+		IQueryable<TEntity> query = ApplyEntitySpecification(specification);
         var entities = new List<TEntity>();
         await foreach (TEntity entity in query.AsAsyncEnumerable()
             .WithCancellation(cancellationToken)
@@ -231,7 +233,7 @@ public class EntityRepository<[DynamicallyAccessedMembers(DynamicallyAccessedMem
         ArgumentNullException.ThrowIfNull(updater);
         ArgumentOutOfRangeException.ThrowIfLessThan(updater.Updates.Count, 1, nameof(updater.Updates));
 
-        var query = ApplyEntitySpecification(specification);
+		IQueryable<TEntity> query = ApplyEntitySpecification(specification);
 
         var entities = new List<TEntity>();
         await foreach (TEntity entity in query.AsAsyncEnumerable()
@@ -260,9 +262,9 @@ public class EntityRepository<[DynamicallyAccessedMembers(DynamicallyAccessedMem
         ArgumentNullException.ThrowIfNull(updater);
         ArgumentOutOfRangeException.ThrowIfLessThan(updater.Updates.Count, 1, nameof(updater.Updates));
 
-        var query = ApplyEntitySpecification(specification);
+		IQueryable<TEntity> query = ApplyEntitySpecification(specification);
 
-        var setters = updater.ToSetPropertyCalls();
+		Action<UpdateSettersBuilder<TEntity>> setters = updater.ToSetPropertyCalls();
         return await query
             .ExecuteUpdateAsync(setters, cancellationToken)
             .ConfigureAwait(false);
@@ -276,9 +278,9 @@ public class EntityRepository<[DynamicallyAccessedMembers(DynamicallyAccessedMem
         ObjectDisposedException.ThrowIf(IsDisposed, Context);
         ArgumentNullException.ThrowIfNull(specification);
 
-        var query = ApplyEntitySpecification(specification);
+		IQueryable<TEntity> query = ApplyEntitySpecification(specification);
 
-        var entityList = await query.ToListAsync(cancellationToken).ConfigureAwait(false);
+		List<TEntity> entityList = await query.ToListAsync(cancellationToken).ConfigureAwait(false);
         Context.RemoveRange(entityList);
         return entityList.Count;
     }
@@ -291,7 +293,7 @@ public class EntityRepository<[DynamicallyAccessedMembers(DynamicallyAccessedMem
         ObjectDisposedException.ThrowIf(IsDisposed, Context);
         ArgumentNullException.ThrowIfNull(specification);
 
-        var query = ApplyEntitySpecification(specification);
+		IQueryable<TEntity> query = ApplyEntitySpecification(specification);
         return await query.ExecuteDeleteAsync(cancellationToken).ConfigureAwait(false);
     }
 
@@ -398,16 +400,16 @@ public class EntityRepository<[DynamicallyAccessedMembers(DynamicallyAccessedMem
             return query;
         }
 
-        foreach (var include in includes)
+        foreach (IIncludeSpecification<TEntity> include in includes)
         {
-            // Extract the navigation path from the expression
-            var navigationPath = GetNavigationPath(include.IncludeExpression);
+			// Extract the navigation path from the expression
+			string navigationPath = GetNavigationPath(include.IncludeExpression);
             query = query.Include(navigationPath);
 
             // Apply ThenIncludes by building the full path
-            foreach (var thenInclude in include.ThenIncludes)
+            foreach (IThenIncludeSpecification thenInclude in include.ThenIncludes)
             {
-                var thenPath = $"{navigationPath}.{GetNavigationPath(thenInclude.ThenIncludeExpression)}";
+				string thenPath = $"{navigationPath}.{GetNavigationPath(thenInclude.ThenIncludeExpression)}";
                 query = query.Include(thenPath);
             }
         }
@@ -423,7 +425,7 @@ public class EntityRepository<[DynamicallyAccessedMembers(DynamicallyAccessedMem
     private static string GetNavigationPath(LambdaExpression expression)
     {
         var path = new System.Text.StringBuilder();
-        var current = expression.Body;
+		Expression current = expression.Body;
 
         // Handle Convert expressions (for value types or interfaces)
         while (current is UnaryExpression unary && unary.NodeType == ExpressionType.Convert)
@@ -467,8 +469,8 @@ public class EntityRepository<[DynamicallyAccessedMembers(DynamicallyAccessedMem
             return query;
         }
 
-        // Apply first ordering
-        var orderedQuery = orderSpecs[0].ApplyFirst(query);
+		// Apply first ordering
+		IOrderedQueryable<TEntity> orderedQuery = orderSpecs[0].ApplyFirst(query);
 
         // Apply subsequent orderings
         for (int i = 1; i < orderSpecs.Count; i++)
@@ -498,12 +500,16 @@ public class EntityRepository<[DynamicallyAccessedMembers(DynamicallyAccessedMem
     protected virtual ValueTask DisposeAsync(bool disposing)
     {
         if (!disposing)
-            return ValueTask.CompletedTask;
+		{
+			return ValueTask.CompletedTask;
+		}
 
-        if (IsDisposed)
-            return ValueTask.CompletedTask;
+		if (IsDisposed)
+		{
+			return ValueTask.CompletedTask;
+		}
 
-        IsDisposed = true;
+		IsDisposed = true;
 
         // Note: We don't dispose the DbContext here as it should be managed by the UnitOfWork
         // or dependency injection container
@@ -582,7 +588,7 @@ public class EntityRepository<[DynamicallyAccessedMembers(DynamicallyAccessedMem
         }
         catch (DbUpdateConcurrencyException ex)
         {
-            foreach (var entry in ex.Entries)
+            foreach (EntityEntry entry in ex.Entries)
             {
                 if (entry.State == EntityState.Modified)
                 {
@@ -620,7 +626,7 @@ public class EntityRepository<[DynamicallyAccessedMembers(DynamicallyAccessedMem
                 {
                     // Compile and execute the value expression
                     var valueExpression = (LambdaExpression)update.ValueExpression;
-                    var compiledExpression = valueExpression.Compile();
+					Delegate compiledExpression = valueExpression.Compile();
                     value = compiledExpression.DynamicInvoke(entity);
                 }
 

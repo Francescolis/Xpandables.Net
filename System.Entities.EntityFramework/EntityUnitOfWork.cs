@@ -1,4 +1,4 @@
-/*******************************************************************************
+﻿/*******************************************************************************
  * Copyright (C) 2025 Kamersoft
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
@@ -54,19 +54,19 @@ public class EntityUnitOfWork<TContext>(TContext context, IServiceProvider servi
     {
         ThrowIfDisposed();
 
-        var repositoryType = typeof(TRepository);
+		Type repositoryType = typeof(TRepository);
 
         try
         {
             if (repositoryType.IsInterface)
             {
-                var service = ActivatorUtilities.GetServiceOrCreateInstance<TRepository>(serviceProvider);
+                TRepository service = ActivatorUtilities.GetServiceOrCreateInstance<TRepository>(serviceProvider);
                 service.InjectAmbientContext(_context);
                 return service;
             }
             else
             {
-                var instance = ActivatorUtilities.CreateInstance<TRepository>(serviceProvider, _context);
+                TRepository instance = ActivatorUtilities.CreateInstance<TRepository>(serviceProvider, _context);
                 return instance;
             }
         }
@@ -85,7 +85,7 @@ public class EntityUnitOfWork<TContext>(TContext context, IServiceProvider servi
     {
         ThrowIfDisposed();
 
-        var transaction = await _context.Database
+		IDbContextTransaction transaction = await _context.Database
             .BeginTransactionAsync(cancellationToken)
             .ConfigureAwait(false);
 
@@ -97,7 +97,7 @@ public class EntityUnitOfWork<TContext>(TContext context, IServiceProvider servi
     {
         ThrowIfDisposed();
 
-        var transaction = _context.Database.BeginTransaction();
+		IDbContextTransaction transaction = _context.Database.BeginTransaction();
         return new EntityUnitOfWorkTransaction(transaction);
     }
 
@@ -109,7 +109,7 @@ public class EntityUnitOfWork<TContext>(TContext context, IServiceProvider servi
         ThrowIfDisposed();
         ArgumentNullException.ThrowIfNull(transaction);
 
-        var efTransaction = await _context.Database
+		IDbContextTransaction efTransaction = await _context.Database
             .UseTransactionAsync(transaction, cancellationToken)
             .ConfigureAwait(false)
             ?? throw new InvalidOperationException("Failed to use transaction.");
@@ -123,7 +123,7 @@ public class EntityUnitOfWork<TContext>(TContext context, IServiceProvider servi
         ThrowIfDisposed();
         ArgumentNullException.ThrowIfNull(transaction);
 
-        var efTransaction = _context.Database.UseTransaction(transaction)
+		IDbContextTransaction efTransaction = _context.Database.UseTransaction(transaction)
             ?? throw new InvalidOperationException("Failed to use transaction.");
 
         return new EntityUnitOfWorkTransaction(efTransaction);
@@ -141,13 +141,13 @@ public class EntityUnitOfWork<TContext>(TContext context, IServiceProvider servi
             // Use a transaction if one is not already present
             if (_context.Database.CurrentTransaction == null)
             {
-                using var transaction = await _context.Database
+                using IDbContextTransaction transaction = await _context.Database
                     .BeginTransactionAsync(cancellationToken)
                     .ConfigureAwait(false);
 
                 try
                 {
-                    var result = await _context.SaveChangesAsync(cancellationToken).ConfigureAwait(false);
+					int result = await _context.SaveChangesAsync(cancellationToken).ConfigureAwait(false);
                     await transaction.CommitAsync(cancellationToken).ConfigureAwait(false);
                     return result;
                 }
@@ -184,10 +184,10 @@ public class EntityUnitOfWork<TContext>(TContext context, IServiceProvider servi
             // Use a transaction if one is not already present
             if (_context.Database.CurrentTransaction == null)
             {
-                using var transaction = _context.Database.BeginTransaction();
+                using IDbContextTransaction transaction = _context.Database.BeginTransaction();
                 try
                 {
-                    var result = _context.SaveChanges();
+					int result = _context.SaveChanges();
                     transaction.Commit();
                     return result;
                 }
@@ -280,12 +280,16 @@ public class EntityUnitOfWork<TContext>(TContext context, IServiceProvider servi
     protected virtual async ValueTask DisposeAsync(bool disposing)
     {
         if (!disposing)
-            return;
+		{
+			return;
+		}
 
-        if (IsDisposed)
-            return;
+		if (IsDisposed)
+		{
+			return;
+		}
 
-        if (_context != null)
+		if (_context != null)
         {
             // Note: We don't dispose the DbContext here as it should be managed by the dependency injection container
         }

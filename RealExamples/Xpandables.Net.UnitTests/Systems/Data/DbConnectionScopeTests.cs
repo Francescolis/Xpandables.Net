@@ -15,6 +15,7 @@
  *
 ********************************************************************************/
 using System.Data;
+using System.Data.Common;
 
 using FluentAssertions;
 
@@ -39,7 +40,7 @@ public sealed class DbConnectionScopeTests : IDisposable
     {
         var scope = new DataDbConnectionScope(_connection);
 
-        var transaction = scope.BeginTransaction();
+		IDataTransaction transaction = scope.BeginTransaction();
 
         scope.HasActiveTransaction.Should().BeTrue();
         scope.CurrentTransaction.Should().BeSameAs(transaction);
@@ -50,7 +51,7 @@ public sealed class DbConnectionScopeTests : IDisposable
     {
         var scope = new DataDbConnectionScope(_connection);
 
-        var transaction = await scope.BeginTransactionAsync();
+		IDataTransaction transaction = await scope.BeginTransactionAsync();
 
         scope.HasActiveTransaction.Should().BeTrue();
         scope.CurrentTransaction.Should().BeSameAs(transaction);
@@ -62,7 +63,7 @@ public sealed class DbConnectionScopeTests : IDisposable
         var scope = new DataDbConnectionScope(_connection);
         scope.BeginTransaction();
 
-        var act = () => scope.BeginTransaction();
+		Func<IDataTransaction> act = () => scope.BeginTransaction();
 
         act.Should().Throw<InvalidOperationException>()
             .WithMessage("*already active*");
@@ -73,10 +74,10 @@ public sealed class DbConnectionScopeTests : IDisposable
     {
         var scope = new DataDbConnectionScope(_connection);
 
-        var first = scope.BeginTransaction();
+		IDataTransaction first = scope.BeginTransaction();
         first.Commit();
 
-        var second = scope.BeginTransaction();
+		IDataTransaction second = scope.BeginTransaction();
         second.Should().NotBeNull();
         scope.HasActiveTransaction.Should().BeTrue();
     }
@@ -86,10 +87,10 @@ public sealed class DbConnectionScopeTests : IDisposable
     {
         var scope = new DataDbConnectionScope(_connection);
 
-        var first = scope.BeginTransaction();
+		IDataTransaction first = scope.BeginTransaction();
         first.Rollback();
 
-        var second = scope.BeginTransaction();
+		IDataTransaction second = scope.BeginTransaction();
         second.Should().NotBeNull();
         scope.HasActiveTransaction.Should().BeTrue();
     }
@@ -98,9 +99,9 @@ public sealed class DbConnectionScopeTests : IDisposable
     public void WhenCreateCommandWithActiveTransactionThenCommandHasTransaction()
     {
         var scope = new DataDbConnectionScope(_connection);
-        var transaction = scope.BeginTransaction();
+		IDataTransaction transaction = scope.BeginTransaction();
 
-        var command = scope.CreateCommand();
+		DbCommand command = scope.CreateCommand();
 
         command.Transaction.Should().BeSameAs(transaction.DbTransaction);
     }
@@ -110,7 +111,7 @@ public sealed class DbConnectionScopeTests : IDisposable
     {
         var scope = new DataDbConnectionScope(_connection);
 
-        var command = scope.CreateCommand();
+		DbCommand command = scope.CreateCommand();
 
         command.Transaction.Should().BeNull();
     }
@@ -121,7 +122,7 @@ public sealed class DbConnectionScopeTests : IDisposable
         var scope = new DataDbConnectionScope(_connection);
         var queryResult = new SqlQueryResult("SELECT 1 WHERE @p0 = 1", [new SqlParameter("p0", 1)]);
 
-        var command = scope.CreateCommand(queryResult);
+		DbCommand command = scope.CreateCommand(queryResult);
 
         command.CommandText.Should().Be("SELECT 1 WHERE @p0 = 1");
         command.Parameters.Count.Should().Be(1);
@@ -134,7 +135,7 @@ public sealed class DbConnectionScopeTests : IDisposable
 
         scope.Dispose();
 
-        var act = () => _ = scope.Connection;
+		Func<DbConnection> act = () => _ = scope.Connection;
         act.Should().Throw<ObjectDisposedException>();
     }
 
@@ -145,7 +146,7 @@ public sealed class DbConnectionScopeTests : IDisposable
 
         scope.Dispose();
 
-        var act = () => scope.BeginTransaction();
+		Func<IDataTransaction> act = () => scope.BeginTransaction();
         act.Should().Throw<ObjectDisposedException>();
     }
 
@@ -156,7 +157,7 @@ public sealed class DbConnectionScopeTests : IDisposable
 
         scope.Dispose();
 
-        var act = () => scope.CreateCommand();
+		Func<DbCommand> act = () => scope.CreateCommand();
         act.Should().Throw<ObjectDisposedException>();
     }
 
@@ -174,7 +175,7 @@ public sealed class DbConnectionScopeTests : IDisposable
     {
         var scope = new DataDbConnectionScope(_connection);
 
-        var transaction = scope.BeginTransaction();
+		IDataTransaction transaction = scope.BeginTransaction();
         transaction.Commit();
 
         scope.CurrentTransaction.Should().BeNull();

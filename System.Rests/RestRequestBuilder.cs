@@ -150,7 +150,7 @@ public sealed partial class RestRequestBuilder(
          RestRequestContext context,
          CancellationToken cancellationToken)
     {
-        foreach (var interceptor in _requestInterceptors)
+        foreach (IRestRequestInterceptor interceptor in _requestInterceptors)
         {
             cancellationToken.ThrowIfCancellationRequested();
 

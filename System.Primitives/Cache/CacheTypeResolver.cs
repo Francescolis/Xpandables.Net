@@ -86,15 +86,15 @@ public sealed class CacheTypeResolver : Disposable, ICacheTypeResolver
 				.GetAssemblies()
 				.Where(a =>
 				{
-					var name = a.GetName().Name;
+					string? name = a.GetName().Name;
 					return name is not null
 						&& !_legacyPrefixes.Any(prefix =>
 							name.StartsWith(prefix, StringComparison.OrdinalIgnoreCase));
 				})];
 
-		foreach (var assembly in _assemblies)
+		foreach (Assembly assembly in _assemblies)
 		{
-			foreach (var type in assembly.ExportedTypes)
+			foreach (Type type in assembly.ExportedTypes)
 			{
 				if (predicate(type))
 				{

@@ -67,7 +67,7 @@ public abstract class StateContext<TState> : IStateContext<TState>
 
         lock (_stateLock)
         {
-            var previousState = _currentState;
+			TState? previousState = _currentState;
             var transitionArgs = new StateTransitionEventArgs
             {
                 PreviousState = previousState,

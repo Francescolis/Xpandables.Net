@@ -1,4 +1,4 @@
-/*******************************************************************************
+﻿/*******************************************************************************
  * Copyright (C) 2025 Kamersoft
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
@@ -16,6 +16,7 @@
 ********************************************************************************/
 using System.Diagnostics.CodeAnalysis;
 using System.Linq.Expressions;
+using System.Reflection;
 
 namespace System.ComponentModel.DataAnnotations;
 
@@ -144,9 +145,11 @@ public abstract record Specification
         ArgumentNullException.ThrowIfNull(specifications);
 
         if (specifications.Length == 0)
-            return True<TSource>();
+		{
+			return True<TSource>();
+		}
 
-        var result = specifications[0];
+		ISpecification<TSource> result = specifications[0];
         for (int i = 1; i < specifications.Length; i++)
         {
             result = result.And(specifications[i]);
@@ -165,9 +168,11 @@ public abstract record Specification
         ArgumentNullException.ThrowIfNull(specifications);
 
         if (specifications.Length == 0)
-            return False<TSource>();
+		{
+			return False<TSource>();
+		}
 
-        var result = specifications[0];
+		ISpecification<TSource> result = specifications[0];
         for (int i = 1; i < specifications.Length; i++)
         {
             result = result.Or(specifications[i]);
@@ -186,8 +191,8 @@ public abstract record Specification
     public static ISpecification<TSource> Equal<TSource, TValue>(Expression<Func<TSource, TValue>> selector, TValue value)
     {
         ArgumentNullException.ThrowIfNull(selector);
-        var parameter = selector.Parameters[0];
-        var equality = Expression.Equal(selector.Body, Expression.Constant(value, typeof(TValue)));
+		ParameterExpression parameter = selector.Parameters[0];
+		BinaryExpression equality = Expression.Equal(selector.Body, Expression.Constant(value, typeof(TValue)));
         var lambda = Expression.Lambda<Func<TSource, bool>>(equality, parameter);
         return new Specification<TSource>(lambda);
     }
@@ -203,8 +208,8 @@ public abstract record Specification
     public static ISpecification<TSource> NotEqual<TSource, TValue>(Expression<Func<TSource, TValue>> selector, TValue value)
     {
         ArgumentNullException.ThrowIfNull(selector);
-        var parameter = selector.Parameters[0];
-        var inequality = Expression.NotEqual(selector.Body, Expression.Constant(value, typeof(TValue)));
+		ParameterExpression parameter = selector.Parameters[0];
+		BinaryExpression inequality = Expression.NotEqual(selector.Body, Expression.Constant(value, typeof(TValue)));
         var lambda = Expression.Lambda<Func<TSource, bool>>(inequality, parameter);
         return new Specification<TSource>(lambda);
     }
@@ -220,8 +225,8 @@ public abstract record Specification
         where TValue : class
     {
         ArgumentNullException.ThrowIfNull(selector);
-        var parameter = selector.Parameters[0];
-        var nullCheck = Expression.Equal(selector.Body, Expression.Constant(null, typeof(TValue)));
+		ParameterExpression parameter = selector.Parameters[0];
+		BinaryExpression nullCheck = Expression.Equal(selector.Body, Expression.Constant(null, typeof(TValue)));
         var lambda = Expression.Lambda<Func<TSource, bool>>(nullCheck, parameter);
         return new Specification<TSource>(lambda);
     }
@@ -237,8 +242,8 @@ public abstract record Specification
         where TValue : class
     {
         ArgumentNullException.ThrowIfNull(selector);
-        var parameter = selector.Parameters[0];
-        var notNullCheck = Expression.NotEqual(selector.Body, Expression.Constant(null, typeof(TValue)));
+		ParameterExpression parameter = selector.Parameters[0];
+		BinaryExpression notNullCheck = Expression.NotEqual(selector.Body, Expression.Constant(null, typeof(TValue)));
         var lambda = Expression.Lambda<Func<TSource, bool>>(notNullCheck, parameter);
         return new Specification<TSource>(lambda);
     }
@@ -259,9 +264,9 @@ public abstract record Specification
         ArgumentNullException.ThrowIfNull(selector);
         ArgumentNullException.ThrowIfNull(value);
 
-        var parameter = selector.Parameters[0];
-        var containsMethod = typeof(string).GetMethod(nameof(string.Contains), [typeof(string), typeof(StringComparison)])!;
-        var containsCall = Expression.Call(selector.Body, containsMethod,
+		ParameterExpression parameter = selector.Parameters[0];
+		MethodInfo containsMethod = typeof(string).GetMethod(nameof(string.Contains), [typeof(string), typeof(StringComparison)])!;
+		MethodCallExpression containsCall = Expression.Call(selector.Body, containsMethod,
             Expression.Constant(value), Expression.Constant(comparisonType));
         var lambda = Expression.Lambda<Func<TSource, bool>>(containsCall, parameter);
         return new Specification<TSource>(lambda);
@@ -283,9 +288,9 @@ public abstract record Specification
         ArgumentNullException.ThrowIfNull(selector);
         ArgumentNullException.ThrowIfNull(value);
 
-        var parameter = selector.Parameters[0];
-        var startsWithMethod = typeof(string).GetMethod(nameof(string.StartsWith), [typeof(string), typeof(StringComparison)])!;
-        var startsWithCall = Expression.Call(selector.Body, startsWithMethod,
+		ParameterExpression parameter = selector.Parameters[0];
+		MethodInfo startsWithMethod = typeof(string).GetMethod(nameof(string.StartsWith), [typeof(string), typeof(StringComparison)])!;
+		MethodCallExpression startsWithCall = Expression.Call(selector.Body, startsWithMethod,
             Expression.Constant(value), Expression.Constant(comparisonType));
         var lambda = Expression.Lambda<Func<TSource, bool>>(startsWithCall, parameter);
         return new Specification<TSource>(lambda);
@@ -307,9 +312,9 @@ public abstract record Specification
         ArgumentNullException.ThrowIfNull(selector);
         ArgumentNullException.ThrowIfNull(value);
 
-        var parameter = selector.Parameters[0];
-        var endsWithMethod = typeof(string).GetMethod(nameof(string.EndsWith), [typeof(string), typeof(StringComparison)])!;
-        var endsWithCall = Expression.Call(selector.Body, endsWithMethod,
+		ParameterExpression parameter = selector.Parameters[0];
+		MethodInfo endsWithMethod = typeof(string).GetMethod(nameof(string.EndsWith), [typeof(string), typeof(StringComparison)])!;
+		MethodCallExpression endsWithCall = Expression.Call(selector.Body, endsWithMethod,
             Expression.Constant(value), Expression.Constant(comparisonType));
         var lambda = Expression.Lambda<Func<TSource, bool>>(endsWithCall, parameter);
         return new Specification<TSource>(lambda);
@@ -327,8 +332,8 @@ public abstract record Specification
         where TValue : IComparable<TValue>
     {
         ArgumentNullException.ThrowIfNull(selector);
-        var parameter = selector.Parameters[0];
-        var greaterThan = Expression.GreaterThan(selector.Body, Expression.Constant(value, typeof(TValue)));
+		ParameterExpression parameter = selector.Parameters[0];
+		BinaryExpression greaterThan = Expression.GreaterThan(selector.Body, Expression.Constant(value, typeof(TValue)));
         var lambda = Expression.Lambda<Func<TSource, bool>>(greaterThan, parameter);
         return new Specification<TSource>(lambda);
     }
@@ -345,8 +350,8 @@ public abstract record Specification
         where TValue : IComparable<TValue>
     {
         ArgumentNullException.ThrowIfNull(selector);
-        var parameter = selector.Parameters[0];
-        var lessThan = Expression.LessThan(selector.Body, Expression.Constant(value, typeof(TValue)));
+		ParameterExpression parameter = selector.Parameters[0];
+		BinaryExpression lessThan = Expression.LessThan(selector.Body, Expression.Constant(value, typeof(TValue)));
         var lambda = Expression.Lambda<Func<TSource, bool>>(lessThan, parameter);
         return new Specification<TSource>(lambda);
     }

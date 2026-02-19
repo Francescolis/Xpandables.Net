@@ -1,4 +1,4 @@
-/*******************************************************************************
+﻿/*******************************************************************************
  * Copyright (C) 2025 Kamersoft
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
@@ -28,11 +28,11 @@ public sealed class DataSqlMapperTests
     {
         // Arrange
         var mapper = new DataSqlMapper();
-        var specification = DataSpecification.For<Person>().Build();
-        using var reader = CreatePersonReader(12, "Ada");
+		DataSpecification<Person, Person> specification = DataSpecification.For<Person>().Build();
+        using DbDataReader reader = CreatePersonReader(12, "Ada");
 
-        // Act
-        var result = mapper.MapToResult(specification, reader);
+		// Act
+		Person result = mapper.MapToResult(specification, reader);
 
         // Assert
         result.Should().NotBeNull();
@@ -45,11 +45,11 @@ public sealed class DataSqlMapperTests
     {
         // Arrange
         var mapper = new DataSqlMapper();
-        var specification = DataSpecification.For<Person>().Select(p => p.Name);
-        using var reader = CreatePersonReader(3, "Lin");
+		DataSpecification<Person, string> specification = DataSpecification.For<Person>().Select(p => p.Name);
+        using DbDataReader reader = CreatePersonReader(3, "Lin");
 
-        // Act
-        var result = mapper.MapToResult(specification, reader);
+		// Act
+		string result = mapper.MapToResult(specification, reader);
 
         // Assert
         result.Should().Be("Lin");
@@ -61,7 +61,7 @@ public sealed class DataSqlMapperTests
         // Arrange
         var mapper = new DataSqlMapper();
         var specification = DataSpecification.For<Person>().Select(p => new { p.Id, p.Name });
-        using var reader = CreatePersonReader(7, "Marie");
+        using DbDataReader reader = CreatePersonReader(7, "Marie");
 
         // Act
         var result = mapper.MapToResult(specification, reader);
@@ -76,11 +76,11 @@ public sealed class DataSqlMapperTests
     {
         // Arrange
         var mapper = new DataSqlMapper();
-        var specification = DataSpecification.For<Person>().Select(p => new PersonDto(p.Id, p.Name));
-        using var reader = CreatePersonReader(21, "Noor");
+		DataSpecification<Person, PersonDto> specification = DataSpecification.For<Person>().Select(p => new PersonDto(p.Id, p.Name));
+        using DbDataReader reader = CreatePersonReader(21, "Noor");
 
-        // Act
-        var result = mapper.MapToResult(specification, reader);
+		// Act
+		PersonDto result = mapper.MapToResult(specification, reader);
 
         // Assert
         result.Id.Should().Be(21);
@@ -92,11 +92,11 @@ public sealed class DataSqlMapperTests
     {
         // Arrange
         var mapper = new DataSqlMapper();
-        var specification = DataSpecification.For<Person>().Select(p => new PersonInitDto { Id = p.Id, Name = p.Name });
-        using var reader = CreatePersonReader(42, "Zoe");
+		DataSpecification<Person, PersonInitDto> specification = DataSpecification.For<Person>().Select(p => new PersonInitDto { Id = p.Id, Name = p.Name });
+        using DbDataReader reader = CreatePersonReader(42, "Zoe");
 
-        // Act
-        var result = mapper.MapToResult(specification, reader);
+		// Act
+		PersonInitDto result = mapper.MapToResult(specification, reader);
 
         // Assert
         result.Id.Should().Be(42);
@@ -108,10 +108,10 @@ public sealed class DataSqlMapperTests
     {
         // Arrange
         var mapper = new DataSqlMapper();
-        using var reader = CreateScalarReader(99);
+        using DbDataReader reader = CreateScalarReader(99);
 
-        // Act
-        var result = mapper.MapToResult<int>(reader);
+		// Act
+		int result = mapper.MapToResult<int>(reader);
 
         // Assert
         result.Should().Be(99);
@@ -124,7 +124,7 @@ public sealed class DataSqlMapperTests
         table.Columns.Add("Name", typeof(string));
         table.Rows.Add(id, name);
 
-        var reader = table.CreateDataReader();
+		DataTableReader reader = table.CreateDataReader();
         reader.Read();
         return reader;
     }
@@ -135,7 +135,7 @@ public sealed class DataSqlMapperTests
         table.Columns.Add("Value", typeof(int));
         table.Rows.Add(value);
 
-        var reader = table.CreateDataReader();
+		DataTableReader reader = table.CreateDataReader();
         reader.Read();
         return reader;
     }

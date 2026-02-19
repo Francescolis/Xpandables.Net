@@ -22,6 +22,7 @@ using System.Text.Encodings.Web;
 using System.Text.Json;
 using System.Text.Json.Serialization.Metadata;
 
+using Microsoft.AspNetCore.Http;
 using Microsoft.Net.Http.Headers;
 
 namespace Microsoft.AspNetCore.Mvc.Formatters;
@@ -70,7 +71,7 @@ public sealed class AsyncPagedTextOutputFormatter : TextOutputFormatter
 
     internal static AsyncPagedTextOutputFormatter CreateFormatter(JsonOptions jsonOptions)
     {
-        var jsonSerializerOptions = jsonOptions.JsonSerializerOptions;
+		JsonSerializerOptions jsonSerializerOptions = jsonOptions.JsonSerializerOptions;
 
         if (jsonSerializerOptions.Encoder is null)
         {
@@ -96,9 +97,12 @@ public sealed class AsyncPagedTextOutputFormatter : TextOutputFormatter
     /// <inheritdoc/>
     protected override bool CanWriteType(Type? type)
     {
-        if (type is null) return false;
+        if (type is null)
+		{
+			return false;
+		}
 
-        return type.IsGenericType
+		return type.IsGenericType
             && type.GetGenericTypeDefinition() == typeof(IAsyncPagedEnumerable<>);
     }
 
@@ -111,13 +115,13 @@ public sealed class AsyncPagedTextOutputFormatter : TextOutputFormatter
         ArgumentNullException.ThrowIfNull(selectedEncoding);
         ArgumentNullException.ThrowIfNull(context.Object);
 
-        var httpContext = context.HttpContext;
+		HttpContext httpContext = context.HttpContext;
         var paged = (IAsyncPagedEnumerable)context.Object;
         Type itemType = paged.GetArgumentType();
 
         JsonTypeInfo? jsonTypeInfo = null;
-        var declaredTypeInfo = SerializerOptions.GetTypeInfo(itemType);
-        var runtimeType = context.ObjectType?.GetGenericArguments()[0];
+		JsonTypeInfo declaredTypeInfo = SerializerOptions.GetTypeInfo(itemType);
+		Type? runtimeType = context.ObjectType?.GetGenericArguments()[0];
         if (declaredTypeInfo.ShouldUseWith(runtimeType))
         {
             jsonTypeInfo = declaredTypeInfo;

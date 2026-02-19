@@ -1,4 +1,4 @@
-/*******************************************************************************
+﻿/*******************************************************************************
  * Copyright (C) 2025 Kamersoft
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
@@ -54,15 +54,19 @@ public static class WindowingExtensions
                 ct.ThrowIfCancellationRequested();
 
                 var window = new Queue<TSource>(windowSize);
-                await foreach (var item in source.WithCancellation(ct).ConfigureAwait(false))
+                await foreach (TSource? item in source.WithCancellation(ct).ConfigureAwait(false))
                 {
                     window.Enqueue(item);
                     if (window.Count > windowSize)
-                        window.Dequeue();
+					{
+						window.Dequeue();
+					}
 
-                    if (window.Count == windowSize)
-                        yield return [.. window];
-                }
+					if (window.Count == windowSize)
+					{
+						yield return [.. window];
+					}
+				}
             }
 
             return AsyncPagedEnumerable.Create(
@@ -91,21 +95,23 @@ public static class WindowingExtensions
                 var window = new Queue<int>(windowSize);
                 int currentSum = 0;
 
-                await foreach (var item in source.WithCancellation(ct).ConfigureAwait(false))
+                await foreach (TSource? item in source.WithCancellation(ct).ConfigureAwait(false))
                 {
-                    var value = selector(item);
+					int value = selector(item);
                     window.Enqueue(value);
                     currentSum += value;
 
                     if (window.Count > windowSize)
                     {
-                        var removedValue = window.Dequeue();
+						int removedValue = window.Dequeue();
                         currentSum -= removedValue;
                     }
 
                     if (window.Count == windowSize)
-                        yield return currentSum;
-                }
+					{
+						yield return currentSum;
+					}
+				}
             }
 
             return AsyncPagedEnumerable.Create(
@@ -134,21 +140,23 @@ public static class WindowingExtensions
                 var window = new Queue<long>(windowSize);
                 long currentSum = 0;
 
-                await foreach (var item in source.WithCancellation(ct).ConfigureAwait(false))
+                await foreach (TSource? item in source.WithCancellation(ct).ConfigureAwait(false))
                 {
-                    var value = selector(item);
+					long value = selector(item);
                     window.Enqueue(value);
                     currentSum += value;
 
                     if (window.Count > windowSize)
                     {
-                        var removedValue = window.Dequeue();
+						long removedValue = window.Dequeue();
                         currentSum -= removedValue;
                     }
 
                     if (window.Count == windowSize)
-                        yield return currentSum;
-                }
+					{
+						yield return currentSum;
+					}
+				}
             }
 
             return AsyncPagedEnumerable.Create(
@@ -177,21 +185,23 @@ public static class WindowingExtensions
                     var window = new Queue<double>(windowSize);
                     double currentSum = 0;
 
-                    await foreach (var item in source.WithCancellation(ct).ConfigureAwait(false))
+                    await foreach (TSource? item in source.WithCancellation(ct).ConfigureAwait(false))
                     {
-                        var value = selector(item);
+					double value = selector(item);
                         window.Enqueue(value);
                         currentSum += value;
 
                         if (window.Count > windowSize)
                         {
-                            var removedValue = window.Dequeue();
+						double removedValue = window.Dequeue();
                             currentSum -= removedValue;
                         }
 
                         if (window.Count == windowSize)
-                            yield return currentSum;
-                    }
+					{
+						yield return currentSum;
+					}
+				}
                 }
 
                 return AsyncPagedEnumerable.Create(
@@ -220,21 +230,23 @@ public static class WindowingExtensions
                     var window = new Queue<double>(windowSize);
                     double currentSum = 0;
 
-                    await foreach (var item in source.WithCancellation(ct).ConfigureAwait(false))
+                    await foreach (TSource? item in source.WithCancellation(ct).ConfigureAwait(false))
                     {
-                        var value = selector(item);
+					double value = selector(item);
                         window.Enqueue(value);
                         currentSum += value;
 
                         if (window.Count > windowSize)
                         {
-                            var removedValue = window.Dequeue();
+						double removedValue = window.Dequeue();
                             currentSum -= removedValue;
                         }
 
                         if (window.Count == windowSize)
-                            yield return currentSum / windowSize;
-                    }
+					{
+						yield return currentSum / windowSize;
+					}
+				}
                 }
 
                 return AsyncPagedEnumerable.Create(
@@ -269,26 +281,32 @@ public static class WindowingExtensions
                     var deque = new LinkedList<(int Index, TValue Value)>();
                     int index = 0;
 
-                    await foreach (var item in source.WithCancellation(ct).ConfigureAwait(false))
+                    await foreach (TSource? item in source.WithCancellation(ct).ConfigureAwait(false))
                     {
-                        var value = selector(item);
+                        TValue value = selector(item);
 
                         // Remove elements from back that are greater than current value (they can never be minimum)
                         while (deque.Count > 0 && deque.Last!.Value.Value.CompareTo(value) >= 0)
-                            deque.RemoveLast();
+					{
+						deque.RemoveLast();
+					}
 
-                        // Add current element
-                        deque.AddLast((index, value));
+					// Add current element
+					deque.AddLast((index, value));
 
                         // Remove elements that are outside the window from front
                         while (deque.Count > 0 && deque.First!.Value.Index <= index - windowSize)
-                            deque.RemoveFirst();
+					{
+						deque.RemoveFirst();
+					}
 
-                        // Yield minimum (front of deque) when we have a full window
-                        if (index >= windowSize - 1)
-                            yield return deque.First!.Value.Value;
+					// Yield minimum (front of deque) when we have a full window
+					if (index >= windowSize - 1)
+					{
+						yield return deque.First!.Value.Value;
+					}
 
-                        index++;
+					index++;
                     }
                 }
 
@@ -324,26 +342,32 @@ public static class WindowingExtensions
                 var deque = new LinkedList<(int Index, TValue Value)>();
                 int index = 0;
 
-                await foreach (var item in source.WithCancellation(ct).ConfigureAwait(false))
+                await foreach (TSource? item in source.WithCancellation(ct).ConfigureAwait(false))
                 {
-                    var value = selector(item);
+                    TValue value = selector(item);
 
                     // Remove elements from back that are less than current value (they can never be maximum)
                     while (deque.Count > 0 && deque.Last!.Value.Value.CompareTo(value) <= 0)
-                        deque.RemoveLast();
+					{
+						deque.RemoveLast();
+					}
 
-                    // Add current element
-                    deque.AddLast((index, value));
+					// Add current element
+					deque.AddLast((index, value));
 
                     // Remove elements that are outside the window from front
                     while (deque.Count > 0 && deque.First!.Value.Index <= index - windowSize)
-                        deque.RemoveFirst();
+					{
+						deque.RemoveFirst();
+					}
 
-                    // Yield maximum (front of deque) when we have a full window
-                    if (index >= windowSize - 1)
-                        yield return deque.First!.Value.Value;
+					// Yield maximum (front of deque) when we have a full window
+					if (index >= windowSize - 1)
+					{
+						yield return deque.First!.Value.Value;
+					}
 
-                    index++;
+					index++;
                 }
             }
 
@@ -372,12 +396,14 @@ public static class WindowingExtensions
                 TSource? previous = default;
                 bool hasPrevious = false;
 
-                await foreach (var current in source.WithCancellation(ct).ConfigureAwait(false))
+                await foreach (TSource? current in source.WithCancellation(ct).ConfigureAwait(false))
                 {
                     if (hasPrevious)
-                        yield return (previous!, current);
+					{
+						yield return (previous!, current);
+					}
 
-                    previous = current;
+					previous = current;
                     hasPrevious = true;
                 }
             }
@@ -406,12 +432,14 @@ public static class WindowingExtensions
                 TSource? previous = default;
                 bool hasPrevious = false;
 
-                await foreach (var current in source.WithCancellation(ct).ConfigureAwait(false))
+                await foreach (TSource? current in source.WithCancellation(ct).ConfigureAwait(false))
                 {
                     if (hasPrevious)
-                        yield return selector(previous!, current);
+					{
+						yield return selector(previous!, current);
+					}
 
-                    previous = current;
+					previous = current;
                     hasPrevious = true;
                 }
             }
@@ -442,10 +470,10 @@ public static class WindowingExtensions
             {
                 ct.ThrowIfCancellationRequested();
 
-                var accumulator = seed;
+				TAccumulate? accumulator = seed;
                 yield return accumulator;
 
-                await foreach (var item in source.WithCancellation(ct).ConfigureAwait(false))
+                await foreach (TSource? item in source.WithCancellation(ct).ConfigureAwait(false))
                 {
                     accumulator = func(accumulator, item);
                     yield return accumulator;
@@ -475,7 +503,7 @@ public static class WindowingExtensions
                 TSource? accumulator = default;
                 bool hasAccumulator = false;
 
-                await foreach (var item in source.WithCancellation(ct).ConfigureAwait(false))
+                await foreach (TSource? item in source.WithCancellation(ct).ConfigureAwait(false))
                 {
                     if (!hasAccumulator)
                     {

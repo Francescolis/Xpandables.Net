@@ -1,4 +1,4 @@
-using System.Net;
+﻿using System.Net;
 using System.Results;
 using System.Results.Pipelines;
 using System.Results.Requests;
@@ -19,8 +19,8 @@ public sealed class MediatorTests
         var mediator = new Mediator(services.BuildServiceProvider());
         var request = new TestRequest();
 
-        // Act
-        var result = await mediator.SendAsync(request);
+		// Act
+		Result result = await mediator.SendAsync(request);
 
         // Assert
         Assert.Equal(HttpStatusCode.OK, result.StatusCode);
@@ -47,8 +47,8 @@ public sealed class MediatorTests
         // Arrange
         var mediator = new Mediator(new ServiceCollection().BuildServiceProvider());
 
-        // Act
-        var action = async () => await mediator.SendAsync<TestRequest>(null!);
+		// Act
+		Func<Task<Result>> action = async () => await mediator.SendAsync<TestRequest>(null!);
 
         // Assert
         await Assert.ThrowsAsync<ArgumentNullException>(action);
@@ -64,8 +64,8 @@ public sealed class MediatorTests
         using var cancellation = new CancellationTokenSource();
         cancellation.Cancel();
 
-        // Act
-        var action = async () => await mediator.SendAsync(new TestRequest(), cancellation.Token);
+		// Act
+		Func<Task<Result>> action = async () => await mediator.SendAsync(new TestRequest(), cancellation.Token);
 
         // Assert
         await Assert.ThrowsAsync<OperationCanceledException>(action);
@@ -79,8 +79,8 @@ public sealed class MediatorTests
         services.AddSingleton<IPipelineRequestHandler<TestRequest>, ResultExceptionHandler>();
         var mediator = new Mediator(services.BuildServiceProvider());
 
-        // Act
-        var action = async () => await mediator.SendAsync(new TestRequest());
+		// Act
+		Func<Task<Result>> action = async () => await mediator.SendAsync(new TestRequest());
 
         // Assert
         await Assert.ThrowsAsync<ResultException>(action);

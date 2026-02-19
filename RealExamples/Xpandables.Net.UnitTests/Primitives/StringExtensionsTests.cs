@@ -1,4 +1,4 @@
-/*******************************************************************************
+﻿/*******************************************************************************
  * Copyright (C) 2025 Kamersoft
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
@@ -30,8 +30,8 @@ public sealed class StringExtensionsTests
         // Arrange
         const string template = "Hello, {0}! You have {1} messages.";
 
-        // Act
-        var result = template.StringFormat("John", 5);
+		// Act
+		string result = template.StringFormat("John", 5);
 
         // Assert
         result.Should().Be("Hello, John! You have 5 messages.");
@@ -45,18 +45,18 @@ public sealed class StringExtensionsTests
         var usCulture = CultureInfo.GetCultureInfo("en-US");
         var germanCulture = CultureInfo.GetCultureInfo("de-DE");
 
-        // Act
-        var usResult = template.StringFormat(usCulture, 1234.56m);
-        var germanResult = template.StringFormat(germanCulture, 1234.56m);
+		// Act
+		string usResult = template.StringFormat(usCulture, 1234.56m);
+		string germanResult = template.StringFormat(germanCulture, 1234.56m);
 
         // Assert
         usResult.Should().Contain(usCulture.NumberFormat.CurrencySymbol);
         usResult.Should().Contain("1,234.56");
         germanResult.Should().Contain("1.234,56");
 
-        // Currency symbol availability can vary on CI depending on globalization/encoding.
-        // Use the culture-provided symbol, and only assert it when it isn't the replacement character.
-        var germanCurrencySymbol = germanCulture.NumberFormat.CurrencySymbol;
+		// Currency symbol availability can vary on CI depending on globalization/encoding.
+		// Use the culture-provided symbol, and only assert it when it isn't the replacement character.
+		string germanCurrencySymbol = germanCulture.NumberFormat.CurrencySymbol;
         if (!string.Equals(germanCurrencySymbol, "?", StringComparison.Ordinal))
         {
             germanResult.Should().Contain(germanCurrencySymbol);
@@ -71,8 +71,8 @@ public sealed class StringExtensionsTests
         var date = new DateTime(2025, 6, 15);
         var usCulture = CultureInfo.GetCultureInfo("en-US");
 
-        // Act
-        var result = template.StringFormat(usCulture, date);
+		// Act
+		string result = template.StringFormat(usCulture, date);
 
         // Assert
         result.Should().Contain("6/15/2025");
@@ -84,8 +84,8 @@ public sealed class StringExtensionsTests
         // Arrange
         string? template = null;
 
-        // Act
-        var act = () => template!.StringFormat("arg");
+		// Act
+		Func<string> act = () => template!.StringFormat("arg");
 
         // Assert
         act.Should().Throw<ArgumentNullException>();
@@ -97,8 +97,8 @@ public sealed class StringExtensionsTests
         // Arrange
         const string template = "Test {0}";
 
-        // Act
-        var act = () => template.StringFormat(null!, "arg");
+		// Act
+		Func<string> act = () => template.StringFormat(null!, "arg");
 
         // Assert
         act.Should().Throw<ArgumentNullException>();
@@ -110,8 +110,8 @@ public sealed class StringExtensionsTests
         // Arrange
         const string template = "{0} + {1} = {2}";
 
-        // Act
-        var result = template.StringFormat(1, 2, 3);
+		// Act
+		string result = template.StringFormat(1, 2, 3);
 
         // Assert
         result.Should().Be("1 + 2 = 3");
@@ -123,8 +123,8 @@ public sealed class StringExtensionsTests
         // Arrange
         const string template = "Value: {0:F2}";
 
-        // Act
-        var result = template.StringFormat(1234.5678);
+		// Act
+		string result = template.StringFormat(1234.5678);
 
         // Assert
         result.Should().Be("Value: 1234.57");
@@ -140,8 +140,8 @@ public sealed class StringExtensionsTests
         // Arrange
         const string typeName = "CustomerOrderService";
 
-        // Act
-        var result = typeName.SplitTypeName();
+		// Act
+		string result = typeName.SplitTypeName();
 
         // Assert
         result.Should().Be("Customer Order Service");
@@ -153,8 +153,8 @@ public sealed class StringExtensionsTests
         // Arrange
         const string typeName = "customerOrderService";
 
-        // Act
-        var result = typeName.SplitTypeName();
+		// Act
+		string result = typeName.SplitTypeName();
 
         // Assert
         result.Should().Be("customer Order Service");
@@ -166,8 +166,8 @@ public sealed class StringExtensionsTests
         // Arrange
         const string typeName = "XMLHttpRequest";
 
-        // Act
-        var result = typeName.SplitTypeName();
+		// Act
+		string result = typeName.SplitTypeName();
 
         // Assert
         result.Should().Be("XML Http Request");
@@ -179,8 +179,8 @@ public sealed class StringExtensionsTests
         // Arrange
         const string typeName = "Order2024Handler";
 
-        // Act
-        var result = typeName.SplitTypeName();
+		// Act
+		string result = typeName.SplitTypeName();
 
         // Assert
         result.Should().Contain("Order2024");
@@ -192,8 +192,8 @@ public sealed class StringExtensionsTests
         // Arrange
         const string typeName = "Customer";
 
-        // Act
-        var result = typeName.SplitTypeName();
+		// Act
+		string result = typeName.SplitTypeName();
 
         // Assert
         result.Should().Be("Customer");
@@ -205,8 +205,8 @@ public sealed class StringExtensionsTests
         // Arrange
         const string typeName = "HTTPSConnection";
 
-        // Act
-        var result = typeName.SplitTypeName();
+		// Act
+		string result = typeName.SplitTypeName();
 
         // Assert
         result.Should().Contain("HTTPS");
@@ -218,8 +218,8 @@ public sealed class StringExtensionsTests
         // Arrange
         string? typeName = null;
 
-        // Act
-        var act = () => typeName!.SplitTypeName();
+		// Act
+		Func<string> act = () => typeName!.SplitTypeName();
 
         // Assert
         act.Should().Throw<ArgumentNullException>();
@@ -233,8 +233,8 @@ public sealed class StringExtensionsTests
     [InlineData("APIController", "API Controller")]
     public void WhenSplittingVariousTypeNamesThenShouldSplitCorrectly(string input, string expected)
     {
-        // Act
-        var result = input.SplitTypeName();
+		// Act
+		string result = input.SplitTypeName();
 
         // Assert
         result.Should().Be(expected);
@@ -247,11 +247,11 @@ public sealed class StringExtensionsTests
     [Fact]
     public void WhenJoiningCollectionWithCharSeparatorThenShouldJoinCorrectly()
     {
-        // Arrange
-        var items = new[] { "apple", "banana", "cherry" };
+		// Arrange
+		string[] items = new[] { "apple", "banana", "cherry" };
 
-        // Act
-        var result = string.Join(',', items);
+		// Act
+		string result = string.Join(',', items);
 
         // Assert
         result.Should().Be("apple,banana,cherry");
@@ -260,11 +260,11 @@ public sealed class StringExtensionsTests
     [Fact]
     public void WhenJoiningCollectionWithStringSeparatorThenShouldJoinCorrectly()
     {
-        // Arrange
-        var items = new[] { "one", "two", "three" };
+		// Arrange
+		string[] items = new[] { "one", "two", "three" };
 
-        // Act
-        var result = string.Join(" - ", items);
+		// Act
+		string result = string.Join(" - ", items);
 
         // Assert
         result.Should().Be("one - two - three");
@@ -273,11 +273,11 @@ public sealed class StringExtensionsTests
     [Fact]
     public void WhenJoiningEmptyCollectionThenShouldReturnEmptyString()
     {
-        // Arrange
-        var items = Array.Empty<string>();
+		// Arrange
+		string[] items = Array.Empty<string>();
 
-        // Act
-        var result = string.Join(',', items);
+		// Act
+		string result = string.Join(',', items);
 
         // Assert
         result.Should().BeEmpty();
@@ -286,11 +286,11 @@ public sealed class StringExtensionsTests
     [Fact]
     public void WhenJoiningSingleItemThenShouldReturnItem()
     {
-        // Arrange
-        var items = new[] { "only" };
+		// Arrange
+		string[] items = new[] { "only" };
 
-        // Act
-        var result = string.Join(',', items);
+		// Act
+		string result = string.Join(',', items);
 
         // Assert
         result.Should().Be("only");
@@ -299,11 +299,11 @@ public sealed class StringExtensionsTests
     [Fact]
     public void WhenJoiningIntegersThenShouldConvertAndJoin()
     {
-        // Arrange
-        var numbers = new[] { 1, 2, 3, 4, 5 };
+		// Arrange
+		int[] numbers = new[] { 1, 2, 3, 4, 5 };
 
-        // Act
-        var result = string.Join(", ", numbers);
+		// Act
+		string result = string.Join(", ", numbers);
 
         // Assert
         result.Should().Be("1, 2, 3, 4, 5");
@@ -312,11 +312,11 @@ public sealed class StringExtensionsTests
     [Fact]
     public void WhenJoiningWithNewLineSeparatorThenShouldJoinWithNewLines()
     {
-        // Arrange
-        var lines = new[] { "Line 1", "Line 2", "Line 3" };
+		// Arrange
+		string[] lines = new[] { "Line 1", "Line 2", "Line 3" };
 
-        // Act
-        var result = string.Join(Environment.NewLine, lines);
+		// Act
+		string result = string.Join(Environment.NewLine, lines);
 
         // Assert
         result.Should().Contain("Line 1");
@@ -327,15 +327,15 @@ public sealed class StringExtensionsTests
     [Fact]
     public void WhenJoiningCustomObjectsThenShouldUseToString()
     {
-        // Arrange
-        var items = new[]
+		// Arrange
+		TestItem[] items = new[]
         {
             new TestItem("Item1", 10),
             new TestItem("Item2", 20)
         };
 
-        // Act
-        var result = string.Join(" | ", items.Select(i => i.ToString()));
+		// Act
+		string result = string.Join(" | ", items.Select(i => i.ToString()));
 
         // Assert
         result.Should().Be("Item1:10 | Item2:20");
@@ -452,8 +452,8 @@ public sealed class StringExtensionsTests
         const string source = "OrderService";
         const string message = "Order processed successfully";
 
-        // Act
-        var result = template.StringFormat(CultureInfo.InvariantCulture, timestamp, level, source, message);
+		// Act
+		string result = template.StringFormat(CultureInfo.InvariantCulture, timestamp, level, source, message);
 
         // Assert
         result.Should().Be("[2025-06-15 14:30:00] [INFO] OrderService: Order processed successfully");
@@ -473,8 +473,8 @@ public sealed class StringExtensionsTests
             {3}
             """;
 
-        // Act
-        var result = template.StringFormat(
+		// Act
+		string result = template.StringFormat(
             CultureInfo.GetCultureInfo("en-US"),
             "John Doe",
             "ORD-2025-001",
@@ -491,11 +491,11 @@ public sealed class StringExtensionsTests
     [Fact]
     public void WhenBuildingCsvLineThenShouldJoinWithCommas()
     {
-        // Arrange
-        var row = new[] { "John", "Doe", "john@example.com", "New York" };
+		// Arrange
+		string[] row = new[] { "John", "Doe", "john@example.com", "New York" };
 
-        // Act
-        var csvLine = string.Join(",", row);
+		// Act
+		string csvLine = string.Join(",", row);
 
         // Assert
         csvLine.Should().Be("John,Doe,john@example.com,New York");
@@ -504,11 +504,11 @@ public sealed class StringExtensionsTests
     [Fact]
     public void WhenBuildingHtmlClassListThenShouldJoinWithSpaces()
     {
-        // Arrange
-        var classes = new[] { "btn", "btn-primary", "btn-lg", "active" };
+		// Arrange
+		string[] classes = new[] { "btn", "btn-primary", "btn-lg", "active" };
 
-        // Act
-        var classAttribute = string.Join(" ", classes);
+		// Act
+		string classAttribute = string.Join(" ", classes);
 
         // Assert
         classAttribute.Should().Be("btn btn-primary btn-lg active");
@@ -525,8 +525,8 @@ public sealed class StringExtensionsTests
             ["page"] = "1"
         };
 
-        // Act
-        var queryString = string.Join("&", parameters
+		// Act
+		string queryString = string.Join("&", parameters
             .Select(kvp => "{0}={1}".StringFormat(kvp.Key, kvp.Value)));
 
         // Assert
@@ -541,9 +541,9 @@ public sealed class StringExtensionsTests
         // Arrange
         const string controllerName = "CustomerOrderController";
 
-        // Act
-        var words = controllerName.Replace("Controller", "", StringComparison.Ordinal).SplitTypeName();
-        var route = words.ToLowerInvariant().Replace(' ', '-');
+		// Act
+		string words = controllerName.Replace("Controller", "", StringComparison.Ordinal).SplitTypeName();
+		string route = words.ToLowerInvariant().Replace(' ', '-');
 
         // Assert
         route.Should().Be("customer-order");
@@ -559,8 +559,8 @@ public sealed class StringExtensionsTests
         // Arrange
         const string template = "Path: {0}\\{1}";
 
-        // Act
-        var result = template.StringFormat("C:", "Users");
+		// Act
+		string result = template.StringFormat("C:", "Users");
 
         // Assert
         result.Should().Be("Path: C:\\Users");
@@ -569,11 +569,11 @@ public sealed class StringExtensionsTests
     [Fact]
     public void WhenJoiningWithEmptyStringSeparatorThenShouldConcatenate()
     {
-        // Arrange
-        var chars = new[] { "H", "e", "l", "l", "o" };
+		// Arrange
+		string[] chars = new[] { "H", "e", "l", "l", "o" };
 
-        // Act
-        var result = string.Join("", chars);
+		// Act
+		string result = string.Join("", chars);
 
         // Assert
         result.Should().Be("Hello");
@@ -582,11 +582,11 @@ public sealed class StringExtensionsTests
     [Fact]
     public void WhenJoiningNullableCollectionWithNullItemsThenShouldHandleGracefully()
     {
-        // Arrange
-        var items = new string?[] { "a", null, "b", null, "c" };
+		// Arrange
+		string?[] items = new string?[] { "a", null, "b", null, "c" };
 
-        // Act
-        var result = string.Join(",", items);
+		// Act
+		string result = string.Join(",", items);
 
         // Assert
         result.Should().Be("a,,b,,c");

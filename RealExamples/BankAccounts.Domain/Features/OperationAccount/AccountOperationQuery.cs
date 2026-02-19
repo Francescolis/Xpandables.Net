@@ -27,9 +27,9 @@ public sealed record AccountOperationQuery : IStreamPagedRequest<AccountOperatio
 
 public readonly record struct AccountOperationResult
 {
-	public required readonly Guid AccountId { get; init; }
-	public required readonly decimal Amount { get; init; }
-	public required readonly string Description { get; init; }
-	public required readonly DateTime OperationDate { get; init; }
-	public required readonly string OperationType { get; init; }
+	public readonly required Guid AccountId { get; init; }
+	public readonly required decimal Amount { get; init; }
+	public readonly required string Description { get; init; }
+	public readonly required DateTime OperationDate { get; init; }
+	public readonly required string OperationType { get; init; }
 }

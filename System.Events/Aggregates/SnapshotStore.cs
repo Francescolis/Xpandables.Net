@@ -100,8 +100,8 @@ public sealed class SnapshotStore<TAggregate>(
         Guid streamId,
         CancellationToken cancellationToken)
     {
-        // Get latest snapshot once (store-agnostic)
-        var envelope = await eventStore
+		// Get latest snapshot once (store-agnostic)
+		EnvelopeResult? envelope = await eventStore
             .GetLatestSnapshotAsync(streamId, cancellationToken)
             .ConfigureAwait(false);
 
@@ -120,7 +120,7 @@ public sealed class SnapshotStore<TAggregate>(
         }
 
         // Rehydrate from snapshot
-        var aggregate = TAggregate.Initialize();
+        TAggregate aggregate = TAggregate.Initialize();
         aggregate.Restore(snapshot.Memento);
 
         // Replay events after snapshot’s version (assuming Restore set StreamVersion to snapshot version)
@@ -131,7 +131,7 @@ public sealed class SnapshotStore<TAggregate>(
             StreamId = streamId
         };
 
-        await foreach (var env in eventStore
+        await foreach (EnvelopeResult env in eventStore
             .ReadStreamAsync(request, cancellationToken: cancellationToken)
             .ConfigureAwait(false))
         {

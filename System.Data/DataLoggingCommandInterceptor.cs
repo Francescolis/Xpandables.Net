@@ -143,16 +143,20 @@ public sealed partial class DataLoggingCommandInterceptor : DataCommandIntercept
 	private string FormatParameters(IReadOnlyList<SqlParameter> parameters)
 	{
 		if (parameters.Count == 0)
+		{
 			return string.Empty;
+		}
 
 		var sb = new StringBuilder();
 
-		for (var i = 0; i < parameters.Count; i++)
+		for (int i = 0; i < parameters.Count; i++)
 		{
 			if (i > 0)
+			{
 				sb.Append(", ");
+			}
 
-			var param = parameters[i];
+			SqlParameter param = parameters[i];
 
 			if (_options.EnableSensitiveDataLogging)
 			{

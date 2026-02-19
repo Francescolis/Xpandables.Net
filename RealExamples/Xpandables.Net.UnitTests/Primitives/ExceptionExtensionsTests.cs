@@ -1,4 +1,4 @@
-/*******************************************************************************
+﻿/*******************************************************************************
  * Copyright (C) 2025 Kamersoft
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
@@ -36,8 +36,8 @@ public sealed class ExceptionExtensionsTests
         // Arrange
         var exception = new InvalidOperationException("Something went wrong");
 
-        // Act
-        var result = exception.GetFullExceptionMessage();
+		// Act
+		string result = exception.GetFullExceptionMessage();
 
         // Assert
         result.Should().Contain("Something went wrong");
@@ -51,8 +51,8 @@ public sealed class ExceptionExtensionsTests
         var inner = new InvalidOperationException("Operation failed", innerMost);
         var outer = new ApplicationException("Application error", inner);
 
-        // Act
-        var result = outer.GetFullExceptionMessage();
+		// Act
+		string result = outer.GetFullExceptionMessage();
 
         // Assert
         result.Should().Contain("Application error");
@@ -66,8 +66,8 @@ public sealed class ExceptionExtensionsTests
         // Arrange
         Exception? exception = null;
 
-        // Act
-        var act = () => exception!.GetFullExceptionMessage();
+		// Act
+		Func<string> act = () => exception!.GetFullExceptionMessage();
 
         // Assert
         act.Should().Throw<ArgumentNullException>();
@@ -82,8 +82,8 @@ public sealed class ExceptionExtensionsTests
         var level2 = new Exception("Level 2", level3);
         var level1 = new Exception("Level 1", level2);
 
-        // Act
-        var result = level1.GetFullExceptionMessage();
+		// Act
+		string result = level1.GetFullExceptionMessage();
 
         // Assert
         result.Should().Contain("Level 1");
@@ -106,8 +106,8 @@ public sealed class ExceptionExtensionsTests
         // Arrange
         var exception = (Exception)Activator.CreateInstance(exceptionType, "Test message")!;
 
-        // Act
-        var result = exception.GetHttpStatusCode();
+		// Act
+		HttpStatusCode result = exception.GetHttpStatusCode();
 
         // Assert
         result.Should().Be(expected);
@@ -119,8 +119,8 @@ public sealed class ExceptionExtensionsTests
         // Arrange
         var exception = new ValidationException("Validation failed");
 
-        // Act
-        var result = exception.GetHttpStatusCode();
+		// Act
+		HttpStatusCode result = exception.GetHttpStatusCode();
 
         // Assert
         result.Should().Be(HttpStatusCode.BadRequest);
@@ -132,8 +132,8 @@ public sealed class ExceptionExtensionsTests
         // Arrange
         var exception = new UnauthorizedAccessException("Access denied");
 
-        // Act
-        var result = exception.GetHttpStatusCode();
+		// Act
+		HttpStatusCode result = exception.GetHttpStatusCode();
 
         // Assert
         result.Should().Be(HttpStatusCode.Unauthorized);
@@ -145,8 +145,8 @@ public sealed class ExceptionExtensionsTests
         // Arrange
         var exception = new AuthenticationException("Authentication failed");
 
-        // Act
-        var result = exception.GetHttpStatusCode();
+		// Act
+		HttpStatusCode result = exception.GetHttpStatusCode();
 
         // Assert
         result.Should().Be(HttpStatusCode.Unauthorized);
@@ -158,8 +158,8 @@ public sealed class ExceptionExtensionsTests
         // Arrange
         var exception = new SecurityException("Access forbidden");
 
-        // Act
-        var result = exception.GetHttpStatusCode();
+		// Act
+		HttpStatusCode result = exception.GetHttpStatusCode();
 
         // Assert
         result.Should().Be(HttpStatusCode.Forbidden);
@@ -174,8 +174,8 @@ public sealed class ExceptionExtensionsTests
         // Arrange
         var exception = (Exception)Activator.CreateInstance(exceptionType, "Not found")!;
 
-        // Act
-        var result = exception.GetHttpStatusCode();
+		// Act
+		HttpStatusCode result = exception.GetHttpStatusCode();
 
         // Assert
         result.Should().Be(expected);
@@ -187,8 +187,8 @@ public sealed class ExceptionExtensionsTests
         // Arrange
         var exception = new NotSupportedException("Method not supported");
 
-        // Act
-        var result = exception.GetHttpStatusCode();
+		// Act
+		HttpStatusCode result = exception.GetHttpStatusCode();
 
         // Assert
         result.Should().Be(HttpStatusCode.MethodNotAllowed);
@@ -200,8 +200,8 @@ public sealed class ExceptionExtensionsTests
         // Arrange
         var exception = new TimeoutException("Request timed out");
 
-        // Act
-        var result = exception.GetHttpStatusCode();
+		// Act
+		HttpStatusCode result = exception.GetHttpStatusCode();
 
         // Assert
         result.Should().Be(HttpStatusCode.RequestTimeout);
@@ -215,8 +215,8 @@ public sealed class ExceptionExtensionsTests
         // Arrange
         var exception = (Exception)Activator.CreateInstance(exceptionType, "Conflict")!;
 
-        // Act
-        var result = exception.GetHttpStatusCode();
+		// Act
+		HttpStatusCode result = exception.GetHttpStatusCode();
 
         // Assert
         result.Should().Be(expected);
@@ -228,8 +228,8 @@ public sealed class ExceptionExtensionsTests
         // Arrange
         var exception = new NotImplementedException("Not implemented");
 
-        // Act
-        var result = exception.GetHttpStatusCode();
+		// Act
+		HttpStatusCode result = exception.GetHttpStatusCode();
 
         // Assert
         result.Should().Be(HttpStatusCode.NotImplemented);
@@ -243,8 +243,8 @@ public sealed class ExceptionExtensionsTests
         // Arrange
         var exception = (Exception)Activator.CreateInstance(exceptionType)!;
 
-        // Act
-        var result = exception.GetHttpStatusCode();
+		// Act
+		HttpStatusCode result = exception.GetHttpStatusCode();
 
         // Assert
         result.Should().Be(expected);
@@ -256,8 +256,8 @@ public sealed class ExceptionExtensionsTests
         // Arrange
         var exception = new WebException("Bad gateway");
 
-        // Act
-        var result = exception.GetHttpStatusCode();
+		// Act
+		HttpStatusCode result = exception.GetHttpStatusCode();
 
         // Assert
         result.Should().Be(HttpStatusCode.BadGateway);
@@ -272,8 +272,8 @@ public sealed class ExceptionExtensionsTests
         // Arrange
         var exception = (Exception)Activator.CreateInstance(exceptionType, "Server error")!;
 
-        // Act
-        var result = exception.GetHttpStatusCode();
+		// Act
+		HttpStatusCode result = exception.GetHttpStatusCode();
 
         // Assert
         result.Should().Be(expected);
@@ -285,8 +285,8 @@ public sealed class ExceptionExtensionsTests
         // Arrange
         var exception = new CustomException("Custom error");
 
-        // Act
-        var result = exception.GetHttpStatusCode();
+		// Act
+		HttpStatusCode result = exception.GetHttpStatusCode();
 
         // Assert
         result.Should().Be(HttpStatusCode.InternalServerError);
@@ -309,8 +309,8 @@ public sealed class ExceptionExtensionsTests
             ["Name"]);
         var exception = new ValidationException(validationResult, null, null);
 
-        // Act
-        var result = exception.GetElementEntries();
+		// Act
+		ElementCollection result = exception.GetElementEntries();
 
         // Assert
         result.IsEmpty.Should().BeFalse();
@@ -320,12 +320,12 @@ public sealed class ExceptionExtensionsTests
     [Fact]
     public void WhenExceptionMessageContainsJsonErrorsThenShouldParseErrors()
     {
-        // Arrange
-        var jsonMessage = """{"errors":{"Email":["Invalid email format"],"Password":["Too short"]}}""";
+		// Arrange
+		string jsonMessage = """{"errors":{"Email":["Invalid email format"],"Password":["Too short"]}}""";
         var exception = new Exception(jsonMessage);
 
-        // Act
-        var result = exception.GetElementEntries();
+		// Act
+		ElementCollection result = exception.GetElementEntries();
 
         // Assert
         result.IsEmpty.Should().BeFalse();
@@ -336,16 +336,16 @@ public sealed class ExceptionExtensionsTests
     [Fact]
     public void WhenAggregateExceptionHasMultipleInnerExceptionsThenShouldCollectAllEntries()
     {
-        // Arrange
-        var innerExceptions = new[]
+		// Arrange
+		ValidationException[] innerExceptions = new[]
         {
             new ValidationException(new ValidationResult("Error 1", ["Field1"]), null, null),
             new ValidationException(new ValidationResult("Error 2", ["Field2"]), null, null)
         };
         var aggregateException = new AggregateException(innerExceptions);
 
-        // Act
-        var result = aggregateException.GetElementEntries();
+		// Act
+		ElementCollection result = aggregateException.GetElementEntries();
 
         // Assert
         result.ContainsKey("Field1").Should().BeTrue();
@@ -358,8 +358,8 @@ public sealed class ExceptionExtensionsTests
         // Arrange
         var exception = new Exception("Simple error message");
 
-        // Act
-        var result = exception.GetElementEntries();
+		// Act
+		ElementCollection result = exception.GetElementEntries();
 
         // Assert
         result.IsEmpty.Should().BeTrue();
@@ -371,8 +371,8 @@ public sealed class ExceptionExtensionsTests
         // Arrange
         var exception = new Exception("{invalid json}");
 
-        // Act
-        var result = exception.GetElementEntries();
+		// Act
+		ElementCollection result = exception.GetElementEntries();
 
         // Assert
         result.IsEmpty.Should().BeTrue();
@@ -381,16 +381,16 @@ public sealed class ExceptionExtensionsTests
     [Fact]
     public void WhenJsonHasArrayOfErrorsThenShouldParseAll()
     {
-        // Arrange
-        var jsonMessage = """{"errors":{"Username":["Required","Must be unique","Too short"]}}""";
+		// Arrange
+		string jsonMessage = """{"errors":{"Username":["Required","Must be unique","Too short"]}}""";
         var exception = new Exception(jsonMessage);
 
-        // Act
-        var result = exception.GetElementEntries();
+		// Act
+		ElementCollection result = exception.GetElementEntries();
 
         // Assert
         result.ContainsKey("Username").Should().BeTrue();
-        var entry = result["Username"];
+		ElementEntry? entry = result["Username"];
         entry.Should().NotBeNull();
         entry!.Value.Values.Count.Should().Be(3);
     }
@@ -398,13 +398,13 @@ public sealed class ExceptionExtensionsTests
     [Fact]
     public void WhenNestedExceptionHasJsonErrorsThenShouldParseFromInner()
     {
-        // Arrange
-        var jsonMessage = """{"errors":{"Age":["Must be positive"]}}""";
+		// Arrange
+		string jsonMessage = """{"errors":{"Age":["Must be positive"]}}""";
         var inner = new Exception(jsonMessage);
         var outer = new Exception("Wrapper", inner);
 
-        // Act
-        var result = outer.GetElementEntries();
+		// Act
+		ElementCollection result = outer.GetElementEntries();
 
         // Assert
         result.ContainsKey("Age").Should().BeTrue();
@@ -417,8 +417,8 @@ public sealed class ExceptionExtensionsTests
     [Fact]
     public void WhenProcessingApiValidationErrorsThenShouldExtractAllErrors()
     {
-        // Arrange - Simulating an API validation response
-        var apiErrorResponse = """
+		// Arrange - Simulating an API validation response
+		string apiErrorResponse = """
             {
                 "errors": {
                     "Email": ["Invalid email format", "Email already exists"],
@@ -429,8 +429,8 @@ public sealed class ExceptionExtensionsTests
             """;
         var exception = new HttpRequestException(apiErrorResponse);
 
-        // Act
-        var entries = exception.GetElementEntries();
+		// Act
+		ElementCollection entries = exception.GetElementEntries();
 
         // Assert
         entries.Count.Should().Be(3);
@@ -446,9 +446,9 @@ public sealed class ExceptionExtensionsTests
         var inner = new Exception("Unique constraint violation");
         var exception = new IOException("Unable to save", inner);
 
-        // Act
-        var statusCode = exception.GetHttpStatusCode();
-        var fullMessage = exception.GetFullExceptionMessage();
+		// Act
+		HttpStatusCode statusCode = exception.GetHttpStatusCode();
+		string fullMessage = exception.GetFullExceptionMessage();
 
         // Assert
         statusCode.Should().Be(HttpStatusCode.Conflict);
@@ -463,9 +463,9 @@ public sealed class ExceptionExtensionsTests
         var inner = new AuthenticationException("Invalid credentials");
         var outer = new UnauthorizedAccessException("Login failed", inner);
 
-        // Act
-        var statusCode = outer.GetHttpStatusCode();
-        var fullMessage = outer.GetFullExceptionMessage();
+		// Act
+		HttpStatusCode statusCode = outer.GetHttpStatusCode();
+		string fullMessage = outer.GetFullExceptionMessage();
 
         // Assert
         statusCode.Should().Be(HttpStatusCode.Unauthorized);
@@ -486,8 +486,8 @@ public sealed class ExceptionExtensionsTests
         }
         catch (OperationCanceledException ex)
         {
-            // Act
-            var statusCode = ex.GetHttpStatusCode();
+			// Act
+			HttpStatusCode statusCode = ex.GetHttpStatusCode();
 
             // Assert
             statusCode.Should().Be(HttpStatusCode.GatewayTimeout);
@@ -501,10 +501,10 @@ public sealed class ExceptionExtensionsTests
         var inner = new KeyNotFoundException("Customer with ID 123 not found");
         var outer = new InvalidOperationException("Failed to load customer", inner);
 
-        // Act
-        // We test the inner exception mapping since that's the root cause
-        var statusCode = inner.GetHttpStatusCode();
-        var fullMessage = outer.GetFullExceptionMessage();
+		// Act
+		// We test the inner exception mapping since that's the root cause
+		HttpStatusCode statusCode = inner.GetHttpStatusCode();
+		string fullMessage = outer.GetFullExceptionMessage();
 
         // Assert
         statusCode.Should().Be(HttpStatusCode.NotFound);
@@ -520,8 +520,8 @@ public sealed class ExceptionExtensionsTests
             ["Field1", "Field2", "Field3"]);
         var exception = new ValidationException(validationResult, null, null);
 
-        // Act
-        var entries = exception.GetElementEntries();
+		// Act
+		ElementCollection entries = exception.GetElementEntries();
 
         // Assert
         entries.Should().NotBeNull();
@@ -534,10 +534,10 @@ public sealed class ExceptionExtensionsTests
         var inner = new ArgumentException("Invalid customer ID");
         var exception = new InvalidOperationException("Failed to process order", inner);
 
-        // Act
-        var statusCode = exception.GetHttpStatusCode();
-        var fullMessage = exception.GetFullExceptionMessage();
-        var entries = exception.GetElementEntries();
+		// Act
+		HttpStatusCode statusCode = exception.GetHttpStatusCode();
+		string fullMessage = exception.GetFullExceptionMessage();
+		ElementCollection entries = exception.GetElementEntries();
 
         // Assert - Building an error response
         var errorResponse = new
@@ -563,8 +563,8 @@ public sealed class ExceptionExtensionsTests
         // Arrange
         var exception = new Exception("[Error] Something went wrong");
 
-        // Act
-        var result = exception.GetElementEntries();
+		// Act
+		ElementCollection result = exception.GetElementEntries();
 
         // Assert
         result.IsEmpty.Should().BeTrue();
@@ -576,8 +576,8 @@ public sealed class ExceptionExtensionsTests
         // Arrange
         var exception = new Exception("""{"errors":"string instead of object"}""");
 
-        // Act
-        var result = exception.GetElementEntries();
+		// Act
+		ElementCollection result = exception.GetElementEntries();
 
         // Assert
         result.IsEmpty.Should().BeTrue();
@@ -589,8 +589,8 @@ public sealed class ExceptionExtensionsTests
         // Arrange
         var exception = new AggregateException([]);
 
-        // Act
-        var result = exception.GetElementEntries();
+		// Act
+		ElementCollection result = exception.GetElementEntries();
 
         // Assert
         result.IsEmpty.Should().BeTrue();
@@ -604,8 +604,8 @@ public sealed class ExceptionExtensionsTests
         var inner = new Exception("Inner");
         var outer = new AggregateException(inner, inner);
 
-        // Act
-        var result = outer.GetElementEntries();
+		// Act
+		ElementCollection result = outer.GetElementEntries();
 
         // Assert - Should complete without hanging
         result.Should().NotBeNull();
@@ -614,12 +614,12 @@ public sealed class ExceptionExtensionsTests
     [Fact]
     public void WhenJsonHasCaseInsensitiveErrorsKeyThenShouldParse()
     {
-        // Arrange
-        var jsonMessage = """{"ERRORS":{"Field":["Error message"]}}""";
+		// Arrange
+		string jsonMessage = """{"ERRORS":{"Field":["Error message"]}}""";
         var exception = new Exception(jsonMessage);
 
-        // Act
-        var result = exception.GetElementEntries();
+		// Act
+		ElementCollection result = exception.GetElementEntries();
 
         // Assert
         result.ContainsKey("Field").Should().BeTrue();

@@ -35,60 +35,60 @@ namespace System.Collections;
 [JsonConverter(typeof(ElementEntryJsonConverterFactory))]
 public readonly record struct ElementEntry
 {
-    /// <summary>
-    /// Gets the key of the entry.
-    /// </summary>
-    public readonly required string Key { get; init; }
-    /// <summary>
-    /// Gets the values associated with the key.
-    /// </summary>
-    public readonly required StringValues Values { get; init; }
+	/// <summary>
+	/// Gets the key of the entry.
+	/// </summary>
+	public readonly required string Key { get; init; }
+	/// <summary>
+	/// Gets the values associated with the key.
+	/// </summary>
+	public readonly required StringValues Values { get; init; }
 
-    /// <summary>
-    /// Gets a value indicating whether the current instance contains no key and no values.
-    /// </summary>
-    [JsonIgnore]
-    public readonly bool IsEmpty => string.IsNullOrEmpty(Key) && Values.Count == 0;
+	/// <summary>
+	/// Gets a value indicating whether the current instance contains no key and no values.
+	/// </summary>
+	[JsonIgnore]
+	public readonly bool IsEmpty => string.IsNullOrEmpty(Key) && Values.Count == 0;
 
-    /// <summary>
-    /// Initializes a new instance of the <see cref="ElementEntry"/> struct.
-    /// </summary>
-    /// <param name="key">The key of the entry.</param>
-    /// <param name="values">The values associated with the key.</param>
-    /// <exception cref="ArgumentException">Thrown when values are empty or null.</exception>
-    [SetsRequiredMembers]
-    public ElementEntry(string key, params string[] values)
-    {
-        ArgumentNullException.ThrowIfNull(key);
-        if (values is null || values.Length == 0)
-        {
-            throw new ArgumentException("Values cannot be empty.", nameof(values));
-        }
+	/// <summary>
+	/// Initializes a new instance of the <see cref="ElementEntry"/> struct.
+	/// </summary>
+	/// <param name="key">The key of the entry.</param>
+	/// <param name="values">The values associated with the key.</param>
+	/// <exception cref="ArgumentException">Thrown when values are empty or null.</exception>
+	[SetsRequiredMembers]
+	public ElementEntry(string key, params string[] values)
+	{
+		ArgumentNullException.ThrowIfNull(key);
+		if (values is null || values.Length == 0)
+		{
+			throw new ArgumentException("Values cannot be empty.", nameof(values));
+		}
 
-        Key = key;
-        Values = values;
-    }
+		Key = key;
+		Values = values;
+	}
 
-    /// <summary>
-    /// Initializes a new instance of the ElementEntry class with the specified key and associated values.
-    /// </summary>
-    /// <param name="key">The key that identifies the element. Cannot be null.</param>
-    /// <param name="values">The collection of values associated with the key. Must contain at least one value.</param>
-    [SetsRequiredMembers]
-    public ElementEntry(string key, StringValues values)
-    {
-        ArgumentNullException.ThrowIfNull(key);
-        ArgumentOutOfRangeException.ThrowIfZero(values.Count);
+	/// <summary>
+	/// Initializes a new instance of the ElementEntry class with the specified key and associated values.
+	/// </summary>
+	/// <param name="key">The key that identifies the element. Cannot be null.</param>
+	/// <param name="values">The collection of values associated with the key. Must contain at least one value.</param>
+	[SetsRequiredMembers]
+	public ElementEntry(string key, StringValues values)
+	{
+		ArgumentNullException.ThrowIfNull(key);
+		ArgumentOutOfRangeException.ThrowIfZero(values.Count);
 
-        Key = key;
-        Values = values;
-    }
+		Key = key;
+		Values = values;
+	}
 
-    /// <summary>
-    /// Returns a string representation of the <see cref="ElementEntry"/> instance.
-    /// </summary>
-    /// <returns> A string that represents the current <see cref="ElementEntry"/>.</returns>
-    public readonly override string ToString() => $"{Key}: {Values.StringJoin(",")}";
+	/// <summary>
+	/// Returns a string representation of the <see cref="ElementEntry"/> instance.
+	/// </summary>
+	/// <returns> A string that represents the current <see cref="ElementEntry"/>.</returns>
+	public override readonly string ToString() => $"{Key}: {Values.StringJoin(",")}";
 }
 
 /// <summary>
@@ -123,10 +123,10 @@ public readonly record struct ElementEntry
 /// performance and reduce runtime reflection when working with ElementEntry instances. This approach is preferred
 /// over custom JsonConverter implementations for better AOT compatibility and performance in .NET 10.</remarks>
 [JsonSourceGenerationOptions(
-    WriteIndented = true,
-    PropertyNamingPolicy = JsonKnownNamingPolicy.CamelCase,
-    DefaultIgnoreCondition = JsonIgnoreCondition.WhenWritingNull,
-    PropertyNameCaseInsensitive = true)]
+	WriteIndented = true,
+	PropertyNamingPolicy = JsonKnownNamingPolicy.CamelCase,
+	DefaultIgnoreCondition = JsonIgnoreCondition.WhenWritingNull,
+	PropertyNameCaseInsensitive = true)]
 [JsonSerializable(typeof(ElementEntry))]
 [JsonSerializable(typeof(ElementEntry[]))]
 [JsonSerializable(typeof(List<ElementEntry>))]

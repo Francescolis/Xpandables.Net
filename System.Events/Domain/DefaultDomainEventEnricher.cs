@@ -34,7 +34,7 @@ public sealed class DefaultDomainEventEnricher(IEventContextAccessor accessor) :
     {
         ArgumentNullException.ThrowIfNull(@event);
 
-        var context = _accessor.Current;
+		EventContext context = _accessor.Current;
 
         if (@event.CorrelationId is null && context.CorrelationId is not null)
         {

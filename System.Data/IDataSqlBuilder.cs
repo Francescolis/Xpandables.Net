@@ -1,4 +1,4 @@
-/*******************************************************************************
+﻿/*******************************************************************************
  * Copyright (C) 2025 Kamersoft
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
@@ -39,9 +39,9 @@ public readonly record struct SqlQueryResult(string Sql, IReadOnlyList<SqlParame
     {
         ArgumentNullException.ThrowIfNull(command);
 
-        foreach (var param in Parameters)
+        foreach (SqlParameter param in Parameters)
         {
-            var dbParam = command.CreateParameter();
+			DbParameter dbParam = command.CreateParameter();
             dbParam.ParameterName = param.Name;
             dbParam.Value = param.Value ?? DBNull.Value;
             command.Parameters.Add(dbParam);

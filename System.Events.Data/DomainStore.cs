@@ -72,7 +72,7 @@ public sealed class DomainStore<
 		AppendRequest request,
 		CancellationToken cancellationToken = default)
 	{
-		var batch = request.Events.OfType<IDomainEvent>().ToArray();
+		IDomainEvent[] batch = [.. request.Events.OfType<IDomainEvent>()];
 		if (batch.Length == 0)
 		{
 			return AppendResult.Create(
@@ -91,16 +91,16 @@ public sealed class DomainStore<
 		var entities = new List<TEntityEventDomain>(capacity: batch.Length);
 		long next = request.ExpectedVersion.GetValueOrDefault();
 
-		foreach (var @event in batch)
+		foreach (IDomainEvent? @event in batch)
 		{
 			next++;
 
-			var nextEvent = @event
+			IDomainEvent nextEvent = @event
 				.WithStreamId(request.StreamId)
 				.WithStreamVersion(next)
 				.WithStreamName(@event.StreamName);
 
-			var entity = _domainConverter.ConvertEventToEntity(nextEvent, _converterFactory.ConverterContext);
+			TEntityEventDomain entity = _domainConverter.ConvertEventToEntity(nextEvent, _converterFactory.ConverterContext);
 			entities.Add(entity);
 		}
 
@@ -117,7 +117,7 @@ public sealed class DomainStore<
 	{
 		ArgumentNullException.ThrowIfNull(@event);
 
-		var entity = _snapshotConverter.ConvertEventToEntity(@event, _converterFactory.ConverterContext);
+		TEntityEventSnapshot entity = _snapshotConverter.ConvertEventToEntity(@event, _converterFactory.ConverterContext);
 		await _snapshotRepository.InsertAsync(entity, cancellationToken).ConfigureAwait(false);
 	}
 
@@ -126,7 +126,7 @@ public sealed class DomainStore<
 		DeleteStreamRequest request,
 		CancellationToken cancellationToken = default)
 	{
-		var specification = DataSpecification
+		DataSpecification<TEntityEventDomain, TEntityEventDomain> specification = DataSpecification
 			.For<TEntityEventDomain>()
 			.Where(e => e.StreamId == request.StreamId)
 			.Build();
@@ -139,7 +139,7 @@ public sealed class DomainStore<
 		}
 		else
 		{
-			var updater = DataUpdater
+			DataUpdater<TEntityEventDomain> updater = DataUpdater
 				.For<TEntityEventDomain>()
 				.SetProperty(e => e.Status, EventStatus.DELETED.Value);
 
@@ -154,19 +154,21 @@ public sealed class DomainStore<
 		Guid ownerId,
 		CancellationToken cancellationToken = default)
 	{
-		var specification = DataSpecification
+		DataSpecification<TEntityEventSnapshot, TEntityEventSnapshot> specification = DataSpecification
 			.For<TEntityEventSnapshot>()
 			.Where(e => e.OwnerId == ownerId)
 			.OrderByDescending(e => e.Sequence)
 			.Take(1)
 			.Build();
 
-		var last = await _snapshotRepository
+		TEntityEventSnapshot? last = await _snapshotRepository
 			.QueryFirstOrDefaultAsync(specification, cancellationToken)
 			.ConfigureAwait(false);
 
 		if (last == null)
+		{
 			return null;
+		}
 
 		return new EnvelopeResult
 		{
@@ -190,14 +192,14 @@ public sealed class DomainStore<
 		ReadAllStreamsRequest request,
 		[EnumeratorCancellation] CancellationToken cancellationToken = default)
 	{
-		var specification = DataSpecification
+		DataSpecification<TEntityEventDomain, TEntityEventDomain> specification = DataSpecification
 			.For<TEntityEventDomain>()
 			.Where(e => e.Sequence > request.FromPosition)
 			.OrderBy(e => e.Sequence)
 			.Take(request.MaxCount)
 			.Build();
 
-		await foreach (var entity in _domainRepository.QueryAsync(specification, cancellationToken).ConfigureAwait(false))
+		await foreach (TEntityEventDomain? entity in _domainRepository.QueryAsync(specification, cancellationToken).ConfigureAwait(false))
 		{
 			yield return new EnvelopeResult
 			{
@@ -220,14 +222,14 @@ public sealed class DomainStore<
 		ReadStreamRequest request,
 		[EnumeratorCancellation] CancellationToken cancellationToken = default)
 	{
-		var specification = DataSpecification
+		DataSpecification<TEntityEventDomain, TEntityEventDomain> specification = DataSpecification
 			.For<TEntityEventDomain>()
 			.Where(e => e.StreamId == request.StreamId && e.StreamVersion > request.FromVersion)
 			.OrderBy(e => e.StreamVersion)
 			.Take(request.MaxCount)
 			.Build();
 
-		await foreach (var entity in _domainRepository.QueryAsync(specification, cancellationToken).ConfigureAwait(false))
+		await foreach (TEntityEventDomain? entity in _domainRepository.QueryAsync(specification, cancellationToken).ConfigureAwait(false))
 		{
 			yield return new EnvelopeResult
 			{
@@ -248,7 +250,7 @@ public sealed class DomainStore<
 	/// <inheritdoc/>
 	public async Task<bool> StreamExistsAsync(Guid streamId, CancellationToken cancellationToken = default)
 	{
-		var specification = DataSpecification
+		DataSpecification<TEntityEventDomain, TEntityEventDomain> specification = DataSpecification
 			.For<TEntityEventDomain>()
 			.Where(e => e.StreamId == streamId)
 			.Build();
@@ -263,13 +265,15 @@ public sealed class DomainStore<
 		TruncateStreamRequest request,
 		CancellationToken cancellationToken = default)
 	{
-		var currentVersion = await GetStreamVersionCoreAsync(request.StreamId, cancellationToken)
+		long currentVersion = await GetStreamVersionCoreAsync(request.StreamId, cancellationToken)
 			.ConfigureAwait(false);
 
 		if (currentVersion == -1)
+		{
 			return;
+		}
 
-		var specification = DataSpecification
+		DataSpecification<TEntityEventDomain, TEntityEventDomain> specification = DataSpecification
 			.For<TEntityEventDomain>()
 			.Where(e => e.StreamId == request.StreamId && e.StreamVersion < request.TruncateBeforeVersion)
 			.Build();
@@ -309,13 +313,13 @@ public sealed class DomainStore<
 
 	private async Task<long> GetStreamVersionCoreAsync(Guid streamId, CancellationToken cancellationToken)
 	{
-		var specification = DataSpecification
+		DataSpecification<TEntityEventDomain, TEntityEventDomain> specification = DataSpecification
 			.For<TEntityEventDomain>()
 			.Where(e => e.StreamId == streamId)
 			.OrderByDescending(e => e.StreamVersion)
 			.Build();
 
-		var @event = await _domainRepository
+		TEntityEventDomain? @event = await _domainRepository
 			.QueryFirstOrDefaultAsync(specification, cancellationToken)
 			.ConfigureAwait(false);
 
@@ -364,7 +368,7 @@ internal sealed class StreamSubscription<
 		{
 			while (!_cts.Token.IsCancellationRequested)
 			{
-				var specification = DataSpecification
+				DataSpecification<TEntityEventDomain, TEntityEventDomain> specification = DataSpecification
 					.For<TEntityEventDomain>()
 					.Where(e => e.StreamId == _request.StreamId && e.StreamVersion > lastProcessedVersion)
 					.OrderBy(e => e.StreamVersion)
@@ -372,14 +376,14 @@ internal sealed class StreamSubscription<
 					.Build();
 
 				var events = new List<TEntityEventDomain>();
-				await foreach (var entity in _domainRepository.QueryAsync(specification, _cts.Token).ConfigureAwait(false))
+				await foreach (TEntityEventDomain? entity in _domainRepository.QueryAsync(specification, _cts.Token).ConfigureAwait(false))
 				{
 					events.Add(entity);
 				}
 
-				foreach (var entity in events)
+				foreach (TEntityEventDomain entity in events)
 				{
-					var domainEvent = _domainConverter.ConvertEntityToEvent(entity, _converterFactory.ConverterContext);
+					IDomainEvent domainEvent = _domainConverter.ConvertEntityToEvent(entity, _converterFactory.ConverterContext);
 					await _request.OnEvent(domainEvent).ConfigureAwait(false);
 					lastProcessedVersion = entity.StreamVersion;
 				}
@@ -452,7 +456,7 @@ internal sealed class AllStreamsSubscription<
 		{
 			while (!_cts.Token.IsCancellationRequested)
 			{
-				var specification = DataSpecification
+				DataSpecification<TEntityEventDomain, TEntityEventDomain> specification = DataSpecification
 					.For<TEntityEventDomain>()
 					.Where(e => e.Sequence > lastProcessedSequence)
 					.OrderBy(e => e.Sequence)
@@ -460,14 +464,14 @@ internal sealed class AllStreamsSubscription<
 					.Build();
 
 				var events = new List<TEntityEventDomain>();
-				await foreach (var entity in _domainRepository.QueryAsync(specification, _cts.Token).ConfigureAwait(false))
+				await foreach (TEntityEventDomain? entity in _domainRepository.QueryAsync(specification, _cts.Token).ConfigureAwait(false))
 				{
 					events.Add(entity);
 				}
 
-				foreach (var entity in events)
+				foreach (TEntityEventDomain entity in events)
 				{
-					var domainEvent = _domainConverter.ConvertEntityToEvent(entity, _converterFactory.ConverterContext);
+					IDomainEvent domainEvent = _domainConverter.ConvertEntityToEvent(entity, _converterFactory.ConverterContext);
 					await _request.OnEvent(domainEvent).ConfigureAwait(false);
 					lastProcessedSequence = entity.Sequence;
 				}

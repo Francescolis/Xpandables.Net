@@ -52,9 +52,11 @@ public readonly struct WeakCacheEntry<T>(T value) : IEquatable<T>, IEquatable<We
     public readonly bool IsExpired(TimeSpan maxAge)
     {
         if (maxAge <= TimeSpan.Zero)
-            return false;
+		{
+			return false;
+		}
 
-        return DateTime.UtcNow - _lastAccessTime > maxAge;
+		return DateTime.UtcNow - _lastAccessTime > maxAge;
     }
 
     /// <summary>

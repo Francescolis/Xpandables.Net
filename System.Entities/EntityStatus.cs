@@ -264,7 +264,7 @@ public sealed class EntityStatusValidationAttribute : ValidationAttribute
                 ErrorMessageString, name);
         }
 
-        var validStatuses = string.Join(", ", EntityStatus.AllStatuses);
+		string validStatuses = string.Join(", ", EntityStatus.AllStatuses);
         return string.Format(System.Globalization.CultureInfo.CurrentCulture,
             ErrorMessageString, validStatuses);
     }

@@ -1,4 +1,4 @@
-using System.Linq;
+﻿using System.Linq;
 using System.Results;
 using System.Results.Pipelines;
 using System.Results.Requests;
@@ -15,8 +15,8 @@ public sealed class PipelineExtensionsTests
         // Arrange
         var services = new ServiceCollection();
 
-        // Act
-        var action = () => services.AddXPipelineRequestHandler(typeof(object));
+		// Act
+		Func<IServiceCollection> action = () => services.AddXPipelineRequestHandler(typeof(object));
 
         // Assert
         Assert.Throws<InvalidOperationException>(action);
@@ -30,8 +30,8 @@ public sealed class PipelineExtensionsTests
 
         // Act
         services.AddXPipelineRequestHandler(typeof(TestHandler));
-        using var provider = services.BuildServiceProvider();
-        var handler = provider.GetRequiredService<IPipelineRequestHandler<TestRequest>>();
+        using ServiceProvider provider = services.BuildServiceProvider();
+		IPipelineRequestHandler<TestRequest> handler = provider.GetRequiredService<IPipelineRequestHandler<TestRequest>>();
 
         // Assert
         Assert.IsType<TestHandler>(handler);
@@ -45,11 +45,11 @@ public sealed class PipelineExtensionsTests
 
         // Act
         services.AddXPipelineRequestHandler(typeof(TestHandler));
-        using var provider = services.BuildServiceProvider();
-        using var scope1 = provider.CreateScope();
-        using var scope2 = provider.CreateScope();
-        var handler1 = scope1.ServiceProvider.GetRequiredService<IPipelineRequestHandler<TestRequest>>();
-        var handler2 = scope2.ServiceProvider.GetRequiredService<IPipelineRequestHandler<TestRequest>>();
+        using ServiceProvider provider = services.BuildServiceProvider();
+        using IServiceScope scope1 = provider.CreateScope();
+        using IServiceScope scope2 = provider.CreateScope();
+		IPipelineRequestHandler<TestRequest> handler1 = scope1.ServiceProvider.GetRequiredService<IPipelineRequestHandler<TestRequest>>();
+		IPipelineRequestHandler<TestRequest> handler2 = scope2.ServiceProvider.GetRequiredService<IPipelineRequestHandler<TestRequest>>();
 
         // Assert — scoped: different scopes yield different instances
         Assert.NotSame(handler1, handler2);

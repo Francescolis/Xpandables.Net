@@ -17,7 +17,7 @@ builder.Services
 	.AddXResultEndpointValidator()
 	.AddXJsonSerializerOptions()
 	.AddXMediatorWithEventSourcingPipelines()
-	.AddXServiceExports(builder.Configuration, typeof(Account).Assembly, typeof(AccountDataContext).Assembly)
+	.AddXServiceExports(builder.Configuration, [typeof(Account).Assembly, typeof(AccountDataContext).Assembly])
 	.AddXRequestHandlers()
 	.AddValidation()
 	.AddXEventStores()

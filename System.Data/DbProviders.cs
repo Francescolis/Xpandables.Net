@@ -1,4 +1,4 @@
-/*******************************************************************************
+﻿/*******************************************************************************
  * Copyright (C) 2025 Kamersoft
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
@@ -105,7 +105,7 @@ public static class DbProviders
     {
         ArgumentException.ThrowIfNullOrWhiteSpace(providerInvariantName);
 
-        if (!DbProviderFactories.TryGetFactory(providerInvariantName, out var factory))
+        if (!DbProviderFactories.TryGetFactory(providerInvariantName, out DbProviderFactory? factory))
         {
             throw new ArgumentException(
                 $"Database provider '{providerInvariantName}' is not registered. " +
@@ -141,9 +141,11 @@ public static class DbProviders
     public static bool IsRegistered(string providerInvariantName)
     {
         if (string.IsNullOrWhiteSpace(providerInvariantName))
-            return false;
+		{
+			return false;
+		}
 
-        return DbProviderFactories.TryGetFactory(providerInvariantName, out _);
+		return DbProviderFactories.TryGetFactory(providerInvariantName, out _);
     }
 
     /// <summary>
@@ -159,9 +161,11 @@ public static class DbProviders
         ArgumentNullException.ThrowIfNull(factory);
 
         if (IsRegistered(providerInvariantName))
-            return false;
+		{
+			return false;
+		}
 
-        DbProviderFactories.RegisterFactory(providerInvariantName, factory);
+		DbProviderFactories.RegisterFactory(providerInvariantName, factory);
         return true;
     }
 }

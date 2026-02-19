@@ -1,4 +1,4 @@
-/*******************************************************************************
+﻿/*******************************************************************************
  * Copyright (C) 2025 Kamersoft
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
@@ -52,8 +52,8 @@ public sealed class PipelineDataUnitOfWorkDecorator<TRequest>(IDataUnitOfWork? u
             return await nextHandler(cancellationToken).ConfigureAwait(false);
         }
 
-        // Begin transaction
-        var transaction = await unitOfWork
+		// Begin transaction
+		IDataTransaction transaction = await unitOfWork
             .BeginTransactionAsync(cancellationToken: cancellationToken)
             .ConfigureAwait(false);
 

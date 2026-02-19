@@ -1,4 +1,4 @@
-/*******************************************************************************
+﻿/*******************************************************************************
  * Copyright (C) 2025 Kamersoft
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
@@ -65,7 +65,7 @@ public static class ProjectionExtensions
                 ct.ThrowIfCancellationRequested();
 
                 int index = 0;
-                await foreach (var item in source.WithCancellation(ct).ConfigureAwait(false))
+                await foreach (TSource? item in source.WithCancellation(ct).ConfigureAwait(false))
                 {
                     yield return selector(item, index);
                     index++;
@@ -91,7 +91,7 @@ public static class ProjectionExtensions
             {
                 ct.ThrowIfCancellationRequested();
 
-                await foreach (var item in source.WithCancellation(ct).ConfigureAwait(false))
+                await foreach (TSource? item in source.WithCancellation(ct).ConfigureAwait(false))
                 {
                     yield return await selectorAsync(item).ConfigureAwait(false);
                 }
@@ -116,7 +116,7 @@ public static class ProjectionExtensions
             {
                 ct.ThrowIfCancellationRequested();
 
-                await foreach (var item in source.WithCancellation(ct).ConfigureAwait(false))
+                await foreach (TSource? item in source.WithCancellation(ct).ConfigureAwait(false))
                 {
                     yield return await selectorAsync(item, ct).ConfigureAwait(false);
                 }

@@ -137,7 +137,7 @@ public sealed class HostedScheduler : BackgroundService, IHostedScheduler
         // Outer loop handles Timer recreation when configuration changes
         while (!stoppingToken.IsCancellationRequested)
         {
-            var currentFrequency = _options.SchedulerFrequency;
+			uint currentFrequency = _options.SchedulerFrequency;
             var period = TimeSpan.FromMilliseconds(currentFrequency);
 
             // We wrap the timer in a scope. If frequency changes, we break the inner loop,
@@ -167,8 +167,11 @@ public sealed class HostedScheduler : BackgroundService, IHostedScheduler
                         await _scheduler.ScheduleAsync(stoppingToken).ConfigureAwait(false);
 
                         // 4. Reset backoff on success
-                        if (consecutiveErrors > 0) consecutiveErrors = 0;
-                    }
+                        if (consecutiveErrors > 0)
+						{
+							consecutiveErrors = 0;
+						}
+					}
                     catch (OperationCanceledException) when (stoppingToken.IsCancellationRequested)
                     {
                         break;
@@ -179,7 +182,7 @@ public sealed class HostedScheduler : BackgroundService, IHostedScheduler
 
                         // 5. Exponential Backoff Implementation
                         consecutiveErrors++;
-                        var backoffDelay = CalculateBackoff(consecutiveErrors);
+						TimeSpan backoffDelay = CalculateBackoff(consecutiveErrors);
                         
                         LogBackoffActive(_logger, (int)backoffDelay.TotalMilliseconds, null);
                         
@@ -200,9 +203,9 @@ public sealed class HostedScheduler : BackgroundService, IHostedScheduler
 
     private static TimeSpan CalculateBackoff(int errorCount)
     {
-        // Cap at MaxBackoffSeconds (60s)
-        // Formula: 2^errorCount * 100ms (jitter could be added here if strictly necessary)
-        var delaySeconds = Math.Min(Math.Pow(2, errorCount) * 0.1, MaxBackoffSeconds);
+		// Cap at MaxBackoffSeconds (60s)
+		// Formula: 2^errorCount * 100ms (jitter could be added here if strictly necessary)
+		double delaySeconds = Math.Min(Math.Pow(2, errorCount) * 0.1, MaxBackoffSeconds);
         return TimeSpan.FromSeconds(delaySeconds);
     }
 

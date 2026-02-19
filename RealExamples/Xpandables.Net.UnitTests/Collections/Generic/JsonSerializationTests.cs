@@ -1,4 +1,4 @@
-/*******************************************************************************
+﻿/*******************************************************************************
  * Copyright (C) 2025 Kamersoft
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
@@ -18,6 +18,7 @@ using System.IO.Pipelines;
 using System.Text;
 using System.Text.Json;
 using System.Text.Json.Serialization;
+using System.Text.Json.Serialization.Metadata;
 
 using FluentAssertions;
 
@@ -45,9 +46,9 @@ public sealed class JsonSerializationTests
         var items = Enumerable.Range(0, 10)
             .Select(i => new TestItem { Id = i, Name = $"Item_{i}" })
             .ToList();
-        var source = items.ToAsyncEnumerable();
+		IAsyncEnumerable<TestItem> source = items.ToAsyncEnumerable();
         var pagination = Pagination.Create(pageSize: 5, currentPage: 1, totalCount: 10);
-        var paged = AsyncPagedEnumerable.Create(source, _ => ValueTask.FromResult(pagination));
+		IAsyncPagedEnumerable<TestItem> paged = AsyncPagedEnumerable.Create(source, _ => ValueTask.FromResult(pagination));
 
         await using var stream = new MemoryStream();
 
@@ -56,7 +57,7 @@ public sealed class JsonSerializationTests
 
         // Assert
         stream.Position = 0;
-        var json = await new StreamReader(stream).ReadToEndAsync();
+		string json = await new StreamReader(stream).ReadToEndAsync();
 
         json.Should()
             .NotBeEmpty("JSON output should not be empty")
@@ -71,9 +72,9 @@ public sealed class JsonSerializationTests
         var items = Enumerable.Range(0, 5)
             .Select(i => new TestItem { Id = i, Name = $"Item_{i}" })
             .ToList();
-        var source = items.ToAsyncEnumerable();
+		IAsyncEnumerable<TestItem> source = items.ToAsyncEnumerable();
         var pagination = Pagination.Create(pageSize: 5, currentPage: 1, totalCount: 5);
-        var paged = AsyncPagedEnumerable.Create(source, _ => ValueTask.FromResult(pagination));
+		IAsyncPagedEnumerable<TestItem> paged = AsyncPagedEnumerable.Create(source, _ => ValueTask.FromResult(pagination));
 
         var pipe = new Pipe();
 
@@ -86,7 +87,7 @@ public sealed class JsonSerializationTests
 
         // Assert
         var reader = new StreamReader(pipe.Reader.AsStream());
-        var json = await reader.ReadToEndAsync();
+		string json = await reader.ReadToEndAsync();
 
         json.Should()
             .NotBeEmpty("JSON output should not be empty")
@@ -102,9 +103,9 @@ public sealed class JsonSerializationTests
         var items = Enumerable.Range(0, itemCount)
             .Select(i => new TestItem { Id = i, Name = $"Item_{i}" })
             .ToList();
-        var source = items.ToAsyncEnumerable();
+		IAsyncEnumerable<TestItem> source = items.ToAsyncEnumerable();
         var pagination = Pagination.Create(pageSize: 100, currentPage: 1, totalCount: itemCount);
-        var paged = AsyncPagedEnumerable.Create(source, _ => ValueTask.FromResult(pagination));
+		IAsyncPagedEnumerable<TestItem> paged = AsyncPagedEnumerable.Create(source, _ => ValueTask.FromResult(pagination));
 
         await using var stream = new MemoryStream();
 
@@ -119,8 +120,8 @@ public sealed class JsonSerializationTests
     [Fact]
     public async Task DeserializeAsyncPagedEnumerable_FromJson_ShouldRestorePaginationAndItems()
     {
-        // Arrange
-        var json = """
+		// Arrange
+		string json = """
         {
             "pagination": {
                 "pageSize": 5,
@@ -135,17 +136,17 @@ public sealed class JsonSerializationTests
             ]
         }
         """;
-        var pipe = CreatePipeWithJson(json);
+		Pipe pipe = CreatePipeWithJson(json);
 
-        var typeInfo = TestDataJsonContext.Default.TestItem;
-        var paged = JsonSerializer.DeserializeAsyncPagedEnumerable<TestItem>(
+		JsonTypeInfo<TestItem> typeInfo = TestDataJsonContext.Default.TestItem;
+		IAsyncPagedEnumerable<TestItem?> paged = JsonSerializer.DeserializeAsyncPagedEnumerable<TestItem>(
             pipe.Reader,
             typeInfo,
             cancellationToken: CancellationToken.None);
 
-        // Act
-        var items = await paged.ToListAsync();
-        var pagination = await paged.GetPaginationAsync();
+		// Act
+		List<TestItem?> items = await paged.ToListAsync();
+		Pagination pagination = await paged.GetPaginationAsync();
 
         // Assert
         items.Should()
@@ -172,8 +173,8 @@ public sealed class JsonSerializationTests
     [Fact]
     public async Task DeserializeAsyncPagedEnumerable_EmptyItems_ShouldReturnEmptyList()
     {
-        // Arrange
-        var json = """
+		// Arrange
+		string json = """
         {
             "pagination": {
                 "pageSize": 0,
@@ -184,16 +185,16 @@ public sealed class JsonSerializationTests
             "items": []
         }
         """;
-        var pipe = CreatePipeWithJson(json);
+		Pipe pipe = CreatePipeWithJson(json);
 
-        var typeInfo = TestDataJsonContext.Default.TestItem;
-        var paged = JsonSerializer.DeserializeAsyncPagedEnumerable<TestItem>(
+		JsonTypeInfo<TestItem> typeInfo = TestDataJsonContext.Default.TestItem;
+		IAsyncPagedEnumerable<TestItem?> paged = JsonSerializer.DeserializeAsyncPagedEnumerable<TestItem>(
             pipe.Reader,
             typeInfo,
             cancellationToken: CancellationToken.None);
 
-        // Act
-        var items = await paged.ToListAsync();
+		// Act
+		List<TestItem?> items = await paged.ToListAsync();
 
         // Assert
         items.Should()
@@ -211,23 +212,23 @@ public sealed class JsonSerializationTests
 
         // Act - Serialize
         await using var serializeStream = new MemoryStream();
-        var source = originalItems.ToAsyncEnumerable();
-        var paged = AsyncPagedEnumerable.Create(source, _ => ValueTask.FromResult(originalPagination));
+		IAsyncEnumerable<TestItem> source = originalItems.ToAsyncEnumerable();
+		IAsyncPagedEnumerable<TestItem> paged = AsyncPagedEnumerable.Create(source, _ => ValueTask.FromResult(originalPagination));
         await JsonSerializer.SerializeAsyncPaged(serializeStream, paged, _options);
 
         // Act - Deserialize
         serializeStream.Position = 0;
-        var deserializedJson = await new StreamReader(serializeStream).ReadToEndAsync();
-        var pipe = CreatePipeWithJson(deserializedJson);
+		string deserializedJson = await new StreamReader(serializeStream).ReadToEndAsync();
+		Pipe pipe = CreatePipeWithJson(deserializedJson);
 
-        var typeInfo = TestDataJsonContext.Default.TestItem;
-        var deserializedPaged = JsonSerializer.DeserializeAsyncPagedEnumerable<TestItem>(
+		JsonTypeInfo<TestItem> typeInfo = TestDataJsonContext.Default.TestItem;
+		IAsyncPagedEnumerable<TestItem?> deserializedPaged = JsonSerializer.DeserializeAsyncPagedEnumerable<TestItem>(
             pipe.Reader,
             typeInfo,
             cancellationToken: CancellationToken.None);
 
-        var deserializedItems = await deserializedPaged.ToListAsync();
-        var deserializedPagination = await deserializedPaged.GetPaginationAsync();
+		List<TestItem?> deserializedItems = await deserializedPaged.ToListAsync();
+		Pagination deserializedPagination = await deserializedPaged.GetPaginationAsync();
 
         // Assert
         deserializedItems.Should()
@@ -247,10 +248,10 @@ public sealed class JsonSerializationTests
     /// </summary>
     private static Pipe CreatePipeWithJson(string json)
     {
-        var bytes = Encoding.UTF8.GetBytes(json);
+		byte[] bytes = Encoding.UTF8.GetBytes(json);
         var pipe = new Pipe();
 
-        var buffer = pipe.Writer.GetMemory(bytes.Length);
+		Memory<byte> buffer = pipe.Writer.GetMemory(bytes.Length);
         bytes.CopyTo(buffer);
         pipe.Writer.Advance(bytes.Length);
 
@@ -267,12 +268,12 @@ public sealed class JsonSerializationTests
         {
             while (true)
             {
-                var result = await reader.ReadAsync();
-                var buffer = result.Buffer;
+				ReadResult result = await reader.ReadAsync();
+				System.Buffers.ReadOnlySequence<byte> buffer = result.Buffer;
 
                 if (buffer.Length > 0)
                 {
-                    foreach (var segment in buffer)
+                    foreach (ReadOnlyMemory<byte> segment in buffer)
                     {
                         sb.Append(Encoding.UTF8.GetString(segment.Span));
                     }
@@ -280,8 +281,10 @@ public sealed class JsonSerializationTests
                 }
 
                 if (result.IsCompleted)
-                    break;
-            }
+				{
+					break;
+				}
+			}
         }
         finally
         {
@@ -306,8 +309,11 @@ public class TestItem
     public override bool Equals(object? obj)
     {
         if (obj is not TestItem item)
-            return false;
-        return Id == item.Id && Name == item.Name;
+		{
+			return false;
+		}
+
+		return Id == item.Id && Name == item.Name;
     }
 
     public override int GetHashCode()

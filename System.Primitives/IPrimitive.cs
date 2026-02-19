@@ -213,7 +213,7 @@ public sealed class PrimitiveTypeConverter<TPrimitive, TValue> : TypeConverter
     {
         if (value is string s)
         {
-            if (TPrimitive.TryParse(s, culture, out var result))
+            if (TPrimitive.TryParse(s, culture, out TPrimitive result))
             {
                 return result;
             }

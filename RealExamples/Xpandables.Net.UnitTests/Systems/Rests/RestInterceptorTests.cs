@@ -1,4 +1,4 @@
-/*******************************************************************************
+﻿/*******************************************************************************
  * Copyright (C) 2025 Kamersoft
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
@@ -35,7 +35,7 @@ public sealed class RestInterceptorTests
     [Fact]
     public async Task RequestInterceptor_IsInvoked_DuringBuildRequest()
     {
-        using var serializerScope = UseDefaultSerializerOptions();
+        using IDisposable serializerScope = UseDefaultSerializerOptions();
 
         // Arrange
         var interceptor = new TestRequestInterceptor(abort: false);
@@ -58,7 +58,7 @@ public sealed class RestInterceptorTests
     [Fact]
     public async Task RequestInterceptor_WhenAborted_SkipsComposers()
     {
-        using var serializerScope = UseDefaultSerializerOptions();
+        using IDisposable serializerScope = UseDefaultSerializerOptions();
 
         // Arrange
         var interceptor = new TestRequestInterceptor(abort: true);
@@ -82,7 +82,7 @@ public sealed class RestInterceptorTests
     [Fact]
     public async Task RequestInterceptors_ExecuteInOrder()
     {
-        using var serializerScope = UseDefaultSerializerOptions();
+        using IDisposable serializerScope = UseDefaultSerializerOptions();
 
         // Arrange
         List<int> executionOrder = [];
@@ -111,7 +111,7 @@ public sealed class RestInterceptorTests
     [Fact]
     public async Task ResponseInterceptor_IsInvoked_DuringBuildResponse()
     {
-        using var serializerScope = UseDefaultSerializerOptions();
+        using IDisposable serializerScope = UseDefaultSerializerOptions();
 
         // Arrange
         var interceptor = new TestResponseInterceptor();
@@ -134,7 +134,7 @@ public sealed class RestInterceptorTests
     [Fact]
     public async Task ResponseInterceptors_ExecuteInOrder()
     {
-        using var serializerScope = UseDefaultSerializerOptions();
+        using IDisposable serializerScope = UseDefaultSerializerOptions();
 
         // Arrange
         List<int> executionOrder = [];
@@ -159,7 +159,7 @@ public sealed class RestInterceptorTests
     [Fact]
     public async Task ResponseInterceptor_CanModifyResponse()
     {
-        using var serializerScope = UseDefaultSerializerOptions();
+        using IDisposable serializerScope = UseDefaultSerializerOptions();
 
         // Arrange
         RestResponse modifiedResponse = new()

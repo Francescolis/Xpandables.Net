@@ -60,7 +60,7 @@ public sealed record SuccessResult<TValue> : Result<TValue>
     /// Gets or sets the value of the result.
     /// </summary>
     [MaybeNull, AllowNull]
-    public required new TValue Value
+    public new required TValue Value
     {
         get => InternalValue is TValue result ? result : default;
         init => InternalValue = value;

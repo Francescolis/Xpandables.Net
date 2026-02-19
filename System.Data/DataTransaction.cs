@@ -1,4 +1,4 @@
-/*******************************************************************************
+﻿/*******************************************************************************
  * Copyright (C) 2025 Kamersoft
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
@@ -92,9 +92,11 @@ public sealed class DataTransaction(DbTransaction transaction, Action? onComplet
     public void Dispose()
     {
         if (_isDisposed)
-            return;
+		{
+			return;
+		}
 
-        _isDisposed = true;
+		_isDisposed = true;
 
         // If not completed, rollback the transaction
         if (!IsCompleted)
@@ -120,9 +122,11 @@ public sealed class DataTransaction(DbTransaction transaction, Action? onComplet
     public async ValueTask DisposeAsync()
     {
         if (_isDisposed)
-            return;
+		{
+			return;
+		}
 
-        _isDisposed = true;
+		_isDisposed = true;
 
         // If not completed, rollback the transaction
         if (!IsCompleted)
@@ -149,7 +153,7 @@ public sealed class DataTransaction(DbTransaction transaction, Action? onComplet
 
         if (IsCompleted)
         {
-            var state = IsCommitted ? "committed" : "rolled back";
+			string state = IsCommitted ? "committed" : "rolled back";
             throw new InvalidOperationException(
                 $"The transaction has already been {state}. A completed transaction cannot be modified.");
         }

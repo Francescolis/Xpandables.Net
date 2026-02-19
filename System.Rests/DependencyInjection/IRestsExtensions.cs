@@ -182,11 +182,11 @@ public static class IRestsExtensions
         public IHttpClientBuilder AddXRestClientWithResilience(
             Action<IServiceProvider, HttpClient> configureClient)
         {
-            var builder = services.AddXRestClient(configureClient);
+			IHttpClientBuilder builder = services.AddXRestClient(configureClient);
 
             builder.AddResilienceHandler("RestClientResilience", (resilienceBuilder, context) =>
             {
-                var options = context.ServiceProvider
+				RestClientOptions options = context.ServiceProvider
                     .GetService<Microsoft.Extensions.Options.IOptions<RestClientOptions>>()?.Value
                     ?? new RestClientOptions();
 

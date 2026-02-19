@@ -1,4 +1,4 @@
-/*******************************************************************************
+﻿/*******************************************************************************
  * Copyright (C) 2025 Kamersoft
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
@@ -109,7 +109,7 @@ public sealed class RestResponseComposerTests
             RestResponse response = await composer.ComposeAsync(context);
 
             response.Result.Should().BeAssignableTo<Stream>();
-            using Stream stream = (Stream)response.Result!;
+            using var stream = (Stream)response.Result!;
             byte[] result = await ReadAllBytesAsync(stream);
             result.Should().Equal(payload);
         }
@@ -189,7 +189,7 @@ public sealed class RestResponseComposerTests
 
             response.Result.Should().NotBeNull();
             response.Result.Should().BeAssignableTo<IAsyncEnumerable<WidgetDto>>();
-            IAsyncEnumerable<WidgetDto> stream = (IAsyncEnumerable<WidgetDto>)response.Result!;
+            var stream = (IAsyncEnumerable<WidgetDto>)response.Result!;
             List<WidgetDto> items = await ToListAsync(stream);
             items.Should().HaveCount(2);
             items.Should().ContainEquivalentOf(new WidgetDto(1, "One"));
@@ -229,7 +229,7 @@ public sealed class RestResponseComposerTests
 
             response.Result.Should().NotBeNull();
             response.Result.Should().BeAssignableTo<IAsyncPagedEnumerable<WidgetDto>>();
-            IAsyncPagedEnumerable<WidgetDto> paged = (IAsyncPagedEnumerable<WidgetDto>)response.Result!;
+            var paged = (IAsyncPagedEnumerable<WidgetDto>)response.Result!;
 
             List<WidgetDto> items = await ToListAsync((IAsyncEnumerable<WidgetDto>)paged);
             items.Should().HaveCount(2);

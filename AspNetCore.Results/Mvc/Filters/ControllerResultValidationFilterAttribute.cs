@@ -40,7 +40,7 @@ public sealed class ControllerResultValidationFilterAttribute : ActionFilterAttr
             return;
         }
 
-        Result result = context.ModelState.ToResult();
+        var result = context.ModelState.ToResult();
 
         context.Result = new BadRequestObjectResult(result);
     }

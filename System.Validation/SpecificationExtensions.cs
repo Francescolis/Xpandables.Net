@@ -1,4 +1,4 @@
-/*******************************************************************************
+﻿/*******************************************************************************
  * Copyright (C) 2025 Kamersoft
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
@@ -235,7 +235,7 @@ public static class SpecificationExtensions
         public ISpecification<TSource> AllOf()
         {
             ArgumentNullException.ThrowIfNull(specifications);
-            var specArray = specifications.ToArray();
+			ISpecification<TSource>[] specArray = specifications.ToArray();
             return Specification.All(specArray);
         }
 
@@ -246,7 +246,7 @@ public static class SpecificationExtensions
         public ISpecification<TSource> AnyOf()
         {
             ArgumentNullException.ThrowIfNull(specifications);
-            var specArray = specifications.ToArray();
+			ISpecification<TSource>[] specArray = specifications.ToArray();
             return Specification.Any(specArray);
         }
     }

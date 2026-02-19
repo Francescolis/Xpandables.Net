@@ -25,7 +25,7 @@ public sealed class PrimitiveJsonSerialization
     {
         var email = EmailAddress.Create("test@example.com");
         string json = System.Text.Json.JsonSerializer.Serialize(email);
-        var deserializedEmail = System.Text.Json.JsonSerializer.Deserialize<EmailAddress>(json);
+		EmailAddress deserializedEmail = System.Text.Json.JsonSerializer.Deserialize<EmailAddress>(json);
         Assert.Equal(email, deserializedEmail);
     }
 

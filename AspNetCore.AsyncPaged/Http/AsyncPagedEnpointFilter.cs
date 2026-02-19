@@ -50,9 +50,11 @@ public sealed class AsyncPagedEnpointFilter : IEndpointFilter
         object? result = await next(context).ConfigureAwait(false);
 
         if (result is null)
-            return result;
+		{
+			return result;
+		}
 
-        IAsyncPagedEnumerable? pagedEnumerable = result switch
+		IAsyncPagedEnumerable? pagedEnumerable = result switch
         {
             IAsyncPagedEnumerable paged => paged,
             ObjectResult { Value: IAsyncPagedEnumerable paged } => paged,

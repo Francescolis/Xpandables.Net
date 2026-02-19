@@ -1,4 +1,4 @@
-/*******************************************************************************
+﻿/*******************************************************************************
  * Copyright (C) 2025 Kamersoft
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
@@ -91,11 +91,11 @@ public sealed class MsDataSqlBuilder : DataSqlBuilderBase
         IReadOnlyDictionary<string, string> columnMappings,
         List<SqlParameter> parameters)
     {
-        var (columnExpr, valueExpr) = GetStringMethodOperands(methodCall);
-        var column = TranslateExpression(columnExpr, columnMappings, parameters);
-        var value = ExtractConstantValue(valueExpr);
-        var escapedValue = EscapeLikePattern(value?.ToString() ?? string.Empty);
-        var paramName = NextParameterName();
+        (Linq.Expressions.Expression? columnExpr, Linq.Expressions.Expression? valueExpr) = GetStringMethodOperands(methodCall);
+		string column = TranslateExpression(columnExpr, columnMappings, parameters);
+		object? value = ExtractConstantValue(valueExpr);
+		string escapedValue = EscapeLikePattern(value?.ToString() ?? string.Empty);
+		string paramName = NextParameterName();
         parameters.Add(new SqlParameter(paramName, $"%{escapedValue}%"));
         return $"({column} LIKE {ParameterPrefix}{paramName})";
     }
@@ -106,11 +106,11 @@ public sealed class MsDataSqlBuilder : DataSqlBuilderBase
         IReadOnlyDictionary<Linq.Expressions.ParameterExpression, TableBinding> bindings,
         List<SqlParameter> parameters)
     {
-        var (columnExpr, valueExpr) = GetStringMethodOperands(methodCall);
-        var column = TranslateExpression(columnExpr, bindings, parameters);
-        var value = ExtractConstantValue(valueExpr);
-        var escapedValue = EscapeLikePattern(value?.ToString() ?? string.Empty);
-        var paramName = NextParameterName();
+        (Linq.Expressions.Expression? columnExpr, Linq.Expressions.Expression? valueExpr) = GetStringMethodOperands(methodCall);
+		string column = TranslateExpression(columnExpr, bindings, parameters);
+		object? value = ExtractConstantValue(valueExpr);
+		string escapedValue = EscapeLikePattern(value?.ToString() ?? string.Empty);
+		string paramName = NextParameterName();
         parameters.Add(new SqlParameter(paramName, $"%{escapedValue}%"));
         return $"({column} LIKE {ParameterPrefix}{paramName})";
     }
@@ -123,11 +123,11 @@ public sealed class MsDataSqlBuilder : DataSqlBuilderBase
         IReadOnlyDictionary<string, string> columnMappings,
         List<SqlParameter> parameters)
     {
-        var (columnExpr, valueExpr) = GetStringMethodOperands(methodCall);
-        var column = TranslateExpression(columnExpr, columnMappings, parameters);
-        var value = ExtractConstantValue(valueExpr);
-        var escapedValue = EscapeLikePattern(value?.ToString() ?? string.Empty);
-        var paramName = NextParameterName();
+        (Linq.Expressions.Expression? columnExpr, Linq.Expressions.Expression? valueExpr) = GetStringMethodOperands(methodCall);
+		string column = TranslateExpression(columnExpr, columnMappings, parameters);
+		object? value = ExtractConstantValue(valueExpr);
+		string escapedValue = EscapeLikePattern(value?.ToString() ?? string.Empty);
+		string paramName = NextParameterName();
         parameters.Add(new SqlParameter(paramName, $"{escapedValue}%"));
         return $"({column} LIKE {ParameterPrefix}{paramName})";
     }
@@ -138,11 +138,11 @@ public sealed class MsDataSqlBuilder : DataSqlBuilderBase
         IReadOnlyDictionary<Linq.Expressions.ParameterExpression, TableBinding> bindings,
         List<SqlParameter> parameters)
     {
-        var (columnExpr, valueExpr) = GetStringMethodOperands(methodCall);
-        var column = TranslateExpression(columnExpr, bindings, parameters);
-        var value = ExtractConstantValue(valueExpr);
-        var escapedValue = EscapeLikePattern(value?.ToString() ?? string.Empty);
-        var paramName = NextParameterName();
+        (Linq.Expressions.Expression? columnExpr, Linq.Expressions.Expression? valueExpr) = GetStringMethodOperands(methodCall);
+		string column = TranslateExpression(columnExpr, bindings, parameters);
+		object? value = ExtractConstantValue(valueExpr);
+		string escapedValue = EscapeLikePattern(value?.ToString() ?? string.Empty);
+		string paramName = NextParameterName();
         parameters.Add(new SqlParameter(paramName, $"{escapedValue}%"));
         return $"({column} LIKE {ParameterPrefix}{paramName})";
     }
@@ -155,11 +155,11 @@ public sealed class MsDataSqlBuilder : DataSqlBuilderBase
         IReadOnlyDictionary<string, string> columnMappings,
         List<SqlParameter> parameters)
     {
-        var (columnExpr, valueExpr) = GetStringMethodOperands(methodCall);
-        var column = TranslateExpression(columnExpr, columnMappings, parameters);
-        var value = ExtractConstantValue(valueExpr);
-        var escapedValue = EscapeLikePattern(value?.ToString() ?? string.Empty);
-        var paramName = NextParameterName();
+        (Linq.Expressions.Expression? columnExpr, Linq.Expressions.Expression? valueExpr) = GetStringMethodOperands(methodCall);
+		string column = TranslateExpression(columnExpr, columnMappings, parameters);
+		object? value = ExtractConstantValue(valueExpr);
+		string escapedValue = EscapeLikePattern(value?.ToString() ?? string.Empty);
+		string paramName = NextParameterName();
         parameters.Add(new SqlParameter(paramName, $"%{escapedValue}"));
         return $"({column} LIKE {ParameterPrefix}{paramName})";
     }
@@ -170,11 +170,11 @@ public sealed class MsDataSqlBuilder : DataSqlBuilderBase
         IReadOnlyDictionary<Linq.Expressions.ParameterExpression, TableBinding> bindings,
         List<SqlParameter> parameters)
     {
-        var (columnExpr, valueExpr) = GetStringMethodOperands(methodCall);
-        var column = TranslateExpression(columnExpr, bindings, parameters);
-        var value = ExtractConstantValue(valueExpr);
-        var escapedValue = EscapeLikePattern(value?.ToString() ?? string.Empty);
-        var paramName = NextParameterName();
+        (Linq.Expressions.Expression? columnExpr, Linq.Expressions.Expression? valueExpr) = GetStringMethodOperands(methodCall);
+		string column = TranslateExpression(columnExpr, bindings, parameters);
+		object? value = ExtractConstantValue(valueExpr);
+		string escapedValue = EscapeLikePattern(value?.ToString() ?? string.Empty);
+		string paramName = NextParameterName();
         parameters.Add(new SqlParameter(paramName, $"%{escapedValue}"));
         return $"({column} LIKE {ParameterPrefix}{paramName})";
     }

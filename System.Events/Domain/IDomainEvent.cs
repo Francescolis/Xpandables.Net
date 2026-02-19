@@ -194,7 +194,7 @@ public sealed class DomainEventMetaDataJsonStringConverter : JsonConverter<IRead
 
         writer.WriteStartObject();
 
-        foreach (var kvp in value)
+        foreach (KeyValuePair<string, object?> kvp in value)
         {
             writer.WritePropertyName(kvp.Key);
             WriteValue(writer, kvp.Value, options);

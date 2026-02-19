@@ -1,4 +1,4 @@
-/*******************************************************************************
+﻿/*******************************************************************************
  * Copyright (C) 2025 Kamersoft
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
@@ -28,7 +28,7 @@ public sealed class AggregateStoreTests
     public async Task LoadAsync_WithExistingHistory_RehydratesAggregateState()
     {
         // Arrange
-        Guid accountId = Guid.NewGuid();
+        var accountId = Guid.NewGuid();
         var history = new IDomainEvent[]
         {
             new AccountOpened
@@ -64,11 +64,11 @@ public sealed class AggregateStoreTests
     public async Task SaveAsync_WithPendingEvents_AppendsBatchAndQueuesDomainEvents()
     {
         // Arrange
-        Guid accountId = Guid.NewGuid();
+        var accountId = Guid.NewGuid();
         var eventStore = new FakeEventStore();
         var buffer = new PendingDomainEventsBuffer();
         var sut = new AggregateStore<TestBankAccountAggregate>(eventStore, buffer, new DefaultDomainEventEnricher(new AsyncLocalEventContextAccessor()));
-        TestBankAccountAggregate aggregate = TestBankAccountAggregate.Initialize();
+        var aggregate = TestBankAccountAggregate.Initialize();
 
         aggregate.Open(accountId, "Ada", 100m);
         aggregate.Deposit(50m);
@@ -82,7 +82,7 @@ public sealed class AggregateStoreTests
         eventStore.LastAppendRequest!.Value.Events.Should().HaveCount(2);
         eventStore.LastAppendRequest!.Value.ExpectedVersion.Should().Be(-1);
 
-        var batches = buffer.Drain();
+		IReadOnlyCollection<PendingDomainEventsBatch> batches = buffer.Drain();
         batches.Should().ContainSingle();
         batches.Single().Events.Should().HaveCount(2);
     }

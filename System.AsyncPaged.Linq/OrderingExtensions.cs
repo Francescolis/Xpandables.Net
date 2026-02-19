@@ -1,4 +1,4 @@
-/*******************************************************************************
+﻿/*******************************************************************************
  * Copyright (C) 2025 Kamersoft
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
@@ -70,14 +70,14 @@ public static class OrderingExtensions
                 ct.ThrowIfCancellationRequested();
 
                 var list = new List<TSource>();
-                await foreach (var item in source.WithCancellation(ct).ConfigureAwait(false))
+                await foreach (TSource? item in source.WithCancellation(ct).ConfigureAwait(false))
                 {
                     list.Add(item);
                 }
 
                 list.Sort((x, y) => comparer.Compare(keySelector(x), keySelector(y)));
 
-                foreach (var item in list)
+                foreach (TSource? item in list)
                 {
                     ct.ThrowIfCancellationRequested();
                     yield return item;
@@ -127,14 +127,14 @@ public static class OrderingExtensions
                 ct.ThrowIfCancellationRequested();
 
                 var list = new List<TSource>();
-                await foreach (var item in source.WithCancellation(ct).ConfigureAwait(false))
+                await foreach (TSource? item in source.WithCancellation(ct).ConfigureAwait(false))
                 {
                     list.Add(item);
                 }
 
                 list.Sort((x, y) => comparer.Compare(keySelector(y), keySelector(x))); // Note: reversed comparison for descending
 
-                foreach (var item in list)
+                foreach (TSource? item in list)
                 {
                     ct.ThrowIfCancellationRequested();
                     yield return item;
@@ -170,7 +170,7 @@ public static class OrderingExtensions
                 ct.ThrowIfCancellationRequested();
 
                 var list = new List<TSource>();
-                await foreach (var item in source.WithCancellation(ct).ConfigureAwait(false))
+                await foreach (TSource? item in source.WithCancellation(ct).ConfigureAwait(false))
                 {
                     list.Add(item);
                 }

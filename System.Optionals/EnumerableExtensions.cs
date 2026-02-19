@@ -43,7 +43,7 @@ public static class EnumerableExtensions
         {
             ArgumentNullException.ThrowIfNull(source);
 
-            foreach (var item in source)
+            foreach (TSource? item in source)
             {
                 return Optional.Some(item);
             }
@@ -62,7 +62,7 @@ public static class EnumerableExtensions
             ArgumentNullException.ThrowIfNull(source);
             ArgumentNullException.ThrowIfNull(predicate);
 
-            foreach (var item in source)
+            foreach (TSource? item in source)
             {
                 if (predicate(item))
                 {
@@ -108,7 +108,7 @@ public static class EnumerableExtensions
         public async Task<Optional<TSource>> FirstOrEmptyAsync()
         {
             ArgumentNullException.ThrowIfNull(source);
-            await foreach (var item in source.ConfigureAwait(false))
+            await foreach (TSource? item in source.ConfigureAwait(false))
             {
                 return Optional.Some(item);
             }
@@ -129,7 +129,7 @@ public static class EnumerableExtensions
             ArgumentNullException.ThrowIfNull(source);
             ArgumentNullException.ThrowIfNull(predicate);
 
-            await foreach (var item in source.ConfigureAwait(false))
+            await foreach (TSource? item in source.ConfigureAwait(false))
             {
                 if (predicate(item))
                 {

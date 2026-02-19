@@ -46,10 +46,13 @@ public sealed class RestResponseContentComposer : IRestResponseComposer
         JsonSerializerOptions options = context.SerializerOptions;
 
         if (!CanCompose(context))
-            throw new InvalidOperationException(
+		{
+			throw new InvalidOperationException(
                 $"{nameof(ComposeAsync)}: The response is not a success. " +
                 $"Status code: {response.StatusCode} ({response.ReasonPhrase}).");
-        try
+		}
+
+		try
         {
             string contentType = response.Content.Headers.ContentType?.MediaType ?? string.Empty;
 

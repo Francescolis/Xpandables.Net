@@ -1,4 +1,4 @@
-/*******************************************************************************
+﻿/*******************************************************************************
  * Copyright (C) 2025 Kamersoft
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
@@ -79,7 +79,7 @@ public sealed class RestClientOptionsTests
     [Fact]
     public async Task RestClient_WhenRequestTimesOut_ReturnsTimeoutResponse()
     {
-        using var serializerScope = UseDefaultSerializerOptions();
+        using IDisposable serializerScope = UseDefaultSerializerOptions();
 
         // Arrange
         ServiceCollection services = new();
@@ -110,7 +110,7 @@ public sealed class RestClientOptionsTests
     [Fact]
     public async Task RestClient_WhenCancellationRequested_ReturnsCancelledState()
     {
-        using var serializerScope = UseDefaultSerializerOptions();
+        using IDisposable serializerScope = UseDefaultSerializerOptions();
 
         // Arrange
         ServiceCollection services = new();
@@ -130,9 +130,9 @@ public sealed class RestClientOptionsTests
         using CancellationTokenSource cts = new();
         cts.Cancel(); // Cancel immediately
 
-        // Act & Assert - the response should indicate cancellation or throw
-        // Since the SlowHandler will never be reached due to cancellation in builders
-        var response = await client.SendAsync(new SimpleRequest(), cts.Token);
+		// Act & Assert - the response should indicate cancellation or throw
+		// Since the SlowHandler will never be reached due to cancellation in builders
+		RestResponse response = await client.SendAsync(new SimpleRequest(), cts.Token);
         response.Exception.Should().Match<Exception>(e =>
                    e is OperationCanceledException);
     }
@@ -140,7 +140,7 @@ public sealed class RestClientOptionsTests
     [Fact]
     public async Task RestClient_WhenHttpExceptionOccurs_ReturnsErrorResponse()
     {
-        using var serializerScope = UseDefaultSerializerOptions();
+        using IDisposable serializerScope = UseDefaultSerializerOptions();
 
         // Arrange
         ServiceCollection services = new();
@@ -190,10 +190,10 @@ public sealed class RestClientOptionsTests
             };
         });
 
-        var provider = services.BuildServiceProvider();
+		ServiceProvider provider = services.BuildServiceProvider();
 
-        // Act
-        var options = provider.GetRequiredService<Microsoft.Extensions.Options.IOptions<RestClientOptions>>().Value;
+		// Act
+		RestClientOptions options = provider.GetRequiredService<Microsoft.Extensions.Options.IOptions<RestClientOptions>>().Value;
 
         // Assert
         options.Timeout.Should().Be(TimeSpan.FromMinutes(2));

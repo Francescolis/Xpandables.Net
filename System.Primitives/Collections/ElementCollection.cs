@@ -92,7 +92,7 @@ public readonly record struct ElementCollection : IEnumerable<ElementEntry>, IRe
     {
         ArgumentNullException.ThrowIfNull(dictionary);
         var collection = new ElementCollection(dictionary.Count);
-        foreach (var kvp in dictionary)
+        foreach (KeyValuePair<string, StringValues> kvp in dictionary)
         {
             collection.AddInternal(new ElementEntry { Key = kvp.Key, Values = kvp.Value });
         }
@@ -129,7 +129,7 @@ public readonly record struct ElementCollection : IEnumerable<ElementEntry>, IRe
         get
         {
             ArgumentException.ThrowIfNullOrEmpty(key);
-            return TryGetValue(key, out var entry) ? entry : null;
+            return TryGetValue(key, out ElementEntry entry) ? entry : null;
         }
     }
 
@@ -142,7 +142,7 @@ public readonly record struct ElementCollection : IEnumerable<ElementEntry>, IRe
     [MethodImpl(MethodImplOptions.AggressiveInlining)]
     public bool TryGetValue(string key, out ElementEntry entry)
     {
-        if (_keyIndex?.TryGetValue(key, out var index) == true && index < _entries.Count)
+        if (_keyIndex?.TryGetValue(key, out int index) == true && index < _entries.Count)
         {
             entry = _entries[index];
             return true;
@@ -182,11 +182,11 @@ public readonly record struct ElementCollection : IEnumerable<ElementEntry>, IRe
     {
         ArgumentException.ThrowIfNullOrEmpty(entry.Key);
 
-        if (_keyIndex?.TryGetValue(entry.Key, out var existingIndex) == true)
+        if (_keyIndex?.TryGetValue(entry.Key, out int existingIndex) == true)
         {
-            // Merge with existing entry
-            var existingEntry = _entries[existingIndex];
-            var mergedEntry = existingEntry with { Values = StringValues.Concat(existingEntry.Values, entry.Values) };
+			// Merge with existing entry
+			ElementEntry existingEntry = _entries[existingIndex];
+			ElementEntry mergedEntry = existingEntry with { Values = StringValues.Concat(existingEntry.Values, entry.Values) };
             _entries[existingIndex] = mergedEntry;
         }
         else
@@ -198,7 +198,7 @@ public readonly record struct ElementCollection : IEnumerable<ElementEntry>, IRe
     [MethodImpl(MethodImplOptions.AggressiveInlining)]
     private void AddInternal(ElementEntry entry)
     {
-        var index = _entries.Count;
+		int index = _entries.Count;
         _entries.Add(entry);
         _keyIndex![entry.Key] = index;
     }
@@ -231,7 +231,7 @@ public readonly record struct ElementCollection : IEnumerable<ElementEntry>, IRe
 
         _entries.EnsureCapacity(_entries.Count + values.Count);
 
-        foreach (var kvp in values)
+        foreach (KeyValuePair<string, string> kvp in values)
         {
             Add(kvp.Key, kvp.Value);
         }
@@ -248,7 +248,7 @@ public readonly record struct ElementCollection : IEnumerable<ElementEntry>, IRe
 
         _entries.EnsureCapacity(_entries.Count + values.Count);
 
-        foreach (var kvp in values)
+        foreach (KeyValuePair<string, StringValues> kvp in values)
         {
             Add(new ElementEntry { Key = kvp.Key, Values = kvp.Value });
         }
@@ -268,7 +268,7 @@ public readonly record struct ElementCollection : IEnumerable<ElementEntry>, IRe
             _entries.EnsureCapacity(_entries.Count + collection.Count);
         }
 
-        foreach (var entry in entries)
+        foreach (ElementEntry entry in entries)
         {
             Add(entry);
         }
@@ -283,7 +283,7 @@ public readonly record struct ElementCollection : IEnumerable<ElementEntry>, IRe
     {
         ArgumentException.ThrowIfNullOrEmpty(key);
 
-        if (_keyIndex?.TryGetValue(key, out var index) == true)
+        if (_keyIndex?.TryGetValue(key, out int index) == true)
         {
             _entries.RemoveAt(index);
             _keyIndex.Remove(key);
@@ -312,11 +312,14 @@ public readonly record struct ElementCollection : IEnumerable<ElementEntry>, IRe
     /// <param name="collection">The <see cref="ElementCollection"/> to merge with the current collection.</param>
     public void Merge(ElementCollection collection)
     {
-        if (collection.IsEmpty) return;
+        if (collection.IsEmpty)
+		{
+			return;
+		}
 
-        _entries.EnsureCapacity(_entries.Count + collection.Count);
+		_entries.EnsureCapacity(_entries.Count + collection.Count);
 
-        foreach (var entry in collection)
+        foreach (ElementEntry entry in collection)
         {
             Add(entry);
         }
@@ -338,10 +341,13 @@ public readonly record struct ElementCollection : IEnumerable<ElementEntry>, IRe
     /// <returns>A new <see cref="ElementCollection"/> that is a copy of the current collection.</returns>
     public ElementCollection Copy()
     {
-        if (IsEmpty) return Empty;
+        if (IsEmpty)
+		{
+			return Empty;
+		}
 
-        var copy = new ElementCollection(_entries.Count);
-        foreach (var entry in _entries)
+		var copy = new ElementCollection(_entries.Count);
+        foreach (ElementEntry entry in _entries)
         {
             copy.AddInternal(entry);
         }
@@ -375,7 +381,7 @@ public readonly record struct ElementCollection : IEnumerable<ElementEntry>, IRe
                 _entries.EnsureCapacity(collection.Count);
             }
 
-            foreach (var entry in entries)
+            foreach (ElementEntry entry in entries)
             {
                 Add(entry);
             }
@@ -390,7 +396,7 @@ public readonly record struct ElementCollection : IEnumerable<ElementEntry>, IRe
     /// <returns>A new <see cref="ElementCollection"/> with the specified entry added.</returns>
     public static ElementCollection operator +(ElementCollection collection, ElementEntry entry)
     {
-        var result = collection.Copy();
+		ElementCollection result = collection.Copy();
         result.Add(entry);
         return result;
     }
@@ -403,10 +409,17 @@ public readonly record struct ElementCollection : IEnumerable<ElementEntry>, IRe
     /// <returns>A new <see cref="ElementCollection"/> that contains the entries from both collections.</returns>
     public static ElementCollection operator +(ElementCollection left, ElementCollection right)
     {
-        if (left.IsEmpty) return right.Copy();
-        if (right.IsEmpty) return left.Copy();
+        if (left.IsEmpty)
+		{
+			return right.Copy();
+		}
 
-        var result = left.Copy();
+		if (right.IsEmpty)
+		{
+			return left.Copy();
+		}
+
+		ElementCollection result = left.Copy();
         result.Merge(right);
         return result;
     }
@@ -419,7 +432,7 @@ public readonly record struct ElementCollection : IEnumerable<ElementEntry>, IRe
     /// <returns>A new <see cref="ElementCollection"/> with the specified entry removed.</returns>
     public static ElementCollection operator -(ElementCollection collection, string key)
     {
-        var result = collection.Copy();
+		ElementCollection result = collection.Copy();
         result.Remove(key);
         return result;
     }
@@ -432,7 +445,7 @@ public readonly record struct ElementCollection : IEnumerable<ElementEntry>, IRe
     /// <returns>A new <see cref="ElementCollection"/> with the specified entry removed.</returns>
     public static ElementCollection operator -(ElementCollection collection, ElementEntry entry)
     {
-        var result = collection.Copy();
+		ElementCollection result = collection.Copy();
         result.Remove(entry.Key);
         return result;
     }
@@ -453,10 +466,12 @@ public readonly record struct ElementCollection : IEnumerable<ElementEntry>, IRe
     public static implicit operator ReadOnlyDictionary<string, StringValues>(ElementCollection collection)
     {
         if (collection.IsEmpty)
-            return new ReadOnlyDictionary<string, StringValues>(new Dictionary<string, StringValues>());
+		{
+			return new ReadOnlyDictionary<string, StringValues>(new Dictionary<string, StringValues>());
+		}
 
-        var dict = new Dictionary<string, StringValues>(collection.Count, StringComparer.Ordinal);
-        foreach (var entry in collection._entries)
+		var dict = new Dictionary<string, StringValues>(collection.Count, StringComparer.Ordinal);
+        foreach (ElementEntry entry in collection._entries)
         {
             dict[entry.Key] = entry.Values;
         }
@@ -473,10 +488,13 @@ public readonly record struct ElementCollection : IEnumerable<ElementEntry>, IRe
     /// <returns>The updated collection after specified elements have been removed.</returns>
     public static ElementCollection Subtract(ElementCollection left, ElementCollection right)
     {
-        if (left.IsEmpty || right.IsEmpty) return left.Copy();
+        if (left.IsEmpty || right.IsEmpty)
+		{
+			return left.Copy();
+		}
 
-        var result = left.Copy();
-        foreach (var entry in right)
+		ElementCollection result = left.Copy();
+        foreach (ElementEntry entry in right)
         {
             result.Remove(entry.Key);
         }
@@ -497,10 +515,13 @@ public readonly record struct ElementCollection : IEnumerable<ElementEntry>, IRe
     /// <returns>A new Dictionary containing the entries.</returns>
     public Dictionary<string, StringValues> ToDictionary()
     {
-        if (IsEmpty) return [];
+        if (IsEmpty)
+		{
+			return [];
+		}
 
-        var dict = new Dictionary<string, StringValues>(Count, StringComparer.Ordinal);
-        foreach (var entry in _entries)
+		var dict = new Dictionary<string, StringValues>(Count, StringComparer.Ordinal);
+        foreach (ElementEntry entry in _entries)
         {
             dict[entry.Key] = entry.Values;
         }
@@ -514,16 +535,23 @@ public readonly record struct ElementCollection : IEnumerable<ElementEntry>, IRe
     /// <returns>A string representation of the collection. Returns an empty string if the collection is empty.</returns>
     public override string ToString()
     {
-        if (IsEmpty) return string.Empty;
+        if (IsEmpty)
+		{
+			return string.Empty;
+		}
 
-        var estimatedCapacity = Count * 32;
+		int estimatedCapacity = Count * 32;
         var builder = new StringBuilder(estimatedCapacity);
         bool first = true;
 
-        foreach (var entry in _entries)
+        foreach (ElementEntry entry in _entries)
         {
-            if (!first) builder.Append(Environment.NewLine);
-            first = false;
+            if (!first)
+			{
+				builder.Append(Environment.NewLine);
+			}
+
+			first = false;
 
             builder.Append(entry.Key);
             builder.Append('=');
@@ -543,17 +571,24 @@ public readonly record struct ElementCollection : IEnumerable<ElementEntry>, IRe
     /// <returns>A detailed string representation of the collection.</returns>
     public string ToDebugString()
     {
-        if (IsEmpty) return "ElementCollection { Empty }";
+        if (IsEmpty)
+		{
+			return "ElementCollection { Empty }";
+		}
 
-        var estimatedCapacity = Count * 32;
+		int estimatedCapacity = Count * 32;
         var builder = new StringBuilder(estimatedCapacity);
         builder.Append(CultureInfo.InvariantCulture, $"ElementCollection {{ Count = {Count}, Entries = [ ");
 
         bool first = true;
-        foreach (var entry in _entries)
+        foreach (ElementEntry entry in _entries)
         {
-            if (!first) builder.Append(Environment.NewLine);
-            first = false;
+            if (!first)
+			{
+				builder.Append(Environment.NewLine);
+			}
+
+			first = false;
             builder.Append(CultureInfo.InvariantCulture, $"{{ Key = \"{entry.Key}\", Values = [{entry.Values.StringJoin(", ")}] }}");
         }
 

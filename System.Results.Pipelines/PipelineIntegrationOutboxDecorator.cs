@@ -48,13 +48,15 @@ public sealed class PipelineIntegrationOutboxDecorator<TRequest>(
         ArgumentNullException.ThrowIfNull(context);
         ArgumentNullException.ThrowIfNull(nextHandler);
 
-        var result = await nextHandler(cancellationToken).ConfigureAwait(false);
+		Result result = await nextHandler(cancellationToken).ConfigureAwait(false);
 
         if (result.IsSuccess)
         {
-            foreach (var @event in _pending.Drain())
-                await _outbox.EnqueueAsync([@event], cancellationToken).ConfigureAwait(false);
-        }
+            foreach (IIntegrationEvent @event in _pending.Drain())
+			{
+				await _outbox.EnqueueAsync([@event], cancellationToken).ConfigureAwait(false);
+			}
+		}
 
         return result;
     }

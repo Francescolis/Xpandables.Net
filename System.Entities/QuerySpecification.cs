@@ -1,4 +1,4 @@
-/*******************************************************************************
+﻿/*******************************************************************************
  * Copyright (C) 2025 Kamersoft
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
@@ -90,7 +90,7 @@ public readonly record struct QuerySpecificationBuilder<TEntity>
     {
         ArgumentNullException.ThrowIfNull(predicate);
 
-        var combined = _predicate is null
+		Expression<Func<TEntity, bool>> combined = _predicate is null
             ? predicate
             : CombinePredicates(_predicate, predicate);
 
@@ -261,12 +261,12 @@ public readonly record struct QuerySpecificationBuilder<TEntity>
         Expression<Func<TEntity, bool>> left,
         Expression<Func<TEntity, bool>> right)
     {
-        var parameter = Expression.Parameter(typeof(TEntity), "x");
+		ParameterExpression parameter = Expression.Parameter(typeof(TEntity), "x");
 
-        var leftBody = ReplaceParameter(left.Body, left.Parameters[0], parameter);
-        var rightBody = ReplaceParameter(right.Body, right.Parameters[0], parameter);
+		Expression leftBody = ReplaceParameter(left.Body, left.Parameters[0], parameter);
+		Expression rightBody = ReplaceParameter(right.Body, right.Parameters[0], parameter);
 
-        var combined = Expression.AndAlso(leftBody, rightBody);
+		BinaryExpression combined = Expression.AndAlso(leftBody, rightBody);
         return Expression.Lambda<Func<TEntity, bool>>(combined, parameter);
     }
 

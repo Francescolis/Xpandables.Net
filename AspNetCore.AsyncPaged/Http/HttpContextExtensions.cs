@@ -31,13 +31,13 @@ internal static class HttpContextExtensions
     {
         internal JsonSerializerOptions GetJsonSerializerOptions()
         {
-            var optionsProvider = context.RequestServices.GetRequiredService<IOptions<JsonOptions>>();
+			IOptions<JsonOptions> optionsProvider = context.RequestServices.GetRequiredService<IOptions<JsonOptions>>();
             return optionsProvider.Value.SerializerOptions;
         }
 
         internal JsonSerializerOptions GetMvcJsonSerializerOptions()
         {
-            var optionsProvider = context.RequestServices.GetRequiredService<IOptions<Mvc.JsonOptions>>();
+			IOptions<Mvc.JsonOptions> optionsProvider = context.RequestServices.GetRequiredService<IOptions<Mvc.JsonOptions>>();
             return optionsProvider.Value.JsonSerializerOptions;
         }
 
@@ -45,8 +45,8 @@ internal static class HttpContextExtensions
         [RequiresDynamicCode("Calls System.Text.Json.JsonSerializerOptions.Default")]
         internal JsonSerializerOptions GetJsonSerializerOptionsOrDefault()
         {
-            var optionsProvider = context.RequestServices.GetService<IOptions<JsonOptions>>();
-            var options = optionsProvider?.Value?.SerializerOptions ?? JsonSerializerOptions.Default;
+			IOptions<JsonOptions>? optionsProvider = context.RequestServices.GetService<IOptions<JsonOptions>>();
+			JsonSerializerOptions options = optionsProvider?.Value?.SerializerOptions ?? JsonSerializerOptions.Default;
             //options.MakeReadOnly(true);
             return options;
         }
@@ -55,8 +55,8 @@ internal static class HttpContextExtensions
         [RequiresDynamicCode("Calls System.Text.Json.JsonSerializerOptions.Default")]
         internal JsonSerializerOptions GetMvcJsonSerializerOptionsOrDefault()
         {
-            var optionsProvider = context.RequestServices.GetService<IOptions<Mvc.JsonOptions>>();
-            var options = optionsProvider?.Value?.JsonSerializerOptions ?? JsonSerializerOptions.Default;
+			IOptions<Mvc.JsonOptions>? optionsProvider = context.RequestServices.GetService<IOptions<Mvc.JsonOptions>>();
+			JsonSerializerOptions options = optionsProvider?.Value?.JsonSerializerOptions ?? JsonSerializerOptions.Default;
             //options.MakeReadOnly(true);
             return options;
         }
@@ -79,7 +79,7 @@ internal static class HttpContextExtensions
 
         internal Encoding GetEncoding()
         {
-            var contentType = context.GetContentType();
+			string? contentType = context.GetContentType();
             return Microsoft.Net.Http.Headers.MediaTypeHeaderValue.Parse(contentType).Encoding ?? Encoding.UTF8;
         }
     }

@@ -55,7 +55,7 @@ public sealed class ResultProblemDetailsService(IEnumerable<IProblemDetailsWrite
 
 		if (context.Exception is not null)
 		{
-			var result = context.Exception.ToResult();
+			FailureResult result = context.Exception.ToResult();
 			context.ProblemDetails = result.ToProblemDetails(context.HttpContext);
 		}
 		else
@@ -71,9 +71,9 @@ public sealed class ResultProblemDetailsService(IEnumerable<IProblemDetailsWrite
 			context.ProblemDetails.Type ??= (isDevelopment ? (statusCode.IsValidationProblem ? nameof(ValidationException) : nameof(InvalidOperationException)) : null);
 		}
 
-		for (var i = 0; i < _writers.Length; i++)
+		for (int i = 0; i < _writers.Length; i++)
 		{
-			var selectedWriter = _writers[i];
+			IProblemDetailsWriter selectedWriter = _writers[i];
 			if (selectedWriter.CanWrite(context))
 			{
 				await selectedWriter.WriteAsync(context).ConfigureAwait(false);

@@ -59,7 +59,7 @@ public static class ExceptionExtensions
 
             if (exception is ResultException resultException)
             {
-                var executionResult = resultException.Result;
+				Result executionResult = resultException.Result;
                 return Result
                     .Failure()
                     .WithStatusCode(executionResult.StatusCode)
@@ -73,7 +73,7 @@ public static class ExceptionExtensions
 
             statusCode ??= exception.GetHttpStatusCode();
 
-            var builder = Result
+			FailureResultBuilder builder = Result
                 .Failure()
                 .WithStatusCode(statusCode.Value)
                 .WithTitle(isDevelopment ? reason ?? exception.Message : statusCode.Value.Title)
@@ -110,7 +110,7 @@ public static class ExceptionExtensions
 #endif
             if (exception is ResultException resultException)
             {
-                var executionResult = resultException.Result;
+				Result executionResult = resultException.Result;
                 return Result
                     .Failure<TValue>()
                     .WithStatusCode(executionResult.StatusCode)
@@ -124,7 +124,7 @@ public static class ExceptionExtensions
 
             statusCode ??= exception.GetHttpStatusCode();
 
-            var builder = Result
+			FailureResultBuilder<TValue> builder = Result
                 .Failure<TValue>()
                 .WithStatusCode(statusCode.Value)
                 .WithTitle(isDevelopment ? reason ?? exception.Message : statusCode.Value.Title)

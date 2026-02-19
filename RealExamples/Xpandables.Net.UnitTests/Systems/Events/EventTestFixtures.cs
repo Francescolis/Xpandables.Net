@@ -100,7 +100,7 @@ internal sealed class FakeEventStore : IDomainStore
             return;
         }
 
-        foreach (var domainEvent in history)
+        foreach (IDomainEvent domainEvent in history)
         {
             _events.Add(domainEvent);
         }
@@ -108,7 +108,7 @@ internal sealed class FakeEventStore : IDomainStore
 
     public Task<AppendResult> AppendToStreamAsync(AppendRequest request, CancellationToken cancellationToken = default)
     {
-        var batch = request.Events.OfType<IDomainEvent>().ToArray();
+		IDomainEvent[] batch = request.Events.OfType<IDomainEvent>().ToArray();
         LastAppendRequest = new AppendRequest
         {
             StreamId = request.StreamId,
@@ -126,7 +126,7 @@ internal sealed class FakeEventStore : IDomainStore
             }
         }
 
-        foreach (var domainEvent in batch)
+        foreach (IDomainEvent? domainEvent in batch)
         {
             _events.Add(domainEvent);
         }
@@ -146,12 +146,12 @@ internal sealed class FakeEventStore : IDomainStore
         ReadStreamRequest request,
         [EnumeratorCancellation] CancellationToken cancellationToken = default)
     {
-        var ordered = _events
+		IDomainEvent[] ordered = _events
             .Where(@event => @event.StreamId == request.StreamId && @event.StreamVersion > request.FromVersion)
             .OrderBy(@event => @event.StreamVersion)
             .ToArray();
 
-        foreach (var domainEvent in ordered)
+        foreach (IDomainEvent? domainEvent in ordered)
         {
             cancellationToken.ThrowIfCancellationRequested();
 
@@ -215,7 +215,7 @@ internal sealed class FakeEventStore : IDomainStore
 
     private long GetStreamVersionInternal(Guid streamId)
     {
-        var last = _events
+		IDomainEvent? last = _events
             .Where(@event => @event.StreamId == streamId)
             .OrderByDescending(@event => @event.StreamVersion)
             .FirstOrDefault();

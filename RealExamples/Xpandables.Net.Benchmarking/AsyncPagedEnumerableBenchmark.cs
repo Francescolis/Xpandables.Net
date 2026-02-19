@@ -1,4 +1,4 @@
-/*******************************************************************************
+﻿/*******************************************************************************
  * Copyright (C) 2025 Kamersoft
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
@@ -62,8 +62,8 @@ public class AsyncPagedEnumerableBenchmark
         _mediumDataSet = GenerateSampleData(1000);
         _largeDataSet = GenerateSampleData(10000);
 
-        // Pre-calculate JSON for the current ItemCount to avoid serialization cost in deserialization benchmarks
-        var data = GetDataSetBySize();
+		// Pre-calculate JSON for the current ItemCount to avoid serialization cost in deserialization benchmarks
+		List<SampleData> data = GetDataSetBySize();
 
         // For IAsyncEnumerable (standard array)
         using var stream1 = new MemoryStream();
@@ -72,7 +72,7 @@ public class AsyncPagedEnumerableBenchmark
 
         // For IAsyncPagedEnumerable (paged object)
         using var stream2 = new MemoryStream();
-        var paged = CreatePagedEnumerable(data);
+		IAsyncPagedEnumerable<SampleData> paged = CreatePagedEnumerable(data);
         await JsonSerializer.SerializeAsyncPaged(stream2, paged, SampleDataJsonContext.Default.SampleData);
         _iAsyncPagedEnumerableJsonBytes = stream2.ToArray();
     }
@@ -201,7 +201,7 @@ public class AsyncPagedEnumerableBenchmark
         int currentPage = 1;
         int totalCount = data.Count;
 
-        Pagination pagination = Pagination.Create(
+        var pagination = Pagination.Create(
             pageSize: pageSize,
             currentPage: currentPage,
             totalCount: totalCount);

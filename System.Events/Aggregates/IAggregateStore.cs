@@ -76,7 +76,9 @@ public interface IAggregateStore<TAggregate> : IAggregateStore
 	{
 		ArgumentNullException.ThrowIfNull(aggregate);
 		if (aggregate is not TAggregate typedAggregate)
+		{
 			throw new InvalidOperationException($"The aggregate must be of type '{typeof(TAggregate)}'.");
+		}
 
 		return SaveAsync(typedAggregate, cancellationToken);
 	}

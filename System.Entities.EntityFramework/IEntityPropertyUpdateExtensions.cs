@@ -1,4 +1,4 @@
-/*******************************************************************************
+﻿/*******************************************************************************
  * Copyright (C) 2024 Francis-Black EWANE
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
@@ -72,7 +72,7 @@ public static class IEntityPropertyUpdateExtensions
         {
             ArgumentNullException.ThrowIfNull(updates);
 
-            var list = updates as IReadOnlyList<IEntityPropertyUpdate<TSource>> ?? [.. updates];
+			IReadOnlyList<IEntityPropertyUpdate<TSource>> list = updates as IReadOnlyList<IEntityPropertyUpdate<TSource>> ?? [.. updates];
             if (list.Count == 0)
             {
                 return static _ => { };
@@ -81,8 +81,8 @@ public static class IEntityPropertyUpdateExtensions
             // Capture list in closure - polymorphic dispatch handles type safety
             return builder =>
             {
-                var applicator = EfCorePropertyUpdateApplicator<TSource>.Instance;
-                foreach (var update in list)
+				EfCorePropertyUpdateApplicator<TSource> applicator = EfCorePropertyUpdateApplicator<TSource>.Instance;
+                foreach (IEntityPropertyUpdate<TSource> update in list)
                 {
                     update.Apply(builder, applicator);
                 }

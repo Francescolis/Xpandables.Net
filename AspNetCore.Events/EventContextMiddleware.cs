@@ -19,6 +19,7 @@ using System.Events;
 
 using Microsoft.AspNetCore.Http;
 using Microsoft.Extensions.Options;
+using Microsoft.Extensions.Primitives;
 
 namespace Microsoft.AspNetCore;
 
@@ -63,11 +64,11 @@ public sealed class EventContextMiddleware : Disposable, IMiddleware
         ArgumentNullException.ThrowIfNull(context);
         ArgumentNullException.ThrowIfNull(next);
 
-        var correlationValue =
+		string? correlationValue =
             ReadHeaderValue(context, _options.CorrelationIdHeaderName) ??
             GetTraceParentFromActivity(Activity.Current);
 
-        var causationValue = ReadHeaderValue(context, _options.CausationIdHeaderName);
+		string? causationValue = ReadHeaderValue(context, _options.CausationIdHeaderName);
 
         var eventContext = new EventContext
         {
@@ -75,7 +76,7 @@ public sealed class EventContextMiddleware : Disposable, IMiddleware
             CausationId = causationValue
         };
 
-        using var _ = _contextAccessor.BeginScope(eventContext);
+        using IDisposable _ = _contextAccessor.BeginScope(eventContext);
 
         if (!string.IsNullOrWhiteSpace(correlationValue))
         {
@@ -98,12 +99,12 @@ public sealed class EventContextMiddleware : Disposable, IMiddleware
 
     private static string? ReadHeaderValue(HttpContext httpContext, string headerName)
     {
-        if (!httpContext.Request.Headers.TryGetValue(headerName, out var values))
+        if (!httpContext.Request.Headers.TryGetValue(headerName, out StringValues values))
         {
             return null;
         }
 
-        var value = values.Count > 0 ? values[0] : null;
+		string? value = values.Count > 0 ? values[0] : null;
         return string.IsNullOrWhiteSpace(value) ? null : value;
     }
 
@@ -114,8 +115,8 @@ public sealed class EventContextMiddleware : Disposable, IMiddleware
             return null;
         }
 
-        // Keep aligned with W3C: activity.Id is the W3C "traceparent" when IdFormat is W3C.
-        var id = activity.Id;
+		// Keep aligned with W3C: activity.Id is the W3C "traceparent" when IdFormat is W3C.
+		string? id = activity.Id;
         return string.IsNullOrWhiteSpace(id) ? null : id;
     }
 }
