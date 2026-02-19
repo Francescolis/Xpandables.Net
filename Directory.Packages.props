@@ -47,7 +47,7 @@
   <ItemGroup>
     <PackageVersion Include="Microsoft.AspNetCore.OpenApi" Version="10.0.3" />
     <PackageVersion Include="Microsoft.Data.SqlClient" Version="6.1.4" />
-    <PackageVersion Include="Scalar.AspNetCore" Version="2.12.41" />
+    <PackageVersion Include="Scalar.AspNetCore" Version="2.12.44" />
   </ItemGroup>
   <!-- ═══════════════════════════════════════════════════
        Testing
