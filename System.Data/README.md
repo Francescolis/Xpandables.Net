@@ -39,12 +39,12 @@ Built for .NET 10 with full async support.
 - **`DataSqlBuilderBase`** — Base class for custom builders
 
 ### Connection Management
-- **`IDbConnectionFactory`** — Database connection factory
-- **`DbConnectionFactory`** — Default connection factory
-- **`IDbConnectionScope`** — Scoped connection wrapper
-- **`DbConnectionScope`** — Default scoped connection
-- **`IDbConnectionFactoryProvider`** — Provider for connection factories
-- **`DbConnectionFactoryProvider`** — Default provider
+- **`IDataDbConnectionFactory`** — Database connection factory
+- **`DataDbConnectionFactory`** — Default connection factory
+- **`IDataDbConnectionScope`** — Scoped connection wrapper
+- **`DataDbConnectionScope`** — Default scoped connection
+- **`IDataDbConnectionFactoryProvider`** — Provider for connection factories
+- **`DataDbConnectionFactoryProvider`** — Default provider
 - **`DbProviders`** — Provider constants (`MsSqlServer`, `PostgreSql`, `MySql`)
 
 ### SQL Mapping
@@ -77,24 +77,24 @@ dotnet add package Xpandables.Data
 using Microsoft.Extensions.DependencyInjection;
 
 // Register SQL Server connection
-services.AddXDbConnectionMsSqlServer(connectionString);
+services.AddXDataDbConnectionMsSqlServer(connectionString);
 
 // Or PostgreSQL
-services.AddXDbConnectionPostgreSql(connectionString);
+services.AddXDataDbConnectionPostgreSql(connectionString);
 
 // Or MySQL
-services.AddXDbConnectionMySql(connectionString);
+services.AddXDataDbConnectionMySql(connectionString);
 
 // Register SQL builder
-services.AddXMsSqlBuilder();       // SQL Server
-services.AddXPostgreSqlBuilder();  // PostgreSQL
-services.AddXMySqlBuilder();       // MySQL
+services.AddXDataMsSqlBuilder();       // SQL Server
+services.AddXDataPostgreSqlBuilder();  // PostgreSQL
+services.AddXDataMySqlBuilder();       // MySQL
 
 // Register SQL mapper
-services.AddXSqlMapper();
+services.AddXDataSqlMapper();
 
 // Register connection scope
-services.AddXDbConnectionScope();
+services.AddXDataDbConnectionScope();
 
 // Register unit of work and repositories
 services.AddXDataUnitOfWork();
@@ -117,7 +117,7 @@ public class OrderService(IDataUnitOfWork unitOfWork)
         try
         {
             var repo = unitOfWork
-                .GetRepository<IDataRepository<Order>>();
+                .GetRepository<Order>();
 
             await repo.InsertAsync([order], ct);
 
@@ -218,7 +218,7 @@ services.AddXDataUnitOfWork();
 | `IDataTransaction` | Transaction with commit/rollback |
 | `DataSpecification` | Query specification factory |
 | `IDataSqlBuilder` | SQL builder interface |
-| `IDbConnectionFactory` | Connection factory |
+| `IDataDbConnectionFactory` | Connection factory |
 | `DataUpdater` | Fluent update builder |
 | `IDataRequiresUnitOfWork` | Pipeline UoW marker |
 | `IDataCommandInterceptor` | Command execution interceptor |
@@ -229,19 +229,19 @@ services.AddXDataUnitOfWork();
 
 | Method | Description |
 |--------|-------------|
-| `AddXDbConnectionMsSqlServer(cs)` | Register SQL Server connection |
-| `AddXDbConnectionPostgreSql(cs)` | Register PostgreSQL connection |
-| `AddXDbConnectionMySql(cs)` | Register MySQL connection |
-| `AddXMsSqlBuilder()` | Register SQL Server SQL builder |
-| `AddXPostgreSqlBuilder()` | Register PostgreSQL SQL builder |
-| `AddXMySqlBuilder()` | Register MySQL SQL builder |
-| `AddXSqlMapper()` | Register SQL mapper |
+| `AddXDataDbConnectionMsSqlServer(cs)` | Register SQL Server connection |
+| `AddXDataDbConnectionPostgreSql(cs)` | Register PostgreSQL connection |
+| `AddXDataDbConnectionMySql(cs)` | Register MySQL connection |
+| `AddXDataMsSqlBuilder()` | Register SQL Server SQL builder |
+| `AddXDataPostgreSqlBuilder()` | Register PostgreSQL SQL builder |
+| `AddXDataMySqlBuilder()` | Register MySQL SQL builder |
+| `AddXDataSqlMapper()` | Register SQL mapper |
 | `AddXDataUnitOfWork()` | Register unit of work (auto-registers logging interceptor) |
 | `AddXDataCommandInterceptor()` | Register logging interceptor with default options |
 | `AddXDataCommandInterceptor(Action)` | Register logging interceptor with custom options |
 | `AddXDataCommandInterceptor<T>()` | Replace interceptor with custom implementation |
 | `AddXDataRepositories(assemblies)` | Register repositories from assemblies |
-| `AddXDbConnectionScope()` | Register scoped connection |
+| `AddXDataDbConnectionScope()` | Register scoped connection |
 
 ---
 
