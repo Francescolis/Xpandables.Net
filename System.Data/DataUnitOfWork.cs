@@ -39,6 +39,7 @@ public class DataUnitOfWork : IDataUnitOfWork
     private readonly IDataDbConnectionScope _connectionScope;
     private readonly IDataSqlBuilder _sqlBuilder;
     private readonly IDataSqlMapper _sqlMapper;
+    private readonly IDataCommandInterceptor _interceptor;
     private readonly ConcurrentDictionary<Type, object> _repositories = new();
     private bool _isDisposed;
 
@@ -48,11 +49,14 @@ public class DataUnitOfWork : IDataUnitOfWork
     /// <param name="connectionScope">The connection scope to use.</param>
     /// <param name="sqlBuilder">The SQL builder for generating queries.</param>
     /// <param name="sqlMapper">The SQL mapper for mapping data.</param>
-    public DataUnitOfWork(IDataDbConnectionScope connectionScope, IDataSqlBuilder sqlBuilder, IDataSqlMapper sqlMapper)
+    /// <param name="interceptor">The optional command interceptor for logging and telemetry.
+    /// When <see langword="null"/>, <see cref="DataCommandInterceptor.Default"/> is used.</param>
+    public DataUnitOfWork(IDataDbConnectionScope connectionScope, IDataSqlBuilder sqlBuilder, IDataSqlMapper sqlMapper, IDataCommandInterceptor? interceptor = null)
     {
         _connectionScope = connectionScope ?? throw new ArgumentNullException(nameof(connectionScope));
         _sqlBuilder = sqlBuilder ?? throw new ArgumentNullException(nameof(sqlBuilder));
         _sqlMapper = sqlMapper ?? throw new ArgumentNullException(nameof(sqlMapper));
+        _interceptor = interceptor ?? DataCommandInterceptor.Default;
     }
 
     /// <inheritdoc />
@@ -104,7 +108,7 @@ public class DataUnitOfWork : IDataUnitOfWork
     protected virtual IDataRepository<TEntity> CreateRepository<[DynamicallyAccessedMembers(DynamicallyAccessedMemberTypes.PublicProperties)] TEntity>()
         where TEntity : class
     {
-        return new DataRepository<TEntity>(_connectionScope, _sqlBuilder, _sqlMapper);
+        return new DataRepository<TEntity>(_connectionScope, _sqlBuilder, _sqlMapper, _interceptor);
     }
 
     /// <inheritdoc />
@@ -185,6 +189,7 @@ public class DataUnitOfWorkFactory : IDataUnitOfWorkFactory
     private readonly IDataDbConnectionScopeFactory _connectionScopeFactory;
     private readonly IDataSqlBuilderFactory _sqlBuilderFactory;
     private readonly IDataSqlMapper _sqlMapper;
+    private readonly IDataCommandInterceptor _interceptor;
     private readonly string _providerInvariantName;
 
     /// <summary>
@@ -194,17 +199,21 @@ public class DataUnitOfWorkFactory : IDataUnitOfWorkFactory
     /// <param name="sqlBuilderFactory">The SQL builder factory.</param>
     /// <param name="sqlMapper">The SQL mapper.</param>
     /// <param name="providerInvariantName">The provider invariant name for determining SQL dialect.</param>
+    /// <param name="interceptor">The optional command interceptor for logging and telemetry.
+    /// When <see langword="null"/>, <see cref="DataCommandInterceptor.Default"/> is used.</param>
     public DataUnitOfWorkFactory(
         IDataDbConnectionScopeFactory connectionScopeFactory,
         IDataSqlBuilderFactory sqlBuilderFactory,
         IDataSqlMapper sqlMapper,
-        string providerInvariantName)
+        string providerInvariantName,
+        IDataCommandInterceptor? interceptor = null)
     {
         _connectionScopeFactory = connectionScopeFactory ?? throw new ArgumentNullException(nameof(connectionScopeFactory));
         _sqlBuilderFactory = sqlBuilderFactory ?? throw new ArgumentNullException(nameof(sqlBuilderFactory));
         ArgumentException.ThrowIfNullOrWhiteSpace(providerInvariantName);
         _providerInvariantName = providerInvariantName;
         _sqlMapper = sqlMapper ?? throw new ArgumentNullException(nameof(sqlMapper));
+        _interceptor = interceptor ?? DataCommandInterceptor.Default;
     }
 
     /// <inheritdoc />
@@ -216,7 +225,7 @@ public class DataUnitOfWorkFactory : IDataUnitOfWorkFactory
 
         var sqlBuilder = _sqlBuilderFactory.Create(_providerInvariantName);
 
-        return new DataUnitOfWork(connectionScope, sqlBuilder, _sqlMapper);
+        return new DataUnitOfWork(connectionScope, sqlBuilder, _sqlMapper, _interceptor);
     }
 
     /// <inheritdoc />
@@ -225,6 +234,6 @@ public class DataUnitOfWorkFactory : IDataUnitOfWorkFactory
         var connectionScope = _connectionScopeFactory.CreateScope();
         var sqlBuilder = _sqlBuilderFactory.Create(_providerInvariantName);
 
-        return new DataUnitOfWork(connectionScope, sqlBuilder, _sqlMapper);
+        return new DataUnitOfWork(connectionScope, sqlBuilder, _sqlMapper, _interceptor);
     }
 }

@@ -1,4 +1,4 @@
-# System.Data
+﻿# System.Data
 
 [![NuGet](https://img.shields.io/nuget/v/Xpandables.Data.svg)](https://www.nuget.org/packages/Xpandables.Data)
 [![.NET](https://img.shields.io/badge/.NET-10.0+-purple.svg)](https://dotnet.microsoft.com/)
@@ -54,6 +54,14 @@ Built for .NET 10 with full async support.
 ### Entity Updates
 - **`DataUpdater`** — Fluent API for building ADO.NET update operations
 - **`IDataPropertyUpdate`** — Property update abstraction
+
+### Command Interceptor
+- **`IDataCommandInterceptor`** — Intercept command execution for logging, telemetry, and diagnostics
+- **`DataCommandInterceptor`** — Base no-op implementation with virtual methods for selective override
+- **`DataLoggingCommandInterceptor`** — Default structured logging implementation using `[LoggerMessage]` source generation
+- **`DataCommandInterceptorOptions`** — Options for sensitive data logging, custom category, and slow command threshold
+- **`DataCommandContext`** — Context record with SQL text, parameters, operation type, and entity name
+- **`DataCommandOperationType`** — Enum: `Reader`, `Scalar`, `NonQuery`
 
 ## Installation
 
@@ -143,6 +151,62 @@ await foreach (var product in repository.QueryAsync(spec, ct))
 }
 ```
 
+### Command Interceptor
+
+A `DataLoggingCommandInterceptor` is registered automatically when you call `AddXDataUnitOfWork()`. It logs all command execution using structured `ILogger` output with `[LoggerMessage]` source generation:
+
+| Event | Log Level | Content |
+|---|---|---|
+| Before execution | `Debug` | SQL text, parameter names (or values if enabled) |
+| After execution | `Information` | Duration, rows affected, SQL text |
+| Slow command | `Warning` | Duration exceeding threshold |
+| Failed execution | `Error` | Duration, SQL text, exception |
+
+#### Configure Options
+
+```csharp
+services.AddXDataCommandInterceptor(options =>
+{
+    // Log parameter values (default: false — only names are logged)
+    options.EnableSensitiveDataLogging = true;
+
+    // Custom log category (default: null — uses DataLoggingCommandInterceptor type name)
+    options.CategoryName = "MyApp.Database";
+
+    // Commands exceeding this threshold log at Warning (default: null — disabled)
+    options.SlowCommandThreshold = TimeSpan.FromSeconds(2);
+});
+
+services.AddXDataUnitOfWork(); // safe — TryAdd won't overwrite
+```
+
+#### Custom Interceptor
+
+To fully replace the logging interceptor with your own implementation:
+
+```csharp
+public sealed class MetricsCommandInterceptor : DataCommandInterceptor
+{
+    public override ValueTask CommandExecutedAsync(
+        DataCommandContext context, TimeSpan duration, int? rowsAffected,
+        CancellationToken cancellationToken = default)
+    {
+        // Push metrics to your observability system
+        return ValueTask.CompletedTask;
+    }
+}
+
+services.AddXDataCommandInterceptor<MetricsCommandInterceptor>();
+services.AddXDataUnitOfWork();
+```
+
+**Registration behavior:**
+- `AddXDataUnitOfWork()` auto-registers the `DataLoggingCommandInterceptor` via `TryAdd` (won't overwrite a previously registered custom interceptor).
+- `AddXDataCommandInterceptor(Action?)` configures options via the `IOptions<T>` pipeline and registers the logging interceptor.
+- `AddXDataCommandInterceptor<T>()` uses `Replace` to swap the current registration.
+- If you register your custom interceptor **before** `AddXDataUnitOfWork()`, it is preserved.
+```
+
 ---
 
 ## Core Types
@@ -157,6 +221,9 @@ await foreach (var product in repository.QueryAsync(spec, ct))
 | `IDbConnectionFactory` | Connection factory |
 | `DataUpdater` | Fluent update builder |
 | `IDataRequiresUnitOfWork` | Pipeline UoW marker |
+| `IDataCommandInterceptor` | Command execution interceptor |
+| `DataLoggingCommandInterceptor` | Default structured logging interceptor |
+| `DataCommandInterceptorOptions` | Interceptor configuration options |
 
 ## DI Extension Methods
 
@@ -169,7 +236,10 @@ await foreach (var product in repository.QueryAsync(spec, ct))
 | `AddXPostgreSqlBuilder()` | Register PostgreSQL SQL builder |
 | `AddXMySqlBuilder()` | Register MySQL SQL builder |
 | `AddXSqlMapper()` | Register SQL mapper |
-| `AddXDataUnitOfWork()` | Register unit of work |
+| `AddXDataUnitOfWork()` | Register unit of work (auto-registers logging interceptor) |
+| `AddXDataCommandInterceptor()` | Register logging interceptor with default options |
+| `AddXDataCommandInterceptor(Action)` | Register logging interceptor with custom options |
+| `AddXDataCommandInterceptor<T>()` | Replace interceptor with custom implementation |
 | `AddXDataRepositories(assemblies)` | Register repositories from assemblies |
 | `AddXDbConnectionScope()` | Register scoped connection |
 

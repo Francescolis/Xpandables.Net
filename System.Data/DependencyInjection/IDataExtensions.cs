@@ -260,14 +260,56 @@ public static class IDataExtensions
 			return services.AddSingleton<IDataSqlBuilder, TBuilder>();
 		}
 		/// <summary>
+		/// Registers the default <see cref="DataLoggingCommandInterceptor"/> as a singleton
+		/// with optional configuration of <see cref="DataCommandInterceptorOptions"/>.
+		/// </summary>
+		/// <remarks>
+		/// <para>
+		/// Uses <c>TryAdd</c>, so a previously registered custom interceptor will not be overwritten.
+		/// This method is called automatically by <see cref="AddXDataUnitOfWork"/>.
+		/// </para>
+		/// <para>
+		/// The <paramref name="configure"/> action is applied via the standard
+		/// <see cref="Microsoft.Extensions.Options.IOptions{TOptions}"/> pipeline. Multiple calls
+		/// to this method are additive — all configuration actions are applied in order.
+		/// </para>
+		/// </remarks>
+		/// <param name="configure">An optional action to configure <see cref="DataCommandInterceptorOptions"/>.</param>
+		/// <returns>The <see cref="IServiceCollection"/> instance for chaining.</returns>
+		public IServiceCollection AddXDataCommandInterceptor(Action<DataCommandInterceptorOptions>? configure = null)
+		{
+			ArgumentNullException.ThrowIfNull(services);
+			services.Configure(configure ?? (_ => { }));
+			services.TryAddSingleton<IDataCommandInterceptor, DataLoggingCommandInterceptor>();
+			return services;
+		}
+
+		/// <summary>
+		/// Registers a custom <see cref="IDataCommandInterceptor"/> implementation, replacing any
+		/// previously registered interceptor (including the default).
+		/// </summary>
+		/// <typeparam name="TInterceptor">The interceptor type. Must implement <see cref="IDataCommandInterceptor"/>.</typeparam>
+		/// <returns>The <see cref="IServiceCollection"/> instance for chaining.</returns>
+		public IServiceCollection AddXDataCommandInterceptor<[DynamicallyAccessedMembers(DynamicallyAccessedMemberTypes.PublicConstructors)] TInterceptor>()
+			where TInterceptor : class, IDataCommandInterceptor
+		{
+			ArgumentNullException.ThrowIfNull(services);
+			services.Replace(ServiceDescriptor.Singleton<IDataCommandInterceptor, TInterceptor>());
+			return services;
+		}
+
+		/// <summary>
 		/// Adds the Data unit of work implementation to the service collection for dependency injection.
 		/// </summary>
 		/// <remarks>This method registers the <c>DataUnitOfWork</c> as the implementation for the unit of
-		/// work pattern. The services parameter must not be null.</remarks>
+		/// work pattern. The services parameter must not be null.
+		/// Also registers the default <see cref="DataLoggingCommandInterceptor"/> if no interceptor has been
+		/// registered yet.</remarks>
 		/// <returns>The <see cref="IServiceCollection"/> instance with the XData unit of work service registered.</returns>
 		public IServiceCollection AddXDataUnitOfWork()
 		{
 			ArgumentNullException.ThrowIfNull(services);
+			services.AddXDataCommandInterceptor();
 			return services.AddXDataUnitOfWork<DataUnitOfWork>();
 		}
 

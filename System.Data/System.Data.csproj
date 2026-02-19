@@ -1,4 +1,4 @@
-<Project Sdk="Microsoft.NET.Sdk">
+﻿<Project Sdk="Microsoft.NET.Sdk">
 
 	<PropertyGroup>
 		<Title>Xpandables.Data</Title>
@@ -8,6 +8,11 @@
 		<PackageId>Xpandables.Data</PackageId>
 		<PackageTags>IDataRepository, IDataUnitOfWork</PackageTags>
 	</PropertyGroup>
+
+	<ItemGroup>
+		<PackageReference Include="Microsoft.Extensions.Logging.Abstractions" />
+		<PackageReference Include="Microsoft.Extensions.Options" />
+	</ItemGroup>
 
 	<ItemGroup>
 		<ProjectReference Include="..\System.AsyncPaged\System.AsyncPaged.csproj" />
