@@ -38,10 +38,12 @@
 | 📡 **Mediator Pattern** | CQRS and request/response pipeline implementation | [Xpandables.Results.Tasks](./System.Results.Tasks/README.md) |
 | 🔗 **Pipeline Decorators** | Validation, transaction, and event decorators | [Xpandables.Results.Pipelines](./System.Results.Pipelines/README.md) |
 | ✔️ **Validation** | Flexible validation framework with specifications | [Xpandables.Validation](./System.Validation/README.md) |
-| 💾 **Repository Pattern** | Generic repository with unit of work support | [Xpandables.Entities.Data](./System.Entities.Data/README.md) |
+| 💾 **Repository Abstractions** | Generic repository and unit of work interfaces | [Xpandables.Entities](./System.Entities/README.md) |
+| 🗃️ **EF Core Repository** | Entity Framework Core repository with DataContext | [Xpandables.Entities.EntityFramework](./System.Entities.EntityFramework/README.md) |
+| 🛢️ **ADO.NET Data Access** | ADO.NET repository with SQL builders and connection management | [Xpandables.Data](./System.Data/README.md) |
 | 🌐 **REST Client** | Type-safe, attribute-based HTTP client | [Xpandables.Rests](./System.Rests/README.md) |
 | 📝 **Event Sourcing** | Complete event sourcing with W3C trace context support | [Xpandables.Events](./System.Events/README.md) |
-| 🗄️ **Event Store** | EF Core event store with outbox pattern | [Xpandables.Events.Data](./System.Events.Data/README.md) |
+| 🗄️ **Event Store** | ADO.NET event store with outbox/inbox pattern | [Xpandables.Events.Data](./System.Events.Data/README.md) |
 | 🔄 **Async Paging** | Asynchronous enumerable extensions and pagination | [Xpandables.AsyncPaged](./System.AsyncPaged/README.md) |
 | 🌐 **W3C Trace Context** | Distributed tracing with traceparent header support | [AspNetCore.Events](./AspNetCore.Events/README.md) |
 
@@ -75,8 +77,14 @@ dotnet add package Xpandables.Results.Pipelines
 # Validation framework
 dotnet add package Xpandables.Validation
 
-# Repository pattern with EF Core
-dotnet add package Xpandables.Entities.Data
+# Repository abstractions
+dotnet add package Xpandables.Entities
+
+# EF Core repository implementation
+dotnet add package Xpandables.Entities.EntityFramework
+
+# ADO.NET data access
+dotnet add package Xpandables.Data
 
 # REST client
 dotnet add package Xpandables.Rests
@@ -152,11 +160,13 @@ Each package has detailed documentation with examples and API references:
 - 🧩 [**Xpandables.Composition**](./System.Composition/README.md) - MEF-based service composition
 
 #### Data Access
-- 💾 [**Xpandables.Entities.Data**](./System.Entities.Data/README.md) - EF Core repository with DataContext
+- 💾 [**Xpandables.Entities**](./System.Entities/README.md) - Repository and Unit of Work abstractions
+- 🗃️ [**Xpandables.Entities.EntityFramework**](./System.Entities.EntityFramework/README.md) - EF Core repository with DataContext
+- 🛢️ [**Xpandables.Data**](./System.Data/README.md) - ADO.NET repository with SQL builders
 
 #### Event Handling
 - 📝 [**Xpandables.Events**](./System.Events/README.md) - Event sourcing and domain events
-- 🗄️ [**Xpandables.Events.Data**](./System.Events.Data/README.md) - EF Core event store implementation
+- 🗄️ [**Xpandables.Events.Data**](./System.Events.Data/README.md) - ADO.NET event store with outbox/inbox pattern
 
 #### HTTP & REST
 - 🌐 [**Xpandables.Rests**](./System.Rests/README.md) - Type-safe REST client with attribute-based routing
@@ -203,7 +213,8 @@ Xpandables.Net follows clean architecture principles with clear separation of co
                   ↓
 ┌─────────────────────────────────────────┐
 │       Infrastructure Layer              │
-│  (Xpandables.Entities.Data, Xpandables.Events.  │
+│  (Xpandables.Entities.EntityFramework,  │
+│   Xpandables.Data, Xpandables.Events.   │
 │   Data, Xpandables.Rests,               │
 │   Xpandables.AsyncPaged.Linq)           │
 └─────────────────────────────────────────┘
@@ -324,7 +335,7 @@ public sealed class OrderAggregate : Aggregate
 // Usage
 var order = OrderAggregate.Create("ORD-001", 100m);
 order.AddItem("PROD-1", 25m);
-await _aggregateStore.AppendAsync(order);
+await _aggregateStore.SaveAsync(order);
 ```
 
 ### 5. W3C Trace Context for Distributed Tracing
@@ -391,8 +402,10 @@ dotnet test Xpandables.Net.UnitTests
 | **Xpandables.Validation** | Specification pattern and rule validators |
 | **Xpandables.Composition** | MEF-based service composition |
 | **Xpandables.Events** | Domain events and event sourcing with W3C trace IDs |
-| **Xpandables.Events.Data** | EF Core event store with outbox pattern |
-| **Xpandables.Entities.Data** | EF Core repository with DataContext |
+| **Xpandables.Events.Data** | ADO.NET event store with outbox/inbox pattern |
+| **Xpandables.Entities** | Repository and Unit of Work abstractions |
+| **Xpandables.Entities.EntityFramework** | EF Core repository with DataContext |
+| **Xpandables.Data** | ADO.NET repository with SQL builders and connection management |
 | **Xpandables.Rests** | Type-safe REST client |
 | **Xpandables.AsyncPaged** | Async paged collections |
 | **Xpandables.AsyncPaged.Linq** | LINQ extensions for async paging |
