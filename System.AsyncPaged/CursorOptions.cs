@@ -1,4 +1,4 @@
-/*******************************************************************************
+﻿/*******************************************************************************
  * Copyright (C) 2025 Kamersoft
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
@@ -150,6 +150,152 @@ public static class CursorOptions
                 : value => parser(value),
         };
     }
+
+    /// <summary>
+    /// Creates a new first-stage fluent builder for the specified source type.
+    /// </summary>
+    /// <typeparam name="TSource">The type of the source elements over which the cursor operates.</typeparam>
+    /// <returns>A new <see cref="CursorOptionsBuilder{TSource}"/> instance.</returns>
+    public static CursorOptionsBuilder<TSource> For<TSource>()
+        => new();
+}
+
+/// <summary>
+/// A first-stage fluent builder for creating <see cref="CursorOptions{TSource}"/> instances.
+/// </summary>
+/// <typeparam name="TSource">The type of the source elements over which the cursor operates.</typeparam>
+/// <remarks>Obtain an instance via <see cref="CursorOptions.For{TSource}"/>.</remarks>
+public readonly record struct CursorOptionsBuilder<TSource>
+{
+    /// <summary>
+    /// Specifies the key selector expression and advances the builder to the second stage.
+    /// </summary>
+    /// <typeparam name="TCursor">The type of the cursor value.</typeparam>
+    /// <param name="selector">An expression that selects the cursor key from a source element.</param>
+    /// <returns>A <see cref="CursorOptionsBuilder{TSource, TCursor}"/> with the key selector applied.</returns>
+    public CursorOptionsBuilder<TSource, TCursor> WithKey<[DynamicallyAccessedMembers(DynamicallyAccessedMemberTypes.PublicConstructors)] TCursor>(
+        Expression<Func<TSource, TCursor>> selector)
+    {
+        ArgumentNullException.ThrowIfNull(selector);
+        return new(selector);
+    }
+}
+
+/// <summary>
+/// A second-stage fluent builder for creating <see cref="CursorOptions{TSource}"/> instances.
+/// </summary>
+/// <typeparam name="TSource">The type of the source elements over which the cursor operates.</typeparam>
+/// <typeparam name="TCursor">The type of the cursor value used for pagination or navigation.</typeparam>
+public readonly record struct CursorOptionsBuilder<TSource, [DynamicallyAccessedMembers(DynamicallyAccessedMemberTypes.PublicConstructors)] TCursor>
+{
+    private readonly Expression<Func<TSource, TCursor>>? _selector;
+    private readonly CursorDirection _direction;
+    private readonly bool _isInclusive;
+    private readonly object? _appliedToken;
+    private readonly Func<TCursor?, string?>? _formatter;
+    private readonly Func<string?, TCursor?>? _parser;
+
+    internal CursorOptionsBuilder(Expression<Func<TSource, TCursor>> selector)
+    {
+        _selector = selector;
+        _direction = CursorDirection.Forward;
+    }
+
+    private CursorOptionsBuilder(
+        Expression<Func<TSource, TCursor>>? selector,
+        CursorDirection direction,
+        bool isInclusive,
+        object? appliedToken,
+        Func<TCursor?, string?>? formatter,
+        Func<string?, TCursor?>? parser)
+    {
+        _selector = selector;
+        _direction = direction;
+        _isInclusive = isInclusive;
+        _appliedToken = appliedToken;
+        _formatter = formatter;
+        _parser = parser;
+    }
+
+    /// <summary>Sets the cursor direction to <see cref="CursorDirection.Forward"/>.</summary>
+    /// <returns>A new builder with the direction set to forward.</returns>
+    public CursorOptionsBuilder<TSource, TCursor> Forward()
+        => new(_selector, CursorDirection.Forward, _isInclusive, _appliedToken, _formatter, _parser);
+
+    /// <summary>Sets the cursor direction to <see cref="CursorDirection.Backward"/>.</summary>
+    /// <returns>A new builder with the direction set to backward.</returns>
+    public CursorOptionsBuilder<TSource, TCursor> Backward()
+        => new(_selector, CursorDirection.Backward, _isInclusive, _appliedToken, _formatter, _parser);
+
+    /// <summary>Sets the cursor direction.</summary>
+    /// <param name="direction">The direction to apply.</param>
+    /// <returns>A new builder with the specified direction.</returns>
+    public CursorOptionsBuilder<TSource, TCursor> WithDirection(CursorDirection direction)
+        => new(_selector, direction, _isInclusive, _appliedToken, _formatter, _parser);
+
+    /// <summary>Marks the cursor comparison as inclusive.</summary>
+    /// <returns>A new builder with inclusive comparison enabled.</returns>
+    public CursorOptionsBuilder<TSource, TCursor> Inclusive()
+        => new(_selector, _direction, true, _appliedToken, _formatter, _parser);
+
+    /// <summary>Sets the currently applied cursor token value.</summary>
+    /// <param name="token">The cursor token to apply.</param>
+    /// <returns>A new builder with the applied token set.</returns>
+    public CursorOptionsBuilder<TSource, TCursor> WithAppliedToken(object? token)
+        => new(_selector, _direction, _isInclusive, token, _formatter, _parser);
+
+    /// <summary>Sets a custom token formatter.</summary>
+    /// <param name="formatter">A function that formats a cursor value as a string token.</param>
+    /// <returns>A new builder with the custom formatter applied.</returns>
+    public CursorOptionsBuilder<TSource, TCursor> WithFormatter(Func<TCursor?, string?> formatter)
+    {
+        ArgumentNullException.ThrowIfNull(formatter);
+        return new(_selector, _direction, _isInclusive, _appliedToken, formatter, _parser);
+    }
+
+    /// <summary>Sets a custom token parser.</summary>
+    /// <param name="parser">A function that parses a string token into a cursor value.</param>
+    /// <returns>A new builder with the custom parser applied.</returns>
+    public CursorOptionsBuilder<TSource, TCursor> WithParser(Func<string?, TCursor?> parser)
+    {
+        ArgumentNullException.ThrowIfNull(parser);
+        return new(_selector, _direction, _isInclusive, _appliedToken, _formatter, parser);
+    }
+
+    /// <summary>
+    /// Builds and returns the configured <see cref="CursorOptions{TSource}"/> instance.
+    /// </summary>
+    /// <returns>A <see cref="CursorOptions{TSource}"/> configured from the current builder state.</returns>
+    [UnconditionalSuppressMessage("AOT", "IL3050", Justification = "TCursor is annotated with DynamicallyAccessedMembers.")]
+    [UnconditionalSuppressMessage("Trimming", "IL2026", Justification = "TCursor is annotated with DynamicallyAccessedMembers.")]
+    public CursorOptions<TSource> Build()
+    {
+        var selector = _selector;
+        ArgumentNullException.ThrowIfNull(selector);
+
+        return CursorOptions.Create(selector, _direction, _isInclusive, _formatter, _parser) with
+        {
+            AppliedToken = _appliedToken
+        };
+    }
+
+    /// <summary>
+    /// Converts the builder to a <see cref="CursorOptions{TSource}"/> instance
+    /// by calling <see cref="Build"/>. Alternate for the implicit conversion operator.
+    /// </summary>
+    /// <returns>A <see cref="CursorOptions{TSource}"/> configured from the current builder state.</returns>
+    [UnconditionalSuppressMessage("AOT", "IL3050", Justification = "TCursor is annotated with DynamicallyAccessedMembers.")]
+    [UnconditionalSuppressMessage("Trimming", "IL2026", Justification = "TCursor is annotated with DynamicallyAccessedMembers.")]
+    public CursorOptions<TSource> ToCursorOptions() => Build();
+
+    /// <summary>
+    /// Implicitly converts the builder to a <see cref="CursorOptions{TSource}"/> instance
+    /// by calling <see cref="Build"/>.
+    /// </summary>
+    [UnconditionalSuppressMessage("AOT", "IL3050", Justification = "TCursor is annotated with DynamicallyAccessedMembers.")]
+    [UnconditionalSuppressMessage("Trimming", "IL2026", Justification = "TCursor is annotated with DynamicallyAccessedMembers.")]
+    public static implicit operator CursorOptions<TSource>(CursorOptionsBuilder<TSource, TCursor> builder)
+        => builder.Build();
 }
 
 internal static class CursorTokenConverters
