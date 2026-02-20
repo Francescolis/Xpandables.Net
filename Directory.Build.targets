@@ -47,12 +47,10 @@
 
   <!-- Shared packaging items for library projects -->
   <ItemGroup Condition="'$(IsPackable)' != 'false' And '$(OutputType)' != 'Exe'">
-    <Content Include="Xpandables.Net.ico" />
+    <!--<Content Include="Xpandables.Net.ico" />-->
     <None Include="README.md" Pack="true" PackagePath="" />
-    <None Include="$(MSBuildThisFileDirectory)Xpandables.Net.png" Link="Xpandables.Net.png">
-      <PackagePath>\</PackagePath>
-      <Pack>True</Pack>
-    </None>
+    <None Include="$(MSBuildThisFileDirectory)Xpandables.Net.ico" Pack="true" PackagePath="" Link="Xpandables.Net.ico"/>
+    <None Include="$(MSBuildThisFileDirectory)Xpandables.Net.png" Pack="true" PackagePath="" Link="Xpandables.Net.png"/>
   </ItemGroup>
 
 </Project>

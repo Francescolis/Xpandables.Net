@@ -1,6 +1,7 @@
 ﻿# 🌐 AspNetCore.Net
 
-[![NuGet](https://img.shields.io/badge/NuGet-10.0.0-blue.svg)](https://www.nuget.org/packages/AspNetCore.Net)
+[![NuGet Version](https://img.shields.io/nuget/v/Xpandables.AspNetCore.Net.svg)](https://www.nuget.org/packages/Xpandables.AspNetCore.Net)
+[![NuGet Downloads](https://img.shields.io/nuget/dt/Xpandables.AspNetCore.Net.svg)](https://www.nuget.org/packages/Xpandables.AspNetCore.Net)
 [![.NET](https://img.shields.io/badge/.NET-10.0-purple.svg)](https://dotnet.microsoft.com/)
 [![License](https://img.shields.io/badge/License-Apache%202.0-green.svg)](LICENSE)
 

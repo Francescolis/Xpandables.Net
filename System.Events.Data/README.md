@@ -1,6 +1,7 @@
-# System.Events.Data
+﻿# System.Events.Data
 
 [![NuGet](https://img.shields.io/nuget/v/Xpandables.Events.Data.svg)](https://www.nuget.org/packages/Xpandables.Events.Data)
+[![NuGet Downloads](https://img.shields.io/nuget/dt/Xpandables.Events.Data.svg)](https://www.nuget.org/packages/Xpandables.Events.Data)
 [![.NET](https://img.shields.io/badge/.NET-10.0+-purple.svg)](https://dotnet.microsoft.com/)
 [![License](https://img.shields.io/badge/License-Apache%202.0-green.svg)](LICENSE)
 

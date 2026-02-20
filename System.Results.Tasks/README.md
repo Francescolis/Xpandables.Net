@@ -1,6 +1,7 @@
 ﻿# 📡 System.Results.Tasks
 
-[![NuGet](https://img.shields.io/badge/NuGet-10.0.1-blue.svg)](https://www.nuget.org/packages/Xpandables.Results.Tasks)
+[![NuGet Version](https://img.shields.io/nuget/v/Xpandables.Results.Tasks.svg)](https://www.nuget.org/packages/Xpandables.Results.Tasks)
+[![NuGet Downloads](https://img.shields.io/nuget/dt/Xpandables.Results.Tasks.svg)](https://www.nuget.org/packages/Xpandables.Results.Tasks)
 [![.NET](https://img.shields.io/badge/.NET-10.0-purple.svg)](https://dotnet.microsoft.com/)
 
 > **Mediator & Handler Dispatch** - CQRS mediator for dispatching requests to handlers with optional pipeline decorators.

@@ -1,6 +1,7 @@
-# System.Primitives
+﻿# System.Primitives
 
 [![NuGet](https://img.shields.io/nuget/v/Xpandables.Primitives.svg)](https://www.nuget.org/packages/Xpandables.Primitives)
+[![NuGet Downloads](https://img.shields.io/nuget/dt/Xpandables.Primitives.svg)](https://www.nuget.org/packages/Xpandables.Primitives)
 [![.NET](https://img.shields.io/badge/.NET-10.0+-purple.svg)](https://dotnet.microsoft.com/)
 [![License](https://img.shields.io/badge/License-Apache%202.0-green.svg)](LICENSE)
 

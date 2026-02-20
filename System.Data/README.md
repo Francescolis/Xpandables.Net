@@ -1,6 +1,7 @@
 ﻿# System.Data
 
 [![NuGet](https://img.shields.io/nuget/v/Xpandables.Data.svg)](https://www.nuget.org/packages/Xpandables.Data)
+[![NuGet Downloads](https://img.shields.io/nuget/dt/Xpandables.Data.svg)](https://www.nuget.org/packages/Xpandables.Data)
 [![.NET](https://img.shields.io/badge/.NET-10.0+-purple.svg)](https://dotnet.microsoft.com/)
 [![License](https://img.shields.io/badge/License-Apache%202.0-green.svg)](LICENSE)
 

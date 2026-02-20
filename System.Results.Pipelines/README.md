@@ -1,6 +1,7 @@
 ﻿# 🔗 System.Results.Pipelines
 
-[![NuGet](https://img.shields.io/badge/NuGet-10.0.1-blue.svg)](https://www.nuget.org/packages/Xpandables.Results.Pipelines)
+[![NuGet Version](https://img.shields.io/nuget/v/Xpandables.Results.Pipelines.svg)](https://www.nuget.org/packages/Xpandables.Results.Pipelines)
+[![NuGet Downloads](https://img.shields.io/nuget/dt/Xpandables.Results.Pipelines.svg)](https://www.nuget.org/packages/Xpandables.Results.Pipelines)
 [![.NET](https://img.shields.io/badge/.NET-10.0-purple.svg)](https://dotnet.microsoft.com/)
 
 > **Pipeline Decorators** - Pre-built pipeline decorators for validation, transactions, domain events, exception handling, and other cross-cutting concerns in CQRS request pipelines.

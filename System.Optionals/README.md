@@ -1,6 +1,7 @@
 ﻿# 🎯 System.Optionals
 
-[![NuGet](https://img.shields.io/badge/NuGet-10.0.1-blue.svg)](https://www.nuget.org/packages/Xpandables.Optionals)
+[![NuGet Version](https://img.shields.io/nuget/v/Xpandables.Optionals.svg)](https://www.nuget.org/packages/Xpandables.Optionals)
+[![NuGet Downloads](https://img.shields.io/nuget/dt/Xpandables.Optionals.svg)](https://www.nuget.org/packages/Xpandables.Optionals)
 [![.NET](https://img.shields.io/badge/.NET-10.0-purple.svg)](https://dotnet.microsoft.com/)
 [![License](https://img.shields.io/badge/License-Apache%202.0-green.svg)](LICENSE)
 

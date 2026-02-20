@@ -1,6 +1,7 @@
 ﻿# ✅ System.Results
 
-[![NuGet](https://img.shields.io/badge/NuGet-10.0.1-blue.svg)](https://www.nuget.org/packages/Xpandables.Results)
+[![NuGet Version](https://img.shields.io/nuget/v/Xpandables.Results.svg)](https://www.nuget.org/packages/Xpandables.Results)
+[![NuGet Downloads](https://img.shields.io/nuget/dt/Xpandables.Results.svg)](https://www.nuget.org/packages/Xpandables.Results)
 [![.NET](https://img.shields.io/badge/.NET-10.0-purple.svg)](https://dotnet.microsoft.com/)
 
 > **Operation Results & Request Contracts** - Railway-oriented programming with HTTP-aware result types and CQRS request/handler contracts.

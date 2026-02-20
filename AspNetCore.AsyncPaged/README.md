@@ -1,6 +1,7 @@
 ﻿# 🌐 AspNetCore.AsyncPaged
 
-[![NuGet](https://img.shields.io/badge/NuGet-10.0.0-blue.svg)](https://www.nuget.org/packages/AspNetCore.AsyncPaged)
+[![NuGet Version](https://img.shields.io/nuget/v/Xpandables.AspNetCore.AsyncPaged.svg)](https://www.nuget.org/packages/Xpandables.AspNetCore.AsyncPaged)
+[![NuGet Downloads](https://img.shields.io/nuget/dt/Xpandables.AspNetCore.AsyncPaged.svg)](https://www.nuget.org/packages/Xpandables.AspNetCore.AsyncPaged)
 [![.NET](https://img.shields.io/badge/.NET-10.0-purple.svg)](https://dotnet.microsoft.com/)
 [![License](https://img.shields.io/badge/License-Apache%202.0-green.svg)](LICENSE)
 

@@ -1,6 +1,7 @@
 ﻿# System.Events
 
 [![NuGet](https://img.shields.io/nuget/v/Xpandables.Events.svg)](https://www.nuget.org/packages/Xpandables.Events)
+[![NuGet Downloads](https://img.shields.io/nuget/dt/Xpandables.Events.svg)](https://www.nuget.org/packages/Xpandables.Events)
 [![.NET](https://img.shields.io/badge/.NET-10.0+-purple.svg)](https://dotnet.microsoft.com/)
 [![License](https://img.shields.io/badge/License-Apache%202.0-green.svg)](LICENSE)
 

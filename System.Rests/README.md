@@ -1,6 +1,7 @@
 ﻿# System.Rests
 
 [![NuGet](https://img.shields.io/nuget/v/Xpandables.Rests.svg)](https://www.nuget.org/packages/Xpandables.Rests)
+[![NuGet Downloads](https://img.shields.io/nuget/dt/Xpandables.Rests.svg)](https://www.nuget.org/packages/Xpandables.Rests)
 [![.NET](https://img.shields.io/badge/.NET-10.0+-purple.svg)](https://dotnet.microsoft.com/)
 [![License](https://img.shields.io/badge/License-Apache%202.0-green.svg)](LICENSE)
 

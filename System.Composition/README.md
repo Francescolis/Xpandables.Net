@@ -1,6 +1,7 @@
 ﻿# 🧩 System.Composition
 
-[![NuGet](https://img.shields.io/badge/NuGet-10.0.1-blue.svg)](https://www.nuget.org/packages/Xpandables.Composition)
+[![NuGet Version](https://img.shields.io/nuget/v/Xpandables.Composition.svg)](https://www.nuget.org/packages/Xpandables.Composition)
+[![NuGet Downloads](https://img.shields.io/nuget/dt/Xpandables.Composition.svg)](https://www.nuget.org/packages/Xpandables.Composition)
 [![.NET](https://img.shields.io/badge/.NET-10.0-purple.svg)](https://dotnet.microsoft.com/)
 [![License](https://img.shields.io/badge/License-Apache%202.0-green.svg)](LICENSE)
 

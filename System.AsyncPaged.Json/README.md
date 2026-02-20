@@ -1,6 +1,7 @@
 ﻿# 📡 System.AsyncPaged.Json
 
-[![NuGet](https://img.shields.io/badge/NuGet-10.0.1-blue.svg)](https://www.nuget.org/packages/Xpandables.AsyncPaged.Json)
+[![NuGet Version](https://img.shields.io/nuget/v/Xpandables.AsyncPaged.Json.svg)](https://www.nuget.org/packages/Xpandables.AsyncPaged.Json)
+[![NuGet Downloads](https://img.shields.io/nuget/dt/Xpandables.AsyncPaged.Json.svg)](https://www.nuget.org/packages/Xpandables.AsyncPaged.Json)
 [![.NET](https://img.shields.io/badge/.NET-10.0+-purple.svg)](https://dotnet.microsoft.com/)
 [![License](https://img.shields.io/badge/License-Apache%202.0-green.svg)](LICENSE)
 

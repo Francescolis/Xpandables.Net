@@ -1,15 +1,13 @@
-﻿<div align="center">
-
-# 📦 Xpandables.Net
+﻿# 📦 Xpandables.Net
 
 [![License](https://img.shields.io/badge/License-Apache%202.0-blue.svg)](https://opensource.org/licenses/Apache-2.0)
 [![.NET Version](https://img.shields.io/badge/.NET-10.0-purple.svg)](https://dotnet.microsoft.com/download)
+[![NuGet Version](https://img.shields.io/nuget/v/Xpandables.Results.svg)](https://www.nuget.org/packages/Xpandables.Results)
+[![NuGet Downloads](https://img.shields.io/nuget/dt/Xpandables.Results.svg)](https://www.nuget.org/packages/Xpandables.Results)
 
 **A comprehensive, modular .NET library for building modern, scalable applications with clean architecture patterns**
 
 [Features](#-key-features) • [Getting Started](#-getting-started) • [Documentation](#-documentation) • [Architecture](#-architecture) • [Contributing](#-contributing)
-
-</div>
 
 ---
 
