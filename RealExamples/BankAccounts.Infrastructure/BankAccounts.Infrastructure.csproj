@@ -6,6 +6,7 @@
     <Nullable>enable</Nullable>
     <SignAssembly>False</SignAssembly>
     <IsPackable>false</IsPackable>
+    <GenerateDocumentationFile>false</GenerateDocumentationFile>
   </PropertyGroup>
 
   <ItemGroup>

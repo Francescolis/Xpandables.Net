@@ -7,6 +7,7 @@
 	<RootNamespace>Xpandables.Net.Benchmarking</RootNamespace>
 	<AnalysisMode>Default</AnalysisMode>
 	<TreatWarningsAsErrors>false</TreatWarningsAsErrors>
+    <GenerateDocumentationFile>false</GenerateDocumentationFile>
   </PropertyGroup>
 
   <ItemGroup>

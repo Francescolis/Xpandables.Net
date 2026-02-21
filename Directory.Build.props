@@ -9,6 +9,7 @@
     <Nullable>enable</Nullable>
     <ImplicitUsings>enable</ImplicitUsings>
     <Platforms>x64</Platforms>
+    <GenerateDocumentationFile>true</GenerateDocumentationFile>
 
     <!-- Analyzers -->
     <EnforceCodeStyleInBuild>true</EnforceCodeStyleInBuild>

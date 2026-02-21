@@ -8,6 +8,7 @@
     <UserSecretsId>dotnet-BankAccounts.Worker-2109a5d0-daeb-499a-acc4-c8b1c9f6deae</UserSecretsId>
     <DockerDefaultTargetOS>Linux</DockerDefaultTargetOS>
     <DockerfileContext>..\..</DockerfileContext>
+    <GenerateDocumentationFile>false</GenerateDocumentationFile>
   </PropertyGroup>
 
   <ItemGroup>

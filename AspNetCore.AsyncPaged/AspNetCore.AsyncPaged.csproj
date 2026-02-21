@@ -1,20 +1,20 @@
 <Project Sdk="Microsoft.NET.Sdk">
 
-	<PropertyGroup>
-		<Title></Title>
-		<Description></Description>
-		<AssemblyName>Xpandables.AspNetCore.AsyncPaged</AssemblyName>
-		<RootNamespace>Microsoft.AspNetCore</RootNamespace>
-		<PackageId>Xpandables.AspNetCore.AsyncPaged</PackageId>
-		<PackageTags>IAsyncPagedEnumerable, AsyncPagedEnpointFilter, AsyncPagedResult</PackageTags>
-	</PropertyGroup>
+  <PropertyGroup>
+    <Title></Title>
+    <Description></Description>
+    <AssemblyName>Xpandables.AspNetCore.AsyncPaged</AssemblyName>
+    <RootNamespace>Microsoft.AspNetCore</RootNamespace>
+    <PackageId>Xpandables.AspNetCore.AsyncPaged</PackageId>
+    <PackageTags>IAsyncPagedEnumerable, AsyncPagedEnpointFilter, AsyncPagedResult</PackageTags>
+  </PropertyGroup>
 
-	<ItemGroup>
-		<FrameworkReference Include="Microsoft.AspNetCore.App" />
-	</ItemGroup>
+  <ItemGroup>
+    <FrameworkReference Include="Microsoft.AspNetCore.App" />
+  </ItemGroup>
 
-	<ItemGroup>
-		<ProjectReference Include="..\System.AsyncPaged.Json\System.AsyncPaged.Json.csproj" />
-	</ItemGroup>
+  <ItemGroup>
+    <ProjectReference Include="..\System.AsyncPaged.Json\System.AsyncPaged.Json.csproj" />
+  </ItemGroup>
 
 </Project>

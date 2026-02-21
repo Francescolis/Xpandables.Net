@@ -63,8 +63,11 @@ public interface IHttpStatusCodeExtension
 /// meaningful error information to users or handle errors programmatically.</remarks>
 public class HttpStatusCodeExtension : IHttpStatusCodeExtension
 {
+	/// <inheritdoc/>
 	public virtual string GetDetail(HttpStatusCode httpStatusCode) => httpStatusCode.Detail;
+	/// <inheritdoc/>
 	public virtual string GetTitle(HttpStatusCode httpStatusCode) => httpStatusCode.Title;
+	/// <inheritdoc/>
 	public virtual Exception GetException(HttpStatusCode httpStatusCode, string message, Exception? innerException = null) =>
 		httpStatusCode.GetException(message, innerException);
 }
