@@ -82,11 +82,7 @@ public static class ResultExtensions
 		IHttpStatusCodeExtension statusCodeExtension = context.RequestServices
 			.GetService<IHttpStatusCodeExtension>() ?? new HttpStatusCodeExtension();
 
-#if DEBUG
-		bool isDevelopment = true;
-#else
-		bool isDevelopment = false;
-#endif
+		bool isDevelopment = (Environment.GetEnvironmentVariable("DOTNET_ENVIRONMENT") ?? Environment.GetEnvironmentVariable("ASPNETCORE_ENVIRONMENT") ?? "Development") == "Development";
 
 		var statusCode = (HttpStatusCode)exception.StatusCode;
 
