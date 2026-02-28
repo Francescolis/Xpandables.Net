@@ -5,146 +5,197 @@
 [![.NET](https://img.shields.io/badge/.NET-10.0+-purple.svg)](https://dotnet.microsoft.com/)
 [![License](https://img.shields.io/badge/License-Apache%202.0-green.svg)](LICENSE)
 
-Specification pattern and validation framework for .NET with DI support.
+Specification pattern and validation framework for .NET with dependency injection support.
 
-## Overview
+## 📖 Overview
 
-`System.Validation` provides the Specification pattern for encapsulating business rules and a validation framework for validating objects using strongly-typed validators. It can be used standalone or integrated with CQRS pipelines.
+`System.Validation` (NuGet: **Xpandables.Validation**) provides the Specification pattern for encapsulating business rules and a validation framework for validating objects using strongly-typed validators. All types live in the `System.ComponentModel.DataAnnotations` namespace.
 
-Built for .NET 10 with full async support.
+Built for **.NET 10** and **C# 14** with full async support.
 
-## Features
+## ✨ Features
 
-### Specification Pattern
-- **`ISpecification<TSource>`** — Specification with expression-based criteria
-- **`Specification`** — Static factory methods for creating specifications
-- **`SpecificationExtensions`** — Combinators (And, Or, OrElse, Not)
+### 🔍 Specification Pattern
 
-### Validators
-- **`IValidator`** — Base validator interface
-- **`IValidator<TArgument>`** — Strongly-typed validator
-- **`Validator<TArgument>`** — Base validator implementation
-- **`EmptyValidator<TArgument>`** — No-op validator
-- **`ICompositeValidator<TArgument>`** — Aggregate multiple validators
-- **`CompositeValidator<TArgument>`** — Composite validator implementation
+| Type | File | Description |
+|------|------|-------------|
+| `ISpecification<TSource>` | `ISpecification.cs` | Contract with `Expression` and `IsSatisfiedBy` |
+| `Specification` | `Specification.cs` | Abstract record — static factory & combinator methods |
+| `Specification<TSource>` | `Specification.cs` | Concrete record with operator overloads (`&`, `\|`, `!`) |
+| `SpecificationExtensions` | `SpecificationExtensions.cs` | C# 14 extension members — `And`, `Or`, `OrElse`, `Not`, `ToSpecification`, LINQ overloads |
 
-### Validator Resolution
-- **`IValidatorFactory`** — Create validators by type
-- **`ValidatorFactory`** — Default factory implementation
-- **`IValidatorProvider`** — Provide validators for types
-- **`ValidatorProvider`** — Default provider implementation
-- **`IValidatorResolver`** — Resolve validators from DI
-- **`ValidatorResolver`** — Default resolver implementation
+### 🛡️ Validators
 
-### Marker Interface
-- **`IRequiresValidation`** — Mark types that require validation
+| Type | File | Description |
+|------|------|-------------|
+| `IValidator` | `IValidator.cs` | Base interface with `Order`, `Validate`, and default `ValidateAsync` |
+| `IValidator<TArgument>` | `IValidator.cs` | Strongly-typed generic validator (`TArgument : class, IRequiresValidation`) |
+| `Validator<TArgument>` | `Validator.cs` | Abstract base class — override `Validate` (sync) and optionally `ValidateAsync` |
+| `EmptyValidator<TArgument>` | `EmptyValidator.cs` | Sealed no-op validator — always returns an empty collection |
+| `ICompositeValidator<TArgument>` | `ICompositeValidator.cs` | Marker extending `IValidator<TArgument>` for composite aggregation |
+| `CompositeValidator<TArgument>` | `CompositeValidator.cs` | Sealed — iterates all registered validators in `Order` sequence |
 
-## Installation
+### 🔧 Validator Resolution
+
+| Type | File | Description |
+|------|------|-------------|
+| `IValidatorFactory` | `IValidatorFactory.cs` | Creates validators by `Type` or generic `TArgument` |
+| `ValidatorFactory` | `ValidatorFactory.cs` | Default factory — resolves via `IValidatorResolver` collection and `IServiceProvider` |
+| `IValidatorProvider` | `IValidatorProvider.cs` | Retrieves validators by type with `IRequiresValidation` enforcement |
+| `ValidatorProvider` | `ValidatorProvider.cs` | Default provider — delegates to `IValidatorFactory` |
+| `IValidatorResolver` | `IValidatorResolver.cs` | Maps a `TargetType` to a validator resolved from DI |
+| `ValidatorResolver<TArgument>` | `ValidatorResolver.cs` | Sealed — resolves `IValidator<TArgument>` from the container, removes duplicates |
+
+### 🏷️ Marker Interface
+
+| Type | File | Description |
+|------|------|-------------|
+| `IRequiresValidation` | `IRequiresValidation.cs` | Empty marker — types implementing this are eligible for validation |
+
+---
+
+## 📦 Installation
 
 ```bash
 dotnet add package Xpandables.Validation
 ```
 
-## Quick Start
+**Dependency:** `Microsoft.Extensions.DependencyInjection`
+
+---
+
+## 🚀 Quick Start
 
 ### Register Services
 
 ```csharp
 using Microsoft.Extensions.DependencyInjection;
 
-// Scans assemblies for sealed IValidator<T> implementations and registers them,
-// along with ICompositeValidator<T> and IValidatorResolver for each argument type.
+// Scans assemblies for sealed IValidator<T> implementations and registers:
+//   • IValidator<TArgument>         → concrete validator (Transient)
+//   • ICompositeValidator<TArgument>→ CompositeValidator<TArgument> (Transient)
+//   • IValidatorResolver            → ValidatorResolver<TArgument> (Singleton)
 services.AddXValidators(typeof(Program).Assembly);
 ```
 
-### Create Specifications
+### Create a Specification
 
 ```csharp
 using System.ComponentModel.DataAnnotations;
 
 // Factory methods
 var isActive = Specification.Equal<User, bool>(u => u.IsActive, true);
-var isAdult = Specification.GreaterThan<User, int>(u => u.Age, 18);
+var isAdult  = Specification.GreaterThan<User, int>(u => u.Age, 18);
 var hasEmail = Specification.IsNotNull<User, string>(u => u.Email);
 
 // From expression
-var customSpec = Specification.FromExpression<Product>(p => p.Price > 0);
+var custom = Specification.FromExpression<Product>(p => p.Price > 0);
 
-// Combine specifications
+// Combine specifications (extension methods on ISpecification<T>)
 var validUser = isActive.And(isAdult).And(hasEmail);
 
-// Check if satisfied
+// Evaluate
 if (validUser.IsSatisfiedBy(user))
 {
     Console.WriteLine("User meets all criteria");
 }
 
-// Use in LINQ queries
+// Use in LINQ queries (extension methods on IQueryable<T>)
 var activeAdults = users.AsQueryable().Where(validUser);
 ```
 
-### Specification Factory Methods
+---
+
+## 🔍 Specification Factory Methods
+
+All methods are static on the `Specification` abstract record.
 
 ```csharp
 // Equality
-var isEqual = Specification.Equal<User, string>(u => u.Status, "Active");
-var isNotEqual = Specification.NotEqual<User, string>(u => u.Role, "Guest");
+Specification.Equal<User, string>(u => u.Status, "Active");
+Specification.NotEqual<User, string>(u => u.Role, "Guest");
 
-// Null checks
-var isNull = Specification.IsNull<User, string>(u => u.MiddleName);
-var isNotNull = Specification.IsNotNull<User, string>(u => u.Email);
+// Null checks (TValue : class constraint)
+Specification.IsNull<User, string>(u => u.MiddleName);
+Specification.IsNotNull<User, string>(u => u.Email);
 
-// Comparisons
-var greaterThan = Specification.GreaterThan<Product, decimal>(p => p.Price, 10m);
-var lessThan = Specification.LessThan<Product, int>(p => p.Stock, 100);
+// Comparisons (TValue : IComparable<TValue>)
+Specification.GreaterThan<Product, decimal>(p => p.Price, 10m);
+Specification.LessThan<Product, int>(p => p.Stock, 100);
 
-// String operations
-var contains = Specification.Contains<User>(u => u.Email, "@");
-var startsWith = Specification.StartsWith<User>(u => u.Name, "John");
-var endsWith = Specification.EndsWith<User>(u => u.Email, ".com");
+// String operations (with optional StringComparison, default Ordinal)
+Specification.Contains<User>(u => u.Email, "@");
+Specification.StartsWith<User>(u => u.Name, "John");
+Specification.EndsWith<User>(u => u.Email, ".com");
 
 // Constants
-var alwaysTrue = Specification.True<User>();
-var alwaysFalse = Specification.False<User>();
+Specification.True<User>();
+Specification.False<User>();
 ```
 
-### Combining Specifications
+## 🔗 Combining Specifications
 
 ```csharp
 var spec1 = Specification.Equal<User, bool>(u => u.IsActive, true);
 var spec2 = Specification.GreaterThan<User, int>(u => u.Age, 18);
 
-// Extension methods (work on ISpecification<T>)
-var andSpec = spec1.And(spec2);
-var orSpec = spec1.Or(spec2);
-var orElseSpec = spec1.OrElse(spec2); // Short-circuit
-var notSpec = spec1.Not();
+// Extension methods on ISpecification<T> (C# 14 extension members)
+var andSpec    = spec1.And(spec2);       // Logical AND
+var orSpec     = spec1.Or(spec2);        // Logical OR
+var orElseSpec = spec1.OrElse(spec2);    // OR with short-circuit
+var notSpec    = spec1.Not();            // Logical NOT
 
-// Static methods
-var allSpec = Specification.All(spec1, spec2);
-var anySpec = Specification.Any(spec1, spec2);
+// Static aggregation methods
+var allSpec = Specification.All(spec1, spec2);   // AND all
+var anySpec = Specification.Any(spec1, spec2);   // OR all
 
-// Operator syntax (requires Specification<T> — use FromExpression)
+// Collection extension methods
+IEnumerable<ISpecification<User>> specs = [spec1, spec2];
+var allOf = specs.AllOf();   // AND all
+var anyOf = specs.AnyOf();   // OR all
+
+// Operator syntax (requires Specification<T>)
 Specification<User> s1 = Specification.FromExpression<User>(u => u.IsActive);
 Specification<User> s2 = Specification.FromExpression<User>(u => u.Age > 18);
 
-var combined = s1 & s2; // AND
-var either = s1 | s2;   // OR
-var negated = !s1;       // NOT
+var combined = s1 & s2;   // AND
+var either   = s1 | s2;   // OR
+var negated  = !s1;        // NOT
 ```
 
-### LINQ Integration
+## 📊 LINQ Integration
+
+Extension methods on `IQueryable<T>` and `IEnumerable<T>` accept `ISpecification<T>` directly.
 
 ```csharp
 var isActive = Specification.Equal<User, bool>(u => u.IsActive, true);
 
-// IQueryable (expression tree — database-compatible)
+// IQueryable — expression tree, database-compatible
 IQueryable<User> activeUsers = dbContext.Users.Where(isActive);
 
-// IEnumerable (compiled predicate — in-memory)
+// IEnumerable — compiled predicate, in-memory
 IEnumerable<User> filtered = userList.Where(isActive);
-bool anyActive = userList.Any(isActive);
-bool allActive = userList.All(isActive);
+bool anyActive   = userList.Any(isActive);
+bool allActive   = userList.All(isActive);
+User first       = userList.First(isActive);
+User? firstOrDef = userList.FirstOrDefault(isActive);
+User single      = userList.Single(isActive);
+User? singleDef  = userList.SingleOrDefault(isActive);
+int  count       = userList.Count(isActive);
+```
+
+### Expression Conversion
+
+```csharp
+// Expression → Specification
+Expression<Func<User, bool>> expr = u => u.IsActive;
+ISpecification<User> spec = expr.ToSpecification();
+
+// Specification → Expression
+Expression<Func<User, bool>> back = (Expression<Func<User, bool>>)s1;
+
+// Specification → Func (implicit)
+Func<User, bool> func = s1;
 ```
 
 ---
@@ -152,6 +203,8 @@ bool allActive = userList.All(isActive);
 ## 🛡️ Validators
 
 ### Create a Validator
+
+Validators must be **sealed classes** inheriting `Validator<TArgument>`. The argument type must implement `IRequiresValidation`.
 
 ```csharp
 using System.ComponentModel.DataAnnotations;
@@ -183,7 +236,7 @@ public sealed class CreateUserValidator : Validator<CreateUserRequest>
 }
 ```
 
-### Use the Validator
+### Inject and Use
 
 ```csharp
 public class UserService(IValidator<CreateUserRequest> validator)
@@ -205,6 +258,8 @@ public class UserService(IValidator<CreateUserRequest> validator)
 
 ### Async Validation
 
+Override `ValidateAsync` for I/O-bound checks. The base `Validator<T>.ValidateAsync` delegates to `Validate` by default.
+
 ```csharp
 public sealed class UniqueEmailValidator : Validator<CreateUserRequest>
 {
@@ -213,8 +268,7 @@ public sealed class UniqueEmailValidator : Validator<CreateUserRequest>
     public UniqueEmailValidator(IUserRepository repository)
         => _repository = repository;
 
-    // Lower order = runs first
-    public override int Order => 10;
+    public override int Order => 10; // Higher = runs later
 
     public override IReadOnlyCollection<ValidationResult> Validate(
         CreateUserRequest instance) => [];
@@ -240,21 +294,18 @@ public sealed class UniqueEmailValidator : Validator<CreateUserRequest>
 
 ### Composite Validator
 
-When multiple validators are registered for the same type,
-`CompositeValidator<T>` aggregates them in `Order` sequence:
+`CompositeValidator<T>` aggregates all registered `IValidator<T>` implementations, executing them in `Order` sequence and collecting all `ValidationResult` entries.
 
 ```csharp
-// Registration (AddXValidators does this automatically)
+// AddXValidators registers ICompositeValidator<T> automatically
 services.AddXValidators(typeof(CreateUserValidator).Assembly);
 
-// Usage — inject ICompositeValidator<T> to run all validators
+// Inject ICompositeValidator<T> to run all validators
 public class UserService(ICompositeValidator<CreateUserRequest> validator)
 {
-    public async Task CreateUserAsync(
-        CreateUserRequest request,
-        CancellationToken ct)
+    public async Task CreateUserAsync(CreateUserRequest request)
     {
-        // Runs CreateUserValidator, then UniqueEmailValidator (by Order)
+        // Runs CreateUserValidator (Order=0), then UniqueEmailValidator (Order=10)
         var results = await validator
             .ValidateAsync(request)
             .ConfigureAwait(false);
@@ -269,28 +320,42 @@ public class UserService(ICompositeValidator<CreateUserRequest> validator)
 
 ---
 
-## ⚙️ Configuration
+## ⚙️ Dependency Injection
 
-### Service Registration
+All registration methods are C# 14 extension members on `IServiceCollection` in the `Microsoft.Extensions.DependencyInjection` namespace (file: `DependencyInjection/IValiadatorExtensions.cs`).
 
 ```csharp
 using Microsoft.Extensions.DependencyInjection;
 
-var builder = WebApplication.CreateBuilder(args);
+// Assembly scanning — registers validators, composite validators, and resolvers
+services.AddXValidators(typeof(CreateUserValidator).Assembly);
 
-// Register all validators from assembly
-builder.Services.AddXValidators(typeof(CreateUserValidator).Assembly);
+// Or register infrastructure individually
+services
+    .AddXCompositeValidator()       // ICompositeValidator<T> → CompositeValidator<T> (Transient)
+    .AddXValidatorFactory()         // IValidatorFactory → ValidatorFactory (Singleton)
+    .AddXValidatorProvider();       // IValidatorProvider → ValidatorProvider (Scoped)
 
-// Or register infrastructure separately
-builder.Services
-    .AddXCompositeValidator()       // ICompositeValidator<T> → CompositeValidator<T>
-    .AddXValidatorFactory()         // IValidatorFactory → ValidatorFactory
-    .AddXValidatorProvider();       // IValidatorProvider → ValidatorProvider
+// Custom factory / provider overloads
+services.AddXValidatorFactory<MyCustomFactory>();
+services.AddXValidatorFactory(myFactoryInstance);
+services.AddXValidatorProvider<MyCustomProvider>();
+services.AddXValidatorProvider(myProviderInstance);
 ```
+
+### What `AddXValidators` Registers
+
+For each **sealed** `IValidator<TArgument>` found in the scanned assemblies:
+
+| Service | Implementation | Lifetime |
+|---------|---------------|----------|
+| `IValidator<TArgument>` | Concrete validator class | Transient |
+| `ICompositeValidator<TArgument>` | `CompositeValidator<TArgument>` | Transient |
+| `IValidatorResolver` | `ValidatorResolver<TArgument>` | Singleton |
 
 ---
 
-## 🌍 Real-World Examples
+## 🌍 Examples
 
 ### Validator with Specifications
 
@@ -334,16 +399,14 @@ public sealed class CreateProductValidator : Validator<CreateProductRequest>
 ```csharp
 public static class DiscountEligibility
 {
-    // Premium customer with high order value
     public static ISpecification<Order> PremiumDiscount =>
         Specification.Equal<Order, string>(o => o.CustomerType, "Premium")
-            .And(Specification.GreaterThan<Order, decimal>(o => o.TotalAmount, 1000m));
+            .And(Specification.GreaterThan<Order, decimal>(
+                o => o.TotalAmount, 1000m));
 
-    // First-time customer discount
     public static ISpecification<Order> FirstTimeDiscount =>
         Specification.Equal<Order, int>(o => o.CustomerOrderCount, 0);
 
-    // Any discount applies
     public static ISpecification<Order> AnyDiscount =>
         Specification.Any(PremiumDiscount, FirstTimeDiscount);
 }
@@ -351,43 +414,78 @@ public static class DiscountEligibility
 // Usage
 if (DiscountEligibility.PremiumDiscount.IsSatisfiedBy(order))
 {
-    order.ApplyDiscount(0.15m); // 15% premium discount
+    order.ApplyDiscount(0.15m);
 }
 ```
 
 ---
 
-## Core Types
+## 📁 Project Structure
+
+```
+System.Validation/
+├── DependencyInjection/
+│   └── IValiadatorExtensions.cs     # IServiceCollection extension members
+├── ISpecification.cs                # ISpecification<TSource> interface
+├── Specification.cs                 # Specification record + Specification<TSource>
+├── SpecificationExtensions.cs       # Extension members (And/Or/Not/LINQ)
+├── IValidator.cs                    # IValidator + IValidator<TArgument>
+├── Validator.cs                     # Abstract Validator<TArgument> base
+├── EmptyValidator.cs                # No-op validator
+├── ICompositeValidator.cs           # ICompositeValidator<TArgument>
+├── CompositeValidator.cs            # Sealed composite aggregator
+├── IValidatorFactory.cs             # Factory interface
+├── ValidatorFactory.cs              # Default factory
+├── IValidatorProvider.cs            # Provider interface
+├── ValidatorProvider.cs             # Default provider
+├── IValidatorResolver.cs            # Resolver interface
+├── ValidatorResolver.cs             # Default resolver
+└── IRequiresValidation.cs           # Marker interface
+```
+
+---
+
+## 📋 Core Types Summary
 
 | Type | Description |
 |------|-------------|
-| `ISpecification<T>` | Specification with expression |
+| `ISpecification<T>` | Specification with `Expression` and `IsSatisfiedBy` |
 | `Specification` | Static factory and combinator methods |
-| `IValidator<T>` | Strongly-typed validator |
-| `Validator<T>` | Base validator with sync/async support |
-| `ICompositeValidator<T>` | Aggregates multiple validators |
-| `IRequiresValidation` | Marker for types needing validation |
+| `Specification<T>` | Concrete record with operator overloads |
+| `IValidator<T>` | Strongly-typed validator with sync/async support |
+| `Validator<T>` | Abstract base — override `Validate` and optionally `ValidateAsync` |
+| `EmptyValidator<T>` | No-op validator returning empty results |
+| `ICompositeValidator<T>` | Aggregates multiple validators by `Order` |
+| `CompositeValidator<T>` | Sealed composite implementation |
 | `IValidatorFactory` | Creates validators by type |
+| `ValidatorFactory` | Default factory using resolvers and DI |
+| `IValidatorProvider` | Retrieves validators with `IRequiresValidation` enforcement |
+| `ValidatorProvider` | Default provider delegating to factory |
+| `IValidatorResolver` | Runtime resolver mapping `TargetType` → validator |
+| `ValidatorResolver<T>` | Sealed resolver resolving from DI container |
+| `IRequiresValidation` | Marker interface for validatable types |
 
 ---
 
 ## ✅ Best Practices
 
-1. **Create reusable specifications** — Define common rules as static specifications
-2. **Combine specifications** — Use `And`, `Or`, `Not` for complex rules
+1. **Seal your validators** — `AddXValidators` only discovers `sealed` implementations
+2. **Implement `IRequiresValidation`** — Required constraint on all `TArgument` types
 3. **Use factory methods** — Prefer `Equal`, `GreaterThan`, `Contains` over raw expressions
-4. **Implement `IRequiresValidation`** — Mark request types for automatic pipeline validation
-5. **Keep validators focused** — One validator per request type
-6. **Use async validation** — Override `ValidateAsync` for database lookups or external calls
-7. **Use `Order` property** — Control validator execution sequence in composite validators
+4. **Combine specifications** — Use `And`, `Or`, `Not` extension methods for complex rules
+5. **Override `ValidateAsync`** — For I/O-bound checks (database, external services)
+6. **Use `Order` property** — Control execution sequence in `CompositeValidator<T>`
+7. **Inject `ICompositeValidator<T>`** — When multiple validators exist for the same type
 
 ---
 
 ## 📚 Related Packages
 
-- **Xpandables.Primitives** — Core primitives and utilities
-- **Xpandables.Results** — Result types with validation integration
-- **Xpandables.Results.Pipelines** — Automatic validation in request pipelines
+| Package | Description |
+|---------|-------------|
+| **Xpandables.Primitives** | Core primitives and utilities |
+| **Xpandables.Results** | Result types with validation integration |
+| **Xpandables.Results.Pipelines** | Automatic validation in request pipelines |
 
 ---
 

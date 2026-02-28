@@ -5,276 +5,136 @@
 [![.NET](https://img.shields.io/badge/.NET-10.0+-purple.svg)](https://dotnet.microsoft.com/)
 [![License](https://img.shields.io/badge/License-Apache%202.0-green.svg)](LICENSE)
 
-Core primitives and utilities for .NET applications. Zero dependencies, foundational abstractions.
+Core primitives and foundational utilities for the Xpandables.Net ecosystem.
 
-## Overview
+## 📖 Overview
 
-`System.Primitives` provides foundational abstractions and utilities used throughout the Xpandables.Net ecosystem. It includes strongly-typed primitive wrappers (Value Objects), state management patterns, memory-aware caching, element collections, and essential extension methods.
+`System.Primitives` (NuGet: **Xpandables.Primitives**) provides strongly-typed primitive value objects, collections, dispose patterns, state machine abstractions, caching, text generation/cryptography, and shared DI extensions used across all Xpandables packages. Root namespace: `System`.
 
-Built for .NET 10 with zero external dependencies.
+Built for **.NET 10** and **C# 14**.
 
-## Features
+## ✨ Features
 
-### Primitives (Value Objects)
-- **`IPrimitive`** — Base primitive interface
-- **`IPrimitive<TValue>`** — Typed primitive with value
-- **`IPrimitive<TPrimitive, TValue>`** — Strongly-typed primitive with factory methods
-- **`PrimitiveJsonConverterAttribute`** — JSON serialization support for primitives
+### 🏷️ Primitive Value Objects
 
-### Collections
-- **`ElementCollection`** — Key-value collection with O(1) lookup
-- **`ElementEntry`** — Single entry with key and values
-- **`ElementCollectionExtensions`** — Extension methods for collections
-- **`EnumerableExtensions`** — LINQ extensions
-- **`QueryableEmpty<T>`** — Empty queryable implementation
-- **`ValidationResultExtensions`** — Convert validation results to collections
-- **`HttpHeadersExtensions`** — Convert HTTP headers to collections
+| Type | File | Description |
+|------|------|-------------|
+| `IPrimitive` | `IPrimitive.cs` | Base interface exposing `object Value` |
+| `IPrimitive<TValue>` | `IPrimitive.cs` | Strongly-typed value wrapper |
+| `IPrimitive<TPrimitive, TValue>` | `IPrimitive.cs` | Full generic — creation, comparison, formatting, implicit conversions |
 
-### State Pattern
-- **`IState`** — State interface
-- **`IStateContext`** — State context for state machines
-- **`IMemento`** — Memento pattern for state snapshots
-- **`IOriginator`** — Originator for memento pattern
-- **`StateContext`** — Default state context implementation
-- **`State`** — Base state implementation
+### 📦 Collections
 
-### Caching
-- **`MemoryAwareCache<TKey, TValue>`** — Cache with GC pressure monitoring and weak references
-- **`WeakCacheEntry<T>`** — Weak reference cache entry
-- **`ICacheTypeResolver`** — Type resolver for cached items
-- **`CacheTypeResolver`** — Default type resolver
+| Type | File | Description |
+|------|------|-------------|
+| `ElementCollection` | `Collections/ElementCollection.cs` | Immutable record struct with O(1) key lookup and JSON support |
+| `ElementEntry` | `Collections/ElementEntry.cs` | Key + `StringValues` pair |
+| `EnumerableExtensions` | `Collections/EnumerableExtensions.cs` | Extension methods on `IEnumerable<T>` |
+| `HttpHeadersExtensions` | `Collections/HttpHeadersExtensions.cs` | HTTP header conversion helpers |
+| `ValidationResultExtensions` | `Collections/ValidationResultExtensions.cs` | `ValidationResult` collection helpers |
+| `QueryableEmpty<T>` | `Collections/QueryableEmpty.cs` | Empty `IQueryable<T>` implementation |
 
-### Disposable Helpers
-- **`Disposable`** — Base class for IDisposable
-- **`DisposableAsync`** — Base class for IAsyncDisposable
+### ♻️ Dispose Patterns
 
-### Extension Methods
-- **`StringExtensions`** — String manipulation and formatting
-- **`ObjectExtensions`** — Object null checks and type conversion
-- **`ExceptionExtensions`** — Exception details and HTTP status mapping
-- **`HttpStatusCodeExtensions`** — HTTP status helpers (Title, Detail, IsSuccess)
-- **`JsonSerializerExtensions`** — JSON serialization helpers
-- **`ThrowExceptionExtensions`** — Fluent exception throwing
+| Type | File | Description |
+|------|------|-------------|
+| `Disposable` | `Disposable.cs` | Abstract `IDisposable` base with `IsDisposed` guard |
+| `DisposableAsync` | `DisposableAsync.cs` | Abstract `IAsyncDisposable` base with `IsDisposed` guard |
 
-### Dependency Injection
-- **`IAddService`** — Service registration interface
-- **`IServiceDecoratorExtensions`** — Decorator pattern for DI
-- **`ExportOptions`** — MEF-style export options
-- **`StaticConfiguration`** — Static configuration utilities
-- **`LazyResolved<T>`** — Lazy service resolution
+### 🔄 State Machine
 
-## Installation
+| Type | File | Description |
+|------|------|-------------|
+| `IState` / `IState<TStateContext>` | `States/IState.cs` | State with `EnterStateContext` / `ExitStateContext` |
+| `IStateContext` | `States/IStateContext.cs` | Context for state transitions |
+| `StateContext` | `States/StateContext.cs` | Default implementation |
+| `IOriginator` / `IMemento` | `States/` | Memento pattern support |
+| `State` | `States/State.cs` | Base state implementation |
+
+### 🔐 Text Utilities
+
+| Type | File | Description |
+|------|------|-------------|
+| `TextGenerator` | `TextGenerator.cs` | Cryptographically secure random string generation |
+| `TextCryptography` | `TextCryptography.cs` | AES encrypt/decrypt and secure comparison |
+| `EncryptedValue` | `TextCryptography.cs` | Record struct — Key, Value, Salt |
+
+### 💾 Caching
+
+| Type | File | Description |
+|------|------|-------------|
+| `MemoryAwareCache<TKey, TValue>` | `Cache/MemoryAwareCache.cs` | Thread-safe weak-reference cache with auto-cleanup |
+| `ICacheTypeResolver` / `CacheTypeResolver` | `Cache/` | Cache type discovery |
+
+### 🛠️ Utilities
+
+| Type | File | Description |
+|------|------|-------------|
+| `LazyResolved<T>` | `LazyResolved.cs` | `Lazy<T>` resolved from `IServiceProvider` |
+| `IHttpStatusCodeExtension` | `IHttpStatusCodeExtension.cs` | Custom HTTP status code mapping |
+| `StringExtensions` | `StringExtensions.cs` | String helpers |
+| `ObjectExtensions` | `ObjectExtensions.cs` | Object helpers |
+| `ExceptionExtensions` | `ExceptionExtensions.cs` | Exception helpers |
+| `JsonSerializerExtensions` | `JsonSerializerExtensions.cs` | `System.Text.Json` helpers |
+
+### 🔧 Composition
+
+| Type | File | Description |
+|------|------|-------------|
+| `IAddService` | `Composition/IAddService.cs` | Interface for modular service registration |
+| `ExportOptions` | `Composition/ExportOptions.cs` | MEF export configuration |
+
+### ⚙️ Dependency Injection
+
+C# 14 extension members on `IServiceCollection` (namespace: `Microsoft.Extensions.DependencyInjection`).
+
+```csharp
+services.AddXHttpStatusCodeExtension();       // IHttpStatusCodeExtension (Singleton)
+services.AddXHttpStatusCodeExtension<T>();     // Custom implementation
+services.AddXCacheTypeResolver();             // ICacheTypeResolver (Singleton)
+services.AddXCacheTypeResolver<T>();           // Custom implementation
+```
+
+## 📦 Installation
 
 ```bash
 dotnet add package Xpandables.Primitives
 ```
 
-## Quick Start
+**Dependencies:** `Microsoft.Extensions.Configuration`, `Microsoft.Extensions.Configuration.Json`, `Microsoft.Extensions.Configuration.EnvironmentVariables`, `Microsoft.Extensions.DependencyInjection`, `Microsoft.Extensions.Primitives`
 
-### Strongly-Typed Primitives
+## 🚀 Quick Start
 
-```csharp
-using System;
-
-[PrimitiveJsonConverter<Email, string>]
-public readonly record struct Email : IPrimitive<Email, string>
-{
-    public required string Value { get; init; }
-
-    public static Email Create(string value)
-    {
-        ArgumentException.ThrowIfNullOrWhiteSpace(value);
-        if (!value.Contains('@'))
-            throw new ArgumentException("Invalid email format");
-        return new Email { Value = value.ToLower() };
-    }
-
-    public static string DefaultValue => string.Empty;
-
-    public static bool TryParse(
-        string? s, IFormatProvider? provider, out Email result)
-    {
-        if (s is not null && s.Contains('@'))
-        {
-            result = Create(s);
-            return true;
-        }
-        result = default;
-        return false;
-    }
-
-    public string ToString(string? format, IFormatProvider? provider) =>
-        Value;
-
-    public int CompareTo(Email other) =>
-        string.Compare(Value, other.Value, StringComparison.Ordinal);
-
-    public int CompareTo(object? obj) =>
-        obj is Email other ? CompareTo(other) : 1;
-
-    public bool Equals(Email other) => Value == other.Value;
-}
-
-// Usage
-Email email = Email.Create("john@example.com");
-string emailStr = email.Value; // "john@example.com"
-```
-
-### Element Collections
+### ElementCollection
 
 ```csharp
 using System.Collections;
 
-// Create a collection
-var collection = ElementCollection.With("key1", "value1", "value2")
-    + new ElementEntry("key2", "value3");
+var errors = ElementCollection.With("Name", "Name is required")
+    .Add("Email", "Invalid email");
 
-// Access entries
-foreach (var entry in collection)
-{
-    Console.WriteLine($"{entry.Key}: {string.Join(", ", entry.Values)}");
-}
-
-// Lookup by key (O(1))
-if (collection.TryGetValue("key1", out var values))
-{
-    Console.WriteLine($"Found: {values}");
-}
+var merged = errors.Merge(ElementCollection.With("Age", "Must be 18+"));
 ```
 
-### Memory-Aware Cache
+### Text Cryptography
+
+```csharp
+EncryptedValue encrypted = TextCryptography.Encrypt("my-secret");
+string decrypted = TextCryptography.Decrypt(encrypted);
+bool match = TextCryptography.Compare(encrypted, "my-secret");
+```
+
+### MemoryAwareCache
 
 ```csharp
 using System.Cache;
 
-// Cleanup every 5 mins, items expire after 1 hour (defaults)
-var cache = new MemoryAwareCache<string, User>();
+var cache = new MemoryAwareCache<string, MyService>(
+    cleanupInterval: TimeSpan.FromMinutes(5),
+    maxAge: TimeSpan.FromHours(1));
 
-// Get existing or create new
-User user = cache.GetOrAdd("user:123", key => LoadUser(key));
-
-// Add or update
-cache.AddOrUpdate("user:456", new User { Id = 456, Name = "Jane" });
-
-// Try retrieve
-if (cache.TryGetValue("user:123", out var cachedUser))
-{
-    Console.WriteLine($"Found: {cachedUser.Name}");
-}
-
-// Items use weak references — automatically collected under GC pressure
+cache.TryAdd("key", myService);
 ```
-
-### HttpStatusCode Extensions
-
-```csharp
-using System.Net;
-
-var status = HttpStatusCode.BadRequest;
-
-bool isSuccess = status.IsSuccess;            // false
-bool isFailure = status.IsFailure;            // true
-bool isValidation = status.IsValidationProblem; // true
-string title = status.Title;                  // "Bad Request"
-string detail = status.Detail;                // Description text
-```
-
-### Exception Extensions
-
-```csharp
-try
-{
-    // Some operation
-}
-catch (Exception ex)
-{
-    // Get full message including inner exceptions
-    string fullMessage = ex.GetFullExceptionMessage();
-
-    // Convert to ElementCollection for structured error data
-    ElementCollection entries = ex.GetElementEntries();
-
-    // Get the appropriate HTTP status code
-    HttpStatusCode statusCode = ex.GetHttpStatusCode();
-}
-```
-
----
-
-## 🔧 Disposable Helpers
-
-### Synchronous Disposable
-
-```csharp
-public class MyResource : Disposable
-{
-    private readonly Stream _stream;
-
-    public MyResource(Stream stream) => _stream = stream;
-
-    protected override void Dispose(bool disposing)
-    {
-        if (disposing)
-        {
-            _stream?.Dispose();
-        }
-        base.Dispose(disposing);
-    }
-}
-```
-
-### Async Disposable
-
-```csharp
-public class MyAsyncResource : DisposableAsync
-{
-    private readonly DbConnection _connection;
-
-    public MyAsyncResource(DbConnection connection)
-        => _connection = connection;
-
-    protected override async ValueTask DisposeAsync(bool disposing)
-    {
-        if (disposing)
-        {
-            await _connection.CloseAsync();
-            await _connection.DisposeAsync();
-        }
-        await base.DisposeAsync(disposing);
-    }
-}
-```
-
----
-
-## Core Types
-
-| Type | Description |
-|------|-------------|
-| `IPrimitive<TPrimitive, TValue>` | Strongly-typed value object |
-| `ElementCollection` | Key-value collection |
-| `IStateContext` | State machine context |
-| `MemoryAwareCache<TKey, TValue>` | Weak-reference cache with auto-cleanup |
-| `Disposable` / `DisposableAsync` | Disposable base classes |
-
----
-
-## ✅ Best Practices
-
-- **Use primitives for domain concepts** — Email, Money, ProductId, etc.
-- **Validate in `Create()` method** — Fail fast with clear exceptions
-- **Make primitives `readonly record struct`** — Stack allocation, value semantics
-- **Decorate with `PrimitiveJsonConverter`** — Automatic JSON serialization
-- **Keep primitives simple** — Single responsibility, no complex business logic
-- **Use `Disposable`/`DisposableAsync`** — Consistent dispose pattern implementation
-
----
-
-## 📚 Related Packages
-
-- **Xpandables.Validation** — Specification pattern and validation
-- **Xpandables.Optionals** — Optional/Maybe monad
-- **Xpandables.Results** — Result pattern types
 
 ---
 

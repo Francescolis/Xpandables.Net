@@ -5,253 +5,90 @@
 [![.NET](https://img.shields.io/badge/.NET-10.0+-purple.svg)](https://dotnet.microsoft.com/)
 [![License](https://img.shields.io/badge/License-Apache%202.0-green.svg)](LICENSE)
 
-ADO.NET repository, unit of work, and SQL builder infrastructure for .NET.
+ADO.NET repository, unit-of-work, and SQL builder abstractions for raw database access.
 
-## Overview
+## 📖 Overview
 
-`System.Data` provides a lightweight ADO.NET data access layer with Repository and Unit of Work patterns, type-safe query specifications, SQL builders for multiple dialects, and connection management. All operations execute immediately against the database (no change tracking).
+`System.Data` (NuGet: **Xpandables.Data**) provides `IDataRepository<TData>` for CRUD operations, `IDataUnitOfWork` for transaction management, and `IDataSqlBuilder` for generating provider-specific SQL. Supports SQL Server, PostgreSQL, and MySQL dialects. Namespace: `System.Data`.
 
-Built for .NET 10 with full async support.
+Built for **.NET 10** and **C# 14**.
 
-## Features
+## ✨ Features
 
-### Repository Pattern
-- **`IDataRepository`** — Base repository marker (implements `IDisposable`, `IAsyncDisposable`)
-- **`IDataRepository<TData>`** — Generic repository with `QueryAsync`, `InsertAsync`, `UpdateAsync`, `DeleteAsync`
-- **`DataRepository<TData>`** — Default ADO.NET repository implementation
-- **`IDataRequiresUnitOfWork`** — Marker for pipeline UoW integration
+### 📊 Repository
 
-### Query Specifications
-- **`DataSpecification`** — Static factory with `For<TData>()` method
-- **`IDataSpecification<TData, TResult>`** — Type-safe query specification
+| Type | File | Description |
+|------|------|-------------|
+| `IDataRepository` | `IDataRepository.cs` | Marker interface (`IDisposable`, `IAsyncDisposable`) |
+| `IDataRepository<TData>` | `IDataRepository.cs` | Generic — `QueryAsync`, `QueryPagedAsync`, `QuerySingleAsync`, `InsertAsync`, `UpdateAsync`, `DeleteAsync` |
+| `DataRepository` | `DataRepository.cs` | Default implementation |
 
-### Unit of Work
-- **`IDataUnitOfWork`** — Transaction management with `GetRepository<T>()`, `BeginTransactionAsync()`
-- **`DataUnitOfWork`** — Default ADO.NET unit of work implementation
-- **`IDataTransaction`** — Transaction abstraction with `CommitAsync()`, `RollbackAsync()`
-- **`DataTransaction`** — Default transaction implementation
+### 🔄 Unit of Work
 
-### SQL Builders
-- **`IDataSqlBuilder`** — SQL builder interface
-- **`MsDataSqlBuilder`** — SQL Server SQL builder
-- **`PostgreDataSqlBuilder`** — PostgreSQL SQL builder
-- **`MyDataSqlBuilder`** — MySQL SQL builder
-- **`DataSqlBuilderFactory`** — Factory for SQL builders
-- **`DataSqlBuilderBase`** — Base class for custom builders
+| Type | File | Description |
+|------|------|-------------|
+| `IDataUnitOfWork` | `IDataUnitOfWork.cs` | `ConnectionScope`, `GetRepository<T>`, `BeginTransactionAsync` |
+| `DataUnitOfWork` | `DataUnitOfWork.cs` | Default implementation |
+| `IDataUnitOfWorkFactory` | `IDataUnitOfWorkFactory.cs` | Factory for creating unit of work instances |
+| `DataUnitOfWorkFactory` | `DataUnitOfWorkFactory.cs` | Default factory |
+| `IDataRequiresUnitOfWork` | `IDataRequiresUnitOfWork.cs` | Marker for requests requiring transactions |
 
-### Connection Management
-- **`IDataDbConnectionFactory`** — Database connection factory
-- **`DataDbConnectionFactory`** — Default connection factory
-- **`IDataDbConnectionScope`** — Scoped connection wrapper
-- **`DataDbConnectionScope`** — Default scoped connection
-- **`IDataDbConnectionFactoryProvider`** — Provider for connection factories
-- **`DataDbConnectionFactoryProvider`** — Default provider
-- **`DbProviders`** — Provider constants (`MsSqlServer`, `PostgreSql`, `MySql`)
+### 🔗 Connection Management
 
-### SQL Mapping
-- **`IDataSqlMapper`** — Maps specifications to SQL
-- **`DataSqlMapper`** — Default SQL mapper implementation
+| Type | File | Description |
+|------|------|-------------|
+| `IDataDbConnectionFactory` | `IDataDbConnectionFactory.cs` | Creates `DbConnection` instances |
+| `DataDbConnectionFactory` | `DataDbConnectionFactory.cs` | Default implementation |
+| `IDataDbConnectionScope` | `IDataDbConnectionScope.cs` | Scoped connection lifecycle |
+| `DataDbConnectionScope` | `DataDbConnectionScope.cs` | Default scope |
+| `IDataTransaction` | `IDataTransaction.cs` | Transaction abstraction |
+| `DataTransaction` | `DataTransaction.cs` | Default transaction |
 
-### Entity Updates
-- **`DataUpdater`** — Fluent API for building ADO.NET update operations
-- **`IDataPropertyUpdate`** — Property update abstraction
+### 🏗️ SQL Building
 
-### Command Interceptor
-- **`IDataCommandInterceptor`** — Intercept command execution for logging, telemetry, and diagnostics
-- **`DataCommandInterceptor`** — Base no-op implementation with virtual methods for selective override
-- **`DataLoggingCommandInterceptor`** — Default structured logging implementation using `[LoggerMessage]` source generation
-- **`DataCommandInterceptorOptions`** — Options for sensitive data logging, custom category, and slow command threshold
-- **`DataCommandContext`** — Context record with SQL text, parameters, operation type, and entity name
-- **`DataCommandOperationType`** — Enum: `Reader`, `Scalar`, `NonQuery`
+| Type | File | Description |
+|------|------|-------------|
+| `IDataSqlBuilder` | `IDataSqlBuilder.cs` | Contract — SELECT, INSERT, UPDATE, DELETE generation |
+| `DataSqlBuilderBase` | `DataSqlBuilderBase.cs` | Abstract base |
+| `DataSqlBuilderFactory` | `DataSqlBuilderFactory.cs` | Factory for SQL builder creation |
+| `MsDataSqlBuilder` | `MsDataSqlBuilder.cs` | SQL Server (T-SQL) |
+| `PostgreDataSqlBuilder` | `PostgreDataSqlBuilder.cs` | PostgreSQL |
+| `MyDataSqlBuilder` | `MyDataSqlBuilder.cs` | MySQL |
+| `SqlDialect` | `SqlDialect.cs` | Enum — `SqlServer`, `PostgreSql`, `MySql` |
+| `SqlQueryResult` | `IDataSqlBuilder.cs` | Record struct — `Sql` + `Parameters` |
 
-## Installation
+### 🔍 Specification & Interceptors
+
+| Type | File | Description |
+|------|------|-------------|
+| `IDataSpecification<TData, TResult>` | `IDataSpecification.cs` | Query specification for filtering/paging |
+| `DataSpecification` | `DataSpecification.cs` | Default implementation |
+| `IDataCommandInterceptor` | `IDataCommandInterceptor.cs` | Command interception |
+| `DataCommandInterceptor` | `DataCommandInterceptor.cs` | Base implementation |
+| `DataLoggingCommandInterceptor` | `DataLoggingCommandInterceptor.cs` | Logging interceptor |
+| `DataCommandInterceptorOptions` | `DataCommandInterceptorOptions.cs` | Interceptor configuration |
+
+## 📦 Installation
 
 ```bash
 dotnet add package Xpandables.Data
 ```
 
-## Quick Start
+**Dependencies:** `Microsoft.Extensions.Logging.Abstractions`, `Microsoft.Extensions.Options`  
+**Project References:** `Xpandables.AsyncPaged`
 
-### Register Services
-
-```csharp
-using Microsoft.Extensions.DependencyInjection;
-
-// Register SQL Server connection
-services.AddXDataDbConnectionMsSqlServer(connectionString);
-
-// Or PostgreSQL
-services.AddXDataDbConnectionPostgreSql(connectionString);
-
-// Or MySQL
-services.AddXDataDbConnectionMySql(connectionString);
-
-// Register SQL builder
-services.AddXDataMsSqlBuilder();       // SQL Server
-services.AddXDataPostgreSqlBuilder();  // PostgreSQL
-services.AddXDataMySqlBuilder();       // MySQL
-
-// Register SQL mapper
-services.AddXDataSqlMapper();
-
-// Register connection scope
-services.AddXDataDbConnectionScope();
-
-// Register unit of work and repositories
-services.AddXDataUnitOfWork();
-services.AddXDataRepositories(typeof(Program).Assembly);
-```
-
-### Use the Repository
+## 🚀 Quick Start
 
 ```csharp
 using System.Data;
 
-public class OrderService(IDataUnitOfWork unitOfWork)
-{
-    public async Task CreateOrderAsync(
-        Order order, CancellationToken ct)
-    {
-        await using var transaction = await unitOfWork
-            .BeginTransactionAsync(ct);
+await using var unitOfWork = await unitOfWorkFactory.CreateAsync(ct);
+await using var transaction = await unitOfWork.BeginTransactionAsync(ct);
 
-        try
-        {
-            var repo = unitOfWork
-                .GetRepository<Order>();
-
-            await repo.InsertAsync([order], ct);
-
-            await transaction.CommitAsync(ct);
-        }
-        catch
-        {
-            await transaction.RollbackAsync(ct);
-            throw;
-        }
-    }
-}
+var orderRepo = unitOfWork.GetRepository<Order>();
+await orderRepo.InsertAsync(order, ct);
+await transaction.CommitAsync(ct);
 ```
-
-### Query with Specifications
-
-```csharp
-using System.Data;
-
-var spec = DataSpecification
-    .For<Product>()
-    .Where(p => p.IsActive)
-    .OrderBy(p => p.Name)
-    .Skip(0)
-    .Take(20)
-    .Select(p => new ProductDto(p.Id, p.Name, p.Price));
-
-await foreach (var product in repository.QueryAsync(spec, ct))
-{
-    Console.WriteLine(product.Name);
-}
-```
-
-### Command Interceptor
-
-A `DataLoggingCommandInterceptor` is registered automatically when you call `AddXDataUnitOfWork()`. It logs all command execution using structured `ILogger` output with `[LoggerMessage]` source generation:
-
-| Event | Log Level | Content |
-|---|---|---|
-| Before execution | `Debug` | SQL text, parameter names (or values if enabled) |
-| After execution | `Information` | Duration, rows affected, SQL text |
-| Slow command | `Warning` | Duration exceeding threshold |
-| Failed execution | `Error` | Duration, SQL text, exception |
-
-#### Configure Options
-
-```csharp
-services.AddXDataCommandInterceptor(options =>
-{
-    // Log parameter values (default: false — only names are logged)
-    options.EnableSensitiveDataLogging = true;
-
-    // Custom log category (default: null — uses DataLoggingCommandInterceptor type name)
-    options.CategoryName = "MyApp.Database";
-
-    // Commands exceeding this threshold log at Warning (default: null — disabled)
-    options.SlowCommandThreshold = TimeSpan.FromSeconds(2);
-});
-
-services.AddXDataUnitOfWork(); // safe — TryAdd won't overwrite
-```
-
-#### Custom Interceptor
-
-To fully replace the logging interceptor with your own implementation:
-
-```csharp
-public sealed class MetricsCommandInterceptor : DataCommandInterceptor
-{
-    public override ValueTask CommandExecutedAsync(
-        DataCommandContext context, TimeSpan duration, int? rowsAffected,
-        CancellationToken cancellationToken = default)
-    {
-        // Push metrics to your observability system
-        return ValueTask.CompletedTask;
-    }
-}
-
-services.AddXDataCommandInterceptor<MetricsCommandInterceptor>();
-services.AddXDataUnitOfWork();
-```
-
-**Registration behavior:**
-- `AddXDataUnitOfWork()` auto-registers the `DataLoggingCommandInterceptor` via `TryAdd` (won't overwrite a previously registered custom interceptor).
-- `AddXDataCommandInterceptor(Action?)` configures options via the `IOptions<T>` pipeline and registers the logging interceptor.
-- `AddXDataCommandInterceptor<T>()` uses `Replace` to swap the current registration.
-- If you register your custom interceptor **before** `AddXDataUnitOfWork()`, it is preserved.
-```
-
----
-
-## Core Types
-
-| Type | Description |
-|------|-------------|
-| `IDataRepository<TData>` | Generic ADO.NET repository |
-| `IDataUnitOfWork` | ADO.NET transaction coordinator |
-| `IDataTransaction` | Transaction with commit/rollback |
-| `DataSpecification` | Query specification factory |
-| `IDataSqlBuilder` | SQL builder interface |
-| `IDataDbConnectionFactory` | Connection factory |
-| `DataUpdater` | Fluent update builder |
-| `IDataRequiresUnitOfWork` | Pipeline UoW marker |
-| `IDataCommandInterceptor` | Command execution interceptor |
-| `DataLoggingCommandInterceptor` | Default structured logging interceptor |
-| `DataCommandInterceptorOptions` | Interceptor configuration options |
-
-## DI Extension Methods
-
-| Method | Description |
-|--------|-------------|
-| `AddXDataDbConnectionMsSqlServer(cs)` | Register SQL Server connection |
-| `AddXDataDbConnectionPostgreSql(cs)` | Register PostgreSQL connection |
-| `AddXDataDbConnectionMySql(cs)` | Register MySQL connection |
-| `AddXDataMsSqlBuilder()` | Register SQL Server SQL builder |
-| `AddXDataPostgreSqlBuilder()` | Register PostgreSQL SQL builder |
-| `AddXDataMySqlBuilder()` | Register MySQL SQL builder |
-| `AddXDataSqlMapper()` | Register SQL mapper |
-| `AddXDataUnitOfWork()` | Register unit of work (auto-registers logging interceptor) |
-| `AddXDataCommandInterceptor()` | Register logging interceptor with default options |
-| `AddXDataCommandInterceptor(Action)` | Register logging interceptor with custom options |
-| `AddXDataCommandInterceptor<T>()` | Replace interceptor with custom implementation |
-| `AddXDataRepositories(assemblies)` | Register repositories from assemblies |
-| `AddXDataDbConnectionScope()` | Register scoped connection |
-
----
-
-## 📚 Related Packages
-
-| Package | Description |
-|---------|-------------|
-| **Xpandables.Entities** | Entity abstractions with lifecycle tracking |
-| **Xpandables.Events.Data** | Event store built on System.Data |
 
 ---
 

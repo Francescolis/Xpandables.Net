@@ -1,231 +1,93 @@
-﻿# 📡 System.Results.Tasks
+﻿# System.Results.Tasks
 
-[![NuGet Version](https://img.shields.io/nuget/v/Xpandables.Results.Tasks.svg)](https://www.nuget.org/packages/Xpandables.Results.Tasks)
+[![NuGet](https://img.shields.io/nuget/v/Xpandables.Results.Tasks.svg)](https://www.nuget.org/packages/Xpandables.Results.Tasks)
 [![NuGet Downloads](https://img.shields.io/nuget/dt/Xpandables.Results.Tasks.svg)](https://www.nuget.org/packages/Xpandables.Results.Tasks)
-[![.NET](https://img.shields.io/badge/.NET-10.0-purple.svg)](https://dotnet.microsoft.com/)
+[![.NET](https://img.shields.io/badge/.NET-10.0+-purple.svg)](https://dotnet.microsoft.com/)
+[![License](https://img.shields.io/badge/License-Apache%202.0-green.svg)](LICENSE)
 
-> **Mediator & Handler Dispatch** - CQRS mediator for dispatching requests to handlers with optional pipeline decorators.
+Mediator implementation with pre-built pipeline request handler for CQRS dispatch.
 
----
+## 📖 Overview
 
-## 📋 Overview
+`System.Results.Tasks` (NuGet: **Xpandables.Results.Tasks**) provides `IMediator` / `Mediator` for dispatching requests through a decorator pipeline, and `PipelineRequestHandler<TRequest>` which builds the pipeline chain at construction time for maximum performance. Namespace: `System.Results.Tasks`.
 
-`Xpandables.Results.Tasks` provides the `IMediator` interface and `Mediator` implementation used to dispatch `IRequest` instances to their registered handlers. It is the runtime dispatcher typically used with `Xpandables.Results` request/handler contracts and `Xpandables.Results.Pipelines` decorators.
+Built for **.NET 10** and **C# 14**.
 
-### ✨ Key Features
+## ✨ Features
 
-- 📡 **IMediator** - Central interface for sending requests to handlers
-- 🎯 **Mediator** - Default implementation with handler resolution
-- 🔄 **Request Dispatch** - Automatic routing to appropriate handlers
-- 🔌 **DI Integration** - Seamless dependency injection support
-- ⚡ **Async First** - Fully asynchronous request handling
-- 🔗 **Pipeline Support** - Works with `IPipelineRequestHandler` decorators
+| Type | File | Description |
+|------|------|-------------|
+| `IMediator` | `IMediator.cs` | Contract — `SendAsync<TRequest>` and `SendAsync<TRequest, TResponse>` |
+| `Mediator` | `Mediator.cs` | Sealed implementation — resolves `IPipelineRequestHandler<TRequest>` from DI |
+| `PipelineRequestHandler<TRequest>` | `PipelineRequestHandler.cs` | Sealed — pre-builds decorator chain at construction; fast path when no decorators |
 
----
+### ⚙️ Dependency Injection
 
-## 📥 Installation
+C# 14 extension members on `IServiceCollection`:
+
+```csharp
+// Basic mediator + pipeline handler
+services.AddXMediator();
+
+// Mediator + standard pipeline decorators (pre, post, validation, exception)
+services.AddXMediatorWithPipelines();
+
+// Mediator + event sourcing pipeline decorators
+services.AddXMediatorWithEventSourcingPipelines();
+
+// Custom mediator implementation
+services.AddXMediator<MyCustomMediator>();
+```
+
+### 📋 Recommended Decorator Registration Order
+
+**Standard pipeline:**
+1. `PipelinePreHandlerDecorator`
+2. `PipelinePostHandlerDecorator`
+3. `PipelineRequireUnitOfWorkDecorator`
+4. `PipelineValidationDecorator`
+5. `PipelineExceptionDecorator`
+
+**Event sourcing pipeline:**
+1. `PipelinePublishDomainEventDecorator`
+2. `PipelineEnqueueIntegrationEventDecorator`
+3. `PipelinePreHandlerDecorator`
+4. `PipelinePostHandlerDecorator`
+5. `PipelineRequireDataUnitOfWorkDecorator`
+6. `PipelineCommitDomainEventDecorator`
+7. `PipelineValidationDecorator`
+8. `PipelineExceptionDecorator`
+
+## 📦 Installation
 
 ```bash
 dotnet add package Xpandables.Results.Tasks
 ```
 
----
+**Project References:** `Xpandables.Results.Pipelines` (which transitively includes Results, Validation, Events, Data, Entities)
 
 ## 🚀 Quick Start
 
-### Service Registration
-
 ```csharp
-using Microsoft.Extensions.DependencyInjection;
+using System.Results.Tasks;
 
-var builder = WebApplication.CreateBuilder(args);
+// Register
+services.AddXRequestHandlers(typeof(Program).Assembly);
+services.AddXMediatorWithPipelines();
 
-// Register mediator
-builder.Services.AddXMediator();
-
-// Register request handlers from assembly
-builder.Services.AddXRequestHandlers(typeof(Program).Assembly);
-```
-
-### Define Requests and Handlers
-
-```csharp
-using System.Results;
-using System.Results.Requests;
-
-// Define a query
-public sealed record GetUserByIdQuery(Guid UserId) : IRequest<User>;
-
-// Implement handler
-public sealed class GetUserByIdHandler : IRequestHandler<GetUserByIdQuery, User>
+// Use
+public class MyService(IMediator mediator)
 {
-    private readonly IUserRepository _repository;
-
-    public GetUserByIdHandler(IUserRepository repository)
-        => _repository = repository;
-
-    public async Task<Result<User>> HandleAsync(
-        GetUserByIdQuery request,
-        CancellationToken cancellationToken = default)
+    public async Task<Result<UserDto>> GetUserAsync(Guid id, CancellationToken ct)
     {
-        var user = await _repository.FindByIdAsync(request.UserId, cancellationToken);
-
-        if (user is null)
-        {
-            return Result.NotFound<User>("userId", "User not found");
-        }
-
-        return Result.Success(user);
+        var request = new GetUserRequest(id);
+        return await mediator.SendAsync<GetUserRequest, UserDto>(request, ct);
     }
 }
 ```
-
-### Send Requests via Mediator
-
-```csharp
-public class UsersController : ControllerBase
-{
-    private readonly IMediator _mediator;
-
-    public UsersController(IMediator mediator) => _mediator = mediator;
-
-    [HttpGet("{id}")]
-    public async Task<IActionResult> GetUser(Guid id)
-    {
-        Result<User> result = await _mediator.SendAsync(new GetUserByIdQuery(id));
-
-        return result.IsSuccess
-            ? Ok(result.Value)
-            : NotFound(result.Errors);
-    }
-}
-```
-
----
-
-## 🧩 Core Concepts
-
-### IMediator Interface
-
-```csharp
-public interface IMediator
-{
-    /// <summary>
-    /// Sends the specified request asynchronously and returns the result.
-    /// </summary>
-    Task<Result> SendAsync<TRequest>(TRequest request, CancellationToken cancellationToken = default)
-        where TRequest : class, IRequest;
-}
-```
-
-### Commands and Queries
-
-```csharp
-// Command - performs an action, may or may not return a value
-public sealed record CreateUserCommand(string Name, string Email) : IRequest<User>;
-public sealed record DeleteUserCommand(Guid UserId) : IRequest;
-
-// Query - retrieves data
-public sealed record GetUserByIdQuery(Guid UserId) : IRequest<User>;
-public sealed record GetAllUsersQuery : IRequest<IEnumerable<User>>;
-```
-
-### Using the Mediator
-
-```csharp
-public class OrderService
-{
-    private readonly IMediator _mediator;
-
-    public OrderService(IMediator mediator) => _mediator = mediator;
-
-    public async Task<Result<Order>> CreateOrderAsync(
-        Guid customerId,
-        List<OrderItem> items,
-        CancellationToken cancellationToken)
-    {
-        var command = new CreateOrderCommand(customerId, items);
-        return await _mediator.SendAsync(command, cancellationToken);
-    }
-
-    public async Task<Result<Order>> GetOrderAsync(
-        Guid orderId,
-        CancellationToken cancellationToken)
-    {
-        var query = new GetOrderByIdQuery(orderId);
-        return await _mediator.SendAsync(query, cancellationToken);
-    }
-}
-```
-
----
-
-## 🔄 Pipeline Integration
-
-The mediator works seamlessly with pipeline decorators from `System.Results.Pipelines`:
-
-```csharp
-// Register pipeline decorators
-builder.Services.AddXPipelineRequestHandler();
-builder.Services.AddXPipelineValidationDecorator();
-builder.Services.AddXPipelineUnitOfWorkDecorator();
-builder.Services.AddXPipelineExceptionDecorator();
-
-// Requests are now processed through the pipeline
-var result = await _mediator.SendAsync(new CreateUserCommand("John", "john@example.com"));
-// 1. Exception decorator catches errors
-// 2. Validation decorator validates request
-// 3. Handler executes
-// 4. Unit of work saves changes
-```
-
----
-
-## ⚙️ Complete Configuration
-
-```csharp
-using Microsoft.Extensions.DependencyInjection;
-
-var builder = WebApplication.CreateBuilder(args);
-
-// Core mediator
-builder.Services.AddXMediator();
-
-// Request handlers
-builder.Services.AddXRequestHandlers(typeof(Program).Assembly);
-
-// Optional: Pipeline decorators
-builder.Services.AddXPipelineRequestHandler();
-builder.Services.AddXPipelineExceptionDecorator();
-builder.Services.AddXPipelineValidationDecorator();
-builder.Services.AddXPipelinePreDecorator();
-builder.Services.AddXPipelinePostDecorator();
-
-// Optional: Validators
-builder.Services.AddXRuleValidators(typeof(Program).Assembly);
-```
-
----
-
-## ✅ Best Practices
-
-1. **Use CQRS separation** - Commands modify state, queries read state
-2. **One handler per request** - Keep handlers focused and testable
-3. **Use the mediator** - Don't inject handlers directly
-4. **Combine with pipelines** - Add cross-cutting concerns via decorators
-5. **Handle errors as Results** - Return Result.Failure instead of throwing
-
----
-
-## 📚 Related Packages
-
-- **System.Results** - Core Result types and request/handler interfaces
-- **System.Results.Pipelines** - Pipeline decorators for validation, transactions, etc.
-- **System.Primitives.Validation** - Rule validators and specifications
-- **AspNetCore.Net** - ASP.NET Core integration
 
 ---
 
 ## 📄 License
 
-Apache License 2.0 - Copyright © Kamersoft 2025
+Apache License 2.0 — Copyright © Kamersoft 2025
