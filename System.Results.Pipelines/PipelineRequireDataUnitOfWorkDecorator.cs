@@ -28,57 +28,57 @@ namespace System.Results.Pipelines;
 /// operations performed during the request are either committed on success or rolled back on failure.
 /// </para>
 /// <para>
-/// Unlike the EF Core <see cref="PipelineEntityUnitOfWorkDecorator{TRequest}"/> which uses SaveChangesAsync,
+/// Unlike the EF Core <see cref="PipelineRequireEntityUnitOfWorkDecorator{TRequest}"/> which uses SaveChangesAsync,
 /// this decorator explicitly manages transactions since ADO.NET operations execute immediately.
 /// </para>
 /// </remarks>
 /// <typeparam name="TRequest">The type of the request object that must implement <see cref="IDataRequiresUnitOfWork"/>.</typeparam>
 /// <param name="unitOfWork">The ADO.NET unit of work for transaction management.</param>
-public sealed class PipelineDataUnitOfWorkDecorator<TRequest>(IDataUnitOfWork? unitOfWork = default) :
-    IPipelineDecorator<TRequest>
-    where TRequest : class, IRequest, IDataRequiresUnitOfWork
+public sealed class PipelineRequireDataUnitOfWorkDecorator<TRequest>(IDataUnitOfWork? unitOfWork = default) :
+	IPipelineDecorator<TRequest>
+	where TRequest : class, IRequest, IDataRequiresUnitOfWork
 {
-    /// <inheritdoc/>
-    public async Task<Result> HandleAsync(
-        RequestContext<TRequest> context,
-        RequestHandler nextHandler,
-        CancellationToken cancellationToken = default)
-    {
-        ArgumentNullException.ThrowIfNull(context);
-        ArgumentNullException.ThrowIfNull(nextHandler);
+	/// <inheritdoc/>
+	public async Task<Result> HandleAsync(
+		RequestContext<TRequest> context,
+		RequestHandler nextHandler,
+		CancellationToken cancellationToken = default)
+	{
+		ArgumentNullException.ThrowIfNull(context);
+		ArgumentNullException.ThrowIfNull(nextHandler);
 
-        if (unitOfWork is null)
-        {
-            return await nextHandler(cancellationToken).ConfigureAwait(false);
-        }
+		if (unitOfWork is null)
+		{
+			return await nextHandler(cancellationToken).ConfigureAwait(false);
+		}
 
 		// Begin transaction
 		IDataTransaction transaction = await unitOfWork
-            .BeginTransactionAsync(cancellationToken: cancellationToken)
-            .ConfigureAwait(false);
+			.BeginTransactionAsync(cancellationToken: cancellationToken)
+			.ConfigureAwait(false);
 
-        await using (transaction.ConfigureAwait(false))
-        {
-            try
-            {
-                Result response = await nextHandler(cancellationToken).ConfigureAwait(false);
+		await using (transaction.ConfigureAwait(false))
+		{
+			try
+			{
+				Result response = await nextHandler(cancellationToken).ConfigureAwait(false);
 
-                if (response.IsSuccess)
-                {
-                    await transaction.CommitAsync(cancellationToken).ConfigureAwait(false);
-                }
-                else
-                {
-                    await transaction.RollbackAsync(cancellationToken).ConfigureAwait(false);
-                }
+				if (response.IsSuccess)
+				{
+					await transaction.CommitAsync(cancellationToken).ConfigureAwait(false);
+				}
+				else
+				{
+					await transaction.RollbackAsync(cancellationToken).ConfigureAwait(false);
+				}
 
-                return response;
-            }
-            catch
-            {
-                await transaction.RollbackAsync(cancellationToken).ConfigureAwait(false);
-                throw;
-            }
-        }
-    }
+				return response;
+			}
+			catch
+			{
+				await transaction.RollbackAsync(cancellationToken).ConfigureAwait(false);
+				throw;
+			}
+		}
+	}
 }

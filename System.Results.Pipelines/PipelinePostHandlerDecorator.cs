@@ -19,15 +19,15 @@ using System.Results.Requests;
 namespace System.Results.Pipelines;
 
 /// <summary>
-/// Represents a decorator that executes a series of pre-handlers before the main request handler in a pipeline.
+/// Represents a decorator that executes post-handling logic for a request in a pipeline.
 /// </summary>
-/// <remarks>This decorator iterates over a collection of pre-handlers, executing each one in sequence before
-/// invoking the main request handler. It is used to perform operations or checks that should occur before the main
-/// request processing.</remarks>
+/// <remarks>This decorator is used to apply additional processing after the main request handler has executed. It
+/// iterates over a collection of post-handlers, invoking each one with the request context and the result of the main
+/// handler. This allows for operations such as logging, auditing, or modifying the response.</remarks>
 /// <typeparam name="TRequest">The type of the request being processed. Must implement <see cref="IRequest"/>.</typeparam>
-/// <param name="preHandlers"></param>
-public sealed class PipelinePreDecorator<TRequest>(
-    IEnumerable<IRequestPreHandler<TRequest>> preHandlers) : IPipelineDecorator<TRequest>
+/// <param name="postHandlers"></param>
+public sealed class PipelinePostHandlerDecorator<TRequest>(
+    IEnumerable<IRequestPostHandler<TRequest>> postHandlers) : IPipelineDecorator<TRequest>
     where TRequest : class, IRequest
 {
     ///<inheritdoc/>
@@ -39,19 +39,21 @@ public sealed class PipelinePreDecorator<TRequest>(
         ArgumentNullException.ThrowIfNull(context);
         ArgumentNullException.ThrowIfNull(nextHandler);
 
-        foreach (IRequestPreHandler<TRequest> preHandler in preHandlers)
+        Result response = await nextHandler(cancellationToken).ConfigureAwait(false);
+
+        foreach (IRequestPostHandler<TRequest> postHandler in postHandlers)
         {
-            Result result = await preHandler
-                .HandleAsync(context, cancellationToken)
+            response = await postHandler
+                .HandleAsync(context, response, cancellationToken)
                 .ConfigureAwait(false);
 
-            // If any pre-handler returns a failure response, we short-circuit and return that response.
-            if (result.IsFailure)
+            // If any post-handler returns a failure response, we short-circuit and return that response.
+            if (response.IsFailure)
             {
-                return result;
+                return response;
             }
         }
 
-        return await nextHandler(cancellationToken).ConfigureAwait(false);
+        return response;
     }
 }

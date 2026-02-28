@@ -30,34 +30,34 @@ namespace System.Results.Pipelines;
 /// <typeparam name="TRequest">The type of request being processed. Must implement <see cref="IRequest"/> and <see cref="IRequiresEventStorage"/>.</typeparam>
 /// <param name="pending">The buffer that holds pending integration events generated during request execution.</param>
 /// <param name="outbox">The outbox store used to persist integration events for reliable delivery.</param>
-public sealed class PipelineIntegrationOutboxDecorator<TRequest>(
-    IPendingIntegrationEventsBuffer pending,
-    IOutboxStore outbox) :
-    IPipelineDecorator<TRequest>
-    where TRequest : class, IRequest, IRequiresEventStorage
+public sealed class PipelineEnqueueIntegrationEventDecorator<TRequest>(
+	IPendingIntegrationEventsBuffer pending,
+	IOutboxStore outbox) :
+	IPipelineDecorator<TRequest>
+	where TRequest : class, IRequest, IRequiresEventStorage
 {
-    private readonly IPendingIntegrationEventsBuffer _pending = pending;
-    private readonly IOutboxStore _outbox = outbox;
+	private readonly IPendingIntegrationEventsBuffer _pending = pending;
+	private readonly IOutboxStore _outbox = outbox;
 
-    /// <inheritdoc/>    
-    public async Task<Result> HandleAsync(
-        RequestContext<TRequest> context,
-        RequestHandler nextHandler,
-        CancellationToken cancellationToken = default)
-    {
-        ArgumentNullException.ThrowIfNull(context);
-        ArgumentNullException.ThrowIfNull(nextHandler);
+	/// <inheritdoc/>    
+	public async Task<Result> HandleAsync(
+		RequestContext<TRequest> context,
+		RequestHandler nextHandler,
+		CancellationToken cancellationToken = default)
+	{
+		ArgumentNullException.ThrowIfNull(context);
+		ArgumentNullException.ThrowIfNull(nextHandler);
 
 		Result result = await nextHandler(cancellationToken).ConfigureAwait(false);
 
-        if (result.IsSuccess)
-        {
-            foreach (IIntegrationEvent @event in _pending.Drain())
+		if (result.IsSuccess)
+		{
+			foreach (IIntegrationEvent @event in _pending.Drain())
 			{
 				await _outbox.EnqueueAsync([@event], cancellationToken).ConfigureAwait(false);
 			}
 		}
 
-        return result;
-    }
+		return result;
+	}
 }

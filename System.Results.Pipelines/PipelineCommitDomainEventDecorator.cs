@@ -28,31 +28,31 @@ namespace System.Results.Pipelines;
 /// all pending changes are saved to the event store, and committed domain events are notified. 
 /// The decorator is thread-safe and intended for use in event-driven architectures.</remarks>
 /// <typeparam name="TRequest">The type of request being handled. Must implement <see cref="IRequest"/> and <see cref="IRequiresEventStorage"/>.</typeparam>
-public sealed class PipelineEventStoreEventDecorator<TRequest>() :
-    IPipelineDecorator<TRequest>
-    where TRequest : class, IRequest, IRequiresEventStorage
+public sealed class PipelineCommitDomainEventDecorator<TRequest>() :
+	IPipelineDecorator<TRequest>
+	where TRequest : class, IRequest, IRequiresEventStorage
 {
-    /// <inheritdoc/>
-    public async Task<Result> HandleAsync(
-        RequestContext<TRequest> context,
-        RequestHandler nextHandler,
-        CancellationToken cancellationToken = default)
-    {
-        ArgumentNullException.ThrowIfNull(context);
-        ArgumentNullException.ThrowIfNull(nextHandler);
+	/// <inheritdoc/>
+	public async Task<Result> HandleAsync(
+		RequestContext<TRequest> context,
+		RequestHandler nextHandler,
+		CancellationToken cancellationToken = default)
+	{
+		ArgumentNullException.ThrowIfNull(context);
+		ArgumentNullException.ThrowIfNull(nextHandler);
 
-        try
-        {
-            Result response = await nextHandler(cancellationToken).ConfigureAwait(false);
+		try
+		{
+			Result response = await nextHandler(cancellationToken).ConfigureAwait(false);
 
-            return response;
-        }
-        finally
-        {
-            foreach (PendingDomainEventsBatch batch in PipelineDomainEventsDecorator<TRequest>.DomainEventCommitBuffer.Drain())
-            {
-                batch.OnCommitted();
-            }
-        }
-    }
+			return response;
+		}
+		finally
+		{
+			foreach (PendingDomainEventsBatch batch in PipelinePublishDomainEventDecorator<TRequest>.DomainEventCommitBuffer.Drain())
+			{
+				batch.OnCommitted();
+			}
+		}
+	}
 }

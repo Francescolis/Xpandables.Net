@@ -33,7 +33,7 @@ namespace System.Results.Pipelines;
 /// cref="IRequiresEventStorage"/>.</typeparam>
 /// <param name="pendingDomainEvents"></param>
 /// <param name="publisher"></param>
-public sealed class PipelineDomainEventsDecorator<TRequest>(
+public sealed class PipelinePublishDomainEventDecorator<TRequest>(
     IPendingDomainEventsBuffer pendingDomainEvents,
     IEventPublisher publisher) : IPipelineDecorator<TRequest>
     where TRequest : class, IRequest, IRequiresEventStorage
