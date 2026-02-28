@@ -17,6 +17,8 @@
 using System.Reflection;
 using System.Results;
 
+using Microsoft.Extensions.Logging;
+
 namespace Microsoft.AspNetCore.Http;
 
 /// <summary>
@@ -29,35 +31,54 @@ namespace Microsoft.AspNetCore.Http;
 /// with ASP.NET Core's middleware infrastructure.</remarks>
 public sealed class ResultMiddleware : IMiddleware
 {
-    /// <inheritdoc/>
-    public async Task InvokeAsync(HttpContext context, RequestDelegate next)
-    {
-        ArgumentNullException.ThrowIfNull(context);
-        ArgumentNullException.ThrowIfNull(next);
+	private readonly ILogger _logger;
 
-        try
-        {
-            await next(context).ConfigureAwait(false);
-        }
-        catch (OperationCanceledException)
-        {
-            throw;
-        }
-        catch (Exception exception)
-            when (!context.Response.HasStarted)
-        {
-            if (exception is TargetInvocationException targetInvocation)
-            {
-                exception = targetInvocation.InnerException ?? targetInvocation;
-            }
+	/// <summary>
+	/// Initializes a new instance of the <see cref="ResultMiddleware"/> class.
+	/// </summary>
+	/// <param name="loggerFactory">The logger factory used to create a logger with the
+	/// <c>"ResultMiddleware"</c> category name.</param>
+	public ResultMiddleware(ILoggerFactory loggerFactory)
+	{
+		ArgumentNullException.ThrowIfNull(loggerFactory);
+		_logger = loggerFactory.CreateLogger(ResultLog.CategoryName);
+	}
 
-            Result result = exception switch
-            {
-                BadHttpRequestException badHttpRequestException => badHttpRequestException.ToResult(context),
-                _ => exception.ToResult()
-            };
+	/// <inheritdoc/>
+	public async Task InvokeAsync(HttpContext context, RequestDelegate next)
+	{
+		ArgumentNullException.ThrowIfNull(context);
+		ArgumentNullException.ThrowIfNull(next);
 
-            await ResultEndpointFilter.WriteProblemDetailsAsync(context, result).ConfigureAwait(false);
-        }
-    }
+		try
+		{
+			await next(context).ConfigureAwait(false);
+		}
+		catch (OperationCanceledException)
+		{
+			throw;
+		}
+		catch (Exception exception)
+			when (!context.Response.HasStarted)
+		{
+			if (exception is TargetInvocationException targetInvocation)
+			{
+				exception = targetInvocation.InnerException ?? targetInvocation;
+			}
+
+			ResultLog.LogUnhandledException(
+				_logger,
+				context.Request.Method,
+				context.Request.Path,
+				exception);
+
+			Result result = exception switch
+			{
+				BadHttpRequestException badHttpRequestException => badHttpRequestException.ToResult(context),
+				_ => exception.ToResult()
+			};
+
+			await ResultEndpointFilter.WriteProblemDetailsAsync(context, result).ConfigureAwait(false);
+		}
+	}
 }

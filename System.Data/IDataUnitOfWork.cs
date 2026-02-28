@@ -53,64 +53,45 @@ namespace System.Data;
 /// </example>
 public interface IDataUnitOfWork : IDisposable, IAsyncDisposable
 {
-    /// <summary>
-    /// Gets the connection scope managed by this unit of work.
-    /// </summary>
-    IDataDbConnectionScope ConnectionScope { get; }
+	/// <summary>
+	/// Gets the connection scope managed by this unit of work.
+	/// </summary>
+	IDataDbConnectionScope ConnectionScope { get; }
 
-    /// <summary>
-    /// Gets the current active transaction, if any.
-    /// </summary>
-    IDataTransaction? CurrentTransaction { get; }
+	/// <summary>
+	/// Gets the current active transaction, if any.
+	/// </summary>
+	IDataTransaction? CurrentTransaction { get; }
 
-    /// <summary>
-    /// Gets a value indicating whether a transaction is currently active.
-    /// </summary>
-    bool HasActiveTransaction { get; }
+	/// <summary>
+	/// Gets a value indicating whether a transaction is currently active.
+	/// </summary>
+	bool HasActiveTransaction { get; }
 
-    /// <summary>
-    /// Gets a repository for the specified entity type.
-    /// </summary>
-    /// <typeparam name="TEntity">The entity type.</typeparam>
-    /// <returns>A repository instance for the entity type.</returns>
-    IDataRepository<TEntity> GetRepository<[DynamicallyAccessedMembers(DynamicallyAccessedMemberTypes.PublicProperties)] TEntity>()
-        where TEntity : class;
+	/// <summary>
+	/// Gets a repository for the specified entity type.
+	/// </summary>
+	/// <typeparam name="TEntity">The entity type.</typeparam>
+	/// <returns>A repository instance for the entity type.</returns>
+	IDataRepository<TEntity> GetRepository<[DynamicallyAccessedMembers(DynamicallyAccessedMemberTypes.PublicProperties)] TEntity>()
+		where TEntity : class;
 
-    /// <summary>
-    /// Begins a new database transaction asynchronously.
-    /// </summary>
-    /// <param name="isolationLevel">The isolation level for the transaction.</param>
-    /// <param name="cancellationToken">A token to cancel the operation.</param>
-    /// <returns>The transaction instance.</returns>
-    /// <exception cref="InvalidOperationException">Thrown when a transaction is already active.</exception>
-    Task<IDataTransaction> BeginTransactionAsync(
-        IsolationLevel isolationLevel = IsolationLevel.ReadCommitted,
-        CancellationToken cancellationToken = default);
+	/// <summary>
+	/// Begins a new database transaction asynchronously.
+	/// </summary>
+	/// <param name="isolationLevel">The isolation level for the transaction.</param>
+	/// <param name="cancellationToken">A token to cancel the operation.</param>
+	/// <returns>The transaction instance.</returns>
+	/// <exception cref="InvalidOperationException">Thrown when a transaction is already active.</exception>
+	Task<IDataTransaction> BeginTransactionAsync(
+		IsolationLevel isolationLevel = IsolationLevel.ReadCommitted,
+		CancellationToken cancellationToken = default);
 
-    /// <summary>
-    /// Begins a new database transaction synchronously.
-    /// </summary>
-    /// <param name="isolationLevel">The isolation level for the transaction.</param>
-    /// <returns>The transaction instance.</returns>
-    /// <exception cref="InvalidOperationException">Thrown when a transaction is already active.</exception>
-    IDataTransaction BeginTransaction(IsolationLevel isolationLevel = IsolationLevel.ReadCommitted);
-}
-
-/// <summary>
-/// Factory for creating <see cref="IDataUnitOfWork"/> instances.
-/// </summary>
-public interface IDataUnitOfWorkFactory
-{
-    /// <summary>
-    /// Creates a new unit of work asynchronously with an open connection.
-    /// </summary>
-    /// <param name="cancellationToken">A token to cancel the operation.</param>
-    /// <returns>A new unit of work instance.</returns>
-    Task<IDataUnitOfWork> CreateAsync(CancellationToken cancellationToken = default);
-
-    /// <summary>
-    /// Creates a new unit of work synchronously with an open connection.
-    /// </summary>
-    /// <returns>A new unit of work instance.</returns>
-    IDataUnitOfWork Create();
+	/// <summary>
+	/// Begins a new database transaction synchronously.
+	/// </summary>
+	/// <param name="isolationLevel">The isolation level for the transaction.</param>
+	/// <returns>The transaction instance.</returns>
+	/// <exception cref="InvalidOperationException">Thrown when a transaction is already active.</exception>
+	IDataTransaction BeginTransaction(IsolationLevel isolationLevel = IsolationLevel.ReadCommitted);
 }

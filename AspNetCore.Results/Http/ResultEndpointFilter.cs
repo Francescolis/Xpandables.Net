@@ -17,8 +17,8 @@
 using System.Reflection;
 using System.Results;
 
-using Microsoft.AspNetCore.Mvc;
 using Microsoft.Extensions.DependencyInjection;
+using Microsoft.Extensions.Logging;
 
 namespace Microsoft.AspNetCore.Http;
 
@@ -30,83 +30,116 @@ namespace Microsoft.AspNetCore.Http;
 /// result handling and response formatting.</remarks>
 public sealed class ResultEndpointFilter : IEndpointFilter
 {
-    /// <inheritdoc/>
-    public async ValueTask<object?> InvokeAsync(EndpointFilterInvocationContext context, EndpointFilterDelegate next)
-    {
-        ArgumentNullException.ThrowIfNull(context);
-        ArgumentNullException.ThrowIfNull(next);
+	private readonly ILogger _logger;
 
-        try
-        {
-            object? objectResult = await next(context).ConfigureAwait(false);
+	/// <summary>
+	/// Initializes a new instance of the <see cref="ResultEndpointFilter"/> class.
+	/// </summary>
+	/// <param name="loggerFactory">The logger factory used to create a logger with the
+	/// <c>"ResultMiddleware"</c> category name.</param>
+	public ResultEndpointFilter(ILoggerFactory loggerFactory)
+	{
+		ArgumentNullException.ThrowIfNull(loggerFactory);
+		_logger = loggerFactory.CreateLogger(ResultLog.CategoryName);
+	}
 
-            if (objectResult is Result result)
-            {
-                IResultHeaderWriter headerWriter = context.HttpContext.RequestServices
-                    .GetRequiredService<IResultHeaderWriter>();
+	/// <inheritdoc/>
+	[System.Diagnostics.CodeAnalysis.SuppressMessage("Performance", "CA1873:Avoid potentially expensive logging", Justification = "<Pending>")]
+	public async ValueTask<object?> InvokeAsync(EndpointFilterInvocationContext context, EndpointFilterDelegate next)
+	{
+		ArgumentNullException.ThrowIfNull(context);
+		ArgumentNullException.ThrowIfNull(next);
 
-                await headerWriter
-                    .WriteAsync(context.HttpContext, result)
-                    .ConfigureAwait(false);
+		try
+		{
+			object? objectResult = await next(context).ConfigureAwait(false);
 
-                if (result.IsFailure)
-                {
-                    await WriteProblemDetailsAsync(context.HttpContext, result).ConfigureAwait(false);
-                    return Results.Empty;
-                }
+			if (objectResult is Result result)
+			{
+				IResultHeaderWriter headerWriter = context.HttpContext.RequestServices
+					.GetRequiredService<IResultHeaderWriter>();
 
-                if (result.InternalValue is not null)
-                {
-                    objectResult = result.InternalValue;
-                }
-                else
-                {
-                    return Results.Empty;
-                }
-            }
+				await headerWriter
+					.WriteAsync(context.HttpContext, result)
+					.ConfigureAwait(false);
 
-            return objectResult;
-        }
-        catch (OperationCanceledException)
-        {
-            throw;
-        }
-        catch (Exception exception)
-            when (!context.HttpContext.Response.HasStarted)
-        {
-            if (exception is TargetInvocationException targetInvocation)
-            {
-                exception = targetInvocation.InnerException ?? targetInvocation;
-            }
+				if (result.IsFailure)
+				{
+					ResultLog.LogResultFailure(
+						_logger,
+						context.HttpContext.Request.Method,
+						context.HttpContext.Request.Path,
+						result.StatusCode,
+						result.Exception?.ToString() ?? result.Errors.ToString());
 
-            Result result = exception switch
-            {
-                BadHttpRequestException badHttpRequestException => badHttpRequestException.ToResult(context.HttpContext),
-                ResultException executionResultException => executionResultException.Result,
-                _ => exception.ToResult()
-            };
+					await WriteProblemDetailsAsync(context.HttpContext, result).ConfigureAwait(false);
+					return Results.Empty;
+				}
 
-            await WriteProblemDetailsAsync(context.HttpContext, result).ConfigureAwait(false);
+				ResultLog.LogResultCompleted(
+					_logger,
+					context.HttpContext.Request.Method,
+					context.HttpContext.Request.Path,
+					result.StatusCode);
 
-            return Results.Empty;
-        }
-    }
+				if (result.InternalValue is not null)
+				{
+					objectResult = result.InternalValue;
+				}
+				else
+				{
+					return Results.Empty;
+				}
+			}
 
-    internal static async ValueTask WriteProblemDetailsAsync(HttpContext context, Result result)
-    {
-        var problem = result.ToProblemDetails(context);
-        if (context.RequestServices.GetService<IProblemDetailsService>() is { } problemDetailsService)
-        {
-            await problemDetailsService.WriteAsync(new ProblemDetailsContext
-            {
-                HttpContext = context,
-                ProblemDetails = problem
-            }).ConfigureAwait(false);
-        }
-        else
-        {
-            IResult objectResult = Results.Problem(problem);
-            await objectResult.ExecuteAsync(context).ConfigureAwait(false);
-        }
-    }
+			return objectResult;
+		}
+		catch (OperationCanceledException)
+		{
+			throw;
+		}
+		catch (Exception exception)
+			when (!context.HttpContext.Response.HasStarted)
+		{
+			if (exception is TargetInvocationException targetInvocation)
+			{
+				exception = targetInvocation.InnerException ?? targetInvocation;
+			}
+
+			ResultLog.LogUnhandledException(
+				_logger,
+				context.HttpContext.Request.Method,
+				context.HttpContext.Request.Path,
+				exception);
+
+			Result result = exception switch
+			{
+				BadHttpRequestException badHttpRequestException => badHttpRequestException.ToResult(context.HttpContext),
+				ResultException executionResultException => executionResultException.Result,
+				_ => exception.ToResult()
+			};
+
+			await WriteProblemDetailsAsync(context.HttpContext, result).ConfigureAwait(false);
+
+			return Results.Empty;
+		}
+	}
+
+	internal static async ValueTask WriteProblemDetailsAsync(HttpContext context, Result result)
+	{
+		var problem = result.ToProblemDetails(context);
+		if (context.RequestServices.GetService<IProblemDetailsService>() is { } problemDetailsService)
+		{
+			await problemDetailsService.WriteAsync(new ProblemDetailsContext
+			{
+				HttpContext = context,
+				ProblemDetails = problem
+			}).ConfigureAwait(false);
+		}
+		else
+		{
+			IResult objectResult = Results.Problem(problem);
+			await objectResult.ExecuteAsync(context).ConfigureAwait(false);
+		}
+	}
 }

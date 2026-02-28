@@ -108,26 +108,3 @@ public interface IDataDbConnectionScope : IDisposable, IAsyncDisposable
 	/// <returns>A <see cref="DbCommand"/> instance that represents the command to be executed against the database.</returns>
 	DbCommand CreateCommand(SqlQueryResult queryResult);
 }
-
-/// <summary>
-/// Defines a factory for creating <see cref="IDataDbConnectionScope"/> instances.
-/// </summary>
-/// <remarks>
-/// Use this factory to create scoped connections that manage their own lifecycle.
-/// The factory is typically registered as a singleton in the dependency injection container.
-/// </remarks>
-public interface IDataDbConnectionScopeFactory
-{
-	/// <summary>
-	/// Creates a new connection scope asynchronously with an open connection.
-	/// </summary>
-	/// <param name="cancellationToken">A token to cancel the operation.</param>
-	/// <returns>A task representing the asynchronous operation, containing the connection scope.</returns>
-	Task<IDataDbConnectionScope> CreateScopeAsync(CancellationToken cancellationToken = default);
-
-	/// <summary>
-	/// Creates a new connection scope synchronously with an open connection.
-	/// </summary>
-	/// <returns>The connection scope with an open connection.</returns>
-	IDataDbConnectionScope CreateScope();
-}

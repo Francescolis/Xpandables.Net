@@ -18,7 +18,6 @@ using System.Data;
 using System.Diagnostics.CodeAnalysis;
 using System.Reflection;
 
-using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection.Extensions;
 
 #pragma warning disable IDE0130 // Namespace does not match folder structure
@@ -40,8 +39,7 @@ public static class IDataExtensions
 	extension(IServiceCollection services)
 	{
 		/// <summary>
-		/// Registers the database connection factory and scope factory providers in the service collection using the
-		/// specified configuration.
+		/// Registers the database connection factory and scope factory providers in the service collection.
 		/// <code language="csharp">
 		///     You can use the registered providers in your services as shown below:
 		///     public sealed class ReportingRepository(IDataDbConnectionScopeFactoryProvider provider)
@@ -56,17 +54,77 @@ public static class IDataExtensions
 		/// </summary>
 		/// <remarks>This method is typically used in the startup configuration of an application to set
 		/// up database connection management services.</remarks>
-		/// <param name="configuration">The configuration settings used to initialize the database connection factory provider. Must not be null.</param>
 		/// <returns>The updated IServiceCollection instance, allowing for method chaining.</returns>
-		public IServiceCollection AddXDataDbConnectionFactoryProviders(IConfiguration configuration)
+		public IServiceCollection AddXDataDbConnectionFactoryProviders()
 		{
 			ArgumentNullException.ThrowIfNull(services);
-			ArgumentNullException.ThrowIfNull(configuration);
+			services.AddXDataDbConnectionFactoryProvider();
+			services.AddXDataDbConnectionScopeFactoryProvider();
 
-			services.TryAddSingleton<IDataDbConnectionFactoryProvider>(
-				_ => new DataDbConnectionFactoryProvider(configuration));
-			services.TryAddSingleton<IDataDbConnectionScopeFactoryProvider, DataDbConnectionScopeFactoryProvider>();
+			return services;
+		}
 
+		/// <summary>
+		/// Adds a database connection factory provider to the service collection for dependency injection.
+		/// </summary>
+		/// <remarks>Call this method during application startup to register the
+		/// DataDbConnectionFactoryProvider implementation. This allows application components to resolve and use
+		/// database connection factories via dependency injection.</remarks>
+		/// <returns>The service collection instance with the database connection factory provider registered. This enables
+		/// further configuration of additional services.</returns>
+		public IServiceCollection AddXDataDbConnectionFactoryProvider()
+		{
+			ArgumentNullException.ThrowIfNull(services);
+			return services.AddXDataDbConnectionFactoryProvider<DataDbConnectionFactoryProvider>();
+		}
+
+		/// <summary>
+		/// Adds a provider for managing database connection scopes using the Data framework.
+		/// </summary>
+		/// <remarks>This method is intended to be called during the service configuration phase,
+		/// typically in the Startup class. It registers the DataDbConnectionScopeFactoryProvider as the implementation
+		/// for managing database connection scopes.</remarks>
+		/// <returns>An instance of IServiceCollection that can be used to configure additional services.</returns>
+		public IServiceCollection AddXDataDbConnectionScopeFactoryProvider()
+		{
+			ArgumentNullException.ThrowIfNull(services);
+			return services.AddXDataDbConnectionScopeFactoryProvider<DataDbConnectionScopeFactoryProvider>();
+		}
+
+		/// <summary>
+		/// Registers the specified implementation of IDataDbConnectionFactoryProvider as a singleton service in the
+		/// dependency injection container.
+		/// </summary>
+		/// <remarks>Use this method to make a custom IDataDbConnectionFactoryProvider implementation
+		/// available for dependency injection throughout the application. The provider will be registered as a
+		/// singleton, ensuring a single shared instance is used.</remarks>
+		/// <typeparam name="TProvider">The type of the connection factory provider to register. Must be a class that implements
+		/// IDataDbConnectionFactoryProvider and has a public constructor.</typeparam>
+		/// <returns>The IServiceCollection instance with the provider registered, to support method chaining.</returns>
+		public IServiceCollection AddXDataDbConnectionFactoryProvider
+			<[DynamicallyAccessedMembers(DynamicallyAccessedMemberTypes.PublicConstructors)] TProvider>()
+			where TProvider : class, IDataDbConnectionFactoryProvider
+		{
+			ArgumentNullException.ThrowIfNull(services);
+			services.TryAddSingleton<IDataDbConnectionFactoryProvider, TProvider>();
+			return services;
+		}
+
+		/// <summary>
+		/// Registers a singleton implementation of the specified database connection scope factory provider with the
+		/// service collection.
+		/// </summary>
+		/// <remarks>This method is intended for use when configuring dependency injection for database
+		/// connection scope management. It throws an ArgumentNullException if the service collection is null.</remarks>
+		/// <typeparam name="TProvider">The type of the database connection scope factory provider to register. Must be a class that implements
+		/// IDataDbConnectionScopeFactoryProvider and has a public constructor.</typeparam>
+		/// <returns>The IServiceCollection instance, to allow for method chaining.</returns>
+		public IServiceCollection AddXDataDbConnectionScopeFactoryProvider
+			<[DynamicallyAccessedMembers(DynamicallyAccessedMemberTypes.PublicConstructors)] TProvider>()
+			where TProvider : class, IDataDbConnectionScopeFactoryProvider
+		{
+			ArgumentNullException.ThrowIfNull(services);
+			services.TryAddSingleton<IDataDbConnectionScopeFactoryProvider, TProvider>();
 			return services;
 		}
 
@@ -169,14 +227,33 @@ public static class IDataExtensions
 		}
 
 		/// <summary>
-		/// Registers a scoped database connection scope using the configured factory.
+		/// Adds a scoped database connection provider to the service collection, enabling dependency injection of
+		/// database connection scopes for data operations.
 		/// </summary>
-		/// <returns>The <see cref="IServiceCollection"/> instance for chaining.</returns>
+		/// <remarks>This method requires that the service collection has been initialized and that an
+		/// implementation of IDataDbConnectionScopeFactory is registered. It configures the service collection to
+		/// provide a scoped database connection for each request or operation scope.</remarks>
+		/// <returns>The same IServiceCollection instance so that additional calls can be chained.</returns>
 		public IServiceCollection AddXDataDbConnectionScope()
 		{
 			ArgumentNullException.ThrowIfNull(services);
-			return services.AddScoped<IDataDbConnectionScope>(sp =>
+			return services.AddXDataDbConnectionScope(sp =>
 				sp.GetRequiredService<IDataDbConnectionScopeFactory>().CreateScope());
+		}
+
+		/// <summary>
+		/// Registers a factory for creating instances of IDataDbConnectionScope with a scoped service lifetime.
+		/// </summary>
+		/// <remarks>A new instance of IDataDbConnectionScope is created for each scope, which is
+		/// typically per web request in ASP.NET Core applications. This approach is recommended for managing database
+		/// connections in a scoped manner.</remarks>
+		/// <param name="factory">A factory function that creates an instance of IDataDbConnectionScope. This parameter cannot be null.</param>
+		/// <returns>The IServiceCollection instance to allow for method chaining.</returns>
+		public IServiceCollection AddXDataDbConnectionScope(Func<IServiceProvider, IDataDbConnectionScope> factory)
+		{
+			ArgumentNullException.ThrowIfNull(services);
+			ArgumentNullException.ThrowIfNull(factory);
+			return services.AddScoped(factory);
 		}
 
 		/// <summary>

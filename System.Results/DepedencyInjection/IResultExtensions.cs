@@ -65,7 +65,7 @@ public static class IResultExtensions
 					$"{pipeline.Name} does not implement IPipelineDecorator<> interface.");
 			}
 
-			return services.AddTransient(typeof(IPipelineDecorator<>), pipeline);
+			return services.AddScoped(typeof(IPipelineDecorator<>), pipeline);
 		}
 
 		/// <summary>
@@ -128,7 +128,7 @@ public static class IResultExtensions
 			{
 				foreach (Type interfaceType in handlerType.Interfaces)
 				{
-					_ = services.AddTransient(interfaceType, handlerType.Type);
+					_ = services.AddScoped(interfaceType, handlerType.Type);
 				}
 			}
 

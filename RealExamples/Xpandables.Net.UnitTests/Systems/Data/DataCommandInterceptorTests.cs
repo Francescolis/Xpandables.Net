@@ -190,7 +190,7 @@ public sealed class DataCommandInterceptorTests : IDisposable
 	{
 		var recording = new RecordingCommandInterceptor();
 		using var scope = new DataDbConnectionScope(_connection);
-		using var uow = new DataUnitOfWork(scope, new MsDataSqlBuilder(), new DataSqlMapper(), recording);
+		using var uow = new DataUnitOfWork(new TestScopeFactory(scope), new MsDataSqlBuilder(), new DataSqlMapper(), recording);
 
 		IDataRepository<Product> repo = uow.GetRepository<Product>();
 
@@ -201,7 +201,7 @@ public sealed class DataCommandInterceptorTests : IDisposable
 	public void WhenUnitOfWorkWithoutInterceptorThenUsesDefault()
 	{
 		using var scope = new DataDbConnectionScope(_connection);
-		using var uow = new DataUnitOfWork(scope, new MsDataSqlBuilder(), new DataSqlMapper());
+		using var uow = new DataUnitOfWork(new TestScopeFactory(scope), new MsDataSqlBuilder(), new DataSqlMapper());
 
 		IDataRepository<Product> repo = uow.GetRepository<Product>();
 
@@ -368,5 +368,13 @@ public sealed class DataCommandInterceptorTests : IDisposable
 
 		internal sealed record ExecutedRecord(DataCommandContext Context, TimeSpan Duration, int? RowsAffected);
 		internal sealed record FailedRecord(DataCommandContext Context, TimeSpan Duration, Exception Exception);
+	}
+
+	private sealed class TestScopeFactory(IDataDbConnectionScope scope) : IDataDbConnectionScopeFactory
+	{
+		public IDataDbConnectionScope CreateScope() => scope;
+
+		public Task<IDataDbConnectionScope> CreateScopeAsync(CancellationToken cancellationToken = default)
+			=> Task.FromResult(scope);
 	}
 }
