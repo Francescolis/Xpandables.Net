@@ -74,42 +74,208 @@ dotnet add package Xpandables.Results
 
 ## 🚀 Quick Start
 
-### Creating Results
+### Creating Success Results
 
 ```csharp
 using System.Results;
 
-// Success
-Result success = SuccessResult.Ok();
-Result<int> typed = SuccessResult.Ok(42);
+// 200 OK — non-generic
+Result ok = Result.Success();
 
-// Failure
-Result failure = FailureResult.BadRequest("Name", "Name is required");
-Result notFound = FailureResult.NotFound("User not found");
+// 200 OK — with value
+Result<UserDto> userResult = Result.Success(new UserDto(id, "Alice", "alice@example.com"));
+
+// 201 Created — with value and Location header
+Result<OrderDto> created = Result.Created<OrderDto>()
+    .WithValue(orderDto)
+    .WithLocation(new Uri($"/api/orders/{orderDto.Id}", UriKind.Relative));
+
+// 204 No Content
+Result noContent = Result.NoContent();
+
+// 202 Accepted
+Result accepted = Result.Accepted();
+
+// Builders are implicitly convertible to Result — you can return them directly
+public Task<Result<UserDto>> HandleAsync(...)
+{
+    UserDto user = /* fetch */;
+    return Task.FromResult<Result<UserDto>>(
+        Result.Success(user).WithHeader("X-Request-Id", requestId));
+}
 ```
 
-### Request / Handler
+### Creating Failure Results
 
 ```csharp
-// Define request
-public sealed record GetUserRequest(Guid Id) : IRequest<UserDto>;
+// 400 Bad Request — with keyed error
+Result badRequest = Result.Failure("Email", "Invalid email format");
 
-// Implement handler
-public sealed class GetUserHandler : IRequestHandler<GetUserRequest, UserDto>
+// 404 Not Found — with keyed error
+Result<UserDto> notFound = Result.NotFound<UserDto>("UserId", $"User {id} not found");
+
+// 409 Conflict
+Result conflict = Result.Conflict("OrderId", "Order already exists");
+
+// 500 Internal Server Error — from exception
+try { /* ... */ }
+catch (Exception ex)
 {
-    public async Task<Result<UserDto>> HandleAsync(
-        GetUserRequest request, CancellationToken ct)
+    return Result.InternalServerError(ex);
+}
+
+// 401 / 403 / 422
+Result unauthorized = Result.Unauthorized();
+Result forbidden = Result.Forbidden();
+Result unprocessable = Result.UnprocessableEntity();
+
+// Chain builder methods for richer error information
+Result detailed = Result.Failure()
+    .WithTitle("Validation Failed")
+    .WithDetail("One or more fields are invalid.")
+    .WithError("Name", "Name is required")
+    .WithError("Age", "Must be 18 or older")
+    .WithExtension("traceId", Activity.Current?.Id);
+```
+
+### Inspecting Results
+
+```csharp
+Result<UserDto> result = await mediator.SendAsync<GetUserRequest, UserDto>(request, ct);
+
+if (result.IsSuccess)
+{
+    UserDto user = result.Value;
+    Console.WriteLine($"Found: {user.Name}");
+}
+else
+{
+    Console.WriteLine($"Failed: {result.StatusCode} — {result.Title}");
+
+    // Inspect individual errors
+    foreach (var error in result.Errors)
+        Console.WriteLine($"  [{error.Key}]: {string.Join(", ", error.Values)}");
+
+    // Access exception if present
+    if (result.Exception is not null)
+        Console.WriteLine($"  Exception: {result.Exception.Message}");
+}
+
+// Convert between generic and non-generic
+Result nonGeneric = result;                           // implicit
+Result<UserDto> backToGeneric = (Result<UserDto>)nonGeneric;  // implicit
+```
+
+### Exception-Safe Delegates with Try / TryAsync
+
+```csharp
+// Wrap synchronous code — exceptions become FailureResult
+Result<int> parsed = ((Func<int>)(() => int.Parse(input))).Try();
+
+// Wrap async code
+Result<UserDto> userResult = await FetchUserAsync(id).TryAsync();
+```
+
+### Request / Handler Pattern (CQRS)
+
+```csharp
+// 1. Define request (query)
+public sealed record GetOrderByIdRequest(Guid OrderId) : IRequest<OrderDto>;
+
+// 2. Implement handler
+public sealed class GetOrderByIdHandler(AppDbContext db)
+    : IRequestHandler<GetOrderByIdRequest, OrderDto>
+{
+    public async Task<Result<OrderDto>> HandleAsync(
+        GetOrderByIdRequest request, CancellationToken ct)
     {
-        // fetch user...
-        return SuccessResult.Ok(userDto);
+        Order? order = await db.Orders.FindAsync([request.OrderId], ct);
+
+        if (order is null)
+            return Result.NotFound<OrderDto>("OrderId", $"Order {request.OrderId} not found");
+
+        return Result.Success(new OrderDto(order.Id, order.CustomerName, order.Total));
+    }
+}
+
+// 3. Define command
+public sealed record CreateOrderRequest(string CustomerName, decimal Total) : IRequest<Guid>;
+
+// 4. Implement command handler
+public sealed class CreateOrderHandler(AppDbContext db)
+    : IRequestHandler<CreateOrderRequest, Guid>
+{
+    public async Task<Result<Guid>> HandleAsync(
+        CreateOrderRequest request, CancellationToken ct)
+    {
+        var order = new Order { CustomerName = request.CustomerName, Total = request.Total };
+        db.Orders.Add(order);
+        await db.SaveChangesAsync(ct);
+
+        return Result.Created<Guid>()
+            .WithValue(order.Id)
+            .WithLocation(new Uri($"/api/orders/{order.Id}", UriKind.Relative));
     }
 }
 ```
 
-### Register Handlers
+### Stream Request Handler
 
 ```csharp
-services.AddXRequestHandlers(typeof(GetUserHandler).Assembly);
+// Request that returns a stream of results
+public sealed record GetOrdersStreamRequest(string Status) : IStreamRequest<OrderDto>;
+
+public sealed class GetOrdersStreamHandler(AppDbContext db)
+    : IStreamRequestHandler<GetOrdersStreamRequest, OrderDto>
+{
+    public Task<Result<IAsyncEnumerable<OrderDto>>> HandleAsync(
+        GetOrdersStreamRequest request, CancellationToken ct)
+    {
+        IAsyncEnumerable<OrderDto> stream = db.Orders
+            .Where(o => o.Status == request.Status)
+            .Select(o => new OrderDto(o.Id, o.CustomerName, o.Total))
+            .AsAsyncEnumerable();
+
+        return Task.FromResult(Result.Success(stream));
+    }
+}
+```
+
+### Pre-Processing and Exception Handling Hooks
+
+```csharp
+// Pre-handler: runs before the main handler (e.g., logging, enrichment)
+public sealed class AuditPreHandler<TRequest> : IRequestPreHandler<TRequest>
+    where TRequest : class, IRequest
+{
+    public Task<Result> HandleAsync(RequestContext<TRequest> context, CancellationToken ct)
+    {
+        Console.WriteLine($"Processing: {typeof(TRequest).Name}");
+        return Task.FromResult(Result.Success().Build() as Result);
+    }
+}
+
+// Exception handler: catches and transforms exceptions
+public sealed class GlobalExceptionHandler<TRequest> : IRequestExceptionHandler<TRequest>
+    where TRequest : class, IRequest
+{
+    public Task<Result> HandleAsync(
+        RequestContext<TRequest> context, Exception exception, CancellationToken ct)
+    {
+        return Task.FromResult<Result>(
+            Result.InternalServerError("Unhandled", exception.Message, exception));
+    }
+}
+```
+
+### Register Handlers via Assembly Scanning
+
+```csharp
+// Scan and register all sealed IRequestHandler implementations
+services.AddXRequestHandlers(typeof(GetOrderByIdHandler).Assembly);
+
+// Register a custom pipeline decorator
+services.AddXPipelineDecorator(typeof(MyCustomDecorator<>));
 ```
 
 ---

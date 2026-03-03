@@ -42,55 +42,229 @@ dotnet add package Xpandables.Optionals
 using System.Optionals;
 
 // From factory
-var some = Optional.Some(42);
-var empty = Optional.Empty<int>();
+Optional<int> some = Optional.Some(42);
+Optional<int> empty = Optional.Empty<int>();
 
 // Check state
 if (some.IsNotEmpty) Console.WriteLine(some.Value); // 42
 if (empty.IsEmpty) Console.WriteLine("No value");
+
+// From nullable values via extension method
+string? maybeName = GetNameOrNull();
+Optional<string> optName = maybeName.ToOptional();
 ```
 
-### Map / Bind / Match
+### Safe Value Access
 
 ```csharp
-var result = Optional.Some("hello")
-    .Map(s => s.ToUpper())                    // Optional<string> "HELLO"
-    .Bind(s => s.Length > 3
-        ? Optional.Some(s)
-        : Optional.Empty<string>())           // Flatten nested optionals
-    .Match(
-        some: v => $"Got: {v}",
-        empty: () => "Nothing");              // "Got: HELLO"
+// GetValueOrDefault with fallback value
+int value = Optional.Some(42).GetValueOrDefault(0);            // 42
+int fallback = Optional.Empty<int>().GetValueOrDefault(0);     // 0
+
+// GetValueOrDefault with factory
+int computed = Optional.Empty<int>().GetValueOrDefault(() => ComputeDefault()); // ComputeDefault()
+
+// TryGetValue pattern
+if (optionalUser.TryGetValue(out User user))
+{
+    Console.WriteLine(user.Name);
+}
+```
+
+### Map — Transform If Present
+
+```csharp
+// Map with transform function
+Optional<string> upper = Optional.Some("hello")
+    .Map(s => s.ToUpper()); // Optional<string> "HELLO"
+
+// Map does nothing if empty
+Optional<string> noop = Optional.Empty<string>()
+    .Map(s => s.ToUpper()); // Empty — no exception
+
+// Map with side effect (action)
+Optional<Order> order = Optional.Some(myOrder)
+    .Map(o => Console.WriteLine($"Processing order {o.Id}"));
+```
+
+### Bind — Transform and Flatten
+
+```csharp
+// Bind to a different type
+Optional<UserProfile> profile = Optional.Some(userId)
+    .Bind(id => FindUserById(id))         // Optional<User>
+    .Bind(user => user.Profile);          // Optional<UserProfile>
+
+// Bind to Optional (flat map)
+Optional<string> email = Optional.Some(userId)
+    .Bind<User>(id => userRepository.FindById(id) is User u
+        ? Optional.Some(u)
+        : Optional.Empty<User>())
+    .Bind(user => Optional.Some(user.Email));
+```
+
+### Empty — Provide Fallback When Missing
+
+```csharp
+// Provide default when empty
+Optional<Config> config = Optional.Empty<Config>()
+    .Empty(() => Config.Default);  // returns Optional.Some(Config.Default)
+
+// Chain: try primary, then fallback
+Optional<User> user = FindUserInCache(userId)
+    .Empty(() => FindUserInDb(userId));
+```
+
+### ToOptional — Type Conversion
+
+```csharp
+// Convert between types
+Optional<object> boxed = Optional.Some<object>("hello");
+Optional<string> unboxed = boxed.ToOptional<string>(); // Optional<string> "hello"
+
+// If types don't match, returns Empty
+Optional<int> wrong = boxed.ToOptional<int>(); // Empty
 ```
 
 ### Async Operations
 
 ```csharp
-var result = await Optional.Some(userId)
-    .MapAsync(async id => await FindUserAsync(id))
-    .MatchAsync(
-        some: async user => await ProcessAsync(user),
-        empty: () => Task.FromResult("Not found"));
+// MapAsync
+Optional<UserDto> dto = await Optional.Some(userId)
+    .MapAsync(async id =>
+    {
+        User user = await userService.GetByIdAsync(id);
+        return userId;   // stays as the same type
+    });
+
+// BindAsync — async flat map to different type
+Optional<UserDto> userDto = await Optional.Some(userId)
+    .BindAsync(async id =>
+    {
+        User? user = await db.Users.FindAsync(id);
+        return user is not null
+            ? Optional.Some(new UserDto(user.Id, user.Name))
+            : Optional.Empty<UserDto>();
+    });
+
+// EmptyAsync — async fallback
+Optional<Config> config = await Optional.Empty<Config>()
+    .EmptyAsync(async () => await LoadConfigFromRemoteAsync());
 ```
 
-### Safe Access
+### Chained Async Pipeline
 
 ```csharp
-var value = Optional.Some(42).GetValueOrDefault(0);             // 42
-var fallback = Optional.Empty<int>().GetValueOrDefault(() => -1); // -1
+Optional<OrderConfirmation> confirmation = await Optional.Some(orderId)
+    .BindAsync(async id => await orderService.FindAsync(id) is Order o
+        ? Optional.Some(o)
+        : Optional.Empty<Order>())
+    .MapAsync(async order =>
+    {
+        await paymentService.ChargeAsync(order.CustomerId, order.Total);
+        return order;
+    })
+    .BindAsync(async order =>
+    {
+        var result = await fulfillmentService.ConfirmAsync(order.Id);
+        return result is not null
+            ? Optional.Some(result)
+            : Optional.Empty<OrderConfirmation>();
+    });
+
+if (confirmation.IsNotEmpty)
+    Console.WriteLine($"Order confirmed: {confirmation.Value.ConfirmationNumber}");
+else
+    Console.WriteLine("Order could not be fulfilled");
 ```
 
 ### LINQ Integration
 
 ```csharp
 // Optional<T> implements IEnumerable<T>
-foreach (var item in Optional.Some("hello"))
+foreach (string item in Optional.Some("hello"))
 {
     Console.WriteLine(item); // "hello"
 }
 
 // Empty optional yields nothing
-foreach (var item in Optional.Empty<string>()) { /* never reached */ }
+foreach (string item in Optional.Empty<string>()) { /* never reached */ }
+
+// Where — filter optional value
+Optional<int> positive = Optional.Some(42).Where(x => x > 0);      // Some(42)
+Optional<int> none = Optional.Some(-1).Where(x => x > 0);           // Empty
+
+// Select / SelectMany (LINQ query syntax)
+Optional<string> result =
+    from user in Optional.Some(new User("Alice", "alice@example.com"))
+    from profile in Optional.Some(new Profile("Developer"))
+    select $"{user.Name} — {profile.Title}";
+// result = Optional<string> "Alice — Developer"
+
+// Async Select
+Optional<UserDto> userDto = await Optional.Some(userId)
+    .SelectAsync(async id => await FetchUserDtoAsync(id));
+```
+
+### Collection Helpers
+
+```csharp
+// FirstOrEmpty — safe first element
+Optional<Product> first = products.FirstOrEmpty();
+Optional<Product> match = products.FirstOrEmpty(p => p.Price > 100);
+
+// WhereSome — extract values from a collection of optionals
+IEnumerable<Optional<User>> optionalUsers = ids.Select(id => FindUser(id));
+IEnumerable<User> validUsers = optionalUsers.WhereSome(); // only non-empty values
+```
+
+### Comparison and Equality
+
+```csharp
+// Optional<T> supports comparison when T : IComparable<T>
+Optional<int> a = Optional.Some(10);
+Optional<int> b = Optional.Some(20);
+
+bool less = a < b;     // true
+bool greater = a > b;  // false
+
+// Equality
+bool equal = Optional.Some(42) == Optional.Some(42); // true
+bool notEqual = Optional.Some(42) == Optional.Empty<int>(); // false
+```
+
+### JSON Serialization
+
+```csharp
+using System.Text.Json;
+
+// Optional<T> serializes as the value itself (or null when empty)
+string json = JsonSerializer.Serialize(Optional.Some(42));    // "42"
+string emptyJson = JsonSerializer.Serialize(Optional.Empty<int>()); // "null"
+
+// Deserialization
+Optional<int> deserialized = JsonSerializer.Deserialize<Optional<int>>("42");
+// deserialized.Value == 42
+```
+
+### Real-World Example: Repository Pattern
+
+```csharp
+public interface IUserRepository
+{
+    Optional<User> FindById(Guid id);
+    Task<Optional<User>> FindByEmailAsync(string email, CancellationToken ct);
+}
+
+public class UserAppService(IUserRepository repository)
+{
+    public async Task<string> GetGreetingAsync(string email, CancellationToken ct)
+    {
+        return (await repository.FindByEmailAsync(email, ct))
+            .Bind(user => Optional.Some($"Hello, {user.Name}!"))
+            .GetValueOrDefault("User not found");
+    }
+}
 ```
 
 ---

@@ -79,15 +79,116 @@ dotnet add package Xpandables.Data
 
 ## 🚀 Quick Start
 
+### Basic CRUD with Unit of Work
+
 ```csharp
 using System.Data;
 
-await using var unitOfWork = await unitOfWorkFactory.CreateAsync(ct);
-await using var transaction = await unitOfWork.BeginTransactionAsync(ct);
+// Create a unit of work (scoped connection)
+await using IDataUnitOfWork unitOfWork = await unitOfWorkFactory.CreateAsync(ct);
 
-var orderRepo = unitOfWork.GetRepository<Order>();
+// Start a transaction
+await using IDataTransaction transaction = await unitOfWork.BeginTransactionAsync(ct);
+
+// Get typed repositories
+IDataRepository<Order> orderRepo = unitOfWork.GetRepository<Order>();
+IDataRepository<OrderItem> itemRepo = unitOfWork.GetRepository<OrderItem>();
+
+// Insert
+var order = new Order { CustomerId = customerId, Total = 149.99m };
 await orderRepo.InsertAsync(order, ct);
+
+// Insert related items
+var items = new[]
+{
+    new OrderItem { OrderId = order.Id, ProductName = "Widget", Qty = 2 },
+    new OrderItem { OrderId = order.Id, ProductName = "Gadget", Qty = 1 }
+};
+await itemRepo.InsertAsync(items, ct);
+
+// Commit transaction — rolls back automatically on failure
 await transaction.CommitAsync(ct);
+```
+
+### Query with Specification
+
+```csharp
+// Define a specification for filtering and projection
+var spec = new DataSpecification<Order, OrderSummary>
+{
+    Criteria = o => o.Status == "Active" && o.Total > 100,
+    OrderBy = o => o.CreatedOn,
+    PageSize = 20,
+    CurrentPage = 1,
+    Projection = o => new OrderSummary(o.Id, o.CustomerName, o.Total)
+};
+
+// Query — returns IAsyncEnumerable
+await foreach (OrderSummary summary in orderRepo.QueryAsync(spec, ct))
+{
+    Console.WriteLine($"{summary.Id}: {summary.CustomerName} — {summary.Total:C}");
+}
+
+// Paged query — returns IAsyncPagedEnumerable with pagination metadata
+IAsyncPagedEnumerable<OrderSummary> pagedResults = orderRepo.QueryPagedAsync(spec, ct);
+
+await foreach (OrderSummary summary in pagedResults)
+{
+    Console.WriteLine(summary.CustomerName);
+}
+
+Pagination pagination = await pagedResults.GetPaginationAsync(ct);
+Console.WriteLine($"Page {pagination.CurrentPage} of {pagination.TotalPages}");
+```
+
+### Single-Item Queries
+
+```csharp
+// Throws InvalidOperationException if not exactly one
+OrderSummary single = await orderRepo.QuerySingleAsync(spec, ct);
+
+// Returns default if none found
+OrderSummary? maybeOrder = await orderRepo.QuerySingleOrDefaultAsync(spec, ct);
+```
+
+### Update with DataUpdater
+
+```csharp
+// Build a typed update
+var updater = new DataUpdater<Order>()
+    .Set(o => o.Status, "Completed")
+    .Set(o => o.UpdatedOn, DateTime.UtcNow)
+    .Where(o => o.Id == orderId);
+
+await orderRepo.UpdateAsync(updater, ct);
+```
+
+### Delete
+
+```csharp
+await orderRepo.DeleteAsync(o => o.Id == orderId, ct);
+```
+
+### SQL Dialects
+
+The `IDataSqlBuilder` generates provider-specific SQL. Built-in dialects:
+
+```csharp
+// SQL Server (T-SQL)   — MsDataSqlBuilder
+// PostgreSQL            — PostgreDataSqlBuilder
+// MySQL                 — MyDataSqlBuilder
+
+SqlDialect dialect = SqlDialect.PostgreSql;
+```
+
+### Command Interceptor (Logging)
+
+```csharp
+// Register the logging interceptor to log all SQL commands
+services.Configure<DataCommandInterceptorOptions>(options =>
+{
+    options.IsEnabled = true;
+});
 ```
 
 ---

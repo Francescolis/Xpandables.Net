@@ -128,6 +128,11 @@ public sealed class ResultEndpointFilter : IEndpointFilter
 	internal static async ValueTask WriteProblemDetailsAsync(HttpContext context, Result result)
 	{
 		var problem = result.ToProblemDetails(context);
+		context.Response.StatusCode = problem.Status ?? StatusCodes.Status500InternalServerError;
+		context.Response.ContentType = "application/problem+json";
+		context.Response.Headers.CacheControl = "no-cache, no-store, must-revalidate";
+		context.Response.Headers.Pragma = "no-cache";
+
 		if (context.RequestServices.GetService<IProblemDetailsService>() is { } problemDetailsService)
 		{
 			await problemDetailsService.WriteAsync(new ProblemDetailsContext
