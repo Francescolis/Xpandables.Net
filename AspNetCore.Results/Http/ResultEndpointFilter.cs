@@ -31,16 +31,21 @@ namespace Microsoft.AspNetCore.Http;
 public sealed class ResultEndpointFilter : IEndpointFilter
 {
 	private readonly ILogger _logger;
+	private readonly IProblemDetailsService _problemDetailsService;
 
 	/// <summary>
 	/// Initializes a new instance of the <see cref="ResultEndpointFilter"/> class.
 	/// </summary>
 	/// <param name="loggerFactory">The logger factory used to create a logger with the
 	/// <c>"ResultMiddleware"</c> category name.</param>
-	public ResultEndpointFilter(ILoggerFactory loggerFactory)
+	/// <param name="problemDetailsService">The problem details service used to write problem details responses.</param>
+	public ResultEndpointFilter(ILoggerFactory loggerFactory, IProblemDetailsService problemDetailsService)
 	{
 		ArgumentNullException.ThrowIfNull(loggerFactory);
+		ArgumentNullException.ThrowIfNull(problemDetailsService);
+
 		_logger = loggerFactory.CreateLogger(ResultLog.CategoryName);
+		_problemDetailsService = problemDetailsService;
 	}
 
 	/// <inheritdoc/>
@@ -72,7 +77,13 @@ public sealed class ResultEndpointFilter : IEndpointFilter
 						result.StatusCode,
 						result.Exception?.ToString() ?? result.Errors.ToString());
 
-					await WriteProblemDetailsAsync(context.HttpContext, result).ConfigureAwait(false);
+					await _problemDetailsService.WriteAsync(new ProblemDetailsContext
+					{
+						HttpContext = context.HttpContext,
+						ProblemDetails = result.ToProblemDetails(context.HttpContext),
+						Exception = result.Exception
+					}).ConfigureAwait(false);
+
 					return Results.Empty;
 				}
 
@@ -119,32 +130,14 @@ public sealed class ResultEndpointFilter : IEndpointFilter
 				_ => exception.ToResult()
 			};
 
-			await WriteProblemDetailsAsync(context.HttpContext, result).ConfigureAwait(false);
+			await _problemDetailsService.WriteAsync(new ProblemDetailsContext
+			{
+				HttpContext = context.HttpContext,
+				ProblemDetails = result.ToProblemDetails(context.HttpContext),
+				Exception = exception
+			}).ConfigureAwait(false);
 
 			return Results.Empty;
-		}
-	}
-
-	internal static async ValueTask WriteProblemDetailsAsync(HttpContext context, Result result)
-	{
-		var problem = result.ToProblemDetails(context);
-		context.Response.StatusCode = problem.Status ?? StatusCodes.Status500InternalServerError;
-		context.Response.ContentType = "application/problem+json";
-		context.Response.Headers.CacheControl = "no-cache, no-store, must-revalidate";
-		context.Response.Headers.Pragma = "no-cache";
-
-		if (context.RequestServices.GetService<IProblemDetailsService>() is { } problemDetailsService)
-		{
-			await problemDetailsService.WriteAsync(new ProblemDetailsContext
-			{
-				HttpContext = context,
-				ProblemDetails = problem
-			}).ConfigureAwait(false);
-		}
-		else
-		{
-			IResult objectResult = Results.Problem(problem);
-			await objectResult.ExecuteAsync(context).ConfigureAwait(false);
 		}
 	}
 }

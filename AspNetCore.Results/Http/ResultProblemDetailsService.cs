@@ -16,6 +16,7 @@
 ********************************************************************************/
 using System.ComponentModel.DataAnnotations;
 using System.Net;
+using System.Net.Mime;
 using System.Results;
 
 using Microsoft.AspNetCore.Hosting;
@@ -70,6 +71,11 @@ public sealed class ResultProblemDetailsService(IEnumerable<IProblemDetailsWrite
 			context.ProblemDetails.Instance ??= $"{context.HttpContext.Request.Method} {context.HttpContext.Request.Path}{context.HttpContext.Request.QueryString.Value}";
 			context.ProblemDetails.Type ??= (isDevelopment ? (statusCode.IsValidationProblem ? nameof(ValidationException) : nameof(InvalidOperationException)) : null);
 		}
+
+		context.HttpContext.Response.StatusCode = context.ProblemDetails.Status ?? StatusCodes.Status500InternalServerError;
+		context.HttpContext.Response.ContentType ??= MediaTypeNames.Application.ProblemJson;
+		context.HttpContext.Response.Headers.CacheControl = "no-cache, no-store, must-revalidate";
+		context.HttpContext.Response.Headers.Pragma = "no-cache";
 
 		for (int i = 0; i < _writers.Length; i++)
 		{

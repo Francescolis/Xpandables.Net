@@ -32,16 +32,21 @@ namespace Microsoft.AspNetCore.Http;
 public sealed class ResultMiddleware : IMiddleware
 {
 	private readonly ILogger _logger;
+	private readonly IProblemDetailsService _problemDetailsService;
 
 	/// <summary>
 	/// Initializes a new instance of the <see cref="ResultMiddleware"/> class.
 	/// </summary>
 	/// <param name="loggerFactory">The logger factory used to create a logger with the
 	/// <c>"ResultMiddleware"</c> category name.</param>
-	public ResultMiddleware(ILoggerFactory loggerFactory)
+	/// <param name="problemDetailsService">The problem details service used to write problem details responses.</param>
+	public ResultMiddleware(ILoggerFactory loggerFactory, IProblemDetailsService problemDetailsService)
 	{
 		ArgumentNullException.ThrowIfNull(loggerFactory);
+		ArgumentNullException.ThrowIfNull(problemDetailsService);
+
 		_logger = loggerFactory.CreateLogger(ResultLog.CategoryName);
+		_problemDetailsService = problemDetailsService;
 	}
 
 	/// <inheritdoc/>
@@ -78,7 +83,12 @@ public sealed class ResultMiddleware : IMiddleware
 				_ => exception.ToResult()
 			};
 
-			await ResultEndpointFilter.WriteProblemDetailsAsync(context, result).ConfigureAwait(false);
+			await _problemDetailsService.WriteAsync(new ProblemDetailsContext
+			{
+				HttpContext = context,
+				ProblemDetails = result.ToProblemDetails(context),
+				Exception = exception
+			}).ConfigureAwait(false);
 		}
 	}
 }
