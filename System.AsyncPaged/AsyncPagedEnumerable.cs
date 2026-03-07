@@ -1,5 +1,5 @@
-﻿/*******************************************************************************
- * Copyright (C) 2025 Kamersoft
+/*******************************************************************************
+ * Copyright (C) 2025-2026 Kamersoft
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -33,7 +33,7 @@ public sealed class AsyncPagedEnumerable<T> : IAsyncPagedEnumerable<T>, IAsyncDi
 	private List<T>? _materializedItems;
 	private readonly SemaphoreSlim _materializationLock = new(1, 1);
 
-	// Lazy pagination — SemaphoreSlim double-check pattern
+	// Lazy pagination � SemaphoreSlim double-check pattern
 	private readonly SemaphoreSlim _paginationLock = new(1, 1);
 	private Task<Pagination>? _paginationTask;
 	private Pagination _pagination; // backing store

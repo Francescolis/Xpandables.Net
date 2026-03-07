@@ -1,4 +1,4 @@
-﻿using System.Net;
+using System.Net;
 using System.Results;
 using System.Results.Pipelines;
 using System.Results.Requests;
@@ -35,7 +35,7 @@ public sealed class MediatorTests
         var mediator = new Mediator(services.BuildServiceProvider());
         var request = new TestRequest();
 
-        // Act & Assert — Mediator is a pure dispatcher; without PipelineExceptionDecorator,
+        // Act & Assert � Mediator is a pure dispatcher; without PipelineExceptionDecorator,
         // unhandled exceptions propagate to the caller.
         await Assert.ThrowsAsync<InvalidOperationException>(
             () => mediator.SendAsync(request));

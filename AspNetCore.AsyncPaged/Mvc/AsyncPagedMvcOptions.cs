@@ -1,5 +1,5 @@
-﻿/*******************************************************************************
- * Copyright (C) 2025 Kamersoft
+/*******************************************************************************
+ * Copyright (C) 2025-2026 Kamersoft
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -20,17 +20,29 @@ using Microsoft.Extensions.Options;
 namespace Microsoft.AspNetCore.Mvc;
 
 /// <summary>
-/// Provides configuration options for MVC controllers that return execution results, customizing MVC behavior to
-/// support execution result processing.
+/// Provides configuration options for MVC controllers that return asynchronous paged results,
+/// customizing MVC behavior to support paged result serialization.
 /// </summary>
-/// <param name="jsonOptions">The JSON options used to configure the JSON serializer.</param>
-/// <remarks>This options class is intended for use with ASP.NET Core MVC and configures settings such as endpoint
-/// routing, content negotiation, and filter registration to enable consistent handling of execution results. It is
-/// typically registered via dependency injection and used internally by the framework.</remarks>
+/// <param name="jsonOptions">The JSON options used to configure the JSON serializer for paged output formatting.
+/// The <see cref="JsonOptions.JsonSerializerOptions"/> value is captured at construction time.</param>
+/// <remarks>
+/// <para>This options class is intended for use with ASP.NET Core MVC and configures settings such as endpoint
+/// routing, content negotiation, and output formatter registration to enable consistent handling of
+/// <see cref="System.Collections.Generic.IAsyncPagedEnumerable{T}"/> results.</para>
+/// <para>It is typically registered via dependency injection using
+/// <c>services.ConfigureOptions&lt;AsyncPagedMvcOptions&gt;()</c> and applied internally by the framework
+/// during MVC option configuration.</para>
+/// </remarks>
 public sealed class AsyncPagedMvcOptions(IOptions<JsonOptions> jsonOptions) : IConfigureOptions<MvcOptions>
 {
     private readonly JsonOptions _jsonOptions = jsonOptions.Value;
+
     /// <inheritdoc/>
+    /// <remarks>
+    /// Inserts an <see cref="AsyncPagedTextOutputFormatter"/> at position 0 in the output formatters list,
+    /// disables endpoint routing, and enables strict content negotiation (RespectBrowserAcceptHeader,
+    /// ReturnHttpNotAcceptable).
+    /// </remarks>
     public void Configure(MvcOptions options)
     {
         ArgumentNullException.ThrowIfNull(options);

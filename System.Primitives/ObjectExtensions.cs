@@ -1,5 +1,5 @@
-﻿/*******************************************************************************
- * Copyright (C) 2025 Kamersoft
+/*******************************************************************************
+ * Copyright (C) 2025-2026 Kamersoft
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -328,7 +328,7 @@ public static class ObjectExtensions
 			return true;
 		}
 
-		// JSON conversion (string → object)
+		// JSON conversion (string ? object)
 		if (obj is string json && LooksLikeJson(json))
 		{
 			try
@@ -445,7 +445,7 @@ public static class ObjectExtensions
 			return true;
 		}
 
-		// Try to convert List<T> → target collection type
+		// Try to convert List<T> ? target collection type
 		try
 		{
 			result = Convert.ChangeType(list, conversionType, formatProvider);
@@ -545,7 +545,7 @@ public static class ObjectExtensions
 
 		Type elementType = conversionType.GetGenericArguments()[0];
 
-		// Convert string → IEnumerable<T>
+		// Convert string ? IEnumerable<T>
 		if (!TryConvertEnumerable(obj, typeof(IEnumerable<>).MakeGenericType(elementType), formatProvider, out object? enumerableObj))
 		{
 			return false;

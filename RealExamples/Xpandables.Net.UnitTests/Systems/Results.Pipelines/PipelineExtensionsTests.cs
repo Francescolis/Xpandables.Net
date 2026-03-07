@@ -1,4 +1,4 @@
-﻿using System.Linq;
+using System.Linq;
 using System.Results;
 using System.Results.Pipelines;
 using System.Results.Requests;
@@ -51,7 +51,7 @@ public sealed class PipelineExtensionsTests
 		IPipelineRequestHandler<TestRequest> handler1 = scope1.ServiceProvider.GetRequiredService<IPipelineRequestHandler<TestRequest>>();
 		IPipelineRequestHandler<TestRequest> handler2 = scope2.ServiceProvider.GetRequiredService<IPipelineRequestHandler<TestRequest>>();
 
-        // Assert — scoped: different scopes yield different instances
+        // Assert � scoped: different scopes yield different instances
         Assert.NotSame(handler1, handler2);
     }
 

@@ -1,5 +1,5 @@
-﻿/*******************************************************************************
- * Copyright (C) 2025 Kamersoft
+/*******************************************************************************
+ * Copyright (C) 2025-2026 Kamersoft
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -348,7 +348,7 @@ public static class IDataExtensions
 		/// <para>
 		/// The <paramref name="configure"/> action is applied via the standard
 		/// <see cref="Microsoft.Extensions.Options.IOptions{TOptions}"/> pipeline. Multiple calls
-		/// to this method are additive — all configuration actions are applied in order.
+		/// to this method are additive � all configuration actions are applied in order.
 		/// </para>
 		/// </remarks>
 		/// <param name="configure">An optional action to configure <see cref="DataCommandInterceptorOptions"/>.</param>

@@ -1,5 +1,5 @@
-﻿/*******************************************************************************
- * Copyright (C) 2025 Kamersoft
+/*******************************************************************************
+ * Copyright (C) 2025-2026 Kamersoft
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -123,7 +123,7 @@ public sealed class SnapshotStore<TAggregate>(
         TAggregate aggregate = TAggregate.Initialize();
         aggregate.Restore(snapshot.Memento);
 
-        // Replay events after snapshot’s version (assuming Restore set StreamVersion to snapshot version)
+        // Replay events after snapshot�s version (assuming Restore set StreamVersion to snapshot version)
         ReadStreamRequest request = new()
         {
             FromVersion = aggregate.StreamVersion,

@@ -1,5 +1,5 @@
-﻿/*******************************************************************************
- * Copyright (C) 2025 Kamersoft
+/*******************************************************************************
+ * Copyright (C) 2025-2026 Kamersoft
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -408,7 +408,7 @@ public readonly record struct DataSpecificationBuilder<TData>
 			_isDistinct);
 	}
 
-	// Cached per closed generic type — ensures ReferenceEqualityComparer hits in DataSqlMapper._compiledSelectors
+	// Cached per closed generic type � ensures ReferenceEqualityComparer hits in DataSqlMapper._compiledSelectors
 	private static readonly Expression<Func<TData, TData>> _identitySelector = static e => e;
 
 	/// <summary>

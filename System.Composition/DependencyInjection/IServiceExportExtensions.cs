@@ -1,5 +1,5 @@
-﻿/*******************************************************************************
- * Copyright (C) 2025 Kamersoft
+/*******************************************************************************
+ * Copyright (C) 2025-2026 Kamersoft
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -45,6 +45,8 @@ public static class IServiceExportExtensions
 		/// <returns>The service collection with X service exports registered. This enables further chaining of service
 		/// registration calls.</returns>
 		[RequiresAssemblyFiles]
+		[RequiresUnreferencedCode("AddXServiceExports uses MEF composition which relies on reflection.")]
+		[RequiresDynamicCode("AddXServiceExports uses MEF composition which relies on runtime code generation.")]
 		public IServiceCollection AddXServiceExports(IConfiguration configuration)
 		{
 			ArgumentNullException.ThrowIfNull(services);
@@ -60,6 +62,8 @@ public static class IServiceExportExtensions
 		/// <param name="configureOptions">A delegate that configures the export options. Cannot be null.</param>
 		/// <returns>The current <see cref="IServiceCollection"/> instance with the X service exports registered.</returns>
 		[RequiresAssemblyFiles]
+		[RequiresUnreferencedCode("AddXServiceExports uses MEF composition which relies on reflection.")]
+		[RequiresDynamicCode("AddXServiceExports uses MEF composition which relies on runtime code generation.")]
 		public IServiceCollection AddXServiceExports(IConfiguration configuration, Action<ExportOptions> configureOptions)
 		{
 			ArgumentNullException.ThrowIfNull(services);
@@ -92,7 +96,8 @@ public static class IServiceExportExtensions
 		/// <param name="assemblies">The assemblies to scan for types implementing IAddService. If no assemblies are specified, the calling
 		/// assembly is used by default.</param>
 		/// <returns>The IServiceCollection instance with the discovered service exports added.</returns>
-		[RequiresUnreferencedCode("This method may be trimmed.")]
+		[RequiresUnreferencedCode("AddXServiceExports scans assemblies via reflection which is not compatible with trimming.")]
+		[RequiresDynamicCode("AddXServiceExports uses Activator.CreateInstance which requires runtime code generation.")]
 		public IServiceCollection AddXServiceExports(IConfiguration configuration, params IEnumerable<Assembly> assemblies)
 		{
 			ArgumentNullException.ThrowIfNull(services);
@@ -127,6 +132,8 @@ public static class IServiceExportExtensions
 	}
 
 	[RequiresAssemblyFiles]
+	[RequiresUnreferencedCode("ApplyServiceExports uses MEF composition which relies on reflection to discover and instantiate exports.")]
+	[RequiresDynamicCode("ApplyServiceExports uses MEF composition which relies on runtime code generation.")]
 	internal static void ApplyServiceExports<TServiceExport>(
 		ExportOptions options,
 		Action<IEnumerable<TServiceExport>> onServiceExport)

@@ -1,5 +1,5 @@
-﻿/*******************************************************************************
- * Copyright (C) 2025 Kamersoft
+/*******************************************************************************
+ * Copyright (C) 2025-2026 Kamersoft
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -310,7 +310,7 @@ public static partial class StringExtensions
         {
             ArgumentNullException.ThrowIfNull(value);
 
-			// Regex to split on transitions: lowercase→uppercase, acronym→normal, letter→digit, digit→letter
+			// Regex to split on transitions: lowercase?uppercase, acronym?normal, letter?digit, digit?letter
 			MatchCollection parts = TypeNameFormaterRegex().Matches(value)
                              ?? throw new InvalidOperationException("Regex failed");
 

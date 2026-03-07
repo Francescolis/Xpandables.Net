@@ -1,5 +1,5 @@
-﻿/*******************************************************************************
- * Copyright (C) 2025 Kamersoft
+/*******************************************************************************
+ * Copyright (C) 2025-2026 Kamersoft
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -26,7 +26,7 @@ namespace System.Results.Tasks;
 /// handlers using dependency injection.
 /// </summary>
 /// <remarks>
-/// <para>This mediator is a pure dispatcher — it resolves the appropriate <see cref="IPipelineRequestHandler{TRequest}"/>
+/// <para>This mediator is a pure dispatcher � it resolves the appropriate <see cref="IPipelineRequestHandler{TRequest}"/>
 /// from the service provider and delegates execution entirely to the pipeline. Exception handling, validation, and
 /// cross-cutting concerns must be handled by pipeline decorators (e.g., <c>PipelineExceptionDecorator</c>).</para>
 /// <para><strong>Thread safety:</strong> This class is thread-safe. Each call to <see cref="SendAsync{TRequest}"/>

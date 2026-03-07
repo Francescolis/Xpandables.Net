@@ -1,5 +1,5 @@
-﻿/*******************************************************************************
- * Copyright (C) 2025 Kamersoft
+/*******************************************************************************
+ * Copyright (C) 2025-2026 Kamersoft
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -963,7 +963,7 @@ public abstract class DataSqlBuilderBase : IDataSqlBuilder
 		IReadOnlyDictionary<ParameterExpression, TableBinding> bindings,
 		List<SqlParameter> parameters)
 	{
-		// Handle !Nullable.HasValue → column IS NULL
+		// Handle !Nullable.HasValue ? column IS NULL
 		if (unary.NodeType == ExpressionType.Not
 			&& unary.Operand is MemberExpression { Member.Name: "HasValue" } hasValueMember
 			&& hasValueMember.Expression is MemberExpression nullableInner
@@ -973,7 +973,7 @@ public abstract class DataSqlBuilderBase : IDataSqlBuilder
 			return $"({column} IS NULL)";
 		}
 
-		// Handle !p.BoolProperty → column = 0
+		// Handle !p.BoolProperty ? column = 0
 		if (unary.NodeType == ExpressionType.Not
 			&& unary.Operand is MemberExpression { Expression: ParameterExpression } boolMember
 			&& boolMember.Type == typeof(bool))
@@ -1001,7 +1001,7 @@ public abstract class DataSqlBuilderBase : IDataSqlBuilder
 		IReadOnlyDictionary<ParameterExpression, TableBinding> bindings,
 		List<SqlParameter> parameters)
 	{
-		// Handle Nullable<T>.HasValue → column IS NOT NULL
+		// Handle Nullable<T>.HasValue ? column IS NOT NULL
 		if (member.Member.Name == "HasValue"
 			&& member.Expression is MemberExpression nullableMember
 			&& Nullable.GetUnderlyingType(nullableMember.Type) != null)
@@ -1010,7 +1010,7 @@ public abstract class DataSqlBuilderBase : IDataSqlBuilder
 			return $"({column} IS NOT NULL)";
 		}
 
-		// Handle Nullable<T>.Value → unwrap to column
+		// Handle Nullable<T>.Value ? unwrap to column
 		if (member.Member.Name == "Value"
 			&& member.Expression is MemberExpression nullableValueMember
 			&& Nullable.GetUnderlyingType(nullableValueMember.Type) != null)
@@ -1238,7 +1238,7 @@ public abstract class DataSqlBuilderBase : IDataSqlBuilder
 		IReadOnlyDictionary<string, string> columnMappings,
 		List<SqlParameter> parameters)
 	{
-		// Handle !Nullable.HasValue → column IS NULL
+		// Handle !Nullable.HasValue ? column IS NULL
 		if (unary.NodeType == ExpressionType.Not
 			&& unary.Operand is MemberExpression { Member.Name: "HasValue" } hasValueMember
 			&& hasValueMember.Expression is MemberExpression nullableInner
@@ -1248,7 +1248,7 @@ public abstract class DataSqlBuilderBase : IDataSqlBuilder
 			return $"({column} IS NULL)";
 		}
 
-		// Handle !p.BoolProperty → column = 0
+		// Handle !p.BoolProperty ? column = 0
 		if (unary.NodeType == ExpressionType.Not
 			&& unary.Operand is MemberExpression { Expression: ParameterExpression } boolMember
 			&& boolMember.Type == typeof(bool))
@@ -1279,7 +1279,7 @@ public abstract class DataSqlBuilderBase : IDataSqlBuilder
 		IReadOnlyDictionary<string, string> columnMappings,
 		List<SqlParameter> parameters)
 	{
-		// Handle Nullable<T>.HasValue → column IS NOT NULL
+		// Handle Nullable<T>.HasValue ? column IS NOT NULL
 		if (member.Member.Name == "HasValue"
 			&& member.Expression is MemberExpression nullableMember
 			&& Nullable.GetUnderlyingType(nullableMember.Type) != null)
@@ -1288,7 +1288,7 @@ public abstract class DataSqlBuilderBase : IDataSqlBuilder
 			return $"({column} IS NOT NULL)";
 		}
 
-		// Handle Nullable<T>.Value → unwrap to column
+		// Handle Nullable<T>.Value ? unwrap to column
 		if (member.Member.Name == "Value"
 			&& member.Expression is MemberExpression nullableValueMember
 			&& Nullable.GetUnderlyingType(nullableValueMember.Type) != null)

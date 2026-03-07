@@ -1,5 +1,5 @@
-﻿/*******************************************************************************
- * Copyright (C) 2025 Kamersoft
+/*******************************************************************************
+ * Copyright (C) 2025-2026 Kamersoft
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -24,7 +24,7 @@ namespace System.Events;
 /// logical operation. It is suitable for scenarios where event context must flow with async operations, such as in web
 /// request handling or background tasks.</para>
 /// <para><strong>Lifecycle:</strong> The <see cref="AsyncLocal{T}"/> value automatically flows into child async
-/// contexts but is isolated — changes in a child do not propagate back to the parent. In long-running or
+/// contexts but is isolated � changes in a child do not propagate back to the parent. In long-running or
 /// high-throughput scenarios (e.g., background services or fire-and-forget tasks), always use
 /// <see cref="EventContextScopeExtensions.BeginScope"/> to ensure the context is restored (or cleared)
 /// when the operation completes:</para>

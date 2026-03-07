@@ -1,5 +1,5 @@
-﻿/*******************************************************************************
- * Copyright (C) 2025 Kamersoft
+/*******************************************************************************
+ * Copyright (C) 2025-2026 Kamersoft
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -41,6 +41,8 @@ public static class IServiceExportWebExtensions
 		/// </summary>
 		/// <returns>The web application with applied service exports.</returns>
 		[RequiresAssemblyFiles]
+		[RequiresUnreferencedCode("UseXServiceExports uses MEF composition which relies on reflection.")]
+		[RequiresDynamicCode("UseXServiceExports uses MEF composition which relies on runtime code generation.")]
 		public WebApplication UseXServiceExports()
 		{
 			ArgumentNullException.ThrowIfNull(application);
@@ -54,6 +56,8 @@ public static class IServiceExportWebExtensions
 		/// <returns>The web application with applied service exports.</returns>
 		// ReSharper disable once MemberCanBePrivate.Global
 		[RequiresAssemblyFiles()]
+		[RequiresUnreferencedCode("UseXServiceExports uses MEF composition which relies on reflection.")]
+		[RequiresDynamicCode("UseXServiceExports uses MEF composition which relies on runtime code generation.")]
 		public WebApplication UseXServiceExports(Action<ExportOptions> configureOptions)
 		{
 			ArgumentNullException.ThrowIfNull(application);
@@ -79,7 +83,8 @@ public static class IServiceExportWebExtensions
 		/// </summary>
 		/// <param name="assemblies">The assemblies to scan for services.</param>
 		/// <returns>The web application with applied services.</returns>
-		[RequiresUnreferencedCode("This method may be trimmed.")]
+		[RequiresUnreferencedCode("UseXServices scans assemblies via reflection which is not compatible with trimming.")]
+		[RequiresDynamicCode("UseXServices uses Activator.CreateInstance which requires runtime code generation.")]
 		public WebApplication UseXServices(params IEnumerable<Assembly> assemblies)
 		{
 			ArgumentNullException.ThrowIfNull(application);

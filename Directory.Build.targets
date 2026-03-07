@@ -10,7 +10,7 @@
   <PropertyGroup Condition="'$(IsPackable)' != 'false' And '$(OutputType)' != 'Exe'">
     <Company>Kamersoft</Company>
     <Authors>Francescolis</Authors>
-    <Copyright>Copyright © Kamersoft 2025</Copyright>
+    <Copyright>Copyright © Kamersoft 2025-2026</Copyright>
     <NeutralLanguage>en-US</NeutralLanguage>
     <LangVersion>Latest</LangVersion>
 
@@ -29,7 +29,7 @@
     <SymbolPackageFormat>snupkg</SymbolPackageFormat>
     <IncludeSource>true</IncludeSource>
     <EmbedUntrackedSources>true</EmbedUntrackedSources>
-    <EnablePackageValidation>false</EnablePackageValidation>
+    <EnablePackageValidation>true</EnablePackageValidation>
     <PackageOutputPath>$(MSBuildThisFileDirectory)..\Nugets</PackageOutputPath>
 
     <SignAssembly>true</SignAssembly>

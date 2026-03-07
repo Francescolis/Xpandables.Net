@@ -1,5 +1,5 @@
-﻿/*******************************************************************************
- * Copyright (C) 2025 Kamersoft
+/*******************************************************************************
+ * Copyright (C) 2025-2026 Kamersoft
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -286,7 +286,7 @@ public sealed class TextCryptographyTests
     [InlineData("")]
     [InlineData("short")]
     [InlineData("A longer string with special chars: !@#$%^&*()")]
-    [InlineData("Unicode: 日本語テスト")]
+    [InlineData("Unicode: ??????")]
     public void WhenDecryptingVariousPlainTextsThenShouldReturnOriginalValues(string plainText)
     {
         // Arrange

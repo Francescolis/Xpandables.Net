@@ -1,5 +1,5 @@
-ï»¿/*******************************************************************************
- * Copyright (C) 2025 Kamersoft
+/*******************************************************************************
+ * Copyright (C) 2025-2026 Kamersoft
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -14,7 +14,6 @@
  * limitations under the License.
  *
 ********************************************************************************/
-using System.Diagnostics;
 using System.Security.Cryptography;
 using System.Text;
 
@@ -32,7 +31,7 @@ public static class TextGenerator
 	/// The lookup characters used to generate random string.  
 	/// </summary>  
 	public const string LookupCharacters = "abcdefghijklmonpqrstuvwxyzABCDEFGH" +
-		"IJKLMNOPQRSTUVWXYZ0123456789,;!(-Ã¨_Ã§Ã Ã )=@%ÂµÂ£Â¨//?Â§/.?";
+		"IJKLMNOPQRSTUVWXYZ0123456789,;!(-è_çàà)=@%µ£¨//?§/.?";
 
 	/// <summary>  
 	/// Generates a random string of the specified length using the default   
@@ -55,7 +54,8 @@ public static class TextGenerator
 	/// <exception cref="ArgumentOutOfRangeException">Thrown when the length   
 	/// is less than 1 or greater than ushort.MaxValue.</exception>  
 	/// <exception cref="ArgumentException">Thrown when the lookupCharacters   
-	/// is null or whitespace.</exception>  
+	/// is null or whitespace, or contains more characters than can be 
+	/// uniformly sampled with a 4-byte random value.</exception>  
 	public static string Generate(int length, string lookupCharacters)
 	{
 		ArgumentOutOfRangeException.ThrowIfLessThan(length, 1);
@@ -68,7 +68,7 @@ public static class TextGenerator
 
 		int count = (int)Math.Ceiling(Math.Log(lookupCharacters.Length, 2) / 8.0);
 
-		Debug.Assert(count <= sizeof(uint));
+		ArgumentOutOfRangeException.ThrowIfGreaterThan(count, sizeof(uint), nameof(lookupCharacters));
 
 		int offset = BitConverter.IsLittleEndian ? 0 : sizeof(uint) - count;
 		int max = (int)(Math.Pow(2, count * 8) / lookupCharacters.Length) * lookupCharacters.Length;

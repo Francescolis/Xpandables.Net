@@ -1,5 +1,5 @@
-ï»¿/*******************************************************************************
- * Copyright (C) 2025 Kamersoft
+/*******************************************************************************
+ * Copyright (C) 2025-2026 Kamersoft
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -30,19 +30,19 @@ namespace System.Data;
 /// This interceptor is registered automatically by <c>AddXDataCommandInterceptor()</c>.
 /// It logs command execution at the following levels:
 /// <list type="bullet">
-/// <item><see cref="LogLevel.Debug"/> â€” before execution (SQL text and parameter names).</item>
-/// <item><see cref="LogLevel.Information"/> â€” after successful execution (duration and row count).</item>
-/// <item><see cref="LogLevel.Warning"/> â€” after successful execution that exceeds
+/// <item><see cref="LogLevel.Debug"/> — before execution (SQL text and parameter names).</item>
+/// <item><see cref="LogLevel.Information"/> — after successful execution (duration and row count).</item>
+/// <item><see cref="LogLevel.Warning"/> — after successful execution that exceeds
 /// <see cref="DataCommandInterceptorOptions.SlowCommandThreshold"/>.</item>
-/// <item><see cref="LogLevel.Error"/> â€” when execution fails (duration and exception).</item>
+/// <item><see cref="LogLevel.Error"/> — when execution fails (duration and exception).</item>
 /// </list>
 /// </para>
 /// <para>
 /// Configure behavior via <see cref="DataCommandInterceptorOptions"/>:
 /// <list type="bullet">
-/// <item><see cref="DataCommandInterceptorOptions.EnableSensitiveDataLogging"/> â€” include parameter values in logs.</item>
-/// <item><see cref="DataCommandInterceptorOptions.CategoryName"/> â€” custom log category.</item>
-/// <item><see cref="DataCommandInterceptorOptions.SlowCommandThreshold"/> â€” slow command warning threshold.</item>
+/// <item><see cref="DataCommandInterceptorOptions.EnableSensitiveDataLogging"/> — include parameter values in logs.</item>
+/// <item><see cref="DataCommandInterceptorOptions.CategoryName"/> — custom log category.</item>
+/// <item><see cref="DataCommandInterceptorOptions.SlowCommandThreshold"/> — slow command warning threshold.</item>
 /// </list>
 /// </para>
 /// </remarks>
@@ -176,7 +176,7 @@ public sealed partial class DataLoggingCommandInterceptor : DataCommandIntercept
 	[LoggerMessage(
 		EventId = 1,
 		Level = LogLevel.Debug,
-		Message = "Executing {OperationType} [{EntityTypeName}] â€” Parameters: [{Parameters}]\n{CommandText}")]
+		Message = "Executing {OperationType} [{EntityTypeName}] — Parameters: [{Parameters}]\n{CommandText}")]
 	private static partial void LogCommandExecuting(
 		ILogger logger,
 		DataCommandOperationType operationType,
@@ -187,7 +187,7 @@ public sealed partial class DataLoggingCommandInterceptor : DataCommandIntercept
 	[LoggerMessage(
 		EventId = 2,
 		Level = LogLevel.Information,
-		Message = "Executed {OperationType} [{EntityTypeName}] in {DurationMs:F1}ms â€” {RowsAffected} row(s) affected\n{CommandText}")]
+		Message = "Executed {OperationType} [{EntityTypeName}] in {DurationMs:F1}ms — {RowsAffected} row(s) affected\n{CommandText}")]
 	private static partial void LogCommandExecuted(
 		ILogger logger,
 		DataCommandOperationType operationType,
@@ -199,7 +199,7 @@ public sealed partial class DataLoggingCommandInterceptor : DataCommandIntercept
 	[LoggerMessage(
 		EventId = 3,
 		Level = LogLevel.Warning,
-		Message = "Slow command {OperationType} [{EntityTypeName}] in {DurationMs:F1}ms (threshold: {ThresholdMs:F0}ms) â€” {RowsAffected} row(s) affected\n{CommandText}")]
+		Message = "Slow command {OperationType} [{EntityTypeName}] in {DurationMs:F1}ms (threshold: {ThresholdMs:F0}ms) — {RowsAffected} row(s) affected\n{CommandText}")]
 	private static partial void LogCommandExecutedSlow(
 		ILogger logger,
 		DataCommandOperationType operationType,

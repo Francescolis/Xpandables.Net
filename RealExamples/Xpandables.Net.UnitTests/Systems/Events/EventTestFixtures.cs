@@ -1,4 +1,4 @@
-﻿using System.Events;
+using System.Events;
 using System.Events.Aggregates;
 using System.Events.Domain;
 using System.Runtime.CompilerServices;

@@ -1,5 +1,5 @@
-ï»¿/*******************************************************************************
- * Copyright (C) 2025 Kamersoft
+/*******************************************************************************
+ * Copyright (C) 2025-2026 Kamersoft
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -58,9 +58,9 @@ public readonly record struct DataCommandContext(
 /// Implementations can observe command execution for logging, telemetry, diagnostics, or auditing.
 /// All methods are invoked around ADO.NET command execution:
 /// <list type="bullet">
-/// <item><see cref="CommandExecutingAsync"/> â€” called before the command is executed.</item>
-/// <item><see cref="CommandExecutedAsync"/> â€” called after successful execution with timing and row count.</item>
-/// <item><see cref="CommandFailedAsync"/> â€” called when execution throws, with timing and exception.</item>
+/// <item><see cref="CommandExecutingAsync"/> — called before the command is executed.</item>
+/// <item><see cref="CommandExecutedAsync"/> — called after successful execution with timing and row count.</item>
+/// <item><see cref="CommandFailedAsync"/> — called when execution throws, with timing and exception.</item>
 /// </list>
 /// </para>
 /// <para>

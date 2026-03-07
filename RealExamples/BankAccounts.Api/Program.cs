@@ -1,4 +1,4 @@
-﻿using BankAccounts.Domain;
+using BankAccounts.Domain;
 using BankAccounts.Infrastructure;
 
 using Microsoft.OpenApi;

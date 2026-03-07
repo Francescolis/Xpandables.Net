@@ -1,4 +1,4 @@
-﻿using System.Optionals;
+using System.Optionals;
 using System.Text.Json;
 using Xunit;
 

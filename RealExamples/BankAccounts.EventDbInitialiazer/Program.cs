@@ -1,4 +1,4 @@
-﻿using System.Events.Data.Scripts;
+using System.Events.Data.Scripts;
 
 using Microsoft.Data.SqlClient;
 using Microsoft.Extensions.Configuration;

@@ -1,5 +1,5 @@
-ï»¿/*******************************************************************************
- * Copyright (C) 2025 Kamersoft
+/*******************************************************************************
+ * Copyright (C) 2025-2026 Kamersoft
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -62,7 +62,7 @@ public sealed class DataSqlBuilderTests
     [Fact]
     public void BuildSelect_WithBareBooleanProperty_ReturnsColumnEquals1()
     {
-        // Arrange â€” .Where(p => p.IsActive) is a bare boolean MemberExpression
+        // Arrange — .Where(p => p.IsActive) is a bare boolean MemberExpression
         var builder = new MsDataSqlBuilder();
 		DataSpecification<Person, Person> specification = DataSpecification.For<Person>()
             .Where(person => person.IsActive)
@@ -78,7 +78,7 @@ public sealed class DataSqlBuilderTests
     [Fact]
     public void BuildSelect_WithNegatedBooleanProperty_ReturnsColumnEquals0()
     {
-        // Arrange â€” .Where(p => !p.IsActive) generates Not(MemberAccess(bool))
+        // Arrange — .Where(p => !p.IsActive) generates Not(MemberAccess(bool))
         var builder = new MsDataSqlBuilder();
 		DataSpecification<Person, Person> specification = DataSpecification.For<Person>()
             .Where(person => !person.IsActive)
@@ -94,7 +94,7 @@ public sealed class DataSqlBuilderTests
     [Fact]
     public void BuildSelect_WithConditionalExpression_ReturnsCaseWhen()
     {
-        // Arrange â€” ternary operator: p.IsActive ? "Yes" : "No"
+        // Arrange — ternary operator: p.IsActive ? "Yes" : "No"
         var builder = new MsDataSqlBuilder();
 		DataSpecification<Person, string> specification = DataSpecification.For<Person>()
             .Select(person => person.IsActive ? "Yes" : "No");
@@ -112,7 +112,7 @@ public sealed class DataSqlBuilderTests
     [Fact]
     public void BuildSelect_WithNullableHasValue_ReturnsIsNotNull()
     {
-        // Arrange â€” .Where(p => p.DeletedAt.HasValue)
+        // Arrange — .Where(p => p.DeletedAt.HasValue)
         var builder = new MsDataSqlBuilder();
 		DataSpecification<PersonExtended, PersonExtended> specification = DataSpecification.For<PersonExtended>()
             .Where(person => person.DeletedAt.HasValue)
@@ -128,7 +128,7 @@ public sealed class DataSqlBuilderTests
     [Fact]
     public void BuildSelect_WithNegatedNullableHasValue_ReturnsIsNull()
     {
-        // Arrange â€” .Where(p => !p.DeletedAt.HasValue)
+        // Arrange — .Where(p => !p.DeletedAt.HasValue)
         var builder = new MsDataSqlBuilder();
 		DataSpecification<PersonExtended, PersonExtended> specification = DataSpecification.For<PersonExtended>()
             .Where(person => !person.DeletedAt.HasValue)
@@ -144,7 +144,7 @@ public sealed class DataSqlBuilderTests
     [Fact]
     public void BuildSelect_WithNullableValue_ReturnsUnwrappedColumn()
     {
-        // Arrange â€” .Where(p => p.Score.Value > 10)
+        // Arrange — .Where(p => p.Score.Value > 10)
         var builder = new MsDataSqlBuilder();
 		DataSpecification<PersonExtended, PersonExtended> specification = DataSpecification.For<PersonExtended>()
             .Where(person => person.Score!.Value > 10)
@@ -162,7 +162,7 @@ public sealed class DataSqlBuilderTests
     [Fact]
     public void BuildSelect_WithStringIsNullOrEmpty_ReturnsIsNullOrEquals()
     {
-        // Arrange â€” .Where(p => !string.IsNullOrEmpty(p.Name))
+        // Arrange — .Where(p => !string.IsNullOrEmpty(p.Name))
         var builder = new MsDataSqlBuilder();
 		DataSpecification<Person, Person> specification = DataSpecification.For<Person>()
             .Where(person => !string.IsNullOrEmpty(person.Name))
@@ -179,7 +179,7 @@ public sealed class DataSqlBuilderTests
     [Fact]
     public void BuildSelect_WithStringIsNullOrWhiteSpace_ReturnsLtrimRtrim()
     {
-        // Arrange â€” .Where(p => string.IsNullOrWhiteSpace(p.Name))
+        // Arrange — .Where(p => string.IsNullOrWhiteSpace(p.Name))
         var builder = new MsDataSqlBuilder();
 		DataSpecification<Person, Person> specification = DataSpecification.For<Person>()
             .Where(person => string.IsNullOrWhiteSpace(person.Name))
@@ -195,7 +195,7 @@ public sealed class DataSqlBuilderTests
     [Fact]
     public void BuildSelect_WithCoalesceOperator_ReturnsCoalesce()
     {
-        // Arrange â€” p.Nickname ?? p.Name
+        // Arrange — p.Nickname ?? p.Name
         var builder = new MsDataSqlBuilder();
 		DataSpecification<PersonExtended, string> specification = DataSpecification.For<PersonExtended>()
             .Select(person => person.Nickname ?? person.Name);
@@ -210,7 +210,7 @@ public sealed class DataSqlBuilderTests
     [Fact]
     public void BuildSelect_WithEnumComparison_ParameterizesUnderlyingType()
     {
-        // Arrange â€” .Where(p => p.Status == PersonStatus.Active)
+        // Arrange — .Where(p => p.Status == PersonStatus.Active)
         var builder = new MsDataSqlBuilder();
 		DataSpecification<PersonExtended, PersonExtended> specification = DataSpecification.For<PersonExtended>()
             .Where(person => person.Status == PersonStatus.Active)
@@ -219,7 +219,7 @@ public sealed class DataSqlBuilderTests
 		// Act
 		SqlQueryResult result = builder.BuildSelect(specification);
 
-        // Assert â€” parameter should be the int value, not the enum
+        // Assert — parameter should be the int value, not the enum
         result.Parameters.Should().ContainSingle(p => p.Value != null && p.Value.Equals((int)PersonStatus.Active));
     }
 

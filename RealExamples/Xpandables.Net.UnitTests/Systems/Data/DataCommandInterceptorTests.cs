@@ -1,5 +1,5 @@
-ï»¿/*******************************************************************************
- * Copyright (C) 2025 Kamersoft
+/*******************************************************************************
+ * Copyright (C) 2025-2026 Kamersoft
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -297,7 +297,7 @@ public sealed class DataCommandInterceptorTests : IDisposable
 		using var scope = new DataDbConnectionScope(_connection);
 		using var repo = new DataRepository<Product>(scope, new MsDataSqlBuilder(), new DataSqlMapper(), interceptor);
 
-		// Should not throw â€” logging interceptor handles all callbacks
+		// Should not throw — logging interceptor handles all callbacks
 		await repo.ExecuteAsync("INSERT INTO Product (Id, Name, Price) VALUES (1, 'Test', 5.0)");
 	}
 
@@ -314,7 +314,7 @@ public sealed class DataCommandInterceptorTests : IDisposable
 		using var scope = new DataDbConnectionScope(_connection);
 		using var repo = new DataRepository<Product>(scope, new MsDataSqlBuilder(), new DataSqlMapper(), interceptor);
 
-		// Should not throw â€” sensitive data logging enabled
+		// Should not throw — sensitive data logging enabled
 		await repo.ExecuteAsync("INSERT INTO Product (Id, Name, Price) VALUES (2, 'Sensitive', 10.0)");
 	}
 

@@ -1,5 +1,5 @@
-﻿/*******************************************************************************
- * Copyright (C) 2025 Kamersoft
+/*******************************************************************************
+ * Copyright (C) 2025-2026 Kamersoft
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -35,6 +35,12 @@ public sealed class EmptyCatalog : ComposablePartCatalog
 /// Represents a catalog that recursively searches directories for composable 
 /// parts.
 /// </summary>
+/// <remarks>
+/// <para>This catalog uses reflection to discover composable parts from assemblies
+/// found in subdirectories. It is not compatible with Native AOT or trimming.</para>
+/// </remarks>
+[RequiresUnreferencedCode("RecursiveDirectoryCatalog uses MEF which relies on reflection to discover composable parts.")]
+[RequiresDynamicCode("RecursiveDirectoryCatalog uses MEF which relies on runtime code generation.")]
 public sealed class RecursiveDirectoryCatalog :
     ComposablePartCatalog,
     INotifyComposablePartCatalogChanged,
@@ -69,8 +75,6 @@ public sealed class RecursiveDirectoryCatalog :
     }
 
     /// <inheritdoc/>
-    [UnconditionalSuppressMessage("Trimming", "IL2026:Members annotated with 'RequiresUnreferencedCodeAttribute' require dynamic access otherwise can break functionality when trimming application code", Justification = "<Pending>")]
-    [UnconditionalSuppressMessage("AOT", "IL3050:Calling members annotated with 'RequiresDynamicCodeAttribute' may break functionality when AOT compiling.", Justification = "<Pending>")]
     public override IQueryable<ComposablePartDefinition> Parts =>
         _aggregateCatalog.AsQueryable();
 

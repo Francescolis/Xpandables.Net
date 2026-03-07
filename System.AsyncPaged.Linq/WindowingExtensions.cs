@@ -1,5 +1,5 @@
-ï»¿/*******************************************************************************
- * Copyright (C) 2025 Kamersoft
+/*******************************************************************************
+ * Copyright (C) 2025-2026 Kamersoft
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -264,7 +264,7 @@ public static class WindowingExtensions
             /// <exception cref="ArgumentNullException">Thrown when the source sequence or selector is null.</exception>
             /// <exception cref="ArgumentOutOfRangeException">Thrown when <paramref name="windowSize"/> is less than 1.</exception>
             /// <remarks>
-            /// This method uses a monotonic deque algorithm for O(n) performance instead of O(nÂ²).
+            /// This method uses a monotonic deque algorithm for O(n) performance instead of O(n²).
             /// </remarks>
             public IAsyncPagedEnumerable<TValue> WindowedMinPaged<TValue>(int windowSize, Func<TSource, TValue> selector)
                 where TValue : IComparable<TValue>
@@ -325,7 +325,7 @@ public static class WindowingExtensions
         /// <exception cref="ArgumentNullException">Thrown when the source sequence or selector is null.</exception>
         /// <exception cref="ArgumentOutOfRangeException">Thrown when <paramref name="windowSize"/> is less than 1.</exception>
         /// <remarks>
-        /// This method uses a monotonic deque algorithm for O(n) performance instead of O(nÂ²).
+        /// This method uses a monotonic deque algorithm for O(n) performance instead of O(n²).
         /// </remarks>
         public IAsyncPagedEnumerable<TValue> WindowedMaxPaged<TValue>(int windowSize, Func<TSource, TValue> selector)
             where TValue : IComparable<TValue>

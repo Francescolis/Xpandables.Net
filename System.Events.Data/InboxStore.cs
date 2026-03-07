@@ -1,5 +1,5 @@
-ï»¿/*******************************************************************************
- * Copyright (C) 2025 Kamersoft
+/*******************************************************************************
+ * Copyright (C) 2025-2026 Kamersoft
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -86,13 +86,13 @@ public sealed class InboxStore<
 
 			if (existing.Status == EventStatus.ONERROR.Value)
 			{
-				// Still within the backoff window â€” treat as in-progress
+				// Still within the backoff window — treat as in-progress
 				if (existing.NextAttemptOn is not null && existing.NextAttemptOn > DateTime.UtcNow)
 				{
 					return new InboxReceiveResult(@event.EventId, EventStatus.PROCESSING);
 				}
 
-				// Lease expired or NextAttemptOn is null â€” allow retry by updating existing record
+				// Lease expired or NextAttemptOn is null — allow retry by updating existing record
 				DataUpdater<TDataEventInbox> updater = DataUpdater
 					.For<TDataEventInbox>()
 					.SetProperty(e => e.Status, EventStatus.PROCESSING.Value)
@@ -108,11 +108,11 @@ public sealed class InboxStore<
 				return new InboxReceiveResult(@event.EventId, EventStatus.ACCEPTED);
 			}
 
-			// Unrecognized status â€” treat as duplicate to prevent insert failure
+			// Unrecognized status — treat as duplicate to prevent insert failure
 			return new InboxReceiveResult(@event.EventId, EventStatus.DUPLICATE);
 		}
 
-		// No existing entry â€” insert new inbox record
+		// No existing entry — insert new inbox record
 		TDataEventInbox entity = _converter.ConvertEventToData(@event);
 		entity.SetStatus(EventStatus.PROCESSING.Value);
 		entity.Consumer = consumer;
