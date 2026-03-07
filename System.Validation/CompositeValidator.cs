@@ -19,51 +19,86 @@ namespace System.ComponentModel.DataAnnotations;
 /// <summary>
 /// Provides a validator that combines multiple validators and applies them to a single argument instance.
 /// </summary>
-/// <remarks>The composite validator executes each contained validator in sequence and aggregates all validation
-/// results. This allows for modular validation logic by composing multiple validators. The order of validators in the
-/// collection determines the order in which they are applied.</remarks>
+/// <remarks>
+/// <para>The composite validator executes each contained validator and aggregates all validation
+/// results. This allows for modular validation logic by composing multiple validators.</para>
+/// <para>By default, validators are executed sequentially in <see cref="Validator{TArgument}.Order"/> order.
+/// Set <paramref name="enableParallelValidation"/> to <see langword="true"/> to execute validators
+/// concurrently via <see cref="Task.WhenAll(IEnumerable{Task})"/>. Use parallel validation only when
+/// validators are independent and thread-safe; ordering is not guaranteed in parallel mode.</para>
+/// </remarks>
 /// <typeparam name="TArgument">The type of the object to validate. Must be a reference type that implements <see cref="IRequiresValidation"/>.</typeparam>
 /// <param name="validators">The collection of validators to apply to the argument instance. Cannot be null.</param>
-public sealed class CompositeValidator<TArgument>(IEnumerable<IValidator<TArgument>> validators) :
-    Validator<TArgument>, ICompositeValidator<TArgument>
-    where TArgument : class, IRequiresValidation
+/// <param name="enableParallelValidation">When <see langword="true"/>, <see cref="ValidateAsync"/> runs 
+/// all validators concurrently. Defaults to <see langword="false"/> (sequential).</param>
+public sealed class CompositeValidator<TArgument>(
+	IEnumerable<IValidator<TArgument>> validators,
+	bool enableParallelValidation = false) :
+	Validator<TArgument>, ICompositeValidator<TArgument>
+	where TArgument : class, IRequiresValidation
 {
-    private readonly IEnumerable<IValidator<TArgument>> _validators = validators
-        ?? throw new ArgumentNullException(nameof(validators));
+	private readonly IEnumerable<IValidator<TArgument>> _validators = validators
+		?? throw new ArgumentNullException(nameof(validators));
+	private readonly bool _enableParallelValidation = enableParallelValidation;
 
-    /// <inheritdoc/>
-    public override IReadOnlyCollection<ValidationResult> Validate(TArgument instance)
-    {
-        List<ValidationResult> validationResults = [];
-        foreach (IValidator<TArgument> validator in _validators.OrderBy(v => v.Order))
-        {
+	/// <inheritdoc/>
+	public override IReadOnlyCollection<ValidationResult> Validate(TArgument instance)
+	{
+		List<ValidationResult> validationResults = [];
+		foreach (IValidator<TArgument> validator in _validators.OrderBy(v => v.Order))
+		{
 			IReadOnlyCollection<ValidationResult> results = validator.Validate(instance);
-            if (results is { Count: > 0 })
-            {
-                validationResults.AddRange(results);
-            }
-        }
+			if (results is { Count: > 0 })
+			{
+				validationResults.AddRange(results);
+			}
+		}
 
-        return validationResults;
-    }
+		return validationResults;
+	}
 
-    /// <inheritdoc/>
-    public override async ValueTask<IReadOnlyCollection<ValidationResult>> ValidateAsync(TArgument instance)
-    {
-        List<ValidationResult> validationResults = [];
+	/// <inheritdoc/>
+	public override async ValueTask<IReadOnlyCollection<ValidationResult>> ValidateAsync(TArgument instance)
+	{
+		if (_enableParallelValidation)
+		{
+			return await ValidateParallelAsync(instance).ConfigureAwait(false);
+		}
 
-        foreach (IValidator<TArgument> validator in _validators.OrderBy(v => v.Order))
-        {
+		List<ValidationResult> validationResults = [];
+
+		foreach (IValidator<TArgument> validator in _validators.OrderBy(v => v.Order))
+		{
 			IReadOnlyCollection<ValidationResult> results = await validator
-                .ValidateAsync(instance)
-                .ConfigureAwait(false);
+				.ValidateAsync(instance)
+				.ConfigureAwait(false);
 
-            if (results is { Count: > 0 })
-            {
-                validationResults.AddRange(results);
-            }
-        }
+			if (results is { Count: > 0 })
+			{
+				validationResults.AddRange(results);
+			}
+		}
 
-        return validationResults;
-    }
+		return validationResults;
+	}
+
+	private async ValueTask<IReadOnlyCollection<ValidationResult>> ValidateParallelAsync(TArgument instance)
+	{
+		Task<IReadOnlyCollection<ValidationResult>>[] tasks = [.. _validators
+			.Select(v => v.ValidateAsync(instance).AsTask())];
+
+		IReadOnlyCollection<ValidationResult>[] allResults =
+			await Task.WhenAll(tasks).ConfigureAwait(false);
+
+		List<ValidationResult> validationResults = [];
+		foreach (IReadOnlyCollection<ValidationResult> results in allResults)
+		{
+			if (results is { Count: > 0 })
+			{
+				validationResults.AddRange(results);
+			}
+		}
+
+		return validationResults;
+	}
 }

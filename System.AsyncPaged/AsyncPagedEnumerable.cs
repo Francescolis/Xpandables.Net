@@ -15,8 +15,6 @@
  *
 ********************************************************************************/
 
-using System.Runtime.ExceptionServices;
-
 namespace System.Collections.Generic;
 
 /// <summary>
@@ -35,13 +33,13 @@ public sealed class AsyncPagedEnumerable<T> : IAsyncPagedEnumerable<T>, IAsyncDi
 	private List<T>? _materializedItems;
 	private readonly SemaphoreSlim _materializationLock = new(1, 1);
 
-	private volatile int _paginationState; // 0 = not started, 1 = computing, 2 = computed, 3 = faulted
+	// Lazy pagination — SemaphoreSlim double-check pattern
+	private readonly SemaphoreSlim _paginationLock = new(1, 1);
 	private Task<Pagination>? _paginationTask;
-	private Exception? _paginationError;
 	private Pagination _pagination; // backing store
 
 	/// <inheritdoc/>
-	public Pagination Pagination => _paginationState == 2 ? _pagination : Pagination.Empty;
+	public Pagination Pagination => _paginationTask is { IsCompletedSuccessfully: true } ? _pagination : Pagination.Empty;
 
 	/// <summary>
 	/// Initializes a new instance of the <see cref="AsyncPagedEnumerable{T}"/> class with an async enumerable source.
@@ -139,78 +137,45 @@ public sealed class AsyncPagedEnumerable<T> : IAsyncPagedEnumerable<T>, IAsyncDi
 	}
 
 	/// <inheritdoc/>
-	public Task<Pagination> GetPaginationAsync(CancellationToken cancellationToken = default)
+	public async Task<Pagination> GetPaginationAsync(CancellationToken cancellationToken = default)
 	{
-		// Fast path if already computed.
-		if (_paginationState == 2)
+		// Fast path: already computed successfully.
+		if (_paginationTask is { IsCompletedSuccessfully: true })
 		{
-			return Task.FromResult(_pagination);
+			return _pagination;
 		}
 
-		// If a previous attempt faulted, propagate.
-		if (_paginationState == 3)
+		await _paginationLock.WaitAsync(cancellationToken).ConfigureAwait(false);
+		try
 		{
-			ExceptionDispatchInfo.Capture(_paginationError!).Throw();
-		}
-
-		// Try to start computation atomically.
-		if (Interlocked.CompareExchange(ref _paginationState, 1, 0) == 0)
-		{
-			Task<Pagination> task = ComputeAndStoreAsync(cancellationToken);
-			Volatile.Write(ref _paginationTask, task);
-			return task;
-		}
-
-		// Another thread is or has already computed the page context.
-		// Wait until the task reference becomes visible (handles publication reordering/race).
-		Task<Pagination>? existing = Volatile.Read(ref _paginationTask);
-		if (existing is null)
-		{
-			SpinWait sw = new();
-			do
+			// Double-check inside the lock; allow retry on faulted/cancelled.
+			if (_paginationTask is null or { IsFaulted: true } or { IsCanceled: true })
 			{
-				sw.SpinOnce();
-				existing = Volatile.Read(ref _paginationTask);
-
-				// Safety check: if state changed to computed or faulted but task is still null,
-				// break to avoid infinite loop due to potential memory ordering issues.
-				int currentState = _paginationState;
-				if (currentState >= 2 && existing is null)
-				{
-					return currentState == 2
-						? Task.FromResult(_pagination)
-						: Task.FromException<Pagination>(_paginationError ?? new InvalidOperationException("Pagination computation failed."));
-				}
-			} while (existing is null);
-		}
-		return existing;
-
-		async Task<Pagination> ComputeAndStoreAsync(CancellationToken ct)
-		{
-			try
-			{
-				Pagination ctx = await _paginationFactory(ct).ConfigureAwait(false);
-				_pagination = ctx;
-
-				_ = Interlocked.Exchange(ref _paginationState, 2);
-				return ctx;
-			}
-			catch (Exception ex)
-			{
-				_paginationError = ex;
-				_ = Interlocked.Exchange(ref _paginationState, 3);
-				throw;
+				_paginationTask = _paginationFactory(cancellationToken).AsTask();
 			}
 		}
+		finally
+		{
+			_paginationLock.Release();
+		}
+
+		Pagination result = await _paginationTask.ConfigureAwait(false);
+		_pagination = result;
+		return result;
 	}
 
 	/// <inheritdoc/>
-	public void Dispose() => _materializationLock.Dispose();
+	public void Dispose()
+	{
+		_materializationLock.Dispose();
+		_paginationLock.Dispose();
+	}
 
 	/// <inheritdoc/>
 	public ValueTask DisposeAsync()
 	{
 		_materializationLock.Dispose();
+		_paginationLock.Dispose();
 		return ValueTask.CompletedTask;
 	}
 

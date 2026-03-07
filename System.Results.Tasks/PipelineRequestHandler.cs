@@ -26,12 +26,17 @@ namespace System.Results.Tasks;
 /// </summary>
 /// <typeparam name="TRequest">The type of the request to be handled, which must implement <see cref="IRequest"/>.</typeparam>
 /// <remarks>
-/// The pipeline structure is pre-built at construction time for maximum performance.
-/// This implementation uses iterative execution with a pre-built delegate chain to eliminate:
-/// - Per-request allocations for decorator chain construction
-/// - Recursive call overhead
-/// - Lambda capture allocations in hot paths
-/// Decorators are applied in reverse order to maintain expected execution flow.
+/// <para><strong>Thread safety:</strong> The pipeline delegate chain is pre-built at construction time
+/// (in the constructor) and stored in immutable fields. Once constructed, this handler is safe for concurrent
+/// use from multiple threads. No per-request allocations are made for pipeline assembly.</para>
+/// <para>This implementation uses iterative execution with a pre-built delegate chain to eliminate:</para>
+/// <list type="bullet">
+/// <item>Per-request allocations for decorator chain construction</item>
+/// <item>Recursive call overhead</item>
+/// <item>Lambda capture allocations in hot paths</item>
+/// </list>
+/// <para>Decorators are applied in reverse order to maintain expected execution flow.
+/// Ensure all decorators and the final handler are thread-safe when this handler is registered as a singleton.</para>
 /// </remarks>
 public sealed class PipelineRequestHandler<TRequest> :
 	IPipelineRequestHandler<TRequest>

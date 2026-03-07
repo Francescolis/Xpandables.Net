@@ -26,9 +26,16 @@ namespace System.Results.Tasks;
 /// handlers using dependency injection.
 /// </summary>
 /// <remarks>
-/// This mediator is a pure dispatcher — it resolves the appropriate <see cref="IPipelineRequestHandler{TRequest}"/>
-/// and delegates execution entirely to the pipeline. Exception handling, validation, and cross-cutting concerns
-/// must be handled by pipeline decorators (e.g., <c>PipelineExceptionDecorator</c>).
+/// <para>This mediator is a pure dispatcher — it resolves the appropriate <see cref="IPipelineRequestHandler{TRequest}"/>
+/// from the service provider and delegates execution entirely to the pipeline. Exception handling, validation, and
+/// cross-cutting concerns must be handled by pipeline decorators (e.g., <c>PipelineExceptionDecorator</c>).</para>
+/// <para><strong>Thread safety:</strong> This class is thread-safe. Each call to <see cref="SendAsync{TRequest}"/>
+/// or <see cref="SendAsync{TRequest, TResponse}"/> resolves a fresh <see cref="IPipelineRequestHandler{TRequest}"/>
+/// from the service provider. The resolved handler's <see cref="PipelineRequestHandler{TRequest}"/> pre-builds and
+/// caches the decorator delegate chain at construction time (in the constructor), so no per-request pipeline assembly
+/// occurs. The handler is safe for concurrent use once constructed. Scoped handlers are resolved from the current
+/// scope; singleton handlers share a single pre-built pipeline across all requests. Ensure that all decorators and
+/// the final handler are themselves thread-safe if registered as singletons.</para>
 /// <para>Ensure that <c>PipelineExceptionDecorator</c> is registered in the pipeline to handle
 /// unhandled exceptions. Without it, exceptions will propagate to the caller.</para>
 /// </remarks>

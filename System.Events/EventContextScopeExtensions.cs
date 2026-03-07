@@ -59,22 +59,31 @@ public static class EventContextScopeExtensions
         }
     }
 
-    private sealed class RestoreScope(AsyncLocalEventContextAccessor accessor, EventContext prior) : IDisposable
-    {
-        private readonly AsyncLocalEventContextAccessor _accessor = accessor;
-        private readonly EventContext _prior = prior;
-        private bool _disposed;
+	private sealed class RestoreScope(AsyncLocalEventContextAccessor accessor, EventContext prior) : IDisposable
+	{
+		private readonly AsyncLocalEventContextAccessor _accessor = accessor;
+		private readonly EventContext _prior = prior;
+		private bool _disposed;
 
-        public void Dispose()
-        {
-            if (_disposed)
+		public void Dispose()
+		{
+			if (_disposed)
 			{
 				return;
 			}
 
 			_disposed = true;
 
-            _accessor.SetCurrent(_prior);
-        }
-    }
+			// Clear the async-local slot when restoring to default to avoid
+			// keeping a stale value in long-lived execution contexts.
+			if (_prior == default)
+			{
+				_accessor.ClearCurrent();
+			}
+			else
+			{
+				_accessor.SetCurrent(_prior);
+			}
+		}
+	}
 }
