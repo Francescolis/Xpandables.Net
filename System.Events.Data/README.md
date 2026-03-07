@@ -6,6 +6,69 @@
 
 ADO.NET persistence for event sourcing with `System.Events`.
 
+## Architecture
+
+```
+┌──────────────────────────────────────────────────────────────────────┐
+│                         Application Layer                           │
+│  ┌─────────────────┐   ┌─────────────────┐   ┌─────────────────┐   │
+│  │  Command / Query │──▶│    Mediator      │──▶│ Request Handler │   │
+│  └─────────────────┘   └─────────────────┘   └────────┬────────┘   │
+│                                                        │            │
+│                              Pipeline Decorators       │            │
+│  ┌─────────────────────────────────────────────────────┤            │
+│  │  Exception ─▶ Validation ─▶ Pre ─▶ Post ─▶ Handler │            │
+│  │  ─▶ DomainEvents ─▶ CommitEvents ─▶ UoW            │            │
+│  └─────────────────────────────────────────────────────┘            │
+└──────────────────────────────────────────────────────────────────────┘
+        │                       │                       │
+        ▼                       ▼                       ▼
+┌───────────────┐   ┌───────────────────┐   ┌──────────────────────┐
+│  Domain Store │   │   Outbox Store    │   │    Inbox Store       │
+│  (Event       │   │   (Reliable       │   │    (Exactly-once     │
+│   Sourcing)   │   │    Delivery)      │   │     Processing)      │
+├───────────────┤   ├───────────────────┤   ├──────────────────────┤
+│ Append stream │   │ Enqueue events    │   │ Receive / dedupe     │
+│ Read stream   │   │ Dequeue pending   │   │ Complete / fail      │
+│ Snapshot      │   │ Complete / fail   │   │ Purge processed      │
+│ Subscribe     │   │ Purge completed   │   │                      │
+│ Truncate      │   │                   │   │                      │
+└───────┬───────┘   └─────────┬─────────┘   └──────────┬───────────┘
+        │                     │                        │
+        ▼                     ▼                        ▼
+┌──────────────────────────────────────────────────────────────────────┐
+│                      Event Converter Layer                          │
+│  ┌──────────────────┐ ┌──────────────────┐ ┌──────────────────────┐ │
+│  │ConverterDomain   │ │ConverterOutbox   │ │ConverterInbox        │ │
+│  │ConverterSnapshot │ │                  │ │                      │ │
+│  └──────┬───────────┘ └────────┬─────────┘ └──────────┬───────────┘ │
+│         │  IEventConverterFactory / IEventConverterContext          │
+└─────────┼──────────────────────┼──────────────────────┼─────────────┘
+          │                      │                      │
+          ▼                      ▼                      ▼
+┌──────────────────────────────────────────────────────────────────────┐
+│                      Data Entity Layer                              │
+│  ┌──────────────────┐ ┌──────────────────┐ ┌──────────────────────┐ │
+│  │ DataEventDomain   │ │ DataEventOutbox   │ │ DataEventInbox      │ │
+│  │ DataEventSnapshot │ │                  │ │                      │ │
+│  └──────────────────┘ └──────────────────┘ └──────────────────────┘ │
+│              All extend DataEvent (base entity)                     │
+└──────────────────────────────────────────────────────────────────────┘
+          │                      │                      │
+          ▼                      ▼                      ▼
+┌──────────────────────────────────────────────────────────────────────┐
+│                   ADO.NET / IDataRepository                         │
+│        IEventTableScriptProvider (SQL Server / PostgreSQL / SQLite) │
+└──────────────────────────────────────────────────────────────────────┘
+```
+
+**Data Flow:**
+- **Domain events** are appended to streams via `DomainStore`, converted by `EventConverterDomain` into `DataEventDomain` rows.
+- **Snapshots** are stored alongside domain events via `EventConverterSnapshot` → `DataEventSnapshot`.
+- **Integration events** pass through the **Outbox** for reliable at-least-once delivery to external consumers.
+- **Incoming events** are deduplicated by the **Inbox** for exactly-once processing within the service boundary.
+- **Converters** (implementing `IEventConverter<TDataEvent, TEvent>`) translate between domain/integration event types and their ADO.NET row representations, using `IEventConverterContext` for shared serialization configuration.
+
 ## Overview
 
 `System.Events.Data` provides ADO.NET implementations for the event store, outbox, and inbox abstractions defined in `System.Events`. It uses `System.Data` (IDataRepository, IDataUnitOfWork) for raw ADO.NET persistence with SQL scripts for table creation across SQL Server, PostgreSQL, and SQLite.
@@ -303,4 +366,4 @@ services.AddXEventConverterContext();
 
 ## 📄 License
 
-Apache License 2.0 — Copyright © Kamersoft 2025
+Apache License 2.0 — Copyright © Kamersoft 2025-2026

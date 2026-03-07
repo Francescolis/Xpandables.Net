@@ -1,4 +1,4 @@
-/*******************************************************************************
+﻿/*******************************************************************************
  * Copyright (C) 2025-2026 Kamersoft
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
@@ -24,13 +24,26 @@ namespace Microsoft.Extensions.DependencyInjection;
 #pragma warning restore IDE0130 // Namespace does not match folder structure
 
 /// <summary>
-/// Provides extension methods for configuring and managing services within an <see cref="IServiceCollection"/>
-/// instance.
+/// Provides extension methods for registering pipeline decorators with an <see cref="IServiceCollection"/>.
 /// </summary>
-/// <remarks>This static class contains helper methods that extend the functionality of <see
-/// cref="IServiceCollection"/> to simplify service registration and setup in dependency injection scenarios. All
-/// methods are intended to be used as extension methods and should be called on an existing <see
-/// cref="IServiceCollection"/> object.</remarks>
+/// <remarks>
+/// <para>Decorators execute in <strong>registration order</strong> (first registered = outermost).
+/// The recommended registration order is:</para>
+/// <list type="number">
+///   <item><see cref="AddXPipelineExceptionDecorator"/> — catches unhandled exceptions (outermost)</item>
+///   <item><see cref="AddXPipelineValidationDecorator"/> — validates the request</item>
+///   <item><see cref="AddXPipelinePreHanderDecorator"/> — pre-processing hooks</item>
+///   <item><see cref="AddXPipelinePostHanderDecorator"/> — post-processing hooks</item>
+///   <item><see cref="AddXPipelinePublishDomainEventDecorator"/> — publishes domain events</item>
+///   <item><see cref="AddXPipelineCommitDomainEventDecorator"/> — commits domain events to the store</item>
+///   <item><see cref="AddXPipelineEnqueueIntegrationEventDecorator"/> — enqueues outbox events</item>
+///   <item><see cref="AddXPipelineRequireEntityUnitOfWorkDecorator"/> or
+///         <see cref="AddXPipelineRequireDataUnitOfWorkDecorator"/> — commits the unit of work (innermost)</item>
+/// </list>
+/// <para>The exception decorator should always be the outermost layer so that any exception thrown
+/// by inner decorators or the handler is captured. Call <see cref="ValidateXPipelineRegistration"/>
+/// after all decorators are registered to verify at startup that the exception decorator is present.</para>
+/// </remarks>
 public static class IPipelineExtensions
 {
 	/// <summary>
@@ -187,6 +200,51 @@ public static class IPipelineExtensions
 			Type serviceType = typeof(IPipelineRequestHandler<>).MakeGenericType(requestType);
 
 			return services.AddScoped(serviceType, type);
+		}
+
+		/// <summary>
+		/// Validates that the pipeline decorator registrations include the exception decorator.
+		/// </summary>
+		/// <remarks>
+		/// <para>Call this method after all pipeline decorators have been registered to verify that
+		/// <see cref="PipelineExceptionDecorator{TRequest}"/> is present. Without it, unhandled exceptions
+		/// will propagate directly to the caller instead of being transformed into a failure result.</para>
+		/// <para>If the exception decorator is missing, this method logs a warning via the
+		/// <paramref name="onWarning"/> callback (or throws <see cref="InvalidOperationException"/>
+		/// when no callback is provided).</para>
+		/// </remarks>
+		/// <param name="onWarning">An optional callback invoked with a warning message when the exception
+		/// decorator is missing. When <see langword="null"/>, an <see cref="InvalidOperationException"/> is thrown.</param>
+		/// <returns>The <see cref="IServiceCollection"/> for chaining.</returns>
+		/// <exception cref="InvalidOperationException">Thrown when the exception decorator is not registered
+		/// and no <paramref name="onWarning"/> callback is provided.</exception>
+		public IServiceCollection ValidateXPipelineRegistration(Action<string>? onWarning = null)
+		{
+			ArgumentNullException.ThrowIfNull(services);
+
+			bool hasExceptionDecorator = services.Any(sd =>
+				sd.ServiceType == typeof(IPipelineDecorator<>) &&
+				sd.ImplementationType is { IsGenericTypeDefinition: true } impl &&
+				impl == typeof(PipelineExceptionDecorator<>));
+
+			if (!hasExceptionDecorator)
+			{
+				const string message =
+					"PipelineExceptionDecorator is not registered. Without it, unhandled exceptions " +
+					"will propagate to the caller instead of being captured as a Result. " +
+					"Call AddXPipelineExceptionDecorator() before other decorators.";
+
+				if (onWarning is not null)
+				{
+					onWarning(message);
+				}
+				else
+				{
+					throw new InvalidOperationException(message);
+				}
+			}
+
+			return services;
 		}
 	}
 }
