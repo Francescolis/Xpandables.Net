@@ -33,6 +33,7 @@
       <PrivateAssets>all</PrivateAssets>
       <IncludeAssets>runtime; build; native; contentfiles; analyzers; buildtransitive</IncludeAssets>
     </PackageReference>
+    <PackageReference Include="Microsoft.AspNetCore.Mvc.Testing" />
     <PackageReference Include="Microsoft.EntityFrameworkCore.Sqlite" />
     <PackageReference Include="Microsoft.EntityFrameworkCore.SqlServer" />
   </ItemGroup>
@@ -45,6 +46,7 @@
     <ProjectReference Include="..\..\AspNetCore.Net\AspNetCore.Net.csproj" />
     <ProjectReference Include="..\..\AspNetCore.AsyncPaged\AspNetCore.AsyncPaged.csproj" />
     <ProjectReference Include="..\..\AspNetCore.Composition\AspNetCore.Composition.csproj" />
+    <ProjectReference Include="..\..\AspNetCore.Events\AspNetCore.Events.csproj" />
     <ProjectReference Include="..\..\AspNetCore.Results\AspNetCore.Results.csproj" />
     <ProjectReference Include="..\..\System.AsyncPaged.Json\System.AsyncPaged.Json.csproj" />
     <ProjectReference Include="..\..\System.AsyncPaged.Linq\System.AsyncPaged.Linq.csproj" />
