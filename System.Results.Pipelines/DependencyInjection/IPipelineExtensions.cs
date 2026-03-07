@@ -105,6 +105,17 @@ public static class IPipelineExtensions
 			services.AddXPipelineDecorator(typeof(PipelinePreHandlerDecorator<>));
 
 		/// <summary>
+		/// Registers the <see cref="PipelineCachingDecorator{TRequest}"/> for caching successful results
+		/// of requests implementing <see cref="ICacheableRequest"/>.
+		/// </summary>
+		/// <remarks>Register this decorator after validation but before the handler to avoid
+		/// redundant processing. An <see cref="Microsoft.Extensions.Caching.Memory.IMemoryCache"/> must
+		/// be registered in the container (e.g., via <c>AddMemoryCache()</c>).</remarks>
+		/// <returns>The <see cref="IServiceCollection"/> for chaining.</returns>
+		public IServiceCollection AddXPipelineCachingDecorator() =>
+			services.AddXPipelineDecorator(typeof(PipelineCachingDecorator<>));
+
+		/// <summary>
 		/// Adds the PipelineExceptionDecorator to the pipeline, enabling exception handling for pipeline operations.
 		/// </summary>
 		/// <remarks>This method registers the PipelineExceptionDecorator for all pipeline types. Use this
