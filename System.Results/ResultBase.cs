@@ -62,10 +62,11 @@ public abstract record ResultBase
 	/// Represents the internal value associated with the operation result, which can be of any type.
 	/// </summary>
 	/// <remarks>This property is designed to hold the result of the operation internally.
-	/// Derived types should expose a public <c>Value</c> property with the appropriate type if needed.</remarks>
+	/// Derived types should override this property to provide typed storage and avoid boxing.
+	/// Use <see cref="Result{TValue}"/> for strongly-typed results.</remarks>
 	[MaybeNull, AllowNull]
 	[JsonIgnore]
-	protected internal object InternalValue { get; init; }
+	protected internal virtual object? InternalValue { get; init; }
 
 	/// <summary>
 	/// Represents a collection of errors associated with the operation result.

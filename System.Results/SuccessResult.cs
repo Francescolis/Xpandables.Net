@@ -62,8 +62,8 @@ public sealed record SuccessResult<TValue> : Result<TValue>
     [MaybeNull, AllowNull]
     public new required TValue Value
     {
-        get => InternalValue is TValue result ? result : default;
-        init => InternalValue = value;
+        get => _typedValue;
+        init => _typedValue = value;
     }
 
     /// <summary>

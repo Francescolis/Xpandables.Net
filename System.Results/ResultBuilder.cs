@@ -26,16 +26,11 @@ namespace System.Results;
 /// </summary>
 /// <typeparam name="TBuilder">The type of the builder.</typeparam>
 public abstract class ResultBuilder<TBuilder>(HttpStatusCode statusCode) :
+    IResultPropertiesBuilder<TBuilder>,
     IObjectResultBuilder<TBuilder>,
     IHeaderResultBuilder<TBuilder>,
-    ILocationResultBuilder<TBuilder>,
     IErrorResultBuilder<TBuilder>,
-    IDetailResultBuilder<TBuilder>,
-    ITitleResultBuilder<TBuilder>,
-    IMergeResultBuilder<TBuilder>,
-    IStatusResultBuilder<TBuilder>,
     IExtensionResultBuilder<TBuilder>,
-    IClearResultBuilder<TBuilder>,
     IResultBuilder
     where TBuilder : class, IResultBuilder
 {

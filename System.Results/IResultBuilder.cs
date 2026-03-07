@@ -22,31 +22,15 @@ using Microsoft.Extensions.Primitives;
 
 namespace System.Results;
 
-/// <summary>
-/// Base interface for all result builders with common functionality. for internal use only.
-/// </summary>
-/// <typeparam name="TBuilder">The type of the builder.</typeparam>
-[EditorBrowsable(EditorBrowsableState.Never)]
-[Diagnostics.CodeAnalysis.SuppressMessage("Naming", "CA1707:Identifiers should not contain underscores", Justification = "<Pending>")]
-[Diagnostics.CodeAnalysis.SuppressMessage("Style", "IDE1006:Naming Styles", Justification = "<Pending>")]
-public interface _IBuilderResult<out TBuilder> :
-    IHeaderResultBuilder<TBuilder>,
-    ILocationResultBuilder<TBuilder>,
-    IStatusResultBuilder<TBuilder>,
-    IExtensionResultBuilder<TBuilder>,
-    IClearResultBuilder<TBuilder>
-    where TBuilder : class, IResultBuilder;
-
 /// <summary>  
 /// Provides a builder interface for constructing failure results.  
 /// </summary> 
 /// <typeparam name="TBuilder">The type of the builder.</typeparam>
 public interface IFailureResultBuilder<out TBuilder> :
-    _IBuilderResult<TBuilder>,
+    IResultPropertiesBuilder<TBuilder>,
+    IHeaderResultBuilder<TBuilder>,
+    IExtensionResultBuilder<TBuilder>,
     IErrorResultBuilder<TBuilder>,
-    IDetailResultBuilder<TBuilder>,
-    ITitleResultBuilder<TBuilder>,
-    IMergeResultBuilder<TBuilder>,
     IResultBuilder
     where TBuilder : class, IFailureResultBuilder<TBuilder>;
 
@@ -57,31 +41,34 @@ public interface IFailureResultBuilder<out TBuilder> :
 /// <typeparam name="TBuilder">The type of the builder.</typeparam>
 /// <typeparam name="TValue">The type of the value.</typeparam>  
 public interface IFailureResultBuilder<out TBuilder, TValue> :
-    _IBuilderResult<TBuilder>,
+    IResultPropertiesBuilder<TBuilder>,
+    IHeaderResultBuilder<TBuilder>,
+    IExtensionResultBuilder<TBuilder>,
     IErrorResultBuilder<TBuilder>,
-    IDetailResultBuilder<TBuilder>,
-    ITitleResultBuilder<TBuilder>,
-    IMergeResultBuilder<TBuilder>,
     IResultBuilder<TValue>
     where TBuilder : class, IFailureResultBuilder<TBuilder, TValue>;
 
 /// <summary>
-/// Interface for building a success result result.
+/// Interface for building a success result.
 /// </summary>
 /// <typeparam name="TBuilder">The type of the builder.</typeparam>
 public interface ISuccessResultBuilder<out TBuilder> :
-    _IBuilderResult<TBuilder>,
+    IResultPropertiesBuilder<TBuilder>,
+    IHeaderResultBuilder<TBuilder>,
+    IExtensionResultBuilder<TBuilder>,
     IObjectResultBuilder<TBuilder>,
     IResultBuilder
     where TBuilder : class, ISuccessResultBuilder<TBuilder>;
 
 /// <summary>
-/// Interface for building a success result result with a specific value type.
+/// Interface for building a success result with a specific value type.
 /// </summary>
 /// <typeparam name="TBuilder">The type of the builder.</typeparam>
 /// <typeparam name="TValue">The type of the value.</typeparam>
 public interface ISuccessResultBuilder<out TBuilder, TValue> :
-    _IBuilderResult<TBuilder>,
+    IResultPropertiesBuilder<TBuilder>,
+    IHeaderResultBuilder<TBuilder>,
+    IExtensionResultBuilder<TBuilder>,
     IValueResultBuilder<TBuilder, TValue>,
     IResultBuilder<TValue>
     where TBuilder : class, ISuccessResultBuilder<TBuilder, TValue>;
@@ -115,25 +102,11 @@ public interface IResultBuilder<TValue> : IResultBuilder
 }
 
 /// <summary>
-/// Represents a method for merging the current result with another result.
+/// Consolidates result metadata, lifecycle, and merge operations for result builders.
+/// Combines status code, title, detail, location, merge, and clear operations.
 /// </summary>
 /// <typeparam name="TBuilder">The type of the builder.</typeparam>
-public interface IMergeResultBuilder<out TBuilder>
-    where TBuilder : class, IResultBuilder
-{
-    /// <summary>
-    /// Merges the current result with the specified result.
-    /// </summary>
-    /// <param name="result">The result to merge with.</param>
-    /// <returns>The current builder instance.</returns>
-    TBuilder Merge(Result result);
-}
-
-/// <summary>
-/// Represents a method for setting the status code of an result being built.
-/// </summary>
-/// <typeparam name="TBuilder">The type of the builder.</typeparam>
-public interface IStatusResultBuilder<out TBuilder>
+public interface IResultPropertiesBuilder<out TBuilder>
     where TBuilder : class, IResultBuilder
 {
     /// <summary>
@@ -142,15 +115,7 @@ public interface IStatusResultBuilder<out TBuilder>
     /// <param name="statusCode">The status code of the result.</param>
     /// <returns>The current builder instance.</returns>
     TBuilder WithStatusCode(HttpStatusCode statusCode);
-}
 
-/// <summary>
-/// Represents a method for setting the title of an result being built.
-/// </summary>
-/// <typeparam name="TBuilder">The type of the builder.</typeparam>
-public interface ITitleResultBuilder<out TBuilder>
-    where TBuilder : class, IResultBuilder
-{
     /// <summary>
     /// Sets the title of the result being built.
     /// </summary>
@@ -158,15 +123,7 @@ public interface ITitleResultBuilder<out TBuilder>
     /// <returns>The current builder instance.</returns>
     /// <exception cref="ArgumentNullException">Thrown when the provided title is null.</exception>
     TBuilder WithTitle(string title);
-}
 
-/// <summary>
-/// Represents a method for setting the detail of an result being built.
-/// </summary>
-/// <typeparam name="TBuilder">The type of the builder.</typeparam>
-public interface IDetailResultBuilder<out TBuilder>
-   where TBuilder : class, IResultBuilder
-{
     /// <summary>
     /// Sets the detail of the result being built.
     /// </summary>
@@ -174,15 +131,7 @@ public interface IDetailResultBuilder<out TBuilder>
     /// <returns>The current builder instance.</returns>
     /// <exception cref="ArgumentNullException">Thrown when the provided detail is null.</exception>
     TBuilder WithDetail(string detail);
-}
 
-/// <summary>
-/// Represents a method for setting the location of an result being built.
-/// </summary>
-/// <typeparam name="TBuilder">The type of the builder.</typeparam>
-public interface ILocationResultBuilder<out TBuilder>
-    where TBuilder : class, IResultBuilder
-{
     /// <summary>
     /// Sets the location of the result using a URI.
     /// </summary>
@@ -198,6 +147,37 @@ public interface ILocationResultBuilder<out TBuilder>
     /// <returns>The current builder instance.</returns>
     /// <exception cref="ArgumentNullException">Thrown when the provided location is null.</exception>
     TBuilder WithLocation(string location);
+
+    /// <summary>
+    /// Merges the current result with the specified result.
+    /// </summary>
+    /// <param name="result">The result to merge with.</param>
+    /// <returns>The current builder instance.</returns>
+    TBuilder Merge(Result result);
+
+    /// <summary>
+    /// Clears all errors from the result being built.
+    /// </summary>
+    /// <returns>The current builder instance.</returns>
+    TBuilder ClearErrors();
+
+    /// <summary>
+    /// Clears all headers from the result being built.
+    /// </summary>
+    /// <returns>The current builder instance.</returns>
+    TBuilder ClearHeaders();
+
+    /// <summary>
+    /// Clears all extensions from the result being built.
+    /// </summary>
+    /// <returns>The current builder instance.</returns>
+    TBuilder ClearExtensions();
+
+    /// <summary>
+    /// Clears all elements from the result being built.
+    /// </summary>
+    /// <returns>The current builder instance.</returns>
+    TBuilder ClearAll();
 }
 
 /// <summary>

@@ -61,6 +61,12 @@ public record Result : ResultBase
 public record Result<TValue> : ResultBase
 {
     /// <summary>
+    /// Typed backing store for <see cref="Value"/>.
+    /// Avoids boxing value types during normal get/set operations.
+    /// </summary>
+    private protected TValue? _typedValue;
+
+    /// <summary>
     /// Initializes a new instance of the Result class for use by derived types and JSON deserialization.
     /// </summary>
     /// <remarks>This constructor is intended for use by subclasses and JSON serialization frameworks. It
@@ -74,13 +80,25 @@ public record Result<TValue> : ResultBase
     public sealed override bool IsGeneric => true;
 
     /// <summary>
+    /// Provides polymorphic access to the stored value for non-generic consumers.
+    /// Delegates to <see cref="_typedValue"/>, boxing only when accessed through this property.
+    /// </summary>
+    [MaybeNull, AllowNull]
+    [JsonIgnore]
+    protected internal sealed override object? InternalValue
+    {
+        get => _typedValue;
+        init => _typedValue = value is TValue tv ? tv : default;
+    }
+
+    /// <summary>
     /// Gets or sets the value of the result.
     /// </summary>
     [MaybeNull, AllowNull]
     public TValue Value
     {
-        get => InternalValue is TValue result ? result : default;
-        protected internal init => InternalValue = value;
+        get => _typedValue;
+        protected internal init => _typedValue = value;
     }
 
     /// <summary>
