@@ -25,23 +25,17 @@ namespace System.Rests.Abstractions;
 /// </summary>
 public interface IRestRequest
 {
-    /// <summary>
-    /// Represents the date and time when the object was created, 
-    /// set to the current UTC time at initialization.
-    /// </summary>
-    public DateTime CreatedAt => DateTime.UtcNow;
+	/// <summary>
+	/// Returns the name of the type of the current instance as a string.
+	/// This is typically the class name.
+	/// </summary>
+	string Name => GetType().Name;
 
-    /// <summary>
-    /// Returns the name of the type of the current instance as a string.
-    /// This is typically the class name.
-    /// </summary>
-    public string Name => GetType().Name;
-
-    /// <summary>
-    /// Returns the default value of the ResultType, which can be null. 
-    /// It indicates the type of the result.
-    /// </summary>
-    public Type? ResultType => default;
+	/// <summary>
+	/// Returns the default value of the ResultType, which can be null. 
+	/// It indicates the type of the result.
+	/// </summary>
+	Type? ResultType => default;
 }
 
 /// <summary>
@@ -51,14 +45,14 @@ public interface IRestRequest
 [SuppressMessage("Naming", "CA1711:Identifiers should not have incorrect suffix", Justification = "<Pending>")]
 public interface IRestRequestResult : IRestRequest
 {
-    /// <summary>
-    /// Gets the type of the result produced by the REST request.
-    /// </summary>
-    new Type ResultType { get; }
+	/// <summary>
+	/// Gets the type of the result produced by the REST request.
+	/// </summary>
+	new Type ResultType { get; }
 
-    [NotNull]
-    [EditorBrowsable(EditorBrowsableState.Never)]
-    Type? IRestRequest.ResultType => ResultType;
+	[NotNull]
+	[EditorBrowsable(EditorBrowsableState.Never)]
+	Type? IRestRequest.ResultType => ResultType;
 }
 
 /// <summary>
@@ -66,16 +60,16 @@ public interface IRestRequestResult : IRestRequest
 /// </summary>
 /// <typeparam name="TResult">The type of the result returned by the REST request. Must be a non-nullable type.</typeparam>
 public interface IRestRequestResult<TResult> : IRestRequestResult
-    where TResult : notnull
+	where TResult : notnull
 {
-    /// <summary>
-    /// Returns the default value of the ResultType, which can be null. 
-    /// It indicates the type of the result.
-    /// </summary>
-    public new Type ResultType => typeof(TResult);
+	/// <summary>
+	/// Returns the default value of the ResultType, which can be null. 
+	/// It indicates the type of the result.
+	/// </summary>
+	public new Type ResultType => typeof(TResult);
 
-    [EditorBrowsable(EditorBrowsableState.Never)]
-    Type IRestRequestResult.ResultType => ResultType;
+	[EditorBrowsable(EditorBrowsableState.Never)]
+	Type IRestRequestResult.ResultType => ResultType;
 }
 
 /// <summary>
@@ -86,14 +80,14 @@ public interface IRestRequestResult<TResult> : IRestRequestResult
 [SuppressMessage("Naming", "CA1711:Identifiers should not have incorrect suffix", Justification = "<Pending>")]
 public interface IRestRequestStream : IRestRequest
 {
-    /// <summary>
-    /// Gets the type of the result produced by the REST request.
-    /// </summary>
-    new Type ResultType { get; }
+	/// <summary>
+	/// Gets the type of the result produced by the REST request.
+	/// </summary>
+	new Type ResultType { get; }
 
-    [NotNull]
-    [EditorBrowsable(EditorBrowsableState.Never)]
-    Type? IRestRequest.ResultType => ResultType;
+	[NotNull]
+	[EditorBrowsable(EditorBrowsableState.Never)]
+	Type? IRestRequest.ResultType => ResultType;
 }
 
 /// <summary>
@@ -102,16 +96,16 @@ public interface IRestRequestStream : IRestRequest
 /// <typeparam name="TResult">The type of the result produced by the request stream. Must be a non-nullable type.</typeparam>
 [SuppressMessage("Naming", "CA1711:Identifiers should not have incorrect suffix", Justification = "<Pending>")]
 public interface IRestRequestStream<TResult> : IRestRequestStream
-    where TResult : notnull
+	where TResult : notnull
 {
-    /// <summary>
-    /// Returns the default value of the ResultType, which can be null. 
-    /// It indicates the type of the result.
-    /// </summary>
-    public new Type ResultType => typeof(TResult);
+	/// <summary>
+	/// Returns the default value of the ResultType, which can be null. 
+	/// It indicates the type of the result.
+	/// </summary>
+	public new Type ResultType => typeof(TResult);
 
-    [EditorBrowsable(EditorBrowsableState.Never)]
-    Type IRestRequestStream.ResultType => ResultType;
+	[EditorBrowsable(EditorBrowsableState.Never)]
+	Type IRestRequestStream.ResultType => ResultType;
 }
 
 
@@ -123,14 +117,14 @@ public interface IRestRequestStream<TResult> : IRestRequestStream
 [SuppressMessage("Naming", "CA1711:Identifiers should not have incorrect suffix", Justification = "<Pending>")]
 public interface IRestRequestStreamPaged : IRestRequest
 {
-    /// <summary>
-    /// Gets the type of the result produced by the REST request.
-    /// </summary>
-    new Type ResultType { get; }
+	/// <summary>
+	/// Gets the type of the result produced by the REST request.
+	/// </summary>
+	new Type ResultType { get; }
 
-    [NotNull]
-    [EditorBrowsable(EditorBrowsableState.Never)]
-    Type? IRestRequest.ResultType => ResultType;
+	[NotNull]
+	[EditorBrowsable(EditorBrowsableState.Never)]
+	Type? IRestRequest.ResultType => ResultType;
 }
 
 /// <summary>
@@ -138,16 +132,16 @@ public interface IRestRequestStreamPaged : IRestRequest
 /// </summary>
 /// <typeparam name="TResult">The type of the result returned by the request. Must not be null.</typeparam>
 public interface IRestRequestStreamPaged<TResult> : IRestRequestStreamPaged
-    where TResult : notnull
+	where TResult : notnull
 {
-    /// <summary>
-    /// Returns the default value of the ResultType, which can be null. 
-    /// It indicates the type of the result.
-    /// </summary>
-    public new Type? ResultType => typeof(TResult);
+	/// <summary>
+	/// Returns the default value of the ResultType, which can be null. 
+	/// It indicates the type of the result.
+	/// </summary>
+	public new Type? ResultType => typeof(TResult);
 
-    [EditorBrowsable(EditorBrowsableState.Never)]
-    Type? IRestRequest.ResultType => ResultType;
+	[EditorBrowsable(EditorBrowsableState.Never)]
+	Type? IRestRequest.ResultType => ResultType;
 }
 
 /// <summary>
@@ -159,17 +153,17 @@ public interface IRestRequestStreamPaged<TResult> : IRestRequestStreamPaged
 /// </remarks>
 public interface IRestStreamDeserializer
 {
-    /// <summary>
-    /// Deserializes the HTTP content to an async enumerable stream.
-    /// </summary>
-    /// <param name="content">The HTTP content to deserialize.</param>
-    /// <param name="options">The JSON serializer options to use.</param>
-    /// <param name="cancellationToken">A cancellation token to observe.</param>
-    /// <returns>An async enumerable of the deserialized items.</returns>
-    object DeserializeAsAsyncEnumerable(
-        HttpContent content,
-        Text.Json.JsonSerializerOptions options,
-        CancellationToken cancellationToken);
+	/// <summary>
+	/// Deserializes the HTTP content to an async enumerable stream.
+	/// </summary>
+	/// <param name="content">The HTTP content to deserialize.</param>
+	/// <param name="options">The JSON serializer options to use.</param>
+	/// <param name="cancellationToken">A cancellation token to observe.</param>
+	/// <returns>An async enumerable of the deserialized items.</returns>
+	object DeserializeAsAsyncEnumerable(
+		HttpContent content,
+		Text.Json.JsonSerializerOptions options,
+		CancellationToken cancellationToken);
 }
 
 /// <summary>
@@ -181,15 +175,15 @@ public interface IRestStreamDeserializer
 /// </remarks>
 public interface IRestStreamPagedDeserializer
 {
-    /// <summary>
-    /// Deserializes the HTTP content to an async paged enumerable stream.
-    /// </summary>
-    /// <param name="content">The HTTP content to deserialize.</param>
-    /// <param name="options">The JSON serializer options to use.</param>
-    /// <param name="cancellationToken">A cancellation token to observe.</param>
-    /// <returns>An async paged enumerable of the deserialized items.</returns>
-    object DeserializeAsAsyncPagedEnumerable(
-        HttpContent content,
-        Text.Json.JsonSerializerOptions options,
-        CancellationToken cancellationToken);
+	/// <summary>
+	/// Deserializes the HTTP content to an async paged enumerable stream.
+	/// </summary>
+	/// <param name="content">The HTTP content to deserialize.</param>
+	/// <param name="options">The JSON serializer options to use.</param>
+	/// <param name="cancellationToken">A cancellation token to observe.</param>
+	/// <returns>An async paged enumerable of the deserialized items.</returns>
+	object DeserializeAsAsyncPagedEnumerable(
+		HttpContent content,
+		Text.Json.JsonSerializerOptions options,
+		CancellationToken cancellationToken);
 }

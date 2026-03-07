@@ -43,7 +43,7 @@ public static class IResultExtensions
     public static IServiceCollection AddXControllerResultMvcOptions(this IServiceCollection services)
     {
         ArgumentNullException.ThrowIfNull(services);
-        services.AddSingleton<IConfigureOptions<MvcOptions>, ControllerResulMvcOptions>();
+        services.AddSingleton<IConfigureOptions<MvcOptions>, ControllerResultMvcOptions>();
 
         return services;
     }

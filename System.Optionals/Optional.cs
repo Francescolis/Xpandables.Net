@@ -32,68 +32,68 @@ namespace System.Optionals;
 [SuppressMessage("Naming", "CA1716:Identifiers should not match keywords", Justification = "<Pending>")]
 public readonly partial record struct Optional<T> : IEnumerable<T>
 {
-    private readonly object? _value = null;
-    [MemberNotNullWhen(true, nameof(Value), nameof(_value))]
-    private readonly bool HasValue => _value is not null;
-    internal Optional(object? value) => _value = value;
+	private readonly T? _value = default;
+	[MemberNotNullWhen(true, nameof(Value), nameof(_value))]
+	private readonly bool HasValue => _value is not null;
+	internal Optional(T? value) => _value = value;
 
-    /// <summary>
-    /// Gets the value of the optional if it is present.
-    /// </summary>
-    /// <exception cref="InvalidOperationException">Thrown when the value is 
-    /// not present.</exception>
-    public readonly T Value =>
-        _value is T value
-            ? value
-            : throw new InvalidOperationException("Value is not present.");
+	/// <summary>
+	/// Gets the value of the optional if it is present.
+	/// </summary>
+	/// <exception cref="InvalidOperationException">Thrown when the value is 
+	/// not present.</exception>
+	public readonly T Value =>
+		_value is T value
+			? value
+			: throw new InvalidOperationException("Value is not present.");
 
-    /// <summary>
-    /// Returns the stored value if it is present; otherwise, returns the specified default value.
-    /// </summary>
-    /// <param name="defaultValue">The value to return if no value is currently stored.</param>
-    /// <returns>The stored value if present; otherwise, the value of <paramref name="defaultValue"/>.</returns>
-    public readonly T GetValueOrDefault(T defaultValue) =>
-        _value is T value ? value : defaultValue;
+	/// <summary>
+	/// Returns the stored value if it is present; otherwise, returns the specified default value.
+	/// </summary>
+	/// <param name="defaultValue">The value to return if no value is currently stored.</param>
+	/// <returns>The stored value if present; otherwise, the value of <paramref name="defaultValue"/>.</returns>
+	public readonly T GetValueOrDefault(T defaultValue) =>
+		_value is T value ? value : defaultValue;
 
-    /// <summary>
-    /// Returns the stored value if it is present; otherwise, returns a value produced by the specified default value
-    /// factory.
-    /// </summary>
-    /// <param name="defaultValueFactory">A function that provides a default value to return if no value is present. Cannot be null.</param>
-    /// <returns>The stored value if present; otherwise, the value returned by <paramref name="defaultValueFactory"/>.</returns>
-    public readonly T GetValueOrDefault(Func<T> defaultValueFactory)
-    {
-        ArgumentNullException.ThrowIfNull(defaultValueFactory);
-        return _value is T value ? value : defaultValueFactory();
-    }
+	/// <summary>
+	/// Returns the stored value if it is present; otherwise, returns a value produced by the specified default value
+	/// factory.
+	/// </summary>
+	/// <param name="defaultValueFactory">A function that provides a default value to return if no value is present. Cannot be null.</param>
+	/// <returns>The stored value if present; otherwise, the value returned by <paramref name="defaultValueFactory"/>.</returns>
+	public readonly T GetValueOrDefault(Func<T> defaultValueFactory)
+	{
+		ArgumentNullException.ThrowIfNull(defaultValueFactory);
+		return _value is T value ? value : defaultValueFactory();
+	}
 
-    /// <summary>
-    /// Gets a value indicating whether the optional is empty.
-    /// </summary>
-    [MemberNotNullWhen(false, nameof(Value), nameof(_value))]
-    public readonly bool IsEmpty => !HasValue;
+	/// <summary>
+	/// Gets a value indicating whether the optional is empty.
+	/// </summary>
+	[MemberNotNullWhen(false, nameof(Value), nameof(_value))]
+	public readonly bool IsEmpty => !HasValue;
 
-    /// <summary>
-    /// Gets a value indicating whether the optional is not empty.
-    /// </summary>
-    [MemberNotNullWhen(true, nameof(Value), nameof(_value))]
-    public readonly bool IsNotEmpty => HasValue;
+	/// <summary>
+	/// Gets a value indicating whether the optional is not empty.
+	/// </summary>
+	[MemberNotNullWhen(true, nameof(Value), nameof(_value))]
+	public readonly bool IsNotEmpty => HasValue;
 
-    /// <inheritdoc/>
-    public readonly IEnumerator<T> GetEnumerator() =>
-        HasValue
-            ? new List<T> { Value }.GetEnumerator()
-            : Enumerable.Empty<T>().GetEnumerator();
+	/// <inheritdoc/>
+	public readonly IEnumerator<T> GetEnumerator() =>
+		HasValue
+			? new List<T> { Value }.GetEnumerator()
+			: Enumerable.Empty<T>().GetEnumerator();
 
-    readonly IEnumerator IEnumerable.GetEnumerator() => GetEnumerator();
+	readonly IEnumerator IEnumerable.GetEnumerator() => GetEnumerator();
 
-    private string GetDebuggerDisplay()
-    {
-        if (IsEmpty)
-        {
-            return "Empty";
-        }
+	private string GetDebuggerDisplay()
+	{
+		if (IsEmpty)
+		{
+			return "Empty";
+		}
 
-        return Value?.ToString() ?? string.Empty;
-    }
+		return Value?.ToString() ?? string.Empty;
+	}
 }

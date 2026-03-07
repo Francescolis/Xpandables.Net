@@ -32,97 +32,97 @@ namespace System.Results;
 [EditorBrowsable(EditorBrowsableState.Never)]
 public abstract record ResultBase
 {
-    /// <summary>
-    /// Initializes a new instance of the ResultBase class for use by derived types and JSON deserialization.
-    /// </summary>
-    [JsonConstructor]
-    protected internal ResultBase() { }
+	/// <summary>
+	/// Initializes a new instance of the ResultBase class for use by derived types and JSON deserialization.
+	/// </summary>
+	[JsonConstructor]
+	protected internal ResultBase() { }
 
-    /// <summary>
-    /// Represents the HTTP status code associated with the operation result.
-    /// </summary>
-    public required HttpStatusCode StatusCode { get; init; } = HttpStatusCode.OK;
+	/// <summary>
+	/// Represents the HTTP status code associated with the operation result.
+	/// </summary>
+	public HttpStatusCode StatusCode { get; init; } = HttpStatusCode.OK;
 
-    /// <summary>
-    /// Represents a short, human-readable summary of the problem type.
-    /// </summary>
-    public string? Title { get; protected internal init; }
+	/// <summary>
+	/// Represents a short, human-readable summary of the problem type.
+	/// </summary>
+	public string? Title { get; protected internal init; }
 
-    /// <summary>
-    /// Represents a detailed, human-readable explanation specific to this occurrence of the problem.
-    /// </summary>
-    public string? Detail { get; protected internal init; }
+	/// <summary>
+	/// Represents a detailed, human-readable explanation specific to this occurrence of the problem.
+	/// </summary>
+	public string? Detail { get; protected internal init; }
 
-    /// <summary>
-    /// Represents a URI reference that identifies a resource relevant to the operation result.
-    /// </summary>
-    public Uri? Location { get; protected internal init; }
+	/// <summary>
+	/// Represents a URI reference that identifies a resource relevant to the operation result.
+	/// </summary>
+	public Uri? Location { get; protected internal init; }
 
-    /// <summary>
-    /// Represents the internal value associated with the operation result, which can be of any type.
-    /// </summary>
-    /// <remarks>This property is designed to hold the result of the operation internally.
-    /// Derived types should expose a public <c>Value</c> property with the appropriate type if needed.</remarks>
-    [MaybeNull, AllowNull]
-    [JsonIgnore]
-    protected internal object InternalValue { get; init; }
+	/// <summary>
+	/// Represents the internal value associated with the operation result, which can be of any type.
+	/// </summary>
+	/// <remarks>This property is designed to hold the result of the operation internally.
+	/// Derived types should expose a public <c>Value</c> property with the appropriate type if needed.</remarks>
+	[MaybeNull, AllowNull]
+	[JsonIgnore]
+	protected internal object InternalValue { get; init; }
 
-    /// <summary>
-    /// Represents a collection of errors associated with the operation result.
-    /// </summary>
-    public ElementCollection Errors { get; protected internal init; } = [];
+	/// <summary>
+	/// Represents a collection of errors associated with the operation result.
+	/// </summary>
+	public ElementCollection Errors { get; protected internal init; } = [];
 
-    /// <summary>
-    /// Represents a collection of headers associated with the operation result.
-    /// The headers can include additional metadata relevant to the operation context.
-    /// </summary>
-    public ElementCollection Headers { get; init; } = [];
+	/// <summary>
+	/// Represents a collection of headers associated with the operation result.
+	/// The headers can include additional metadata relevant to the operation context.
+	/// </summary>
+	public ElementCollection Headers { get; init; } = [];
 
-    /// <summary>
-    /// Represents a collection of extensions associated with the operation result.
-    /// </summary>
-    public ElementCollection Extensions { get; init; } = [];
+	/// <summary>
+	/// Represents a collection of extensions associated with the operation result.
+	/// </summary>
+	public ElementCollection Extensions { get; init; } = [];
 
-    /// <summary>
-    /// Represents an exception associated with the operation result, if any.
-    /// </summary>
-    [JsonIgnore]
-    public Exception? Exception { get; protected internal init; }
+	/// <summary>
+	/// Represents an exception associated with the operation result, if any.
+	/// </summary>
+	[JsonIgnore]
+	public Exception? Exception { get; protected internal init; }
 
-    /// <summary>
-    /// Indicates whether the operation result is generic.
-    /// </summary>
-    public abstract bool IsGeneric { get; }
+	/// <summary>
+	/// Indicates whether the operation result is generic.
+	/// </summary>
+	public abstract bool IsGeneric { get; }
 
-    /// <summary>
-    /// Indicates whether the HTTP status code of the operation result signifies a successful outcome.
-    /// </summary>
-    public virtual bool IsSuccess => StatusCode.IsSuccess;
+	/// <summary>
+	/// Indicates whether the HTTP status code of the operation result signifies a successful outcome.
+	/// </summary>
+	public virtual bool IsSuccess => StatusCode.IsSuccess;
 
-    /// <summary>
-    /// Gets a value indicating whether the result represents a failure state.
-    /// </summary>
-    public virtual bool IsFailure => !IsSuccess;
+	/// <summary>
+	/// Gets a value indicating whether the result represents a failure state.
+	/// </summary>
+	public virtual bool IsFailure => !IsSuccess;
 
-    /// <summary>
-    /// Ensures that the HTTP status code of the operation result indicates success.
-    /// </summary>
-    /// <exception cref="ResultException">Thrown if the operation result indicates a failure.</exception>
-    public void EnsureSuccess()
-    {
-        if (IsFailure)
-        {
-            throw new ResultException((Result)this);
-        }
-    }
+	/// <summary>
+	/// Ensures that the HTTP status code of the operation result indicates success.
+	/// </summary>
+	/// <exception cref="ResultException">Thrown if the operation result indicates a failure.</exception>
+	public void EnsureSuccess()
+	{
+		if (IsFailure)
+		{
+			throw new ResultException((Result)this);
+		}
+	}
 
-    /// <summary>
-    /// Returns a string that provides a concise, human-readable representation of the response for debugging purposes.
-    /// </summary>
-    /// <remarks>This method is intended to assist with debugging by summarizing key response details in a
-    /// single string. The format includes the numeric and textual status code, a success or failure label, and the
-    /// title if it is set.</remarks>
-    /// <returns>A string containing the status code, status description, success or failure indication, and the title if
-    /// available.</returns>
-    protected string DebuggerDisplay => $"{(int)StatusCode} {StatusCode} - {(IsSuccess ? "Success" : "Failure")}{(Title is not null ? $": {Title}" : string.Empty)}";
+	/// <summary>
+	/// Returns a string that provides a concise, human-readable representation of the response for debugging purposes.
+	/// </summary>
+	/// <remarks>This method is intended to assist with debugging by summarizing key response details in a
+	/// single string. The format includes the numeric and textual status code, a success or failure label, and the
+	/// title if it is set.</remarks>
+	/// <returns>A string containing the status code, status description, success or failure indication, and the title if
+	/// available.</returns>
+	protected string DebuggerDisplay => $"{(int)StatusCode} {StatusCode} - {(IsSuccess ? "Success" : "Failure")}{(Title is not null ? $": {Title}" : string.Empty)}";
 }

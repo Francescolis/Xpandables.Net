@@ -27,18 +27,18 @@ namespace Microsoft.AspNetCore.Mvc;
 /// endpoint routing, enforces respect for browser Accept headers, and ensures that HTTP 406 Not Acceptable responses
 /// are returned when appropriate. Additionally, it adds filters for controller result validation and processing. This
 /// configuration is intended to be registered with the application's dependency injection system.</remarks>
-public sealed class ControllerResulMvcOptions : IConfigureOptions<MvcOptions>
+public sealed class ControllerResultMvcOptions : IConfigureOptions<MvcOptions>
 {
-    /// <inheritdoc/>
-    public void Configure(MvcOptions options)
-    {
-        ArgumentNullException.ThrowIfNull(options);
+	/// <inheritdoc/>
+	public void Configure(MvcOptions options)
+	{
+		ArgumentNullException.ThrowIfNull(options);
 
-        options.EnableEndpointRouting = false;
-        options.RespectBrowserAcceptHeader = true;
-        options.ReturnHttpNotAcceptable = true;
+		options.EnableEndpointRouting = false;
+		options.RespectBrowserAcceptHeader = true;
+		options.ReturnHttpNotAcceptable = true;
 
-        _ = options.Filters.Add<ControllerResultValidationFilterAttribute>();
-        _ = options.Filters.Add<ControllerResultFilter>(int.MinValue);
-    }
+		_ = options.Filters.Add<ControllerResultValidationFilterAttribute>();
+		_ = options.Filters.Add<ControllerResultFilter>(int.MinValue);
+	}
 }

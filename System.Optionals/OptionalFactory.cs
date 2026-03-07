@@ -26,18 +26,18 @@ namespace System.Optionals;
 [SuppressMessage("Naming", "CA1716:Identifiers should not match keywords", Justification = "<Pending>")]
 public readonly record struct Optional
 {
-    /// <summary>
-    /// Returns an empty <see cref="Optional{T}"/>.
-    /// </summary>
-    /// <typeparam name="T">The type of the value.</typeparam>
-    /// <returns>An empty <see cref="Optional{T}"/>.</returns>
-    public static Optional<T> Empty<T>() => new(null);
+	/// <summary>
+	/// Returns an empty <see cref="Optional{T}"/>.
+	/// </summary>
+	/// <typeparam name="T">The type of the value.</typeparam>
+	/// <returns>An empty <see cref="Optional{T}"/>.</returns>
+	public static Optional<T> Empty<T>() => new(default);
 
-    /// <summary>
-    /// Returns an <see cref="Optional{T}"/> with a value.
-    /// </summary>
-    /// <typeparam name="T">The type of the value.</typeparam>
-    /// <param name="value">The value to wrap in an <see cref="Optional{T}"/>.</param>
-    /// <returns>An <see cref="Optional{T}"/> with the specified value.</returns>
-    public static Optional<T> Some<T>(T value) => new(value);
+	/// <summary>
+	/// Returns an <see cref="Optional{T}"/> with a value.
+	/// </summary>
+	/// <typeparam name="T">The type of the value.</typeparam>
+	/// <param name="value">The value to wrap in an <see cref="Optional{T}"/>.</param>
+	/// <returns>An <see cref="Optional{T}"/> with the specified value.</returns>
+	public static Optional<T> Some<T>(T value) => new(value);
 }

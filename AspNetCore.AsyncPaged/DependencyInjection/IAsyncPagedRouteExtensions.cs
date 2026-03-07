@@ -59,6 +59,6 @@ public static class IAsyncPagedRouteExtensions
         /// compatible with the builder's endpoint configuration.</remarks>
         /// <returns>The builder instance with the asynchronous paged filter applied.</returns>
         public TBuilder WithXAsyncPagedFilterSupport() =>
-            builder.AddEndpointFilter<TBuilder, AsyncPagedEnpointFilter>();
+            builder.AddEndpointFilter<TBuilder, AsyncPagedEndpointFilter>();
     }
 }

@@ -25,85 +25,85 @@ namespace System;
 [Serializable]
 public abstract class Disposable : IDisposable
 {
-    /// <summary>
-    /// Gets or sets a value indicating whether this instance is disposed.
-    /// </summary>
-    /// <value>
-    ///  <c>true</c> if this instance is disposed; otherwise, <c>false</c>.
-    /// </value>
-    /// <remarks>Default initialization for 
-    /// a <see cref="bool"/> is <c>false</c>.</remarks>
-    protected bool IsDisposed { get; set; }
+	/// <summary>
+	/// Gets or sets a value indicating whether this instance is disposed.
+	/// </summary>
+	/// <value>
+	///  <c>true</c> if this instance is disposed; otherwise, <c>false</c>.
+	/// </value>
+	/// <remarks>Default initialization for 
+	/// a <see cref="bool"/> is <c>false</c>.</remarks>
+	protected bool IsDisposed { get; private set; }
 
-    /// <summary>
-    /// Public Implementation of Dispose according to .NET Framework 
-    /// Design Guidelines
-    /// callable by consumers.
-    /// Do not make this method virtual.
-    /// A derived class should not be able to override this method.
-    /// </summary>
-    /// <remarks>
-    /// <para>
-    /// This object will be cleaned up by the Dispose method.
-    /// Therefore, you should call GC.SuppressFinalize to take 
-    /// this object off the finalization queue
-    /// and prevent finalization code for this object 
-    /// from executing a second time.
-    /// </para>
-    /// <para>Always use SuppressFinalize() in case 
-    /// a subclass of this type implements a finalizer.</para>
-    /// </remarks>
-    public void Dispose()
-    {
-        Dispose(true);
-        GC.SuppressFinalize(this);
-    }
+	/// <summary>
+	/// Public Implementation of Dispose according to .NET Framework 
+	/// Design Guidelines
+	/// callable by consumers.
+	/// Do not make this method virtual.
+	/// A derived class should not be able to override this method.
+	/// </summary>
+	/// <remarks>
+	/// <para>
+	/// This object will be cleaned up by the Dispose method.
+	/// Therefore, you should call GC.SuppressFinalize to take 
+	/// this object off the finalization queue
+	/// and prevent finalization code for this object 
+	/// from executing a second time.
+	/// </para>
+	/// <para>Always use SuppressFinalize() in case 
+	/// a subclass of this type implements a finalizer.</para>
+	/// </remarks>
+	public void Dispose()
+	{
+		Dispose(true);
+		GC.SuppressFinalize(this);
+	}
 
-    /// <summary>
-    /// Protected implementation of Dispose pattern.
-    /// When overridden in derived classes, this method get 
-    /// called when the instance will be disposed.
-    /// </summary>
-    /// <param name="disposing"><see langword="true"/> to 
-    /// release both managed and unmanaged resources;
-    /// <see langword="false"/> to release only unmanaged resources.
-    /// </param>
-    /// <remarks>
-    /// <list type="bulleted">
-    /// <see cref="Dispose(bool)"/> executes in two distinct scenarios.
-    /// <item>If <paramref name="disposing"/> equals <c>true</c>, 
-    /// the method has been called directly
-    /// or indirectly by a user's code. Managed and unmanaged 
-    /// resources can be disposed.</item>
-    /// <item>If <paramref name="disposing"/> equals <c>false</c>, 
-    /// the method has been called
-    /// by the runtime from inside the finalizer and you should 
-    /// not reference other objects.
-    /// Only unmanaged resources can be disposed.</item></list>
-    /// </remarks>
-    protected virtual void Dispose(bool disposing)
-    {
-        if (IsDisposed)
-        {
-            return;
-        }
+	/// <summary>
+	/// Protected implementation of Dispose pattern.
+	/// When overridden in derived classes, this method get 
+	/// called when the instance will be disposed.
+	/// </summary>
+	/// <param name="disposing"><see langword="true"/> to 
+	/// release both managed and unmanaged resources;
+	/// <see langword="false"/> to release only unmanaged resources.
+	/// </param>
+	/// <remarks>
+	/// <list type="bulleted">
+	/// <see cref="Dispose(bool)"/> executes in two distinct scenarios.
+	/// <item>If <paramref name="disposing"/> equals <c>true</c>, 
+	/// the method has been called directly
+	/// or indirectly by a user's code. Managed and unmanaged 
+	/// resources can be disposed.</item>
+	/// <item>If <paramref name="disposing"/> equals <c>false</c>, 
+	/// the method has been called
+	/// by the runtime from inside the finalizer and you should 
+	/// not reference other objects.
+	/// Only unmanaged resources can be disposed.</item></list>
+	/// </remarks>
+	protected virtual void Dispose(bool disposing)
+	{
+		if (IsDisposed)
+		{
+			return;
+		}
 
-        if (disposing)
-        {
-            // Release all managed resources here
-            // Need to unregister/detach yourself from the events.
-            // Always make sure the object is not null first before trying to
-            // unregister/detach them!
-            // Failure to unregister can be a BIG source of memory leaks
-        }
+		if (disposing)
+		{
+			// Release all managed resources here
+			// Need to unregister/detach yourself from the events.
+			// Always make sure the object is not null first before trying to
+			// unregister/detach them!
+			// Failure to unregister can be a BIG source of memory leaks
+		}
 
-        // Release all unmanaged resources here and override a finalizer below.
-        // Set large fields to null.
+		// Release all unmanaged resources here and override a finalizer below.
+		// Set large fields to null.
 
-        // Dispose has been called.
-        IsDisposed = true;
+		// Dispose has been called.
+		IsDisposed = true;
 
-        // If it is available, make the call to the
-        // base class's Dispose(boolean) method
-    }
+		// If it is available, make the call to the
+		// base class's Dispose(boolean) method
+	}
 }

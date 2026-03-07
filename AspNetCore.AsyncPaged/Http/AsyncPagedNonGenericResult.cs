@@ -27,7 +27,7 @@ using System.Text.Json;
 /// <remarks>
 /// This type avoids <c>MakeGenericType</c> / <c>Activator.CreateInstance</c> at runtime,
 /// making it safe for AOT / trimming scenarios. It is used internally by
-/// <see cref="AsyncPagedEnpointFilter"/> when the concrete generic type is not
+/// <see cref="AsyncPagedEndpointFilter"/> when the concrete generic type is not
 /// known at compile time.
 /// </remarks>
 internal sealed class AsyncPagedNonGenericResult(IAsyncPagedEnumerable results) : IResult
