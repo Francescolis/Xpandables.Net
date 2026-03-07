@@ -14,6 +14,7 @@
   </ItemGroup>
 
   <ItemGroup>
+    <ProjectReference Include="..\AspNetCore.Net\AspNetCore.Net.csproj" />
     <ProjectReference Include="..\System.AsyncPaged.Json\System.AsyncPaged.Json.csproj" />
   </ItemGroup>
 

@@ -79,7 +79,6 @@ public static class HttpContextExtensions
 		{
 			IOptions<JsonOptions>? optionsProvider = context.RequestServices.GetService<IOptions<JsonOptions>>();
 			JsonSerializerOptions options = optionsProvider?.Value?.SerializerOptions ?? JsonSerializerOptions.Default;
-			//options.MakeReadOnly(true);
 			return options;
 		}
 
@@ -98,7 +97,6 @@ public static class HttpContextExtensions
 		{
 			IOptions<Mvc.JsonOptions>? optionsProvider = context.RequestServices.GetService<IOptions<Mvc.JsonOptions>>();
 			JsonSerializerOptions options = optionsProvider?.Value?.JsonSerializerOptions ?? JsonSerializerOptions.Default;
-			//options.MakeReadOnly(true);
 			return options;
 		}
 

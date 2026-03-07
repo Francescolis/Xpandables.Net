@@ -14,12 +14,12 @@
  * limitations under the License.
  *
 ********************************************************************************/
-namespace Microsoft.AspNetCore.Http;
 
 using System.Diagnostics.CodeAnalysis;
 using System.IO.Pipelines;
 using System.Text.Json;
 
+namespace Microsoft.AspNetCore.Http;
 /// <summary>
 /// A non-generic <see cref="IResult"/> implementation that serializes an
 /// <see cref="IAsyncPagedEnumerable"/> using the non-generic JSON serialization paths.
@@ -32,23 +32,23 @@ using System.Text.Json;
 /// </remarks>
 internal sealed class AsyncPagedNonGenericResult(IAsyncPagedEnumerable results) : IResult
 {
-    private readonly IAsyncPagedEnumerable _results = results ?? throw new ArgumentNullException(nameof(results));
+	private readonly IAsyncPagedEnumerable _results = results ?? throw new ArgumentNullException(nameof(results));
 
-    /// <inheritdoc/>
-    [UnconditionalSuppressMessage("Trimming", "IL2026:Members annotated with 'RequiresUnreferencedCodeAttribute' require dynamic access otherwise can break functionality when trimming application code", Justification = "Non-generic serialization path delegates to annotated methods.")]
-    [UnconditionalSuppressMessage("AOT", "IL3050:Calling members annotated with 'RequiresDynamicCodeAttribute' may break functionality when AOT compiling.", Justification = "Non-generic serialization path delegates to annotated methods.")]
-    public async Task ExecuteAsync(HttpContext httpContext)
-    {
-        ArgumentNullException.ThrowIfNull(httpContext);
+	/// <inheritdoc/>
+	[UnconditionalSuppressMessage("Trimming", "IL2026:Members annotated with 'RequiresUnreferencedCodeAttribute' require dynamic access otherwise can break functionality when trimming application code", Justification = "Non-generic serialization path delegates to annotated methods.")]
+	[UnconditionalSuppressMessage("AOT", "IL3050:Calling members annotated with 'RequiresDynamicCodeAttribute' may break functionality when AOT compiling.", Justification = "Non-generic serialization path delegates to annotated methods.")]
+	public async Task ExecuteAsync(HttpContext httpContext)
+	{
+		ArgumentNullException.ThrowIfNull(httpContext);
 
-        httpContext.Response.ContentType ??= httpContext.GetContentType("application/json; charset=utf-8");
+		httpContext.Response.ContentType ??= httpContext.GetContentType("application/json; charset=utf-8");
 		CancellationToken cancellationToken = httpContext.RequestAborted;
 		PipeWriter pipeWriter = httpContext.Response.BodyWriter;
 
 		JsonSerializerOptions options = httpContext.GetJsonSerializerOptions();
 
-        await JsonSerializer
-            .SerializeAsyncPaged(pipeWriter, _results, options, cancellationToken)
-            .ConfigureAwait(false);
-    }
+		await JsonSerializer
+			.SerializeAsyncPaged(pipeWriter, _results, options, cancellationToken)
+			.ConfigureAwait(false);
+	}
 }

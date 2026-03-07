@@ -14,6 +14,7 @@
 	</ItemGroup>
 
 	<ItemGroup>
+		<ProjectReference Include="..\AspNetCore.Net\AspNetCore.Net.csproj" />
 		<ProjectReference Include="..\System.Results\System.Results.csproj" />
 		<ProjectReference Include="..\System.Validation\System.Validation.csproj" />
 	</ItemGroup>
