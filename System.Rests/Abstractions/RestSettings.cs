@@ -253,6 +253,7 @@ public static class RestSettings
 	/// <summary>
 	/// Provides constants for HTTP content types.
 	/// </summary>
+	/// <remarks>You can also use the MediaTypeNames class from System.Net.Mime namespace.</remarks>
 	[SuppressMessage("Design", "CA1034:Nested types should not be visible", Justification = "<Pending>")]
 	public static class ContentType
 	{

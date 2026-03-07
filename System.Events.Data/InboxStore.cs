@@ -23,7 +23,7 @@ namespace System.Events.Data;
 /// <summary>
 /// ADO.NET implementation of <see cref="IInboxStore"/> enabling idempotent (exactly-once) consumption.
 /// </summary>
-/// <typeparam name="TEntityEventInbox">Inbox entity type.</typeparam>
+/// <typeparam name="TDataEventInbox">Inbox data type.</typeparam>
 /// <remarks>
 /// <para>
 /// This class implements the inbox pattern using raw ADO.NET (not Entity Framework Core),
@@ -32,30 +32,24 @@ namespace System.Events.Data;
 /// </remarks>
 [RequiresDynamicCode("Expression compilation requires dynamic code generation.")]
 public sealed class InboxStore<
-	[DynamicallyAccessedMembers(DynamicallyAccessedMemberTypes.PublicProperties)] TEntityEventInbox> : IInboxStore
-	where TEntityEventInbox : class, IDataEventInbox
+	[DynamicallyAccessedMembers(DynamicallyAccessedMemberTypes.PublicProperties)] TDataEventInbox> : IInboxStore
+	where TDataEventInbox : class, IDataEventInbox
 {
-	private readonly IDataRepository<TEntityEventInbox> _inboxRepository;
-	private readonly IDataUnitOfWork _unitOfWork;
-	private readonly IEventConverterFactory _converterFactory;
-	private readonly IEventConverter<TEntityEventInbox, IIntegrationEvent> _converter;
+	private readonly IDataRepository<TDataEventInbox> _inboxRepository;
+	private readonly IEventConverter<TDataEventInbox, IIntegrationEvent> _converter;
 
 	/// <summary>
-	/// Initializes a new instance of the DataInboxStore class.
+	/// Initializes a new instance of the InboxStore class.
 	/// </summary>
 	/// <param name="unitOfWork">The ADO.NET unit of work.</param>
 	/// <param name="converterFactory">The event converter factory.</param>
-	public InboxStore(
-		IDataUnitOfWork unitOfWork,
-		IEventConverterFactory converterFactory)
+	public InboxStore(IDataUnitOfWork unitOfWork, IEventConverterProvider converterFactory)
 	{
 		ArgumentNullException.ThrowIfNull(unitOfWork);
 		ArgumentNullException.ThrowIfNull(converterFactory);
 
-		_unitOfWork = unitOfWork;
-		_inboxRepository = unitOfWork.GetRepository<TEntityEventInbox>();
-		_converterFactory = converterFactory;
-		_converter = converterFactory.GetInboxEventConverter<TEntityEventInbox>();
+		_inboxRepository = unitOfWork.GetRepository<TDataEventInbox>();
+		_converter = converterFactory.GetInboxEventConverter<TDataEventInbox>();
 	}
 
 	/// <inheritdoc />
@@ -69,12 +63,12 @@ public sealed class InboxStore<
 		ArgumentException.ThrowIfNullOrWhiteSpace(consumer);
 
 		// Check for existing entry
-		DataSpecification<TEntityEventInbox, TEntityEventInbox> specification = DataSpecification
-			.For<TEntityEventInbox>()
+		DataSpecification<TDataEventInbox, TDataEventInbox> specification = DataSpecification
+			.For<TDataEventInbox>()
 			.Where(e => e.KeyId == @event.EventId && e.Consumer == consumer)
 			.Build();
 
-		TEntityEventInbox? existing = await _inboxRepository
+		TDataEventInbox? existing = await _inboxRepository
 			.QueryFirstOrDefaultAsync(specification, cancellationToken)
 			.ConfigureAwait(false);
 
@@ -99,8 +93,8 @@ public sealed class InboxStore<
 				}
 
 				// Lease expired or NextAttemptOn is null — allow retry by updating existing record
-				DataUpdater<TEntityEventInbox> updater = DataUpdater
-					.For<TEntityEventInbox>()
+				DataUpdater<TDataEventInbox> updater = DataUpdater
+					.For<TDataEventInbox>()
 					.SetProperty(e => e.Status, EventStatus.PROCESSING.Value)
 					.SetProperty(e => e.ErrorMessage, (string?)null)
 					.SetProperty(e => e.ClaimId, Guid.NewGuid())
@@ -119,7 +113,7 @@ public sealed class InboxStore<
 		}
 
 		// No existing entry — insert new inbox record
-		TEntityEventInbox entity = _converter.ConvertEventToEntity(@event, _converterFactory.ConverterContext);
+		TDataEventInbox entity = _converter.ConvertEventToData(@event);
 		entity.SetStatus(EventStatus.PROCESSING.Value);
 		entity.Consumer = consumer;
 		entity.ClaimId = Guid.NewGuid();
@@ -142,13 +136,13 @@ public sealed class InboxStore<
 
 		foreach (CompletedInboxEvent evt in events)
 		{
-			DataSpecification<TEntityEventInbox, TEntityEventInbox> specification = DataSpecification
-				.For<TEntityEventInbox>()
+			DataSpecification<TDataEventInbox, TDataEventInbox> specification = DataSpecification
+				.For<TDataEventInbox>()
 				.Where(e => e.KeyId == evt.EventId && e.Consumer == evt.Consumer)
 				.Build();
 
-			DataUpdater<TEntityEventInbox> updater = DataUpdater
-				.For<TEntityEventInbox>()
+			DataUpdater<TDataEventInbox> updater = DataUpdater
+				.For<TDataEventInbox>()
 				.SetProperty(e => e.Status, EventStatus.PUBLISHED.Value)
 				.SetProperty(e => e.ErrorMessage, (string?)null)
 				.SetProperty(e => e.NextAttemptOn, (DateTime?)null)
@@ -174,8 +168,8 @@ public sealed class InboxStore<
 		foreach (FailedInboxEvent failure in failures)
 		{
 			// Get current attempt count
-			DataSpecification<TEntityEventInbox, int> getSpec = DataSpecification
-				.For<TEntityEventInbox>()
+			DataSpecification<TDataEventInbox, int> getSpec = DataSpecification
+				.For<TDataEventInbox>()
 				.Where(e => e.KeyId == failure.EventId && e.Consumer == failure.Consumer)
 				.Select(e => e.AttemptCount);
 
@@ -190,13 +184,13 @@ public sealed class InboxStore<
 								 nextAttempt < 4 ? 80 :
 								 nextAttempt < 5 ? 160 : 320;
 
-			DataSpecification<TEntityEventInbox, TEntityEventInbox> specification = DataSpecification
-				.For<TEntityEventInbox>()
+			DataSpecification<TDataEventInbox, TDataEventInbox> specification = DataSpecification
+				.For<TDataEventInbox>()
 				.Where(e => e.KeyId == failure.EventId && e.Consumer == failure.Consumer)
 				.Build();
 
-			DataUpdater<TEntityEventInbox> updater = DataUpdater
-				.For<TEntityEventInbox>()
+			DataUpdater<TDataEventInbox> updater = DataUpdater
+				.For<TDataEventInbox>()
 				.SetProperty(e => e.Status, EventStatus.ONERROR.Value)
 				.SetProperty(e => e.ErrorMessage, failure.Error)
 				.SetProperty(e => e.AttemptCount, nextAttempt)

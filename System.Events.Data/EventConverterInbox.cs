@@ -23,33 +23,32 @@ namespace System.Events.Data;
 /// </summary>
 public sealed class EventConverterInbox : IEventConverter<DataEventInbox, IIntegrationEvent>
 {
-    /// <inheritdoc/>
-    public DataEventInbox ConvertEventToEntity(IIntegrationEvent @event, IEventConverterContext context)
-    {
-        ArgumentNullException.ThrowIfNull(@event);
-        ArgumentNullException.ThrowIfNull(context);
+	/// <inheritdoc/>
+	public DataEventInbox ConvertEventToData(IIntegrationEvent @event)
+	{
+		ArgumentNullException.ThrowIfNull(@event);
 
-        try
-        {
-            return new DataEventInbox
-            {
-                KeyId = @event.EventId,
-                EventName = @event.GetEventName(),
-                CorrelationId = @event.CorrelationId,
-                CausationId = @event.CausationId,
-                Consumer = string.Empty
-            };
-        }
-        catch (Exception exception) when (exception is not InvalidOperationException)
-        {
-            throw new InvalidOperationException(
-                $"Failed to convert the event {@event.GetType().Name} to entity. " +
-                "See inner exception for details.",
-                exception);
-        }
-    }
+		try
+		{
+			return new DataEventInbox
+			{
+				KeyId = @event.EventId,
+				EventName = @event.GetEventName(),
+				CorrelationId = @event.CorrelationId,
+				CausationId = @event.CausationId,
+				Consumer = string.Empty
+			};
+		}
+		catch (Exception exception) when (exception is not InvalidOperationException)
+		{
+			throw new InvalidOperationException(
+				$"Failed to convert the event {@event.GetType().Name} to data event. " +
+				"See inner exception for details.",
+				exception);
+		}
+	}
 
-    /// <inheritdoc/>
-    public IIntegrationEvent ConvertEntityToEvent(DataEventInbox entity, IEventConverterContext context) =>
-        throw new NotSupportedException("Conversion to event is not supported.");
+	/// <inheritdoc/>
+	public IIntegrationEvent ConvertDataToEvent(DataEventInbox entity) =>
+		throw new NotSupportedException("Conversion to event is not supported.");
 }

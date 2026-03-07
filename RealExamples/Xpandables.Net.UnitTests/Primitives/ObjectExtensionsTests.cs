@@ -142,7 +142,7 @@ public sealed class ObjectExtensionsTests
 		object obj = "test";
 
 		// Act
-		Func<object> act = () => obj.ChangeTypeNullable(null!);
+		Func<object> act = () => obj.ChangeTypeNullable(null!)!;
 
 		// Assert
 		act.Should().Throw<ArgumentNullException>();

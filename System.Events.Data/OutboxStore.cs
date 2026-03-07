@@ -23,49 +23,45 @@ namespace System.Events.Data;
 /// <summary>
 /// Provides an ADO.NET implementation of an outbox pattern for managing integration events.
 /// </summary>
-/// <typeparam name="TEntityEventOutbox">The type of the entity outbox event.</typeparam>
+/// <typeparam name="TDataEventOutbox">The type of the data outbox event.</typeparam>
 /// <remarks>
 /// <para>
-/// The <see cref="OutboxStore{TEntityEventOutbox}"/> class implements the outbox pattern using
-/// raw ADO.NET (not Entity Framework Core). It ensures that integration events are stored, claimed, 
+/// The <see cref="OutboxStore{TDataEventOutbox}"/> class implements the outbox pattern using
+/// raw ADO.NET (not Entity Framework Core). It ensures that integration events are stored, claimed,
 /// and processed in a consistent and fault-tolerant manner.
 /// </para>
 /// <para>
-/// This class supports operations such as enqueuing events, claiming pending events for processing, 
+/// This class supports operations such as enqueuing events, claiming pending events for processing,
 /// marking events as completed, and handling event failures.
 /// </para>
 /// </remarks>
 [RequiresDynamicCode("Expression compilation requires dynamic code generation.")]
 public sealed class OutboxStore<
-	[DynamicallyAccessedMembers(DynamicallyAccessedMemberTypes.PublicProperties)] TEntityEventOutbox> : IOutboxStore
-	where TEntityEventOutbox : class, IDataEventOutbox
+	[DynamicallyAccessedMembers(DynamicallyAccessedMemberTypes.PublicProperties)] TDataEventOutbox> : IOutboxStore
+	where TDataEventOutbox : class, IDataEventOutbox
 {
-	private readonly IDataRepository<TEntityEventOutbox> _outboxRepository;
-	private readonly IDataUnitOfWork _unitOfWork;
-	private readonly IEventConverterFactory _converterFactory;
+	private readonly IDataRepository<TDataEventOutbox> _outboxRepository;
 	private readonly IIntegrationEventEnricher _eventEnricher;
-	private readonly IEventConverter<TEntityEventOutbox, IIntegrationEvent> _converter;
+	private readonly IEventConverter<TDataEventOutbox, IIntegrationEvent> _converter;
 
 	/// <summary>
-	/// Initializes a new instance of the DataOutboxStore class.
+	/// Initializes a new instance of the OutboxStore class.
 	/// </summary>
 	/// <param name="unitOfWork">The ADO.NET unit of work.</param>
 	/// <param name="converterFactory">The factory used to obtain event converters.</param>
 	/// <param name="eventEnricher">The enricher used to enrich integration events before processing.</param>
 	public OutboxStore(
 		IDataUnitOfWork unitOfWork,
-		IEventConverterFactory converterFactory,
+		IEventConverterProvider converterFactory,
 		IIntegrationEventEnricher eventEnricher)
 	{
 		ArgumentNullException.ThrowIfNull(unitOfWork);
 		ArgumentNullException.ThrowIfNull(converterFactory);
 		ArgumentNullException.ThrowIfNull(eventEnricher);
 
-		_unitOfWork = unitOfWork;
-		_outboxRepository = unitOfWork.GetRepository<TEntityEventOutbox>();
-		_converterFactory = converterFactory;
+		_outboxRepository = unitOfWork.GetRepository<TDataEventOutbox>();
 		_eventEnricher = eventEnricher;
-		_converter = converterFactory.GetOutboxEventConverter<TEntityEventOutbox>();
+		_converter = converterFactory.GetOutboxEventConverter<TDataEventOutbox>();
 	}
 
 	/// <inheritdoc />
@@ -77,12 +73,12 @@ public sealed class OutboxStore<
 		var countEvents = events.ToList();
 		ArgumentOutOfRangeException.ThrowIfEqual(countEvents.Count, 0);
 
-		var list = new List<TEntityEventOutbox>(countEvents.Count);
+		var list = new List<TDataEventOutbox>(countEvents.Count);
 		IIntegrationEvent[] enriched = [.. countEvents.Select(_eventEnricher.Enrich)];
 
 		foreach (IIntegrationEvent? @event in enriched)
 		{
-			TEntityEventOutbox entity = _converter.ConvertEventToEntity(@event, _converterFactory.ConverterContext);
+			TDataEventOutbox entity = _converter.ConvertEventToData(@event);
 			entity.SetStatus(EventStatus.PENDING.Value);
 			list.Add(entity);
 		}
@@ -105,8 +101,8 @@ public sealed class OutboxStore<
 		var claimId = Guid.NewGuid();
 
 		// Step 1: Find candidate events
-		DataSpecification<TEntityEventOutbox, TEntityEventOutbox> specification = DataSpecification
-			.For<TEntityEventOutbox>()
+		DataSpecification<TDataEventOutbox, TDataEventOutbox> specification = DataSpecification
+			.For<TDataEventOutbox>()
 			.Where(e =>
 				(e.Status == EventStatus.PENDING.Value) ||
 				(e.Status == EventStatus.ONERROR.Value && (e.NextAttemptOn == null || e.NextAttemptOn <= now)))
@@ -116,7 +112,8 @@ public sealed class OutboxStore<
 			.Build();
 
 		var candidates = new List<Guid>();
-		await foreach (TEntityEventOutbox? entity in _outboxRepository.QueryAsync(specification, cancellationToken).ConfigureAwait(false))
+		await foreach (TDataEventOutbox? entity in _outboxRepository
+			.QueryAsync(specification, cancellationToken).ConfigureAwait(false))
 		{
 			candidates.Add(entity.KeyId);
 		}
@@ -127,16 +124,16 @@ public sealed class OutboxStore<
 		}
 
 		// Step 2: Claim the events atomically
-		DataUpdater<TEntityEventOutbox> updater = DataUpdater
-			.For<TEntityEventOutbox>()
+		DataUpdater<TDataEventOutbox> updater = DataUpdater
+			.For<TDataEventOutbox>()
 			.SetProperty(e => e.Status, EventStatus.PROCESSING.Value)
 			.SetProperty(e => e.ClaimId, claimId)
 			.SetProperty(e => e.ErrorMessage, (string?)null)
 			.SetProperty(e => e.NextAttemptOn, now.Add(lease))
 			.SetProperty(e => e.UpdatedOn, now);
 
-		DataSpecification<TEntityEventOutbox, TEntityEventOutbox> updateSpec = DataSpecification
-			.For<TEntityEventOutbox>()
+		DataSpecification<TDataEventOutbox, TDataEventOutbox> updateSpec = DataSpecification
+			.For<TDataEventOutbox>()
 			.Where(e => candidates.Contains(e.KeyId) && e.ClaimId == null)
 			.Build();
 
@@ -150,16 +147,16 @@ public sealed class OutboxStore<
 		}
 
 		// Step 3: Fetch the claimed events
-		DataSpecification<TEntityEventOutbox, TEntityEventOutbox> selectSpec = DataSpecification
-			.For<TEntityEventOutbox>()
+		DataSpecification<TDataEventOutbox, TDataEventOutbox> selectSpec = DataSpecification
+			.For<TDataEventOutbox>()
 			.Where(e => e.ClaimId == claimId)
 			.OrderBy(e => e.Sequence)
 			.Build();
 
 		var list = new List<IIntegrationEvent>();
-		await foreach (TEntityEventOutbox? entity in _outboxRepository.QueryAsync(selectSpec, cancellationToken).ConfigureAwait(false))
+		await foreach (TDataEventOutbox? entity in _outboxRepository.QueryAsync(selectSpec, cancellationToken).ConfigureAwait(false))
 		{
-			if (_converter.ConvertEntityToEvent(entity, _converterFactory.ConverterContext) is IIntegrationEvent ie)
+			if (_converter.ConvertDataToEvent(entity) is IIntegrationEvent ie)
 			{
 				list.Add(ie);
 			}
@@ -179,13 +176,13 @@ public sealed class OutboxStore<
 
 		var eventIds = countSuccesses.Select(e => e.EventId).ToList();
 		DateTime now = DateTime.UtcNow;
-		DataSpecification<TEntityEventOutbox, TEntityEventOutbox> specification = DataSpecification
-			.For<TEntityEventOutbox>()
+		DataSpecification<TDataEventOutbox, TDataEventOutbox> specification = DataSpecification
+			.For<TDataEventOutbox>()
 			.Where(e => eventIds.Contains(e.KeyId))
 			.Build();
 
-		DataUpdater<TEntityEventOutbox> updater = DataUpdater
-			.For<TEntityEventOutbox>()
+		DataUpdater<TDataEventOutbox> updater = DataUpdater
+			.For<TDataEventOutbox>()
 			.SetProperty(e => e.Status, EventStatus.PUBLISHED.Value)
 			.SetProperty(e => e.ErrorMessage, (string?)null)
 			.SetProperty(e => e.NextAttemptOn, (DateTime?)null)
@@ -211,8 +208,8 @@ public sealed class OutboxStore<
 		foreach (FailedOutboxEvent failure in failuresList)
 		{
 			// Get current attempt count
-			DataSpecification<TEntityEventOutbox, int> getSpec = DataSpecification
-				.For<TEntityEventOutbox>()
+			DataSpecification<TDataEventOutbox, int> getSpec = DataSpecification
+				.For<TDataEventOutbox>()
 				.Where(e => e.KeyId == failure.EventId)
 				.Select(e => e.AttemptCount);
 
@@ -227,13 +224,13 @@ public sealed class OutboxStore<
 								 nextAttempt < 4 ? 80 :
 								 nextAttempt < 5 ? 160 : 320;
 
-			DataSpecification<TEntityEventOutbox, TEntityEventOutbox> specification = DataSpecification
-				.For<TEntityEventOutbox>()
+			DataSpecification<TDataEventOutbox, TDataEventOutbox> specification = DataSpecification
+				.For<TDataEventOutbox>()
 				.Where(e => e.KeyId == failure.EventId)
 				.Build();
 
-			DataUpdater<TEntityEventOutbox> updater = DataUpdater
-				.For<TEntityEventOutbox>()
+			DataUpdater<TDataEventOutbox> updater = DataUpdater
+				.For<TDataEventOutbox>()
 				.SetProperty(e => e.Status, EventStatus.ONERROR.Value)
 				.SetProperty(e => e.ErrorMessage, failure.Error)
 				.SetProperty(e => e.AttemptCount, nextAttempt)

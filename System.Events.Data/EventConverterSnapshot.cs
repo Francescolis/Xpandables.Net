@@ -24,63 +24,63 @@ namespace System.Events.Data;
 /// <summary>
 /// Converts between <see cref="ISnapshotEvent"/> and <see cref="DataEventSnapshot"/>.
 /// </summary>
-/// <param name="typeResolver">The type resolver to use for resolving event types. Cannot be null.</param>  
-public sealed class EventConverterSnapshot(ICacheTypeResolver typeResolver) : IEventConverter<DataEventSnapshot, ISnapshotEvent>
+/// <param name="typeResolver">The type resolver to use for resolving event types. Cannot be null.</param>
+/// <param name="converterContext">The context for event conversion. Cannot be null.</param>
+public sealed class EventConverterSnapshot(ICacheTypeResolver typeResolver, IEventConverterContext converterContext) : IEventConverter<DataEventSnapshot, ISnapshotEvent>
 {
-    private readonly ICacheTypeResolver _typeResolver = typeResolver ?? throw new ArgumentNullException(nameof(typeResolver));
+	private readonly ICacheTypeResolver _typeResolver = typeResolver ?? throw new ArgumentNullException(nameof(typeResolver));
+	private readonly IEventConverterContext _converterContext = converterContext ?? throw new ArgumentNullException(nameof(converterContext));
 
-    /// <inheritdoc/>
-    public DataEventSnapshot ConvertEventToEntity(ISnapshotEvent @event, IEventConverterContext context)
-    {
-        ArgumentNullException.ThrowIfNull(@event);
-        ArgumentNullException.ThrowIfNull(context);
+	/// <inheritdoc/>
+	public DataEventSnapshot ConvertEventToData(ISnapshotEvent @event)
+	{
+		ArgumentNullException.ThrowIfNull(@event);
 
-        try
-        {
-            JsonTypeInfo typeInfo = context.ResolveJsonTypeInfo(@event.GetType());
-            string data = JsonSerializer.Serialize(@event, typeInfo);
+		try
+		{
+			JsonTypeInfo typeInfo = _converterContext.ResolveJsonTypeInfo(@event.GetType());
+			string data = JsonSerializer.Serialize(@event, typeInfo);
 
-            return new DataEventSnapshot
-            {
-                KeyId = @event.EventId,
-                OwnerId = @event.OwnerId,
-                EventName = @event.GetEventName(),
-                EventData = data,
-                CausationId = @event.CausationId,
-                CorrelationId = @event.CorrelationId
-            };
-        }
-        catch (Exception exception) when (exception is not InvalidOperationException)
-        {
-            throw new InvalidOperationException(
-                $"Failed to convert the event {@event.GetType().Name} to entity. " +
-                "See inner exception for details.",
-                exception);
-        }
-    }
+			return new DataEventSnapshot
+			{
+				KeyId = @event.EventId,
+				OwnerId = @event.OwnerId,
+				EventName = @event.GetEventName(),
+				EventData = data,
+				CausationId = @event.CausationId,
+				CorrelationId = @event.CorrelationId
+			};
+		}
+		catch (Exception exception) when (exception is not InvalidOperationException)
+		{
+			throw new InvalidOperationException(
+				$"Failed to convert the event {@event.GetType().Name} to data event. " +
+				"See inner exception for details.",
+				exception);
+		}
+	}
 
-    /// <inheritdoc/>
-    public ISnapshotEvent ConvertEntityToEvent(DataEventSnapshot entity, IEventConverterContext context)
-    {
-        ArgumentNullException.ThrowIfNull(entity);
-        ArgumentNullException.ThrowIfNull(context);
+	/// <inheritdoc/>
+	public ISnapshotEvent ConvertDataToEvent(DataEventSnapshot entity)
+	{
+		ArgumentNullException.ThrowIfNull(entity);
 
-        try
-        {
-            Type targetType = _typeResolver.Resolve(entity.EventName);
-            JsonTypeInfo typeInfo = context.ResolveJsonTypeInfo(targetType);
+		try
+		{
+			Type targetType = _typeResolver.Resolve(entity.EventName);
+			JsonTypeInfo typeInfo = _converterContext.ResolveJsonTypeInfo(targetType);
 
-            object? @event = JsonSerializer.Deserialize(entity.EventData, typeInfo)
-                ?? throw new InvalidOperationException(
-                    $"Failed to deserialize the event data to {typeInfo.Type.Name}.");
+			object? @event = JsonSerializer.Deserialize(entity.EventData, typeInfo)
+				?? throw new InvalidOperationException(
+					$"Failed to deserialize the event data to {typeInfo.Type.Name}.");
 
-            return (ISnapshotEvent)@event;
-        }
-        catch (Exception exception) when (exception is not InvalidOperationException)
-        {
-            throw new InvalidOperationException(
-                "Failed to convert the event entity. See inner exception for details.",
-                exception);
-        }
-    }
+			return (ISnapshotEvent)@event;
+		}
+		catch (Exception exception) when (exception is not InvalidOperationException)
+		{
+			throw new InvalidOperationException(
+				"Failed to convert the data event to event. See inner exception for details.",
+				exception);
+		}
+	}
 }

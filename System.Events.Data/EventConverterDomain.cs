@@ -25,64 +25,64 @@ namespace System.Events.Data;
 /// Converts between <see cref="IDomainEvent"/> and <see cref="DataEventDomain"/>.
 /// </summary>
 /// <param name="typeResolver">The type resolver to use for resolving event types. Cannot be null.</param>
-public sealed class EventConverterDomain(ICacheTypeResolver typeResolver) : IEventConverter<DataEventDomain, IDomainEvent>
+/// <param name="converterContext">The context for event conversion. Cannot be null.</param>
+public sealed class EventConverterDomain(ICacheTypeResolver typeResolver, IEventConverterContext converterContext) : IEventConverter<DataEventDomain, IDomainEvent>
 {
-    private readonly ICacheTypeResolver _typeResolver = typeResolver ?? throw new ArgumentNullException(nameof(typeResolver));
+	private readonly ICacheTypeResolver _typeResolver = typeResolver ?? throw new ArgumentNullException(nameof(typeResolver));
+	private readonly IEventConverterContext _converterContext = converterContext ?? throw new ArgumentNullException(nameof(converterContext));
 
-    /// <inheritdoc/>
-    public DataEventDomain ConvertEventToEntity(IDomainEvent @event, IEventConverterContext context)
-    {
-        ArgumentNullException.ThrowIfNull(@event);
-        ArgumentNullException.ThrowIfNull(context);
+	/// <inheritdoc/>
+	public DataEventDomain ConvertEventToData(IDomainEvent @event)
+	{
+		ArgumentNullException.ThrowIfNull(@event);
 
-        try
-        {
-            JsonTypeInfo typeInfo = context.ResolveJsonTypeInfo(@event.GetType());
-            string data = JsonSerializer.Serialize(@event, typeInfo);
+		try
+		{
+			JsonTypeInfo typeInfo = _converterContext.ResolveJsonTypeInfo(@event.GetType());
+			string data = JsonSerializer.Serialize(@event, typeInfo);
 
-            return new DataEventDomain
-            {
-                KeyId = @event.EventId,
-                StreamId = @event.StreamId,
-                StreamName = @event.StreamName,
-                StreamVersion = @event.StreamVersion,
-                CorrelationId = @event.CorrelationId,
-                CausationId = @event.CausationId,
-                EventName = @event.GetEventName(),
-                EventData = data
-            };
-        }
-        catch (Exception exception) when (exception is not InvalidOperationException)
-        {
-            throw new InvalidOperationException(
-                $"Failed to convert the event {@event.GetType().Name} to entity. " +
-                "See inner exception for details.",
-                exception);
-        }
-    }
+			return new DataEventDomain
+			{
+				KeyId = @event.EventId,
+				StreamId = @event.StreamId,
+				StreamName = @event.StreamName,
+				StreamVersion = @event.StreamVersion,
+				CorrelationId = @event.CorrelationId,
+				CausationId = @event.CausationId,
+				EventName = @event.GetEventName(),
+				EventData = data
+			};
+		}
+		catch (Exception exception) when (exception is not InvalidOperationException)
+		{
+			throw new InvalidOperationException(
+				$"Failed to convert the event {@event.GetType().Name} to entity. " +
+				"See inner exception for details.",
+				exception);
+		}
+	}
 
-    /// <inheritdoc/>
-    public IDomainEvent ConvertEntityToEvent(DataEventDomain entity, IEventConverterContext context)
-    {
-        ArgumentNullException.ThrowIfNull(entity);
-        ArgumentNullException.ThrowIfNull(context);
+	/// <inheritdoc/>
+	public IDomainEvent ConvertDataToEvent(DataEventDomain entity)
+	{
+		ArgumentNullException.ThrowIfNull(entity);
 
-        try
-        {
-            Type targetType = _typeResolver.Resolve(entity.EventName);
-            JsonTypeInfo typeInfo = context.ResolveJsonTypeInfo(targetType);
+		try
+		{
+			Type targetType = _typeResolver.Resolve(entity.EventName);
+			JsonTypeInfo typeInfo = _converterContext.ResolveJsonTypeInfo(targetType);
 
-            object? @event = JsonSerializer.Deserialize(entity.EventData, typeInfo)
-                ?? throw new InvalidOperationException(
-                    $"Failed to deserialize the event data to {typeInfo.Type.Name}.");
+			object? @event = JsonSerializer.Deserialize(entity.EventData, typeInfo)
+				?? throw new InvalidOperationException(
+					$"Failed to deserialize the event data to {typeInfo.Type.Name}.");
 
-            return (IDomainEvent)@event;
-        }
-        catch (Exception exception) when (exception is not InvalidOperationException)
-        {
-            throw new InvalidOperationException(
-                "Failed to convert the event entity. See inner exception for details.",
-                exception);
-        }
-    }
+			return (IDomainEvent)@event;
+		}
+		catch (Exception exception) when (exception is not InvalidOperationException)
+		{
+			throw new InvalidOperationException(
+				"Failed to convert the event entity. See inner exception for details.",
+				exception);
+		}
+	}
 }

@@ -36,35 +36,31 @@ namespace System.Events.Data;
 /// </remarks>
 [RequiresDynamicCode("Expression compilation requires dynamic code generation.")]
 public sealed class DomainStore<
-	[DynamicallyAccessedMembers(DynamicallyAccessedMemberTypes.PublicProperties)] TEntityEventDomain,
-	[DynamicallyAccessedMembers(DynamicallyAccessedMemberTypes.PublicProperties)] TEntityEventSnapshot> : IDomainStore
-	where TEntityEventDomain : class, IDataEventDomain
-	where TEntityEventSnapshot : class, IDataEventSnapshot
+	[DynamicallyAccessedMembers(DynamicallyAccessedMemberTypes.PublicProperties)] TDataEventDomain,
+	[DynamicallyAccessedMembers(DynamicallyAccessedMemberTypes.PublicProperties)] TDataEventSnapshot> : IDomainStore
+	where TDataEventDomain : class, IDataEventDomain
+	where TDataEventSnapshot : class, IDataEventSnapshot
 {
-	private readonly IDataRepository<TEntityEventDomain> _domainRepository;
-	private readonly IDataRepository<TEntityEventSnapshot> _snapshotRepository;
-	private readonly IDataUnitOfWork _unitOfWork;
-	private readonly IEventConverterFactory _converterFactory;
-	private readonly IEventConverter<TEntityEventDomain, IDomainEvent> _domainConverter;
-	private readonly IEventConverter<TEntityEventSnapshot, ISnapshotEvent> _snapshotConverter;
+	private readonly IDataRepository<TDataEventDomain> _domainRepository;
+	private readonly IDataRepository<TDataEventSnapshot> _snapshotRepository;
+	private readonly IEventConverter<TDataEventDomain, IDomainEvent> _domainConverter;
+	private readonly IEventConverter<TDataEventSnapshot, ISnapshotEvent> _snapshotConverter;
 
 	/// <summary>
-	/// Initializes a new instance of the DataEventStore class.
+	/// Initializes a new instance of the DomainStore class.
 	/// </summary>
 	/// <param name="unitOfWork">The ADO.NET unit of work used to manage repositories and transactions.</param>
-	/// <param name="converterFactory">The factory used to obtain event converters for domain and snapshot events.</param>
-	public DomainStore(IDataUnitOfWork unitOfWork, IEventConverterFactory converterFactory)
+	/// <param name="converterProvider">The provider used to obtain event converters for domain and snapshot events.</param>
+	public DomainStore(IDataUnitOfWork unitOfWork, IEventConverterProvider converterProvider)
 	{
 		ArgumentNullException.ThrowIfNull(unitOfWork);
-		ArgumentNullException.ThrowIfNull(converterFactory);
+		ArgumentNullException.ThrowIfNull(converterProvider);
 
-		_unitOfWork = unitOfWork;
-		_domainRepository = unitOfWork.GetRepository<TEntityEventDomain>();
-		_snapshotRepository = unitOfWork.GetRepository<TEntityEventSnapshot>();
+		_domainRepository = unitOfWork.GetRepository<TDataEventDomain>();
+		_snapshotRepository = unitOfWork.GetRepository<TDataEventSnapshot>();
 
-		_converterFactory = converterFactory;
-		_domainConverter = converterFactory.GetDomainEventConverter<TEntityEventDomain>();
-		_snapshotConverter = converterFactory.GetSnapshotEventConverter<TEntityEventSnapshot>();
+		_domainConverter = converterProvider.GetEventConverter<TDataEventDomain, IDomainEvent>();
+		_snapshotConverter = converterProvider.GetEventConverter<TDataEventSnapshot, ISnapshotEvent>();
 	}
 
 	/// <inheritdoc/>
@@ -88,7 +84,7 @@ public sealed class DomainStore<
 				$"Expected version {request.ExpectedVersion} but found {current}.");
 		}
 
-		var entities = new List<TEntityEventDomain>(capacity: batch.Length);
+		var entities = new List<TDataEventDomain>(capacity: batch.Length);
 		long next = request.ExpectedVersion.GetValueOrDefault();
 
 		foreach (IDomainEvent? @event in batch)
@@ -100,7 +96,7 @@ public sealed class DomainStore<
 				.WithStreamVersion(next)
 				.WithStreamName(@event.StreamName);
 
-			TEntityEventDomain entity = _domainConverter.ConvertEventToEntity(nextEvent, _converterFactory.ConverterContext);
+			TDataEventDomain entity = _domainConverter.ConvertEventToData(nextEvent);
 			entities.Add(entity);
 		}
 
@@ -117,7 +113,7 @@ public sealed class DomainStore<
 	{
 		ArgumentNullException.ThrowIfNull(@event);
 
-		TEntityEventSnapshot entity = _snapshotConverter.ConvertEventToEntity(@event, _converterFactory.ConverterContext);
+		TDataEventSnapshot entity = _snapshotConverter.ConvertEventToData(@event);
 		await _snapshotRepository.InsertAsync(entity, cancellationToken).ConfigureAwait(false);
 	}
 
@@ -126,8 +122,8 @@ public sealed class DomainStore<
 		DeleteStreamRequest request,
 		CancellationToken cancellationToken = default)
 	{
-		DataSpecification<TEntityEventDomain, TEntityEventDomain> specification = DataSpecification
-			.For<TEntityEventDomain>()
+		DataSpecification<TDataEventDomain, TDataEventDomain> specification = DataSpecification
+			.For<TDataEventDomain>()
 			.Where(e => e.StreamId == request.StreamId)
 			.Build();
 
@@ -139,8 +135,8 @@ public sealed class DomainStore<
 		}
 		else
 		{
-			DataUpdater<TEntityEventDomain> updater = DataUpdater
-				.For<TEntityEventDomain>()
+			DataUpdater<TDataEventDomain> updater = DataUpdater
+				.For<TDataEventDomain>()
 				.SetProperty(e => e.Status, EventStatus.DELETED.Value);
 
 			await _domainRepository
@@ -154,14 +150,14 @@ public sealed class DomainStore<
 		Guid ownerId,
 		CancellationToken cancellationToken = default)
 	{
-		DataSpecification<TEntityEventSnapshot, TEntityEventSnapshot> specification = DataSpecification
-			.For<TEntityEventSnapshot>()
+		DataSpecification<TDataEventSnapshot, TDataEventSnapshot> specification = DataSpecification
+			.For<TDataEventSnapshot>()
 			.Where(e => e.OwnerId == ownerId)
 			.OrderByDescending(e => e.Sequence)
 			.Take(1)
 			.Build();
 
-		TEntityEventSnapshot? last = await _snapshotRepository
+		TDataEventSnapshot? last = await _snapshotRepository
 			.QueryFirstOrDefaultAsync(specification, cancellationToken)
 			.ConfigureAwait(false);
 
@@ -172,7 +168,7 @@ public sealed class DomainStore<
 
 		return new EnvelopeResult
 		{
-			Event = _snapshotConverter.ConvertEntityToEvent(last, _converterFactory.ConverterContext),
+			Event = _snapshotConverter.ConvertDataToEvent(last),
 			EventId = last.KeyId,
 			EventName = last.EventName,
 			GlobalPosition = last.Sequence,
@@ -192,18 +188,18 @@ public sealed class DomainStore<
 		ReadAllStreamsRequest request,
 		[EnumeratorCancellation] CancellationToken cancellationToken = default)
 	{
-		DataSpecification<TEntityEventDomain, TEntityEventDomain> specification = DataSpecification
-			.For<TEntityEventDomain>()
+		DataSpecification<TDataEventDomain, TDataEventDomain> specification = DataSpecification
+			.For<TDataEventDomain>()
 			.Where(e => e.Sequence > request.FromPosition)
 			.OrderBy(e => e.Sequence)
 			.Take(request.MaxCount)
 			.Build();
 
-		await foreach (TEntityEventDomain? entity in _domainRepository.QueryAsync(specification, cancellationToken).ConfigureAwait(false))
+		await foreach (TDataEventDomain? entity in _domainRepository.QueryAsync(specification, cancellationToken).ConfigureAwait(false))
 		{
 			yield return new EnvelopeResult
 			{
-				Event = _domainConverter.ConvertEntityToEvent(entity, _converterFactory.ConverterContext),
+				Event = _domainConverter.ConvertDataToEvent(entity),
 				EventId = entity.KeyId,
 				EventName = entity.EventName,
 				GlobalPosition = entity.Sequence,
@@ -222,18 +218,18 @@ public sealed class DomainStore<
 		ReadStreamRequest request,
 		[EnumeratorCancellation] CancellationToken cancellationToken = default)
 	{
-		DataSpecification<TEntityEventDomain, TEntityEventDomain> specification = DataSpecification
-			.For<TEntityEventDomain>()
+		DataSpecification<TDataEventDomain, TDataEventDomain> specification = DataSpecification
+			.For<TDataEventDomain>()
 			.Where(e => e.StreamId == request.StreamId && e.StreamVersion > request.FromVersion)
 			.OrderBy(e => e.StreamVersion)
 			.Take(request.MaxCount)
 			.Build();
 
-		await foreach (TEntityEventDomain? entity in _domainRepository.QueryAsync(specification, cancellationToken).ConfigureAwait(false))
+		await foreach (TDataEventDomain? entity in _domainRepository.QueryAsync(specification, cancellationToken).ConfigureAwait(false))
 		{
 			yield return new EnvelopeResult
 			{
-				Event = _domainConverter.ConvertEntityToEvent(entity, _converterFactory.ConverterContext),
+				Event = _domainConverter.ConvertDataToEvent(entity),
 				EventId = entity.KeyId,
 				EventName = entity.EventName,
 				GlobalPosition = entity.Sequence,
@@ -250,8 +246,8 @@ public sealed class DomainStore<
 	/// <inheritdoc/>
 	public async Task<bool> StreamExistsAsync(Guid streamId, CancellationToken cancellationToken = default)
 	{
-		DataSpecification<TEntityEventDomain, TEntityEventDomain> specification = DataSpecification
-			.For<TEntityEventDomain>()
+		DataSpecification<TDataEventDomain, TDataEventDomain> specification = DataSpecification
+			.For<TDataEventDomain>()
 			.Where(e => e.StreamId == streamId)
 			.Build();
 
@@ -273,8 +269,8 @@ public sealed class DomainStore<
 			return;
 		}
 
-		DataSpecification<TEntityEventDomain, TEntityEventDomain> specification = DataSpecification
-			.For<TEntityEventDomain>()
+		DataSpecification<TDataEventDomain, TDataEventDomain> specification = DataSpecification
+			.For<TDataEventDomain>()
 			.Where(e => e.StreamId == request.StreamId && e.StreamVersion < request.TruncateBeforeVersion)
 			.Build();
 
@@ -290,10 +286,9 @@ public sealed class DomainStore<
 	{
 		// ADO.NET doesn't support change notifications natively
 		// Return a polling-based subscription
-		return new StreamSubscription<TEntityEventDomain>(
+		return new StreamSubscription<TDataEventDomain>(
 			_domainRepository,
 			request,
-			_converterFactory,
 			_domainConverter,
 			cancellationToken);
 	}
@@ -303,23 +298,22 @@ public sealed class DomainStore<
 		SubscribeToAllStreamsRequest request,
 		CancellationToken cancellationToken = default)
 	{
-		return new AllStreamsSubscription<TEntityEventDomain>(
+		return new AllStreamsSubscription<TDataEventDomain>(
 			_domainRepository,
 			request,
-			_converterFactory,
 			_domainConverter,
 			cancellationToken);
 	}
 
 	private async Task<long> GetStreamVersionCoreAsync(Guid streamId, CancellationToken cancellationToken)
 	{
-		DataSpecification<TEntityEventDomain, TEntityEventDomain> specification = DataSpecification
-			.For<TEntityEventDomain>()
+		DataSpecification<TDataEventDomain, TDataEventDomain> specification = DataSpecification
+			.For<TDataEventDomain>()
 			.Where(e => e.StreamId == streamId)
 			.OrderByDescending(e => e.StreamVersion)
 			.Build();
 
-		TEntityEventDomain? @event = await _domainRepository
+		TDataEventDomain? @event = await _domainRepository
 			.QueryFirstOrDefaultAsync(specification, cancellationToken)
 			.ConfigureAwait(false);
 
@@ -340,7 +334,6 @@ internal sealed class StreamSubscription<
 {
 	private readonly IDataRepository<TEntityEventDomain> _domainRepository;
 	private readonly SubscribeToStreamRequest _request;
-	private readonly IEventConverterFactory _converterFactory;
 	private readonly IEventConverter<TEntityEventDomain, IDomainEvent> _domainConverter;
 	private readonly CancellationTokenSource _cts;
 	private readonly Task _subscriptionTask;
@@ -348,13 +341,11 @@ internal sealed class StreamSubscription<
 	public StreamSubscription(
 		IDataRepository<TEntityEventDomain> repository,
 		SubscribeToStreamRequest request,
-		IEventConverterFactory converterFactory,
 		IEventConverter<TEntityEventDomain, IDomainEvent> converter,
 		CancellationToken cancellationToken)
 	{
 		_domainRepository = repository ?? throw new ArgumentNullException(nameof(repository));
 		_request = request;
-		_converterFactory = converterFactory ?? throw new ArgumentNullException(nameof(converterFactory));
 		_domainConverter = converter ?? throw new ArgumentNullException(nameof(converter));
 		_cts = CancellationTokenSource.CreateLinkedTokenSource(cancellationToken);
 		_subscriptionTask = RunSubscriptionAsync();
@@ -383,7 +374,7 @@ internal sealed class StreamSubscription<
 
 				foreach (TEntityEventDomain entity in events)
 				{
-					IDomainEvent domainEvent = _domainConverter.ConvertEntityToEvent(entity, _converterFactory.ConverterContext);
+					IDomainEvent domainEvent = _domainConverter.ConvertDataToEvent(entity);
 					await _request.OnEvent(domainEvent).ConfigureAwait(false);
 					lastProcessedVersion = entity.StreamVersion;
 				}
@@ -429,21 +420,18 @@ internal sealed class AllStreamsSubscription<
 	private readonly IDataRepository<TEntityEventDomain> _domainRepository;
 	private readonly SubscribeToAllStreamsRequest _request;
 	private readonly IEventConverter<TEntityEventDomain, IDomainEvent> _domainConverter;
-	private readonly IEventConverterFactory _converterFactory;
 	private readonly CancellationTokenSource _cts;
 	private readonly Task _subscriptionTask;
 
 	public AllStreamsSubscription(
 		IDataRepository<TEntityEventDomain> repository,
 		SubscribeToAllStreamsRequest request,
-		IEventConverterFactory converterFactory,
 		IEventConverter<TEntityEventDomain, IDomainEvent> converter,
 		CancellationToken cancellationToken)
 	{
 		_domainRepository = repository ?? throw new ArgumentNullException(nameof(repository));
 		_request = request;
 		_domainConverter = converter ?? throw new ArgumentNullException(nameof(converter));
-		_converterFactory = converterFactory ?? throw new ArgumentNullException(nameof(converterFactory));
 		_cts = CancellationTokenSource.CreateLinkedTokenSource(cancellationToken);
 		_subscriptionTask = RunSubscriptionAsync();
 	}
@@ -471,7 +459,7 @@ internal sealed class AllStreamsSubscription<
 
 				foreach (TEntityEventDomain entity in events)
 				{
-					IDomainEvent domainEvent = _domainConverter.ConvertEntityToEvent(entity, _converterFactory.ConverterContext);
+					IDomainEvent domainEvent = _domainConverter.ConvertDataToEvent(entity);
 					await _request.OnEvent(domainEvent).ConfigureAwait(false);
 					lastProcessedSequence = entity.Sequence;
 				}

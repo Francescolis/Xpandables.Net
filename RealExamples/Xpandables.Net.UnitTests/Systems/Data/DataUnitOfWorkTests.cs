@@ -91,7 +91,7 @@ public sealed class DataUnitOfWorkTests : IDisposable
 
 		uow.Dispose();
 
-		Func<IDataTransaction> act = () => _ = uow.CurrentTransaction;
+		Func<IDataTransaction> act = () => _ = uow.CurrentTransaction!;
 		act.Should().Throw<ObjectDisposedException>();
 	}
 

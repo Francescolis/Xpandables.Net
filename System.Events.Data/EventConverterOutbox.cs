@@ -25,61 +25,61 @@ namespace System.Events.Data;
 /// Converts between <see cref="IIntegrationEvent"/> and <see cref="DataEventOutbox"/>.
 /// </summary>
 /// <param name="typeResolver">The type resolver to use for resolving event types.</param>
-public sealed class EventConverterOutbox(ICacheTypeResolver typeResolver) : IEventConverter<DataEventOutbox, IIntegrationEvent>
+/// <param name="converterContext">The context for event conversion. Cannot be null.</param>
+public sealed class EventConverterOutbox(ICacheTypeResolver typeResolver, IEventConverterContext converterContext) : IEventConverter<DataEventOutbox, IIntegrationEvent>
 {
-    private readonly ICacheTypeResolver _typeResolver = typeResolver ?? throw new ArgumentNullException(nameof(typeResolver));
+	private readonly ICacheTypeResolver _typeResolver = typeResolver ?? throw new ArgumentNullException(nameof(typeResolver));
+	private readonly IEventConverterContext _converterContext = converterContext ?? throw new ArgumentNullException(nameof(converterContext));
 
-    /// <inheritdoc/>
-    public DataEventOutbox ConvertEventToEntity(IIntegrationEvent @event, IEventConverterContext context)
-    {
-        ArgumentNullException.ThrowIfNull(@event);
-        ArgumentNullException.ThrowIfNull(context);
+	/// <inheritdoc/>
+	public DataEventOutbox ConvertEventToData(IIntegrationEvent @event)
+	{
+		ArgumentNullException.ThrowIfNull(@event);
 
-        try
-        {
-            JsonTypeInfo typeInfo = context.ResolveJsonTypeInfo(@event.GetType());
-            string data = JsonSerializer.Serialize(@event, typeInfo);
+		try
+		{
+			JsonTypeInfo typeInfo = _converterContext.ResolveJsonTypeInfo(@event.GetType());
+			string data = JsonSerializer.Serialize(@event, typeInfo);
 
-            return new DataEventOutbox
-            {
-                KeyId = @event.EventId,
-                EventName = @event.GetEventName(),
-                CorrelationId = @event.CorrelationId,
-                CausationId = @event.CausationId,
-                EventData = data
-            };
-        }
-        catch (Exception exception) when (exception is not InvalidOperationException)
-        {
-            throw new InvalidOperationException(
-                $"Failed to convert the event {@event.GetType().Name} to entity. " +
-                "See inner exception for details.",
-                exception);
-        }
-    }
+			return new DataEventOutbox
+			{
+				KeyId = @event.EventId,
+				EventName = @event.GetEventName(),
+				CorrelationId = @event.CorrelationId,
+				CausationId = @event.CausationId,
+				EventData = data
+			};
+		}
+		catch (Exception exception) when (exception is not InvalidOperationException)
+		{
+			throw new InvalidOperationException(
+				$"Failed to convert the event {@event.GetType().Name} to data event. " +
+				"See inner exception for details.",
+				exception);
+		}
+	}
 
-    /// <inheritdoc/>
-    public IIntegrationEvent ConvertEntityToEvent(DataEventOutbox entity, IEventConverterContext context)
-    {
-        ArgumentNullException.ThrowIfNull(entity);
-        ArgumentNullException.ThrowIfNull(context);
+	/// <inheritdoc/>
+	public IIntegrationEvent ConvertDataToEvent(DataEventOutbox entity)
+	{
+		ArgumentNullException.ThrowIfNull(entity);
 
-        try
-        {
-            Type targetType = _typeResolver.Resolve(entity.EventName);
-            JsonTypeInfo typeInfo = context.ResolveJsonTypeInfo(targetType);
+		try
+		{
+			Type targetType = _typeResolver.Resolve(entity.EventName);
+			JsonTypeInfo typeInfo = _converterContext.ResolveJsonTypeInfo(targetType);
 
-            object? @event = JsonSerializer.Deserialize(entity.EventData, typeInfo)
-                ?? throw new InvalidOperationException(
-                    $"Failed to deserialize the event data to {typeInfo.Type.Name}.");
+			object? @event = JsonSerializer.Deserialize(entity.EventData, typeInfo)
+				?? throw new InvalidOperationException(
+					$"Failed to deserialize the event data to {typeInfo.Type.Name}.");
 
-            return (IIntegrationEvent)@event;
-        }
-        catch (Exception exception) when (exception is not InvalidOperationException)
-        {
-            throw new InvalidOperationException(
-                "Failed to convert the event entity. See inner exception for details.",
-                exception);
-        }
-    }
+			return (IIntegrationEvent)@event;
+		}
+		catch (Exception exception) when (exception is not InvalidOperationException)
+		{
+			throw new InvalidOperationException(
+				"Failed to convert the data event to event. See inner exception for details.",
+				exception);
+		}
+	}
 }
