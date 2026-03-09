@@ -1,4 +1,4 @@
-/*******************************************************************************
+﻿/*******************************************************************************
  * Copyright (C) 2025-2026 Kamersoft
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
@@ -15,6 +15,7 @@
  *
 ********************************************************************************/
 using System.ComponentModel;
+using System.Diagnostics.CodeAnalysis;
 using System.Text.Json;
 using System.Text.Json.Serialization;
 
@@ -31,7 +32,7 @@ namespace System;
 /// <remarks>Use the <see cref="IPrimitive{TPrimitive, TValue}"/> interface for strongly-typed primitive value wrappers.</remarks>
 public interface IPrimitive
 {
-    object Value { get; }
+	object Value { get; }
 }
 
 /// <summary>
@@ -40,12 +41,12 @@ public interface IPrimitive
 /// </summary>
 /// <remarks>Use the <see cref="IPrimitive{TPrimitive, TValue}"/> interface for strongly-typed primitive value wrappers.</remarks>
 public interface IPrimitive<TValue> : IPrimitive
-    where TValue : notnull
+	where TValue : notnull
 {
-    new TValue Value { get; }
+	new TValue Value { get; }
 
-    [EditorBrowsable(EditorBrowsableState.Never)]
-    object IPrimitive.Value => Value;
+	[EditorBrowsable(EditorBrowsableState.Never)]
+	object IPrimitive.Value => Value;
 }
 
 /// <summary>
@@ -64,107 +65,107 @@ public interface IPrimitive<TValue> : IPrimitive
 /// <typeparam name="TPrimitive">The struct type that implements this interface, representing the strongly-typed primitive value.</typeparam>
 /// <typeparam name="TValue">The underlying value type encapsulated by the primitive. Must be non-null.</typeparam>
 public interface IPrimitive<TPrimitive, TValue> :
-    IPrimitive<TValue>,
-    IEquatable<TPrimitive>,
-    IComparable<TPrimitive>,
-    IComparable,
-    IFormattable
-    where TPrimitive : struct, IPrimitive<TPrimitive, TValue>
-    where TValue : notnull
+	IPrimitive<TValue>,
+	IEquatable<TPrimitive>,
+	IComparable<TPrimitive>,
+	IComparable,
+	IFormattable
+	where TPrimitive : struct, IPrimitive<TPrimitive, TValue>
+	where TValue : notnull
 {
-    /// <summary>
-    /// Creates a new instance of the primitive type from the specified value.
-    /// </summary>
-    /// <param name="value">The value to be encapsulated by the primitive type. The interpretation and validation of this value depend on
-    /// the implementation.</param>
-    /// <returns>A new instance of the primitive type that represents the specified value.</returns>
-    static abstract TPrimitive Create(TValue value);
+	/// <summary>
+	/// Creates a new instance of the primitive type from the specified value.
+	/// </summary>
+	/// <param name="value">The value to be encapsulated by the primitive type. The interpretation and validation of this value depend on
+	/// the implementation.</param>
+	/// <returns>A new instance of the primitive type that represents the specified value.</returns>
+	static abstract TPrimitive Create(TValue value);
 
-    /// <summary>
-    /// Tries to convert the specified string representation of a number to its equivalent primitive type without
-    /// throwing an exception.
-    /// </summary>
-    /// <remarks>This method is useful for safely parsing strings into numeric types without throwing
-    /// exceptions. It handles various formats based on the provided culture information.</remarks>
-    /// <param name="s">The string representation of the number to convert. This parameter can be null, in which case the method returns
-    /// false.</param>
-    /// <param name="provider">An optional object that supplies culture-specific formatting information. If null, the current culture is used.</param>
-    /// <param name="result">When this method returns, contains the converted value if the conversion succeeded; otherwise, it is set to the
-    /// default value of TPrimitive.</param>
-    /// <returns>true if the conversion succeeded; otherwise, false.</returns>
-    static abstract bool TryParse(string? s, IFormatProvider? provider, out TPrimitive result);
+	/// <summary>
+	/// Tries to convert the specified string representation of a number to its equivalent primitive type without
+	/// throwing an exception.
+	/// </summary>
+	/// <remarks>This method is useful for safely parsing strings into numeric types without throwing
+	/// exceptions. It handles various formats based on the provided culture information.</remarks>
+	/// <param name="s">The string representation of the number to convert. This parameter can be null, in which case the method returns
+	/// false.</param>
+	/// <param name="provider">An optional object that supplies culture-specific formatting information. If null, the current culture is used.</param>
+	/// <param name="result">When this method returns, contains the converted value if the conversion succeeded; otherwise, it is set to the
+	/// default value of TPrimitive.</param>
+	/// <returns>true if the conversion succeeded; otherwise, false.</returns>
+	static abstract bool TryParse(string? s, IFormatProvider? provider, out TPrimitive result);
 
-    /// <summary>
-    /// Gets the default value for the type parameter <typeparamref name="TValue"/> as defined by the implementing type.
-    /// </summary>
-    /// <remarks>This property provides a standardized way to access the default value for a given type
-    /// parameter. The meaning of the default value may vary depending on the implementation; for reference types, it is
-    /// typically <see langword="null"/>, and for value types, it is usually the result of the default
-    /// constructor.</remarks>
-    static abstract TValue DefaultValue { get; }
+	/// <summary>
+	/// Gets the default value for the type parameter <typeparamref name="TValue"/> as defined by the implementing type.
+	/// </summary>
+	/// <remarks>This property provides a standardized way to access the default value for a given type
+	/// parameter. The meaning of the default value may vary depending on the implementation; for reference types, it is
+	/// typically <see langword="null"/>, and for value types, it is usually the result of the default
+	/// constructor.</remarks>
+	static abstract TValue DefaultValue { get; }
 
-    /// <summary>
-    /// Returns a default instance of the primitive type represented by the implementing type.
-    /// </summary>
-    /// <remarks>This method is typically used to obtain a baseline or uninitialized value for the primitive
-    /// type. The definition of the default instance may vary depending on the implementation.</remarks>
-    /// <returns>A default value of type <typeparamref name="TPrimitive"/> as defined by the implementing type.</returns>
-    static TPrimitive DefaultInstance() => TPrimitive.Create(TPrimitive.DefaultValue);
+	/// <summary>
+	/// Returns a default instance of the primitive type represented by the implementing type.
+	/// </summary>
+	/// <remarks>This method is typically used to obtain a baseline or uninitialized value for the primitive
+	/// type. The definition of the default instance may vary depending on the implementation.</remarks>
+	/// <returns>A default value of type <typeparamref name="TPrimitive"/> as defined by the implementing type.</returns>
+	static TPrimitive DefaultInstance() => TPrimitive.Create(TPrimitive.DefaultValue);
 
-    /// <summary>
-    /// Defines an implicit conversion from the primitive type to the value type.
-    /// </summary>
-    /// <remarks>Implement this operator to enable seamless conversion from the underlying primitive type to
-    /// the custom value type. This allows instances of the primitive type to be used where the value type is expected
-    /// without explicit casting.</remarks>
-    /// <param name="primitive">The primitive value to convert to the value type.</param>
-    static abstract implicit operator TValue(TPrimitive primitive);
+	/// <summary>
+	/// Defines an implicit conversion from the primitive type to the value type.
+	/// </summary>
+	/// <remarks>Implement this operator to enable seamless conversion from the underlying primitive type to
+	/// the custom value type. This allows instances of the primitive type to be used where the value type is expected
+	/// without explicit casting.</remarks>
+	/// <param name="primitive">The primitive value to convert to the value type.</param>
+	static abstract implicit operator TValue(TPrimitive primitive);
 
-    /// <summary>
-    /// Defines an implicit conversion from the TValue type to its corresponding TPrimitive type.
-    /// </summary>
-    /// <remarks>This operator enables seamless conversion between TValue and TPrimitive without requiring an
-    /// explicit cast. Use this conversion when TValue can be represented as TPrimitive without loss of
-    /// information.</remarks>
-    /// <param name="value">The TValue instance to convert to TPrimitive.</param>
-    static abstract implicit operator TPrimitive(TValue value);
+	/// <summary>
+	/// Defines an implicit conversion from the TValue type to its corresponding TPrimitive type.
+	/// </summary>
+	/// <remarks>This operator enables seamless conversion between TValue and TPrimitive without requiring an
+	/// explicit cast. Use this conversion when TValue can be represented as TPrimitive without loss of
+	/// information.</remarks>
+	/// <param name="value">The TValue instance to convert to TPrimitive.</param>
+	static abstract implicit operator TPrimitive(TValue value);
 
-    /// <summary>
-    /// Determines whether two instances of the primitive type are equal.
-    /// </summary>
-    /// <param name="left">The first primitive value to compare.</param>
-    /// <param name="right">The second primitive value to compare.</param>
-    /// <returns>true if the specified values are equal; otherwise, false.</returns>
-    static abstract bool operator ==(TPrimitive left, TPrimitive right);
+	/// <summary>
+	/// Determines whether two instances of the primitive type are equal.
+	/// </summary>
+	/// <param name="left">The first primitive value to compare.</param>
+	/// <param name="right">The second primitive value to compare.</param>
+	/// <returns>true if the specified values are equal; otherwise, false.</returns>
+	static abstract bool operator ==(TPrimitive left, TPrimitive right);
 
-    /// <summary>
-    /// Determines whether two instances of the primitive type are not equal.
-    /// </summary>
-    /// <param name="left">The first primitive value to compare.</param>
-    /// <param name="right">The second primitive value to compare.</param>
-    /// <returns>true if the specified values are not equal; otherwise, false.</returns>
-    static abstract bool operator !=(TPrimitive left, TPrimitive right);
+	/// <summary>
+	/// Determines whether two instances of the primitive type are not equal.
+	/// </summary>
+	/// <param name="left">The first primitive value to compare.</param>
+	/// <param name="right">The second primitive value to compare.</param>
+	/// <returns>true if the specified values are not equal; otherwise, false.</returns>
+	static abstract bool operator !=(TPrimitive left, TPrimitive right);
 
-    /// <summary>
-    /// Returns a string representation of the current value.
-    /// </summary>
-    /// <returns>A string that represents the value. Returns an empty string if the value is null.</returns>
-    public string ToString() => Value.ToString() ?? string.Empty;
+	/// <summary>
+	/// Returns a string representation of the current value.
+	/// </summary>
+	/// <returns>A string that represents the value. Returns an empty string if the value is null.</returns>
+	public string ToString() => Value.ToString() ?? string.Empty;
 
-    /// <summary>
-    /// Returns a hash code for the current instance.
-    /// </summary>
-    /// <returns>A 32-bit signed integer hash code representing the value of this instance.</returns>
-    int GetHashCode() => Value.GetHashCode();
+	/// <summary>
+	/// Returns a hash code for the current instance.
+	/// </summary>
+	/// <returns>A 32-bit signed integer hash code representing the value of this instance.</returns>
+	int GetHashCode() => Value.GetHashCode();
 
-    bool IEquatable<TPrimitive>.Equals(TPrimitive other) =>
-            EqualityComparer<TValue>.Default.Equals(Value, other.Value);
-    int IComparable<TPrimitive>.CompareTo(TPrimitive other) =>
-        Comparer<TValue>.Default.Compare(Value, other.Value);
-    int IComparable.CompareTo(object? obj) =>
-        obj is TPrimitive other ? CompareTo(other) : throw new ArgumentException("Invalid comparison type");
-    string IFormattable.ToString(string? format, IFormatProvider? formatProvider) =>
-        (Value as IFormattable)?.ToString(format, formatProvider) ?? Value.ToString() ?? string.Empty;
+	bool IEquatable<TPrimitive>.Equals(TPrimitive other) =>
+			EqualityComparer<TValue>.Default.Equals(Value, other.Value);
+	int IComparable<TPrimitive>.CompareTo(TPrimitive other) =>
+		Comparer<TValue>.Default.Compare(Value, other.Value);
+	int IComparable.CompareTo(object? obj) =>
+		obj is TPrimitive other ? CompareTo(other) : throw new ArgumentException("Invalid comparison type");
+	string IFormattable.ToString(string? format, IFormatProvider? formatProvider) =>
+		(Value as IFormattable)?.ToString(format, formatProvider) ?? Value.ToString() ?? string.Empty;
 }
 
 /// <summary>
@@ -175,15 +176,15 @@ public interface IPrimitive<TPrimitive, TValue> :
 /// primitive types throughout an application.</remarks>
 public static class PrimitiveExtensions
 {
-    extension<TPrimitive, TValue>(IPrimitive<TPrimitive, TValue> primitive)
-        where TPrimitive : struct, IPrimitive<TPrimitive, TValue>
-        where TValue : notnull
-    {
-        /// <summary>
-        /// Gets a value indicating whether the current value is equal to the default value for the type.
-        /// </summary>
-        public bool IsEmpty => EqualityComparer<TValue>.Default.Equals(primitive.Value, TPrimitive.DefaultValue);
-    }
+	extension<TPrimitive, TValue>(IPrimitive<TPrimitive, TValue> primitive)
+		where TPrimitive : struct, IPrimitive<TPrimitive, TValue>
+		where TValue : notnull
+	{
+		/// <summary>
+		/// Gets a value indicating whether the current value is equal to the default value for the type.
+		/// </summary>
+		public bool IsEmpty => EqualityComparer<TValue>.Default.Equals(primitive.Value, TPrimitive.DefaultValue);
+	}
 }
 
 /// <summary>
@@ -197,31 +198,31 @@ public static class PrimitiveExtensions
 /// value type.</typeparam>
 /// <typeparam name="TValue">Specifies the value type associated with the primitive type. This type must be non-nullable.</typeparam>
 public sealed class PrimitiveTypeConverter<TPrimitive, TValue> : TypeConverter
-    where TPrimitive : struct, IPrimitive<TPrimitive, TValue>
-    where TValue : notnull
+	where TPrimitive : struct, IPrimitive<TPrimitive, TValue>
+	where TValue : notnull
 {
-    public override bool CanConvertFrom(ITypeDescriptorContext? context, Type sourceType)
-    {
-        if (sourceType == typeof(string))
-        {
-            return true;
-        }
+	public override bool CanConvertFrom(ITypeDescriptorContext? context, Type sourceType)
+	{
+		if (sourceType == typeof(string))
+		{
+			return true;
+		}
 
-        return base.CanConvertFrom(context, sourceType);
-    }
-    public override object? ConvertFrom(ITypeDescriptorContext? context, Globalization.CultureInfo? culture, object value)
-    {
-        if (value is string s)
-        {
-            if (TPrimitive.TryParse(s, culture, out TPrimitive result))
-            {
-                return result;
-            }
+		return base.CanConvertFrom(context, sourceType);
+	}
+	public override object? ConvertFrom(ITypeDescriptorContext? context, Globalization.CultureInfo? culture, object value)
+	{
+		if (value is string s)
+		{
+			if (TPrimitive.TryParse(s, culture, out TPrimitive result))
+			{
+				return result;
+			}
 
-            throw new FormatException($"Cannot convert '{s}' to {typeof(TPrimitive)}.");
-        }
-        return base.ConvertFrom(context, culture, value);
-    }
+			throw new FormatException($"Cannot convert '{s}' to {typeof(TPrimitive)}.");
+		}
+		return base.ConvertFrom(context, culture, value);
+	}
 }
 
 /// <summary>
@@ -235,13 +236,13 @@ public sealed class PrimitiveTypeConverter<TPrimitive, TValue> : TypeConverter
 /// <typeparam name="TValue">The underlying value type represented by the primitive value object. Must be non-nullable.</typeparam>
 [AttributeUsage(AttributeTargets.Struct, AllowMultiple = false, Inherited = false)]
 public sealed class PrimitiveJsonConverterAttribute<TPrimitive, TValue> : JsonConverterAttribute
-    where TPrimitive : struct, IPrimitive<TPrimitive, TValue>
-    where TValue : notnull
+	where TPrimitive : struct, IPrimitive<TPrimitive, TValue>
+	where TValue : notnull
 {
-    public override JsonConverter? CreateConverter(Type typeToConvert)
-    {
-        return new PrimitiveJsonConverter<TPrimitive, TValue>();
-    }
+	public override JsonConverter? CreateConverter(Type typeToConvert)
+	{
+		return new PrimitiveJsonConverter<TPrimitive, TValue>();
+	}
 }
 
 /// <summary>
@@ -254,20 +255,25 @@ public sealed class PrimitiveJsonConverterAttribute<TPrimitive, TValue> : JsonCo
 /// <typeparam name="TPrimitive">The value object type to convert. Must be a struct implementing <see cref="IPrimitive{TPrimitive, TValue}"/>.</typeparam>
 /// <typeparam name="TValue">The underlying value type used by the primitive. Must be a non-nullable type.</typeparam>
 public sealed class PrimitiveJsonConverter<TPrimitive, TValue> : JsonConverter<TPrimitive>
-    where TPrimitive : struct, IPrimitive<TPrimitive, TValue>
-    where TValue : notnull
+	where TPrimitive : struct, IPrimitive<TPrimitive, TValue>
+	where TValue : notnull
 {
-    public override TPrimitive Read(ref Utf8JsonReader reader, Type typeToConvert, JsonSerializerOptions options)
-    {
-        TValue? value = (TValue?)JsonSerializer.Deserialize(ref reader, typeof(TValue), PrimitiveJsonContext.Default)
-            ?? throw new JsonException($"Unable to convert null to {typeof(TPrimitive)}.");
+	[UnconditionalSuppressMessage("Trimming", "IL2026:Members annotated with 'RequiresUnreferencedCodeAttribute' require dynamic access otherwise can break functionality when trimming application code", Justification = "<Pending>")]
+	[UnconditionalSuppressMessage("AOT", "IL3050:Calling members annotated with 'RequiresDynamicCodeAttribute' may break functionality when AOT compiling.", Justification = "<Pending>")]
+	public override TPrimitive Read(ref Utf8JsonReader reader, Type typeToConvert, JsonSerializerOptions options)
+	{
+		TValue? value = JsonSerializer.Deserialize<TValue>(ref reader, options)
+			?? throw new JsonException($"Unable to convert null to {typeof(TPrimitive)}.");
 
-        return TPrimitive.Create(value);
-    }
-    public override void Write(Utf8JsonWriter writer, TPrimitive value, JsonSerializerOptions options)
-    {
-        JsonSerializer.Serialize(writer, value.Value, typeof(TValue), PrimitiveJsonContext.Default);
-    }
+		return TPrimitive.Create(value);
+	}
+
+	[UnconditionalSuppressMessage("Trimming", "IL2026:Members annotated with 'RequiresUnreferencedCodeAttribute' require dynamic access otherwise can break functionality when trimming application code", Justification = "<Pending>")]
+	[UnconditionalSuppressMessage("AOT", "IL3050:Calling members annotated with 'RequiresDynamicCodeAttribute' may break functionality when AOT compiling.", Justification = "<Pending>")]
+	public override void Write(Utf8JsonWriter writer, TPrimitive value, JsonSerializerOptions options)
+	{
+		JsonSerializer.Serialize(writer, value.Value, options);
+	}
 }
 
 /// <summary>
@@ -280,12 +286,12 @@ public sealed class PrimitiveJsonConverter<TPrimitive, TValue> : JsonConverter<T
 /// with System.Text.Json APIs to benefit from improved performance and reduced runtime reflection when working with
 /// supported types.</remarks>
 [JsonSourceGenerationOptions(
-    WriteIndented = true,
-    PropertyNamingPolicy = JsonKnownNamingPolicy.CamelCase,
-    DefaultIgnoreCondition = JsonIgnoreCondition.WhenWritingDefault,
-    PropertyNameCaseInsensitive = true,
-    UseStringEnumConverter = true,
-    AllowTrailingCommas = true)]
+	WriteIndented = true,
+	PropertyNamingPolicy = JsonKnownNamingPolicy.CamelCase,
+	DefaultIgnoreCondition = JsonIgnoreCondition.WhenWritingDefault,
+	PropertyNameCaseInsensitive = true,
+	UseStringEnumConverter = true,
+	AllowTrailingCommas = true)]
 [JsonSerializable(typeof(string))]
 [JsonSerializable(typeof(int))]
 [JsonSerializable(typeof(ushort))]
@@ -301,6 +307,8 @@ public sealed class PrimitiveJsonConverter<TPrimitive, TValue> : JsonConverter<T
 [JsonSerializable(typeof(DateTimeOffset))]
 [JsonSerializable(typeof(Guid))]
 [JsonSerializable(typeof(TimeSpan))]
+[JsonSerializable(typeof(DateOnly))]
+[JsonSerializable(typeof(TimeOnly))]
 public partial class PrimitiveJsonContext : JsonSerializerContext { }
 
 #pragma warning restore CA1000 // Do not declare static members on generic types

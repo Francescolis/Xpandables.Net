@@ -41,7 +41,7 @@ public static class JsonSerializerOptionsExtensions
 	///		services.AddXJsonSerializerOptions(options =>
 	///		{
 	///			// AOT source-generated metadata
-	///			options.SerializerOptions.TypeInfoResolverChain.Insert(0, AppJsonSerializerContext.Default);
+	///			options.SerializerOptions.TypeInfoResolverChain.Insert(0, DateTimeOnlyJsonContext.Default);
 	///			options.SerializerOptions.TypeInfoResolverChain.Insert(0, PaginationJsonContext.Default);
 	///			options.SerializerOptions.TypeInfoResolverChain.Insert(0, OptionalJsonContext.Default);
 	///			options.SerializerOptions.TypeInfoResolverChain.Insert(0, ElementCollectionContext.Default);

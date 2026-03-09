@@ -32,7 +32,7 @@ namespace System;
 [JsonSerializable(typeof(DateOnly?))]
 [JsonSerializable(typeof(TimeOnly))]
 [JsonSerializable(typeof(TimeOnly?))]
-public partial class DateTimeOnlySerializerContext : JsonSerializerContext;
+public partial class DateTimeOnlyJsonContext : JsonSerializerContext;
 
 /// <summary>
 /// Provides extension methods for resolving JSON serialization metadata for .NET types using System.Text.Json.
