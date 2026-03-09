@@ -1,4 +1,4 @@
-/*******************************************************************************
+﻿/*******************************************************************************
  * Copyright (C) 2025-2026 Kamersoft
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
@@ -30,13 +30,13 @@ namespace System.Results.Pipelines;
 /// and are committed after the unit of work  completes. This ensures that domain events are only published if the
 /// associated transaction is successfully committed.</remarks>
 /// <typeparam name="TRequest">The type of the request being handled. Must implement <see cref="IRequest"/> and <see
-/// cref="IRequiresEventStorage"/>.</typeparam>
+/// cref="IEventRequiresStorage"/>.</typeparam>
 /// <param name="pendingDomainEvents"></param>
 /// <param name="publisher"></param>
 public sealed class PipelinePublishDomainEventDecorator<TRequest>(
     IPendingDomainEventsBuffer pendingDomainEvents,
     IEventPublisher publisher) : IPipelineDecorator<TRequest>
-    where TRequest : class, IRequest, IRequiresEventStorage
+    where TRequest : class, IRequest, IEventRequiresStorage
 {
     /// <inheritdoc/>
     public async Task<Result> HandleAsync(

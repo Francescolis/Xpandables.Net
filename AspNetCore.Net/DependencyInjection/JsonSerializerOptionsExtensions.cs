@@ -1,4 +1,4 @@
-/*******************************************************************************
+﻿/*******************************************************************************
  * Copyright (C) 2025-2026 Kamersoft
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
@@ -29,26 +29,52 @@ namespace Microsoft.Extensions.DependencyInjection;
 /// </summary>
 public static class JsonSerializerOptionsExtensions
 {
-    extension(IServiceCollection services)
-    {
-        /// <summary>
-        /// Adds the configured <see cref="System.Text.Json.JsonSerializerOptions"/> to the service collection as a
-        /// singleton service.
-        /// </summary>
-        /// <remarks>This method retrieves the <see cref="System.Text.Json.JsonSerializerOptions"/> from
-        /// the application's <see cref="Microsoft.Extensions.Options.IOptions{JsonOptions}"/> and makes it available
-        /// for dependency injection. Use this method to ensure consistent JSON serialization settings throughout the
-        /// application.</remarks>
-        /// <returns>The <see cref="IServiceCollection"/> with the <see cref="System.Text.Json.JsonSerializerOptions"/>
-        /// registered as a singleton.</returns>
-        public IServiceCollection AddXJsonSerializerOptions()
-        {
-            ArgumentNullException.ThrowIfNull(services);
-            return services.AddSingleton(provider =>
-            {
-				JsonSerializerOptions options = provider.GetRequiredService<IOptions<JsonOptions>>().Value.SerializerOptions;
-                return options;
-            });
-        }
-    }
+	/// <summary>
+	/// Adds the configured <see cref="System.Text.Json.JsonSerializerOptions"/> to the service collection as a
+	/// singleton service.
+	/// </summary>
+	/// <remarks>This method retrieves the <see cref="System.Text.Json.JsonSerializerOptions"/> from
+	/// the application's <see cref="Microsoft.Extensions.Options.IOptions{JsonOptions}"/> and makes it available
+	/// for dependency injection. Use this method to ensure consistent JSON serialization settings throughout the
+	/// application. Configure options like specified in the example :
+	/// <code>
+	///		services.AddXJsonSerializerOptions(options =>
+	///		{
+	///			// AOT source-generated metadata
+	///			options.SerializerOptions.TypeInfoResolverChain.Insert(0, AppJsonSerializerContext.Default);
+	///			options.SerializerOptions.TypeInfoResolverChain.Insert(0, PaginationJsonContext.Default);
+	///			options.SerializerOptions.TypeInfoResolverChain.Insert(0, OptionalJsonContext.Default);
+	///			options.SerializerOptions.TypeInfoResolverChain.Insert(0, ElementCollectionContext.Default);
+	///			options.SerializerOptions.TypeInfoResolverChain.Insert(0, ElementEntryContext.Default);
+	///			options.SerializerOptions.TypeInfoResolverChain.Insert(0, PatchOperationJsonContext.Default);
+	///			options.SerializerOptions.TypeInfoResolverChain.Insert(0, ResultJsonContext.Default);
+	///			//...
+	///			
+	///			// Culture-aware converters
+	///			options.SerializerOptions.Converters.Add(new DateOnlyJsonConverter());
+	///			options.SerializerOptions.Converters.Add(new NullableDateOnlyJsonConverter());
+	///			options.SerializerOptions.Converters.Add(new TimeOnlyJsonConverter());
+	///			options.SerializerOptions.Converters.Add(new NullableTimeOnlyJsonConverter());
+	///			// ...
+	///		});
+	/// </code>
+	/// </remarks>
+	/// <returns>The <see cref="IServiceCollection"/> with the <see cref="System.Text.Json.JsonSerializerOptions"/>
+	/// registered as a singleton.</returns>
+	public static IServiceCollection AddXJsonSerializerOptions(this IServiceCollection services, Action<JsonOptions>? configureOptions = null)
+	{
+		ArgumentNullException.ThrowIfNull(services);
+		ArgumentNullException.ThrowIfNull(services);
+
+		if (configureOptions is not null)
+		{
+			services.ConfigureHttpJsonOptions(configureOptions);
+		}
+
+		return services.AddSingleton(provider =>
+		{
+			JsonSerializerOptions options = provider.GetRequiredService<IOptions<JsonOptions>>().Value.SerializerOptions;
+			return options;
+		});
+	}
 }

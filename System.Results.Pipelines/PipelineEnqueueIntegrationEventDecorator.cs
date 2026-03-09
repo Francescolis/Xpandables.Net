@@ -1,4 +1,4 @@
-/*******************************************************************************
+﻿/*******************************************************************************
  * Copyright (C) 2025-2026 Kamersoft
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
@@ -27,14 +27,14 @@ namespace System.Results.Pipelines;
 /// <remarks>This decorator should be used in scenarios where integration events must be reliably captured and
 /// stored as part of the request pipeline, such as in event-driven or distributed systems. Events are drained from the
 /// buffer and enqueued to the outbox only if the request is processed successfully.</remarks>
-/// <typeparam name="TRequest">The type of request being processed. Must implement <see cref="IRequest"/> and <see cref="IRequiresEventStorage"/>.</typeparam>
+/// <typeparam name="TRequest">The type of request being processed. Must implement <see cref="IRequest"/> and <see cref="IEventRequiresStorage"/>.</typeparam>
 /// <param name="pending">The buffer that holds pending integration events generated during request execution.</param>
 /// <param name="outbox">The outbox store used to persist integration events for reliable delivery.</param>
 public sealed class PipelineEnqueueIntegrationEventDecorator<TRequest>(
 	IPendingIntegrationEventsBuffer pending,
 	IOutboxStore outbox) :
 	IPipelineDecorator<TRequest>
-	where TRequest : class, IRequest, IRequiresEventStorage
+	where TRequest : class, IRequest, IEventRequiresStorage
 {
 	private readonly IPendingIntegrationEventsBuffer _pending = pending;
 	private readonly IOutboxStore _outbox = outbox;

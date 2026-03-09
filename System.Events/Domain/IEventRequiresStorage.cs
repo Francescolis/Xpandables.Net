@@ -1,4 +1,4 @@
-/*******************************************************************************
+﻿/*******************************************************************************
  * Copyright (C) 2025-2026 Kamersoft
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
@@ -24,5 +24,5 @@ namespace System.Events.Domain;
 /// state management. This interface is typically used in scenarios where dependency injection or service location is
 /// employed to provide storage capabilities.</remarks>
 #pragma warning disable CA1040 // Avoid empty interfaces
-public interface IRequiresEventStorage;
+public interface IEventRequiresStorage;
 #pragma warning restore CA1040 // Avoid empty interfaces

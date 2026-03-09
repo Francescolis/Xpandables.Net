@@ -1,4 +1,4 @@
-/*******************************************************************************
+﻿/*******************************************************************************
  * Copyright (C) 2025-2026 Kamersoft
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
@@ -20,7 +20,7 @@ using System.Results.Requests;
 
 namespace BankAccounts.Domain.Features.CreateAccount;
 
-public sealed class CreateAccountCommand : IRequest<CreateAccountResult>, IRequiresValidation, IRequiresEventStorage
+public sealed class CreateAccountCommand : IRequest<CreateAccountResult>, IRequiresValidation, IEventRequiresStorage
 {
 	[Required, StringLength(byte.MaxValue, MinimumLength = 3)]
 	public required string Owner { get; init; }

@@ -1,4 +1,4 @@
-/*******************************************************************************
+﻿/*******************************************************************************
  * Copyright (C) 2025-2026 Kamersoft
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
@@ -20,7 +20,7 @@ using System.Results.Requests;
 
 namespace BankAccounts.Domain.Features.DepositAccount;
 
-public sealed record DepositAccountCommand : IRequest<DepositAccountResult>, IRequiresValidation, IRequiresEventStorage
+public sealed record DepositAccountCommand : IRequest<DepositAccountResult>, IRequiresValidation, IEventRequiresStorage
 {
 	public required Guid AccountId { get; init; }
 

@@ -1,4 +1,4 @@
-/*******************************************************************************
+﻿/*******************************************************************************
  * Copyright (C) 2025-2026 Kamersoft
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
@@ -22,6 +22,19 @@ using System.Text.Json.Serialization.Metadata;
 namespace System;
 
 /// <summary>
+/// Provides a source-generated context for serializing and deserializing JSON data, including support for DateOnly and
+/// TimeOnly types.
+/// </summary>
+/// <remarks>Use this context with System.Text.Json serialization APIs to enable efficient handling of DateOnly
+/// and TimeOnly values. This class is typically passed to serialization methods to optimize performance and ensure
+/// correct type handling.</remarks>
+[JsonSerializable(typeof(DateOnly))]
+[JsonSerializable(typeof(DateOnly?))]
+[JsonSerializable(typeof(TimeOnly))]
+[JsonSerializable(typeof(TimeOnly?))]
+public partial class DateTimeOnlySerializerContext : JsonSerializerContext;
+
+/// <summary>
 /// Provides extension methods for resolving JSON serialization metadata for .NET types using System.Text.Json.
 /// </summary>
 /// <remarks>These extension methods enable advanced scenarios for obtaining type metadata that reflects the
@@ -30,50 +43,50 @@ namespace System;
 /// metadata.</remarks>
 public static class JsonSerializerExtensions
 {
-    extension(JsonSerializer)
-    {
-        /// <summary>
-        /// Resolves metadata for the specified .NET type to support JSON serialization and deserialization using the
-        /// provided or default options.
-        /// </summary>
-        /// <remarks>If <paramref name="options"/> is null, the method uses <see
-        /// cref="JsonSerializerOptions.Web"/> as the default configuration. The returned metadata reflects the
-        /// serialization behavior defined by the resolved options, including any custom converters or
-        /// policies.</remarks>
-        /// <param name="type">The type for which to obtain JSON serialization metadata. Cannot be null.</param>
-        /// <param name="options">The options to use when resolving metadata. If null, the default web options are used.</param>
-        /// <returns>A <see cref="JsonTypeInfo"/> instance containing metadata for the specified type, configured according to
-        /// the provided or default options.</returns>
-        [RequiresUnreferencedCode("Calls System.Text.Json.JsonSerializerOptions.Web")]
-        [RequiresDynamicCode("Calls System.Text.Json.JsonSerializerOptions.Web")]
-        public static JsonTypeInfo GetJsonTypeInfo(Type type, JsonSerializerOptions? options)
-        {
-            ArgumentNullException.ThrowIfNull(type);
+	extension(JsonSerializer)
+	{
+		/// <summary>
+		/// Resolves metadata for the specified .NET type to support JSON serialization and deserialization using the
+		/// provided or default options.
+		/// </summary>
+		/// <remarks>If <paramref name="options"/> is null, the method uses <see
+		/// cref="JsonSerializerOptions.Web"/> as the default configuration. The returned metadata reflects the
+		/// serialization behavior defined by the resolved options, including any custom converters or
+		/// policies.</remarks>
+		/// <param name="type">The type for which to obtain JSON serialization metadata. Cannot be null.</param>
+		/// <param name="options">The options to use when resolving metadata. If null, the default web options are used.</param>
+		/// <returns>A <see cref="JsonTypeInfo"/> instance containing metadata for the specified type, configured according to
+		/// the provided or default options.</returns>
+		[RequiresUnreferencedCode("Calls System.Text.Json.JsonSerializerOptions.Web")]
+		[RequiresDynamicCode("Calls System.Text.Json.JsonSerializerOptions.Web")]
+		public static JsonTypeInfo GetJsonTypeInfo(Type type, JsonSerializerOptions? options)
+		{
+			ArgumentNullException.ThrowIfNull(type);
 
-            // Resolves JsonTypeInfo metadata using the appropriate JsonSerializerOptions configuration,
-            // following the semantics of the JsonSerializer reflection methods.
+			// Resolves JsonTypeInfo metadata using the appropriate JsonSerializerOptions configuration,
+			// following the semantics of the JsonSerializer reflection methods.
 
-            options ??= JsonSerializerOptions.Web;
-            options.MakeReadOnly(populateMissingResolver: true);
-            return options.GetTypeInfo(type);
-        }
+			options ??= JsonSerializerOptions.Web;
+			options.MakeReadOnly(populateMissingResolver: true);
+			return options.GetTypeInfo(type);
+		}
 
-        /// <summary>
-        /// Retrieves the JSON type metadata for the specified .NET type from the provided serialization context.
-        /// </summary>
-        /// <remarks>Use this method to access type-specific serialization information, such as property
-        /// mappings and converters, when working with custom or source-generated JSON serialization contexts.</remarks>
-        /// <param name="type">The .NET type for which to obtain JSON serialization metadata. Cannot be null.</param>
-        /// <param name="context">The serialization context that contains metadata for supported types. Cannot be null.</param>
-        /// <returns>A <see cref="JsonTypeInfo"/> instance containing serialization metadata for the specified type.</returns>
-        /// <exception cref="InvalidOperationException">Thrown if the specified <paramref name="type"/> is not supported by the provided <paramref name="context"/>.</exception>
-        public static JsonTypeInfo GetJsonTypeInfo(Type type, JsonSerializerContext context)
-        {
-            ArgumentNullException.ThrowIfNull(type);
-            ArgumentNullException.ThrowIfNull(context);
+		/// <summary>
+		/// Retrieves the JSON type metadata for the specified .NET type from the provided serialization context.
+		/// </summary>
+		/// <remarks>Use this method to access type-specific serialization information, such as property
+		/// mappings and converters, when working with custom or source-generated JSON serialization contexts.</remarks>
+		/// <param name="type">The .NET type for which to obtain JSON serialization metadata. Cannot be null.</param>
+		/// <param name="context">The serialization context that contains metadata for supported types. Cannot be null.</param>
+		/// <returns>A <see cref="JsonTypeInfo"/> instance containing serialization metadata for the specified type.</returns>
+		/// <exception cref="InvalidOperationException">Thrown if the specified <paramref name="type"/> is not supported by the provided <paramref name="context"/>.</exception>
+		public static JsonTypeInfo GetJsonTypeInfo(Type type, JsonSerializerContext context)
+		{
+			ArgumentNullException.ThrowIfNull(type);
+			ArgumentNullException.ThrowIfNull(context);
 
-            return context.GetTypeInfo(type)
-                ?? throw new InvalidOperationException($"The type '{type.FullName}' is not supported by the provided JsonSerializerContext.");
-        }
-    }
+			return context.GetTypeInfo(type)
+				?? throw new InvalidOperationException($"The type '{type.FullName}' is not supported by the provided JsonSerializerContext.");
+		}
+	}
 }

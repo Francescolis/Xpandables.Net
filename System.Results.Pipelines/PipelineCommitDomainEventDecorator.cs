@@ -1,4 +1,4 @@
-/*******************************************************************************
+﻿/*******************************************************************************
  * Copyright (C) 2025-2026 Kamersoft
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
@@ -27,10 +27,10 @@ namespace System.Results.Pipelines;
 /// persistence. After the request is handled, 
 /// all pending changes are saved to the event store, and committed domain events are notified. 
 /// The decorator is thread-safe and intended for use in event-driven architectures.</remarks>
-/// <typeparam name="TRequest">The type of request being handled. Must implement <see cref="IRequest"/> and <see cref="IRequiresEventStorage"/>.</typeparam>
+/// <typeparam name="TRequest">The type of request being handled. Must implement <see cref="IRequest"/> and <see cref="IEventRequiresStorage"/>.</typeparam>
 public sealed class PipelineCommitDomainEventDecorator<TRequest>() :
 	IPipelineDecorator<TRequest>
-	where TRequest : class, IRequest, IRequiresEventStorage
+	where TRequest : class, IRequest, IEventRequiresStorage
 {
 	/// <inheritdoc/>
 	public async Task<Result> HandleAsync(
