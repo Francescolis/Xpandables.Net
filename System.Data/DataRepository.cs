@@ -1,4 +1,4 @@
-/*******************************************************************************
+﻿/*******************************************************************************
  * Copyright (C) 2025-2026 Kamersoft
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
@@ -333,7 +333,7 @@ public class DataRepository<[DynamicallyAccessedMembers(DynamicallyAccessedMembe
 		ThrowIfDisposed();
 		ArgumentException.ThrowIfNullOrWhiteSpace(sql);
 
-		IReadOnlyList<SqlParameter> paramList = parameters as IReadOnlyList<SqlParameter> ?? [.. (parameters ?? [])];
+		IReadOnlyList<SqlParameter> paramList = parameters as IReadOnlyList<SqlParameter> ?? [.. parameters ?? []];
 		var context = new DataCommandContext(sql, paramList, DataCommandOperationType.Reader, _entityTypeName);
 
 		DbCommand command = _connectionScope.CreateCommand();

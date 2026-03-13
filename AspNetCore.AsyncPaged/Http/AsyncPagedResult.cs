@@ -1,4 +1,4 @@
-/*******************************************************************************
+﻿/*******************************************************************************
  * Copyright (C) 2025-2026 Kamersoft
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
@@ -14,13 +14,13 @@
  * limitations under the License.
  *
 ********************************************************************************/
-namespace Microsoft.AspNetCore.Http;
 
 using System.Diagnostics.CodeAnalysis;
 using System.IO.Pipelines;
 using System.Text.Json;
 using System.Text.Json.Serialization.Metadata;
 
+namespace Microsoft.AspNetCore.Http;
 /// <summary>
 /// Represents an HTTP result that asynchronously serializes and streams a paged enumerable of results as JSON in
 /// response to a request.
@@ -41,46 +41,46 @@ using System.Text.Json.Serialization.Metadata;
 /// inferred from the result type.</param>
 /// <exception cref="ArgumentNullException">Thrown if the results parameter is null.</exception>
 public sealed class AsyncPagedResult<TResult>(
-    IAsyncPagedEnumerable<TResult> results,
-    JsonSerializerOptions? serializerOptions = null,
-    JsonTypeInfo<TResult>? jsonTypeInfo = null) : IResult
+	IAsyncPagedEnumerable<TResult> results,
+	JsonSerializerOptions? serializerOptions = null,
+	JsonTypeInfo<TResult>? jsonTypeInfo = null) : IResult
 {
-    private readonly IAsyncPagedEnumerable<TResult> _results = results ?? throw new ArgumentNullException(nameof(results));
-    private volatile JsonTypeInfo<TResult>? _jsonTypeInfo = jsonTypeInfo;
-    private readonly JsonSerializerOptions? _serializerOptions = serializerOptions;
+	private readonly IAsyncPagedEnumerable<TResult> _results = results ?? throw new ArgumentNullException(nameof(results));
+	private volatile JsonTypeInfo<TResult>? _jsonTypeInfo = jsonTypeInfo;
+	private readonly JsonSerializerOptions? _serializerOptions = serializerOptions;
 
-    /// <inheritdoc/>
-    [UnconditionalSuppressMessage("Trimming", "IL2026:Members annotated with 'RequiresUnreferencedCodeAttribute' require dynamic access otherwise can break functionality when trimming application code", Justification = "<Pending>")]
-    [UnconditionalSuppressMessage("AOT", "IL3050:Calling members annotated with 'RequiresDynamicCodeAttribute' may break functionality when AOT compiling.", Justification = "<Pending>")]
-    public async Task ExecuteAsync(HttpContext httpContext)
-    {
-        ArgumentNullException.ThrowIfNull(httpContext);
+	/// <inheritdoc/>
+	[UnconditionalSuppressMessage("Trimming", "IL2026:Members annotated with 'RequiresUnreferencedCodeAttribute' require dynamic access otherwise can break functionality when trimming application code", Justification = "<Pending>")]
+	[UnconditionalSuppressMessage("AOT", "IL3050:Calling members annotated with 'RequiresDynamicCodeAttribute' may break functionality when AOT compiling.", Justification = "<Pending>")]
+	public async Task ExecuteAsync(HttpContext httpContext)
+	{
+		ArgumentNullException.ThrowIfNull(httpContext);
 
-        httpContext.Response.ContentType ??= httpContext.GetContentType("application/json; charset=utf-8");
+		httpContext.Response.ContentType ??= httpContext.GetContentType("application/json; charset=utf-8");
 		CancellationToken cancellationToken = httpContext.RequestAborted;
 		PipeWriter pipeWriter = httpContext.Response.BodyWriter;
 
 		JsonSerializerOptions options = _serializerOptions ?? httpContext.GetJsonSerializerOptions();
 		JsonTypeInfo<TResult>? typeInfo = _jsonTypeInfo ?? ResolveJsonTypeInfo(options);
 
-        if (typeInfo is not null)
-        {
-            await JsonSerializer
-                .SerializeAsyncPaged(pipeWriter, _results, typeInfo, cancellationToken)
-                .ConfigureAwait(false);
-        }
-        else
-        {
-            await JsonSerializer
-                .SerializeAsyncPaged(pipeWriter, _results, options, cancellationToken)
-                .ConfigureAwait(false);
-        }
-    }
+		if (typeInfo is not null)
+		{
+			await JsonSerializer
+				.SerializeAsyncPaged(pipeWriter, _results, typeInfo, cancellationToken)
+				.ConfigureAwait(false);
+		}
+		else
+		{
+			await JsonSerializer
+				.SerializeAsyncPaged(pipeWriter, _results, options, cancellationToken)
+				.ConfigureAwait(false);
+		}
+	}
 
-    private JsonTypeInfo<TResult>? ResolveJsonTypeInfo(JsonSerializerOptions options)
-    {
-        var resolved = (JsonTypeInfo<TResult>?)options.GetTypeInfo(typeof(TResult));
-        _jsonTypeInfo = resolved;
-        return resolved;
-    }
+	private JsonTypeInfo<TResult>? ResolveJsonTypeInfo(JsonSerializerOptions options)
+	{
+		var resolved = (JsonTypeInfo<TResult>?)options.GetTypeInfo(typeof(TResult));
+		_jsonTypeInfo = resolved;
+		return resolved;
+	}
 }

@@ -1,4 +1,4 @@
-/*******************************************************************************
+﻿/*******************************************************************************
  * Copyright (C) 2025-2026 Kamersoft
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
@@ -31,31 +31,30 @@ namespace Microsoft.AspNetCore.Routing;
 /// concerns in web projects.</remarks>
 public interface IMinimalEndpointRoute
 {
-    /// <summary>
-    /// Configures and adds application-specific routes to the provided endpoint route builder.
-    /// </summary>
-    /// <param name="app">The <see cref="MinimalRouteBuilder"/> used to define and build the application's routing endpoints. Cannot be
-    /// null.</param>
-    void AddRoutes(MinimalRouteBuilder app);
+	/// <summary>
+	/// Configures and adds application-specific routes to the provided endpoint route builder.
+	/// </summary>
+	/// <param name="app">The <see cref="MinimalRouteBuilder"/> used to define and build the application's routing endpoints. Cannot be
+	/// null.</param>
+	void AddRoutes(MinimalRouteBuilder app);
 
-    /// <summary>
-    /// Adds services to the specified service collection.
-    /// </summary>
-    /// <param name="services">The service collection to add services to.</param>
-    public void AddServices(IServiceCollection services) { }
+	/// <summary>
+	/// Adds services to the specified service collection.
+	/// </summary>
+	/// <param name="services">The service collection to add services to.</param>
+	void AddServices(IServiceCollection services);
 
-    /// <summary>
-    /// Adds services to the specified service collection using the provided configuration.
-    /// </summary>
-    /// <param name="services">The service collection to add services to.</param>
-    /// <param name="configuration">The configuration to use for adding services.</param>
-    public void AddServices(IServiceCollection services, IConfiguration configuration) =>
-        AddServices(services);
+	/// <summary>
+	/// Adds services to the specified service collection using the provided configuration.
+	/// </summary>
+	/// <param name="services">The service collection to add services to.</param>
+	/// <param name="configuration">The configuration to use for adding services.</param>
+	void AddServices(IServiceCollection services, IConfiguration configuration);
 
-    /// <summary>  
-    /// Configures the middleware for the specified <see cref="WebApplication"/>.  
-    /// </summary>  
-    /// <param name="application">The <see cref="WebApplication"/> 
-    /// to configure.</param>  
-    public virtual void UseServices(WebApplication application) { }
+	/// <summary>  
+	/// Configures the middleware for the specified <see cref="WebApplication"/>.  
+	/// </summary>  
+	/// <param name="application">The <see cref="WebApplication"/> 
+	/// to configure.</param>  
+	void UseServices(WebApplication application);
 }

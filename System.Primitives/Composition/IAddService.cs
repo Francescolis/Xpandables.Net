@@ -1,4 +1,4 @@
-/*******************************************************************************
+﻿/*******************************************************************************
  * Copyright (C) 2025-2026 Kamersoft
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
@@ -24,17 +24,16 @@ namespace System.Composition;
 /// </summary>
 public interface IAddService
 {
-    /// <summary>
-    /// Adds services to the specified service collection.
-    /// </summary>
-    /// <param name="services">The service collection to add services to.</param>
-    public void AddServices(IServiceCollection services) { }
+	/// <summary>
+	/// Adds services to the specified service collection.
+	/// </summary>
+	/// <param name="services">The service collection to add services to.</param>
+	void AddServices(IServiceCollection services);
 
-    /// <summary>
-    /// Adds services to the specified service collection using the provided configuration.
-    /// </summary>
-    /// <param name="services">The service collection to add services to.</param>
-    /// <param name="configuration">The configuration to use for adding services.</param>
-    public void AddServices(IServiceCollection services, IConfiguration configuration) =>
-        AddServices(services);
+	/// <summary>
+	/// Adds services to the specified service collection using the provided configuration.
+	/// </summary>
+	/// <param name="services">The service collection to add services to.</param>
+	/// <param name="configuration">The configuration to use for adding services.</param>
+	void AddServices(IServiceCollection services, IConfiguration configuration);
 }

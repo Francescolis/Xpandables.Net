@@ -1,4 +1,4 @@
-/*******************************************************************************
+﻿/*******************************************************************************
  * Copyright (C) 2025-2026 Kamersoft
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
@@ -31,6 +31,4 @@ namespace System.Composition;
 /// The implementation class must be decorated with the attribute 
 /// <see cref="ExportAttribute"/> attribute,
 /// with <see cref="IAddServiceExport"/> type as contract type.</remarks>
-public interface IAddServiceExport : IAddService
-{
-}
+public interface IAddServiceExport : IAddService;

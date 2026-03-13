@@ -1,4 +1,4 @@
-/*******************************************************************************
+﻿/*******************************************************************************
  * Copyright (C) 2025-2026 Kamersoft
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
@@ -40,9 +40,9 @@ public sealed record DepositAccountRequest : IRequiresValidation
 
 
 [System.Diagnostics.CodeAnalysis.SuppressMessage("Maintainability", "CA1515:Consider making public types internal", Justification = "<Pending>")]
-public sealed class DepositAccountEndpoint : IMinimalEndpointRoute
+public sealed class DepositAccountEndpoint : MinimalEndpointRoute
 {
-	public void AddRoutes(MinimalRouteBuilder app)
+	public override void AddRoutes(MinimalRouteBuilder app)
 	{
 		ArgumentNullException.ThrowIfNull(app);
 

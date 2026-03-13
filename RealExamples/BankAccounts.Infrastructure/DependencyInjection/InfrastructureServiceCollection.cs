@@ -1,4 +1,4 @@
-/*******************************************************************************
+﻿/*******************************************************************************
  * Copyright (C) 2025-2026 Kamersoft
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
@@ -25,10 +25,10 @@ using Microsoft.Extensions.DependencyInjection;
 namespace BankAccounts.Infrastructure.DependencyInjection;
 
 [Export(typeof(IAddServiceExport))]
-public sealed class InfrastructureServiceCollection : IAddServiceExport
+public sealed class InfrastructureServiceCollection : AddServiceExport
 {
 	[UnconditionalSuppressMessage("Trimming", "IL2026:Members annotated with 'RequiresUnreferencedCodeAttribute' require dynamic access otherwise can break functionality when trimming application code", Justification = "<Pending>")]
-	public void AddServices(IServiceCollection services, IConfiguration configuration)
+	public override void AddServices(IServiceCollection services, IConfiguration configuration)
 	{
 		ArgumentNullException.ThrowIfNull(services);
 		ArgumentNullException.ThrowIfNull(configuration);

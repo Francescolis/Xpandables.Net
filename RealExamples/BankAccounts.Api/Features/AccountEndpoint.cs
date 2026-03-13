@@ -1,4 +1,4 @@
-/*******************************************************************************
+﻿/*******************************************************************************
  * Copyright (C) 2025-2026 Kamersoft
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
@@ -40,9 +40,9 @@ public readonly record struct AccountResult
 }
 
 [System.Diagnostics.CodeAnalysis.SuppressMessage("Maintainability", "CA1515:Consider making public types internal", Justification = "<Pending>")]
-public sealed class AccountEndpoint : IMinimalEndpointRoute
+public sealed class AccountEndpoint : MinimalEndpointRoute
 {
-	public void AddRoutes(MinimalRouteBuilder app)
+	public override void AddRoutes(MinimalRouteBuilder app)
 	{
 		ArgumentNullException.ThrowIfNull(app);
 

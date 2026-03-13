@@ -1,4 +1,4 @@
-/*******************************************************************************
+﻿/*******************************************************************************
  * Copyright (C) 2025-2026 Kamersoft
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
@@ -29,6 +29,4 @@ namespace Microsoft.AspNetCore.Builder;
 /// The implementation class must be decorated with the attribute 
 /// <see cref="System.ComponentModel.Composition.ExportAttribute"/> attribute,
 /// with <see cref="IUseServiceExport"/> type as contract type.</remarks>
-public interface IUseServiceExport : IUseService
-{
-}
+public interface IUseServiceExport : IUseService;

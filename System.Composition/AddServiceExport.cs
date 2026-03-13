@@ -14,18 +14,13 @@
  * limitations under the License.
  *
 ********************************************************************************/
-namespace Microsoft.AspNetCore.Builder;
+namespace System.Composition;
 
-/// <summary>  
-/// Defines a contract for a service that configures middleware for a 
-/// <see cref="WebApplication"/>.  
-/// </summary>  
-public interface IUseService
-{
-	/// <summary>  
-	/// Configures the middleware for the specified <see cref="WebApplication"/>.  
-	/// </summary>  
-	/// <param name="application">The <see cref="WebApplication"/> 
-	/// to configure.</param>  
-	void UseServices(WebApplication application);
-}
+/// <summary>
+/// Provides an abstract base class for adding service exports, facilitating the implementation of service export
+/// functionality.
+/// </summary>
+/// <remarks>This class serves as a foundation for derived classes that implement specific service export
+/// behaviors. It is intended to be extended by other classes that provide concrete implementations of service
+/// exports.</remarks>
+public abstract class AddServiceExport : AddService, IAddServiceExport;

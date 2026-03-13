@@ -1,4 +1,4 @@
-/*******************************************************************************
+﻿/*******************************************************************************
  * Copyright (C) 2025-2026 Kamersoft
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
@@ -32,77 +32,77 @@ namespace System.Events.Aggregates;
 /// <param name="events">The collection used to track and dispatch pending domain events after aggregates are saved.</param>
 /// <param name="eventEnricher">The event enricher used to augment domain events with additional data.</param>
 public sealed class AggregateStore<TAggregate>(
-    IDomainStore eventStore,
-    IPendingDomainEventsBuffer events,
-    IDomainEventEnricher eventEnricher) : IAggregateStore<TAggregate>
-    where TAggregate : class, IAggregate, IAggregateFactory<TAggregate>
+	IDomainStore eventStore,
+	IPendingDomainEventsBuffer events,
+	IDomainEventEnricher eventEnricher) : IAggregateStore<TAggregate>
+	where TAggregate : class, IAggregate, IAggregateFactory<TAggregate>
 {
-    private readonly IDomainStore _eventStore = eventStore;
-    private readonly IDomainEventEnricher _eventEnricher = eventEnricher;
+	private readonly IDomainStore _eventStore = eventStore;
+	private readonly IDomainEventEnricher _eventEnricher = eventEnricher;
 
-    /// <inheritdoc />
-    public async Task<TAggregate> LoadAsync(
-        Guid streamId,
-        CancellationToken cancellationToken = default)
-    {
-        ArgumentOutOfRangeException.ThrowIfEqual(streamId, Guid.Empty);
+	/// <inheritdoc />
+	public async Task<TAggregate> LoadAsync(
+		Guid streamId,
+		CancellationToken cancellationToken = default)
+	{
+		ArgumentOutOfRangeException.ThrowIfEqual(streamId, Guid.Empty);
 
-        ReadStreamRequest request = new()
-        {
-            StreamId = streamId,
-            FromVersion = -1,
-            MaxCount = int.MaxValue
-        };
+		ReadStreamRequest request = new()
+		{
+			StreamId = streamId,
+			FromVersion = -1,
+			MaxCount = int.MaxValue
+		};
 
 		List<IDomainEvent> history = await _eventStore
-            .ReadStreamAsync(request, cancellationToken)
-            .Select(e => e.Event)
-            .OfType<IDomainEvent>()
-            .ToListAsync(cancellationToken)
-            .ConfigureAwait(false);
+			.ReadStreamAsync(request, cancellationToken)
+			.Select(e => e.Event)
+			.OfType<IDomainEvent>()
+			.ToListAsync(cancellationToken)
+			.ConfigureAwait(false);
 
-        TAggregate aggregate = TAggregate.Initialize();
+		TAggregate aggregate = TAggregate.Initialize();
 
-        aggregate.Replay(history);
+		aggregate.Replay(history);
 
-        if (aggregate.IsEmpty)
-        {
-            throw new ValidationException(new ValidationResult(
-                $"The {typeof(TAggregate).Name.SplitTypeName()} was not found.",
-                [nameof(streamId)]), null, streamId);
-        }
+		if (aggregate.IsEmpty)
+		{
+			throw new ValidationException(new ValidationResult(
+				$"The {typeof(TAggregate).Name.SplitTypeName()} was not found.",
+				[nameof(streamId)]), null, streamId);
+		}
 
-        return aggregate;
-    }
+		return aggregate;
+	}
 
-    /// <inheritdoc />
-    public async Task SaveAsync(
-        TAggregate aggregate,
-        CancellationToken cancellationToken = default)
-    {
-        ArgumentNullException.ThrowIfNull(aggregate);
+	/// <inheritdoc />
+	public async Task SaveAsync(
+		TAggregate aggregate,
+		CancellationToken cancellationToken = default)
+	{
+		ArgumentNullException.ThrowIfNull(aggregate);
 
 		IReadOnlyCollection<IDomainEvent> pending = aggregate.DequeueUncommittedEvents();
-        if (pending.Count == 0)
+		if (pending.Count == 0)
 		{
 			return;
 		}
 
-		IDomainEvent[] enriched = pending.Select(_eventEnricher.Enrich).ToArray();
+		IDomainEvent[] enriched = [.. pending.Select(_eventEnricher.Enrich)];
 
 		// The aggregate.StreamVersion has already been advanced by pending.Count.
 		// expectedVersion must reflect the persisted version before those events.
 		long expectedVersion = aggregate.StreamVersion - pending.Count;
 
-        AppendRequest request = new()
-        {
-            StreamId = aggregate.StreamId,
-            Events = enriched,
-            ExpectedVersion = expectedVersion
-        };
+		AppendRequest request = new()
+		{
+			StreamId = aggregate.StreamId,
+			Events = enriched,
+			ExpectedVersion = expectedVersion
+		};
 
-        await _eventStore.AppendToStreamAsync(request, cancellationToken).ConfigureAwait(false);
+		await _eventStore.AppendToStreamAsync(request, cancellationToken).ConfigureAwait(false);
 
-        events.AddRange(enriched, aggregate.MarkEventsAsCommitted);
-    }
+		events.AddRange(enriched, aggregate.MarkEventsAsCommitted);
+	}
 }

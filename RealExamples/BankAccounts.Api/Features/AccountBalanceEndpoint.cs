@@ -1,4 +1,4 @@
-/*******************************************************************************
+﻿/*******************************************************************************
  * Copyright (C) 2025-2026 Kamersoft
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
@@ -41,9 +41,9 @@ public readonly record struct AccountBalanceResult
 	public readonly required decimal Balance { get; init; }
 }
 
-public sealed class AccountBalanceEndpoint : IMinimalEndpointRoute
+public sealed class AccountBalanceEndpoint : MinimalEndpointRoute
 {
-	public void AddRoutes(MinimalRouteBuilder app)
+	public override void AddRoutes(MinimalRouteBuilder app)
 	{
 		ArgumentNullException.ThrowIfNull(app);
 

@@ -16,16 +16,12 @@
 ********************************************************************************/
 namespace Microsoft.AspNetCore.Builder;
 
-/// <summary>  
-/// Defines a contract for a service that configures middleware for a 
-/// <see cref="WebApplication"/>.  
-/// </summary>  
-public interface IUseService
+/// <summary>
+/// Provides an abstract base class for implementing the <see cref="IUseService"/> interface, allowing derived classes to
+/// implement custom middleware configuration logic for a <see cref="WebApplication"/>.
+/// </summary>
+public abstract class UseService : IUseService
 {
-	/// <summary>  
-	/// Configures the middleware for the specified <see cref="WebApplication"/>.  
-	/// </summary>  
-	/// <param name="application">The <see cref="WebApplication"/> 
-	/// to configure.</param>  
-	void UseServices(WebApplication application);
+	/// <inheritdoc/>
+	public abstract void UseServices(WebApplication application);
 }

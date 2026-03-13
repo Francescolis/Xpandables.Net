@@ -1,4 +1,4 @@
-/*******************************************************************************
+﻿/*******************************************************************************
  * Copyright (C) 2025-2026 Kamersoft
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
@@ -335,28 +335,28 @@ public abstract class DataSqlBuilderBase : IDataSqlBuilder
 		var parameters = new List<SqlParameter>();
 		var sql = new StringBuilder();
 
-		var tableName = GetTableName<TData>();
-		var columnMappings = GetColumnMappings<TData>();
-		var columnKey = typeof(TData).GetProperties(BindingFlags.Public | BindingFlags.Instance)
+		string tableName = GetTableName<TData>();
+		IReadOnlyDictionary<string, string> columnMappings = GetColumnMappings<TData>();
+		string columnKey = typeof(TData).GetProperties(BindingFlags.Public | BindingFlags.Instance)
 			.FirstOrDefault(IsDatabaseGeneratedIdentity)?.Name
 			?? throw new InvalidOperationException("No identity property found on data.");
 
-		var type = typeof(TData);
+		Type type = typeof(TData);
 
 		var columns = new List<string>();
 		var values = new List<string>();
 
-		foreach (var (propertyName, columnName) in columnMappings)
+		foreach ((string? propertyName, string? columnName) in columnMappings)
 		{
-			var property = type.GetProperty(propertyName);
+			PropertyInfo? property = type.GetProperty(propertyName);
 			if (property == null || !property.CanRead)
 				continue;
 
 			if (IsDatabaseGeneratedIdentity(property))
 				continue;
 
-			var value = property.GetValue(data);
-			var paramName = NextParameterName();
+			object? value = property.GetValue(data);
+			string paramName = NextParameterName();
 
 			columns.Add(QuoteIdentifier(columnName));
 			values.Add($"{ParameterPrefix}{paramName}");

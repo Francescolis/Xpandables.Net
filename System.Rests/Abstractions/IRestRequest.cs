@@ -1,4 +1,4 @@
-/*******************************************************************************
+﻿/*******************************************************************************
  * Copyright (C) 2025-2026 Kamersoft
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
@@ -66,7 +66,7 @@ public interface IRestRequestResult<TResult> : IRestRequestResult
 	/// Returns the default value of the ResultType, which can be null. 
 	/// It indicates the type of the result.
 	/// </summary>
-	public new Type ResultType => typeof(TResult);
+	new Type ResultType => typeof(TResult);
 
 	[EditorBrowsable(EditorBrowsableState.Never)]
 	Type IRestRequestResult.ResultType => ResultType;
@@ -102,7 +102,7 @@ public interface IRestRequestStream<TResult> : IRestRequestStream
 	/// Returns the default value of the ResultType, which can be null. 
 	/// It indicates the type of the result.
 	/// </summary>
-	public new Type ResultType => typeof(TResult);
+	new Type ResultType => typeof(TResult);
 
 	[EditorBrowsable(EditorBrowsableState.Never)]
 	Type IRestRequestStream.ResultType => ResultType;
@@ -138,7 +138,7 @@ public interface IRestRequestStreamPaged<TResult> : IRestRequestStreamPaged
 	/// Returns the default value of the ResultType, which can be null. 
 	/// It indicates the type of the result.
 	/// </summary>
-	public new Type? ResultType => typeof(TResult);
+	new Type? ResultType => typeof(TResult);
 
 	[EditorBrowsable(EditorBrowsableState.Never)]
 	Type? IRestRequest.ResultType => ResultType;

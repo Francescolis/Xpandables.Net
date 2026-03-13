@@ -16,16 +16,14 @@
 ********************************************************************************/
 namespace Microsoft.AspNetCore.Builder;
 
-/// <summary>  
-/// Defines a contract for a service that configures middleware for a 
-/// <see cref="WebApplication"/>.  
-/// </summary>  
-public interface IUseService
+/// <summary>
+/// Provides an abstract base class for implementing service exports in a web application context.
+/// </summary>
+/// <remarks>Derived classes must implement the Use method to define how the service export is utilized within the
+/// provided WebApplication instance. This class is intended for use in scenarios where service exports need to be
+/// integrated into a web application pipeline.</remarks>
+public abstract class UseServiceExport : UseService, IUseServiceExport
 {
-	/// <summary>  
-	/// Configures the middleware for the specified <see cref="WebApplication"/>.  
-	/// </summary>  
-	/// <param name="application">The <see cref="WebApplication"/> 
-	/// to configure.</param>  
-	void UseServices(WebApplication application);
+	/// <inheritdoc/>
+	public abstract void Use(WebApplication application);
 }

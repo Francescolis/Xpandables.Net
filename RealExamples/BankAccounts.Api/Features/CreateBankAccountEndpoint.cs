@@ -1,4 +1,4 @@
-/*******************************************************************************
+﻿/*******************************************************************************
  * Copyright (C) 2025-2026 Kamersoft
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
@@ -21,9 +21,9 @@ using BankAccounts.Domain.Features.CreateAccount;
 namespace BankAccounts.Api.Features;
 
 [System.Diagnostics.CodeAnalysis.SuppressMessage("Maintainability", "CA1515:Consider making public types internal", Justification = "<Pending>")]
-public sealed class CreateBankAccountEndpoint : IMinimalEndpointRoute
+public sealed class CreateBankAccountEndpoint : MinimalEndpointRoute
 {
-	public void AddRoutes(MinimalRouteBuilder app)
+	public override void AddRoutes(MinimalRouteBuilder app)
 	{
 		ArgumentNullException.ThrowIfNull(app);
 

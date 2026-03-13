@@ -1,4 +1,4 @@
-/*******************************************************************************
+﻿/*******************************************************************************
  * Copyright (C) 2025-2026 Kamersoft
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
@@ -29,11 +29,11 @@ namespace System.Rests.Abstractions;
 /// integrated with REST request processing.</remarks>
 public interface IRestBasicAuthentication : IRestRequest
 {
-    /// <summary>
-    /// Returns the authentication header value.
-    /// </summary>
-    /// <returns>The authentication header value.</returns>
-    AuthenticationHeaderValue GetAuthenticationHeaderValue();
+	/// <summary>
+	/// Returns the authentication header value.
+	/// </summary>
+	/// <returns>The authentication header value.</returns>
+	AuthenticationHeaderValue GetAuthenticationHeaderValue();
 }
 
 /// <summary>
@@ -41,11 +41,11 @@ public interface IRestBasicAuthentication : IRestRequest
 /// </summary>
 public interface IRestByteArray : IRestRequest
 {
-    /// <summary>
-    /// Returns the byte array content.
-    /// </summary>
-    /// <returns>The byte array content.</returns>
-    ByteArrayContent GetByteArrayContent();
+	/// <summary>
+	/// Returns the byte array content.
+	/// </summary>
+	/// <returns>The byte array content.</returns>
+	ByteArrayContent GetByteArrayContent();
 }
 
 /// <summary>
@@ -53,13 +53,13 @@ public interface IRestByteArray : IRestRequest
 /// </summary>
 public interface IRestCookie : IRestRequest
 {
-    /// <summary>
-    /// Returns the cookie header value.
-    /// </summary>
-    /// <returns>The cookie header value.</returns>
-    /// <remarks>If a key is already present, its value will be replaced with 
-    /// the new one.</remarks>
-    IDictionary<string, object?> GetCookieHeaderValue();
+	/// <summary>
+	/// Returns the cookie header value.
+	/// </summary>
+	/// <returns>The cookie header value.</returns>
+	/// <remarks>If a key is already present, its value will be replaced with 
+	/// the new one.</remarks>
+	IDictionary<string, object?> GetCookieHeaderValue();
 }
 
 /// <summary>
@@ -70,11 +70,11 @@ public interface IRestCookie : IRestRequest
 /// form data in HTTP POST requests.</remarks>
 public interface IRestFormUrlEncoded : IRestRequest
 {
-    /// <summary>
-    /// Returns the form URL encoded content.
-    /// </summary>
-    /// <returns>The form URL encoded content.</returns>
-    FormUrlEncodedContent GetFormUrlEncodedContent();
+	/// <summary>
+	/// Returns the form URL encoded content.
+	/// </summary>
+	/// <returns>The form URL encoded content.</returns>
+	FormUrlEncodedContent GetFormUrlEncodedContent();
 }
 
 /// <summary>
@@ -83,18 +83,18 @@ public interface IRestFormUrlEncoded : IRestRequest
 /// </summary>
 public interface IRestHeader : IRestRequest
 {
-    /// <summary>
-    /// Gets the collection of headers.
-    /// </summary>
-    /// <returns>An <see cref="ElementCollection"/> containing the headers.</returns>
-    ElementCollection GetHeaders();
+	/// <summary>
+	/// Gets the collection of headers.
+	/// </summary>
+	/// <returns>An <see cref="ElementCollection"/> containing the headers.</returns>
+	ElementCollection GetHeaders();
 
-    /// <summary>
-    /// Gets the name of the header model.
-    /// </summary>
-    /// <returns>A string representing the name of the header model, 
-    /// or null if not set.</returns>
-    public string? GetHeaderModelName() => null;
+	/// <summary>
+	/// Gets the name of the header model.
+	/// </summary>
+	/// <returns>A string representing the name of the header model, 
+	/// or null if not set.</returns>
+	string? GetHeaderModelName() => null;
 }
 
 /// <summary>
@@ -105,11 +105,11 @@ public interface IRestHeader : IRestRequest
 /// multipart content to be integrated with standard REST request handling.</remarks>
 public interface IRestMultipart : IRestRequest
 {
-    /// <summary>
-    /// Returns the multipart content.
-    /// </summary>
-    /// <returns>The multipart content.</returns>
-    MultipartFormDataContent GetMultipartContent();
+	/// <summary>
+	/// Returns the multipart content.
+	/// </summary>
+	/// <returns>The multipart content.</returns>
+	MultipartFormDataContent GetMultipartContent();
 }
 
 /// <summary>
@@ -121,11 +121,11 @@ public interface IRestMultipart : IRestRequest
 /// REST APIs.</remarks>
 public interface IRestPathString : IRestRequest
 {
-    /// <summary>
-    /// Returns the path string.
-    /// </summary>
-    /// <returns>The path string.</returns>
-    IDictionary<string, string> GetPathString();
+	/// <summary>
+	/// Returns the path string.
+	/// </summary>
+	/// <returns>The path string.</returns>
+	IDictionary<string, string> GetPathString();
 }
 
 /// <summary>
@@ -136,11 +136,11 @@ public interface IRestPathString : IRestRequest
 /// with REST APIs.</remarks>
 public interface IRestQueryString : IRestRequest
 {
-    /// <summary>
-    /// Returns the query string.
-    /// </summary>
-    /// <returns>The query string.</returns>
-    IDictionary<string, string?>? GetQueryString();
+	/// <summary>
+	/// Returns the query string.
+	/// </summary>
+	/// <returns>The query string.</returns>
+	IDictionary<string, string?>? GetQueryString();
 }
 
 /// <summary>
@@ -149,11 +149,11 @@ public interface IRestQueryString : IRestRequest
 [SuppressMessage("Naming", "CA1711:Identifiers should not have incorrect suffix", Justification = "<Pending>")]
 public interface IRestStream : IRestRequest
 {
-    /// <summary>
-    /// Returns the stream content.
-    /// </summary>
-    /// <returns>The stream content.</returns>
-    StreamContent GetStreamContent();
+	/// <summary>
+	/// Returns the stream content.
+	/// </summary>
+	/// <returns>The stream content.</returns>
+	StreamContent GetStreamContent();
 }
 
 /// <summary>
@@ -161,12 +161,12 @@ public interface IRestStream : IRestRequest
 /// </summary>
 public interface IRestString : IRestRequest
 {
-    /// <summary>
-    /// Returns the string content.
-    /// </summary>
-    /// <returns>The string content.</returns>
-    /// <remarks>By default, the method returns the current instance.</remarks>
-    public object GetStringContent() => this;
+	/// <summary>
+	/// Returns the string content.
+	/// </summary>
+	/// <returns>The string content.</returns>
+	/// <remarks>By default, the method returns the current instance.</remarks>
+	object GetStringContent() => this;
 }
 
 /// <summary>
@@ -174,8 +174,8 @@ public interface IRestString : IRestRequest
 /// </summary>
 public interface IRestPatch : IRestRequest
 {
-    /// <summary>
-    /// Gets the patch operations.
-    /// </summary>
-    Collection<IPatchOperation> PatchOperations { get; }
+	/// <summary>
+	/// Gets the patch operations.
+	/// </summary>
+	Collection<IPatchOperation> PatchOperations { get; }
 }

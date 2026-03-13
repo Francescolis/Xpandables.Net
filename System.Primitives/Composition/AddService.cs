@@ -14,18 +14,19 @@
  * limitations under the License.
  *
 ********************************************************************************/
-namespace Microsoft.AspNetCore.Builder;
+using Microsoft.Extensions.Configuration;
+using Microsoft.Extensions.DependencyInjection;
 
-/// <summary>  
-/// Defines a contract for a service that configures middleware for a 
-/// <see cref="WebApplication"/>.  
-/// </summary>  
-public interface IUseService
+namespace System.Composition;
+
+/// <summary>
+/// Abstract base class for adding services to the service collection.
+/// </summary>
+public abstract class AddService : IAddService
 {
-	/// <summary>  
-	/// Configures the middleware for the specified <see cref="WebApplication"/>.  
-	/// </summary>  
-	/// <param name="application">The <see cref="WebApplication"/> 
-	/// to configure.</param>  
-	void UseServices(WebApplication application);
+	/// <inheritdoc/>
+	public virtual void AddServices(IServiceCollection services) { }
+	/// <inheritdoc/>
+	public virtual void AddServices(IServiceCollection services, IConfiguration configuration) =>
+		AddServices(services);
 }

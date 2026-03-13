@@ -38,7 +38,7 @@ public sealed class TimeOnlyJsonConverter : JsonConverter<TimeOnly>
 			return default;
 		}
 
-		if (TimeOnly.TryParse(value, CultureInfo.CurrentCulture, DateTimeStyles.None, out var result))
+		if (TimeOnly.TryParse(value, CultureInfo.CurrentCulture, DateTimeStyles.None, out TimeOnly result))
 		{
 			return result;
 		}
