@@ -1,4 +1,4 @@
-/*******************************************************************************
+﻿/*******************************************************************************
  * Copyright (C) 2025-2026 Kamersoft
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
@@ -31,537 +31,422 @@ namespace System.Events.Integration;
 /// </summary>
 /// <remarks>
 /// This implementation features:
-/// - Parallel event processing with configurable concurrency
-/// - Circuit breaker pattern for fault tolerance
-/// - Exponential backoff retry strategy with secure random jitter
-/// - Batched event processing for improved throughput
-/// - High-performance logging with LoggerMessage delegates
-/// - Memory-efficient processing with proper resource management
+/// <list type="bullet">
+/// <item>Parallel event processing with configurable concurrency</item>
+/// <item>Circuit breaker pattern for fault tolerance</item>
+/// <item>Exponential backoff retry strategy with secure random jitter</item>
+/// <item>Batched event processing for improved throughput</item>
+/// <item>Per-event outbox state updates to prevent stuck PROCESSING events</item>
+/// <item>High-performance logging with <see cref="LoggerMessageAttribute"/> source generators</item>
+/// <item>Memory-efficient processing with proper resource management</item>
+/// </list>
 /// </remarks>
-public sealed class Scheduler : Disposable, IScheduler
+public sealed partial class Scheduler : Disposable, IScheduler
 {
-    #region Private Fields
+	private readonly ILogger<Scheduler> _logger;
+	private readonly IDisposable? _optionsMonitor;
+	private readonly IServiceScopeFactory _serviceScopeFactory;
+	private readonly SemaphoreSlim _concurrencyLimiter;
+	private readonly SchedulerMetrics _metrics;
 
-    private readonly ILogger<Scheduler> _logger;
-    private readonly IDisposable? _optionsMonitor;
-    private readonly IServiceScopeFactory _serviceScopeFactory;
-    private readonly SemaphoreSlim _concurrencyLimiter;
-    private readonly SchedulerMetrics _metrics;
+	private volatile SchedulerOptions _options;
+	private volatile CircuitBreakerState _circuitBreakerState = CircuitBreakerState.Closed;
+	private volatile int _circuitBreakerFailureCount;
+	private volatile int _consecutiveFailures;
 
-    private volatile SchedulerOptions _options;
-    private volatile CircuitBreakerState _circuitBreakerState = CircuitBreakerState.Closed;
-    private volatile int _circuitBreakerFailureCount;
-    private volatile int _consecutiveFailures;
+	private volatile Func<DateTime> _circuitBreakerLastFailureTimeProvider = static () => DateTime.MinValue;
 
-    private volatile Func<DateTime> _circuitBreakerLastFailureTimeProvider = static () => DateTime.MinValue;
+	/// <summary>
+	/// Initializes a new instance of the Scheduler class with the specified service scope factory, options monitor, and
+	/// logger.
+	/// </summary>
+	/// <remarks>The scheduler subscribes to changes in the provided options monitor and updates its
+	/// configuration dynamically when options change. This allows runtime adjustment of concurrency and other
+	/// scheduling parameters without restarting the application.</remarks>
+	/// <param name="serviceScopeFactory">The factory used to create service scopes for dependency injection within scheduled tasks. Cannot be null.</param>
+	/// <param name="options">The options monitor that provides configuration settings for the scheduler and notifies of changes at runtime.
+	/// Cannot be null.</param>
+	/// <param name="logger">The logger used to record scheduler events and diagnostic information. Cannot be null.</param>
+	/// <exception cref="ArgumentNullException">Thrown if serviceScopeFactory, options, or logger is null.</exception>
+	public Scheduler(
+		IServiceScopeFactory serviceScopeFactory,
+		IOptionsMonitor<SchedulerOptions> options,
+		ILogger<Scheduler> logger)
+	{
+		_serviceScopeFactory = serviceScopeFactory ?? throw new ArgumentNullException(nameof(serviceScopeFactory));
+		_logger = logger ?? throw new ArgumentNullException(nameof(logger));
+		_options = options?.CurrentValue ?? throw new ArgumentNullException(nameof(options));
 
-    #endregion
+		_concurrencyLimiter = new SemaphoreSlim(_options.MaxConcurrentProcessors, _options.MaxConcurrentProcessors);
+		_metrics = new SchedulerMetrics();
 
-    #region LoggerMessage Delegates (High-Performance Logging)
-
-    private static readonly Action<ILogger, int, int, int, Exception?> LogSchedulerInitialized =
-        LoggerMessage.Define<int, int, int>(
-            LogLevel.Information,
-            new EventId(1001, nameof(LogSchedulerInitialized)),
-            "Scheduler initialized with MaxConcurrentProcessors: {MaxConcurrentProcessors}, BatchSize: {BatchSize}, Frequency: {Frequency}ms");
-
-    private static readonly Action<ILogger, int, int, int, Exception?> LogOptionsUpdated =
-        LoggerMessage.Define<int, int, int>(
-            LogLevel.Information,
-            new EventId(1002, nameof(LogOptionsUpdated)),
-            "Scheduler options updated. MaxConcurrentProcessors: {MaxConcurrentProcessors}, BatchSize: {BatchSize}, CircuitBreakerThreshold: {CircuitBreakerThreshold}");
-
-    private static readonly Action<ILogger, Exception?> LogSchedulerDisabled =
-        LoggerMessage.Define(
-            LogLevel.Debug,
-            new EventId(1003, nameof(LogSchedulerDisabled)),
-            "Event scheduler is disabled, skipping execution");
-
-    private static readonly Action<ILogger, Exception?> LogCircuitBreakerOpen =
-        LoggerMessage.Define(
-            LogLevel.Debug,
-            new EventId(1004, nameof(LogCircuitBreakerOpen)),
-            "Circuit breaker is open, skipping execution");
-
-    private static readonly Action<ILogger, Exception?> LogCircuitBreakerHalfOpen =
-        LoggerMessage.Define(
-            LogLevel.Information,
-            new EventId(1005, nameof(LogCircuitBreakerHalfOpen)),
-            "Circuit breaker transitioning to half-open state");
-
-    private static readonly Action<ILogger, Exception?> LogNoEventsToSchedule =
-        LoggerMessage.Define(
-            LogLevel.Debug,
-            new EventId(1006, nameof(LogNoEventsToSchedule)),
-            "No events to schedule");
-
-    private static readonly Action<ILogger, int, int, Exception?> LogProcessingBatches =
-        LoggerMessage.Define<int, int>(
-            LogLevel.Debug,
-            new EventId(1008, nameof(LogProcessingBatches)),
-            "Processing {EventCount} events in {BatchCount} batches");
-
-    private static readonly Action<ILogger, int, long, Exception?> LogSuccessfulProcessing =
-        LoggerMessage.Define<int, long>(
-            LogLevel.Debug,
-            new EventId(1009, nameof(LogSuccessfulProcessing)),
-            "Successfully processed {ProcessedCount} events in {ElapsedMs}ms");
-
-    private static readonly Action<ILogger, int, int, long, Exception?> LogProcessingWithErrors =
-        LoggerMessage.Define<int, int, long>(
-            LogLevel.Warning,
-            new EventId(1010, nameof(LogProcessingWithErrors)),
-            "Processed {ProcessedCount} events with {ErrorCount} errors in {ElapsedMs}ms");
-
-    private static readonly Action<ILogger, int, Exception?> LogSchedulerExecutionFailed =
-        LoggerMessage.Define<int>(
-            LogLevel.Error,
-            new EventId(1011, nameof(LogSchedulerExecutionFailed)),
-            "Scheduler execution failed. Consecutive failures: {ConsecutiveFailures}");
-
-    private static readonly Action<ILogger, int, Exception?> LogCircuitBreakerOpened =
-        LoggerMessage.Define<int>(
-            LogLevel.Warning,
-            new EventId(1013, nameof(LogCircuitBreakerOpened)),
-            "Circuit breaker opened due to {FailureCount} consecutive failures");
-
-    private static readonly Action<ILogger, Exception?> LogCircuitBreakerClosed =
-        LoggerMessage.Define(
-            LogLevel.Information,
-            new EventId(1014, nameof(LogCircuitBreakerClosed)),
-            "Circuit breaker closed after successful execution");
-
-    private static readonly Action<ILogger, Exception?> LogCircuitBreakerFailureCountReset =
-        LoggerMessage.Define(
-            LogLevel.Debug,
-            new EventId(1015, nameof(LogCircuitBreakerFailureCountReset)),
-            "Reset circuit breaker failure count after successful execution");
-
-    private static readonly Action<ILogger, double, int, Exception?> LogBackoffApplied =
-        LoggerMessage.Define<double, int>(
-            LogLevel.Debug,
-            new EventId(1016, nameof(LogBackoffApplied)),
-            "Applied exponential backoff: {BackoffDelay}ms for {ConsecutiveFailures} consecutive failures");
-
-    private static readonly Action<ILogger, Guid, string, Exception> LogEventProcessingFailed =
-        LoggerMessage.Define<Guid, string>(
-            LogLevel.Error,
-            new EventId(1018, nameof(LogEventProcessingFailed)),
-            "Failed to process event {EventId} of type {EventType}");
-
-    private static readonly Action<ILogger, int, Exception?> LogOutboxBatchUpdateFailed =
-        LoggerMessage.Define<int>(
-            LogLevel.Error,
-            new EventId(1019, nameof(LogOutboxBatchUpdateFailed)),
-            "Failed to update outbox for batch of {Count} events");
-
-    private static readonly Action<ILogger, long, long, double, Exception?> LogSchedulerDisposed =
-        LoggerMessage.Define<long, long, double>(
-            LogLevel.Information,
-            new EventId(1022, nameof(LogSchedulerDisposed)),
-            "Scheduler disposed. Final metrics - Total processed: {TotalProcessed}, Total errors: {TotalErrors}, Average processing time: {AvgTime}ms");
-
-    #endregion
-
-    #region Constructor and Initialization
-
-    /// <summary>
-    /// Initializes a new instance of the Scheduler class with the specified service scope factory, options monitor, and
-    /// logger.
-    /// </summary>
-    /// <remarks>The scheduler subscribes to changes in the provided options monitor and updates its
-    /// configuration dynamically when options change. This allows runtime adjustment of concurrency and other
-    /// scheduling parameters without restarting the application.</remarks>
-    /// <param name="serviceScopeFactory">The factory used to create service scopes for dependency injection within scheduled tasks. Cannot be null.</param>
-    /// <param name="options">The options monitor that provides configuration settings for the scheduler and notifies of changes at runtime.
-    /// Cannot be null.</param>
-    /// <param name="logger">The logger used to record scheduler events and diagnostic information. Cannot be null.</param>
-    /// <exception cref="ArgumentNullException">Thrown if serviceScopeFactory, options, or logger is null.</exception>
-    public Scheduler(
-        IServiceScopeFactory serviceScopeFactory,
-        IOptionsMonitor<SchedulerOptions> options,
-        ILogger<Scheduler> logger)
-    {
-        _serviceScopeFactory = serviceScopeFactory ?? throw new ArgumentNullException(nameof(serviceScopeFactory));
-        _logger = logger ?? throw new ArgumentNullException(nameof(logger));
-        _options = options?.CurrentValue ?? throw new ArgumentNullException(nameof(options));
-
-        _concurrencyLimiter = new SemaphoreSlim(_options.MaxConcurrentProcessors, _options.MaxConcurrentProcessors);
-        _metrics = new SchedulerMetrics();
-
-        _optionsMonitor = options.OnChange(newOptions =>
-        {
+		_optionsMonitor = options.OnChange(newOptions =>
+		{
 			int oldMaxConcurrency = _options.MaxConcurrentProcessors;
-            _options = newOptions;
+			_options = newOptions;
 
-            AdjustConcurrencyLimiter(oldMaxConcurrency, newOptions.MaxConcurrentProcessors);
+			AdjustConcurrencyLimiter(oldMaxConcurrency, newOptions.MaxConcurrentProcessors);
 
-            LogOptionsUpdated(_logger, newOptions.MaxConcurrentProcessors, newOptions.BatchSize,
-                newOptions.CircuitBreakerFailureThreshold, null);
-        });
+			LogOptionsUpdated(_logger, newOptions.MaxConcurrentProcessors, newOptions.BatchSize,
+					newOptions.CircuitBreakerFailureThreshold);
+		});
 
-        LogSchedulerInitialized(_logger, _options.MaxConcurrentProcessors, _options.BatchSize,
-            (int)_options.SchedulerFrequency, null);
-    }
+		LogSchedulerInitialized(_logger, _options.MaxConcurrentProcessors, _options.BatchSize,
+			(int)_options.SchedulerFrequency);
+	}
 
-    #endregion
+	/// <inheritdoc />
+	public async Task ScheduleAsync(CancellationToken cancellationToken = default)
+	{
+		if (!_options.IsEventSchedulerEnabled)
+		{
+			LogSchedulerDisabled(_logger);
+			return;
+		}
 
-    #region Public Interface Implementation
+		if (_circuitBreakerState == CircuitBreakerState.Open)
+		{
+			if (ShouldAttemptCircuitBreakerReset())
+			{
+				_circuitBreakerState = CircuitBreakerState.HalfOpen;
+				LogCircuitBreakerHalfOpen(_logger);
+			}
+			else
+			{
+				LogCircuitBreakerOpen(_logger);
+				return;
+			}
+		}
 
-    /// <inheritdoc />
-    public async Task ScheduleAsync(CancellationToken cancellationToken = default)
-    {
-        if (!_options.IsEventSchedulerEnabled)
-        {
-            LogSchedulerDisabled(_logger, null);
-            return;
-        }
+		var stopwatch = Stopwatch.StartNew();
 
-        if (_circuitBreakerState == CircuitBreakerState.Open)
-        {
-            if (ShouldAttemptCircuitBreakerReset())
-            {
-                _circuitBreakerState = CircuitBreakerState.HalfOpen;
-                LogCircuitBreakerHalfOpen(_logger, null);
-            }
-            else
-            {
-                LogCircuitBreakerOpen(_logger, null);
-                return;
-            }
-        }
-
-        var stopwatch = Stopwatch.StartNew();
-		int processedCount = 0;
-		int errorCount = 0;
-
-        try
-        {
+		try
+		{
 			AsyncServiceScope serviceScope = _serviceScopeFactory.CreateAsyncScope();
-            await using (serviceScope.ConfigureAwait(false))
-            {
+			await using (serviceScope.ConfigureAwait(false))
+			{
 				IOutboxStore outbox = serviceScope.ServiceProvider.GetRequiredService<IOutboxStore>();
 
-				// Claim a batch directly from the outbox (multi-instance safe)
-				IReadOnlyList<IIntegrationEvent> claimed = await outbox.DequeueAsync(_options.BatchSize, visibilityTimeout: null, cancellationToken: cancellationToken).ConfigureAwait(false);
-                if (claimed.Count == 0)
-                {
-                    LogNoEventsToSchedule(_logger, null);
-                    ResetBackoffDelay();
-                    HandleCircuitBreakerSuccess();
-                    return;
-                }
+				IReadOnlyList<IIntegrationEvent> claimed = await outbox
+					.DequeueAsync(_options.BatchSize, visibilityTimeout: null, cancellationToken: cancellationToken)
+					.ConfigureAwait(false);
 
-				// Partition into batches for parallel processing
+				if (claimed.Count == 0)
+				{
+					LogNoEventsToSchedule(_logger);
+					ResetBackoffDelay();
+					HandleCircuitBreakerSuccess();
+					return;
+				}
+
 				List<List<IIntegrationEvent>> eventBatches = CreateBatches(claimed);
-                LogProcessingBatches(_logger, eventBatches.Sum(b => b.Count), eventBatches.Count, null);
+				LogProcessingBatches(_logger, claimed.Count, eventBatches.Count);
 
-				IEnumerable<Task<BatchProcessingResult>> processingTasks = eventBatches.Select(batch =>
-                    ProcessEventBatchAsync(batch, cancellationToken));
+				IEnumerable<Task<BatchResult>> processingTasks = eventBatches
+					.Select(batch => ProcessEventBatchAsync(batch, cancellationToken));
 
-				BatchProcessingResult[] batchResults = await Task.WhenAll(processingTasks).ConfigureAwait(false);
+				BatchResult[] batchResults = await Task.WhenAll(processingTasks).ConfigureAwait(false);
 
-                processedCount = batchResults.Sum(r => r.ProcessedCount);
-                errorCount = batchResults.Sum(r => r.ErrorCount);
+				int processedCount = batchResults.Sum(static r => r.ProcessedCount);
+				int errorCount = batchResults.Sum(static r => r.ErrorCount);
 
-                var successIds = batchResults.SelectMany(r => r.Successes).ToList();
-                var failures = batchResults.SelectMany(r => r.Failures).ToList();
+				UpdateMetrics(processedCount, errorCount, stopwatch.Elapsed);
 
-#pragma warning disable CA1031 // Do not catch general exception types
-                try
-                {
-                    if (successIds.Count > 0)
-                    {
-                        await outbox.CompleteAsync(successIds, cancellationToken).ConfigureAwait(false);
-                    }
-                    if (failures.Count > 0)
-                    {
-                        await outbox.FailAsync(failures, cancellationToken).ConfigureAwait(false);
-                    }
-                }
-                catch (Exception exception)
-                {
-                    LogOutboxBatchUpdateFailed(_logger, successIds.Count + failures.Count, exception);
+				if (errorCount == 0)
+				{
+					ResetBackoffDelay();
+					HandleCircuitBreakerSuccess();
+					LogSuccessfulProcessing(_logger, processedCount, stopwatch.ElapsedMilliseconds);
+				}
+				else
+				{
+					LogProcessingWithErrors(_logger, processedCount, errorCount, stopwatch.ElapsedMilliseconds);
+					HandlePartialFailure(errorCount);
+				}
+			}
+		}
+		catch (Exception exception) when (exception is not OperationCanceledException)
+		{
+			HandleSchedulerException(exception);
+			throw;
+		}
+	}
 
-                    // All would be retried later when lease expires; count successful publishes as errors
-                    errorCount += successIds.Count;
-                }
-#pragma warning restore CA1031 // Do not catch general exception types
+	private static List<List<IIntegrationEvent>> CreateBatches(IReadOnlyList<IIntegrationEvent> events)
+	{
+		int batchSize = Math.Max(1, events.Count / Math.Max(1, Environment.ProcessorCount));
+		var batches = new List<List<IIntegrationEvent>>(
+			(events.Count + batchSize - 1) / batchSize);
 
-                UpdateMetrics(processedCount, errorCount, stopwatch.Elapsed);
+		for (int i = 0; i < events.Count; i += batchSize)
+		{
+			int count = Math.Min(batchSize, events.Count - i);
+			var batch = new List<IIntegrationEvent>(count);
+			for (int j = i; j < i + count; j++)
+			{
+				batch.Add(events[j]);
+			}
+			batches.Add(batch);
+		}
 
-                if (errorCount == 0)
-                {
-                    ResetBackoffDelay();
-                    HandleCircuitBreakerSuccess();
-                    LogSuccessfulProcessing(_logger, processedCount, stopwatch.ElapsedMilliseconds, null);
-                }
-                else
-                {
-                    LogProcessingWithErrors(_logger, processedCount, errorCount, stopwatch.ElapsedMilliseconds, null);
-                    HandlePartialFailure(errorCount);
-                }
-            }
-        }
-        catch (Exception exception) when (exception is not OperationCanceledException)
-        {
-            HandleSchedulerException(exception);
-            throw;
-        }
-    }
+		return batches;
+	}
 
-    #endregion
-
-    #region Private Implementation Methods
-
-    private static List<List<IIntegrationEvent>> CreateBatches(IReadOnlyList<IIntegrationEvent> events)
-    {
-        var list = events.ToList();
-		int batchSize = Math.Max(1, list.Count / Math.Max(1, Environment.ProcessorCount));
-        var batches = new List<List<IIntegrationEvent>>();
-        for (int i = 0; i < list.Count; i += batchSize)
-        {
-            batches.Add([.. list.Skip(i).Take(batchSize)]);
-        }
-
-        return batches;
-    }
-
-    private async Task<BatchProcessingResult> ProcessEventBatchAsync(
-        List<IIntegrationEvent> events,
-        CancellationToken cancellationToken)
-    {
+	/// <summary>
+	/// Processes a batch of events, publishing each one and immediately updating the outbox
+	/// so that no event remains stuck in PROCESSING status on crash or cancellation.
+	/// </summary>
+	private async Task<BatchResult> ProcessEventBatchAsync(
+		List<IIntegrationEvent> events,
+		CancellationToken cancellationToken)
+	{
 		int processedCount = 0;
 		int errorCount = 0;
 
-        var successIds = new List<CompletedOutboxEvent>(events.Count);
-        var failures = new List<FailedOutboxEvent>(events.Count);
-
-		// Create a dedicated scope for this batch to isolate connections and avoid MARS issues
 		AsyncServiceScope batchScope = _serviceScopeFactory.CreateAsyncScope();
-        await using (batchScope.ConfigureAwait(false))
-        {
+		await using (batchScope.ConfigureAwait(false))
+		{
 			IEventPublisher eventPublisher = batchScope.ServiceProvider.GetRequiredService<IEventPublisher>();
+			IOutboxStore outbox = batchScope.ServiceProvider.GetRequiredService<IOutboxStore>();
 
-            foreach (IIntegrationEvent @event in events)
-            {
-                if (cancellationToken.IsCancellationRequested)
+			foreach (IIntegrationEvent @event in events)
+			{
+				if (cancellationToken.IsCancellationRequested)
 				{
-					break;
+					await MarkEventAsErrorSafeAsync(outbox, @event, "Operation was cancelled").ConfigureAwait(false);
+					errorCount++;
+					cancellationToken.ThrowIfCancellationRequested();
 				}
 
 				try
-                {
-                    using var timeoutCts = CancellationTokenSource.CreateLinkedTokenSource(cancellationToken);
-                    timeoutCts.CancelAfter(TimeSpan.FromMilliseconds(_options.EventProcessingTimeout));
+				{
+					using var timeoutCts = CancellationTokenSource.CreateLinkedTokenSource(cancellationToken);
+					timeoutCts.CancelAfter(TimeSpan.FromMilliseconds(_options.EventProcessingTimeout));
 
-                    await eventPublisher.PublishAsync(@event, timeoutCts.Token).ConfigureAwait(false);
-                    successIds.Add(new(@event.EventId));
-                    processedCount++;
-                }
-                catch (Exception exception) when (exception is not OperationCanceledException)
-                {
-                    errorCount++;
+					await eventPublisher.PublishAsync(@event, timeoutCts.Token).ConfigureAwait(false);
+					await outbox.CompleteAsync([new(@event.EventId)], cancellationToken).ConfigureAwait(false);
+					processedCount++;
+				}
+				catch (OperationCanceledException)
+				{
+					errorCount++;
+					await MarkEventAsErrorSafeAsync(outbox, @event, "Operation was cancelled during processing").ConfigureAwait(false);
+					LogEventCancelled(_logger, @event.EventId);
+					throw;
+				}
+				#pragma warning disable CA1031
+				catch (Exception exception)
+#pragma warning restore CA1031
+				{
+					errorCount++;
 					string errorMessage = exception is TimeoutException
-                        ? "Event processing timeout exceeded"
-                        : exception.ToString();
-                    failures.Add(new(@event.EventId, errorMessage));
-                    LogEventProcessingFailed(_logger, @event.EventId, @event.GetType().Name, exception);
-                }
-            }
-        }
+						? "Event processing timeout exceeded"
+						: exception.ToString();
 
-        return new BatchProcessingResult(processedCount, errorCount, successIds, failures);
-    }
+					await MarkEventAsErrorSafeAsync(outbox, @event, errorMessage).ConfigureAwait(false);
+					LogEventProcessingFailed(_logger, exception, @event.EventId, @event.GetType().Name);
+				}
+			}
+		}
 
-    [MethodImpl(MethodImplOptions.AggressiveInlining)]
-    private void HandleSchedulerException(Exception exception)
-    {
+		return new BatchResult(processedCount, errorCount);
+	}
+
+	/// <summary>
+	/// Best-effort attempt to mark an event as failed in the outbox.
+	/// Swallows exceptions to avoid masking the original error.
+	/// </summary>
+	private async Task MarkEventAsErrorSafeAsync(
+		IOutboxStore outbox,
+		IIntegrationEvent @event,
+		string errorMessage)
+	{
+		try
+		{
+			await outbox.FailAsync([new(@event.EventId, errorMessage)], CancellationToken.None).ConfigureAwait(false);
+		}
+		#pragma warning disable CA1031
+		catch (Exception exception)
+#pragma warning restore CA1031
+		{
+			LogOutboxUpdateFailed(_logger, exception, @event.EventId);
+		}
+	}
+
+	[MethodImpl(MethodImplOptions.AggressiveInlining)]
+	private void HandleSchedulerException(Exception exception)
+	{
 		int failures = Interlocked.Increment(ref _consecutiveFailures);
-        _metrics.IncrementError();
+		_metrics.IncrementError();
 
-        LogSchedulerExecutionFailed(_logger, failures, exception);
+		LogSchedulerExecutionFailed(_logger, exception, failures);
 
-        if (_circuitBreakerState != CircuitBreakerState.Open)
-        {
+		if (_circuitBreakerState != CircuitBreakerState.Open)
+		{
 			int failureCount = Interlocked.Increment(ref _circuitBreakerFailureCount);
 
-            if (failureCount >= _options.CircuitBreakerFailureThreshold)
-            {
-                _circuitBreakerState = CircuitBreakerState.Open;
+			if (failureCount >= _options.CircuitBreakerFailureThreshold)
+			{
+				_circuitBreakerState = CircuitBreakerState.Open;
 				DateTime currentTime = DateTime.UtcNow;
-                _circuitBreakerLastFailureTimeProvider = () => currentTime;
+				_circuitBreakerLastFailureTimeProvider = () => currentTime;
 
-                LogCircuitBreakerOpened(_logger, failureCount, null);
-            }
-        }
+				LogCircuitBreakerOpened(_logger, failureCount);
+			}
+		}
 
-        CalculateBackoffDelay();
-    }
+		CalculateBackoffDelay();
+	}
 
-    private void HandlePartialFailure(int errorCount)
-    {
-        if (errorCount > _options.BatchSize * 0.5)
-        {
-            Interlocked.Increment(ref _consecutiveFailures);
-            CalculateBackoffDelay();
-        }
-    }
+	private void HandlePartialFailure(int errorCount)
+	{
+		if (errorCount > _options.BatchSize * 0.5)
+		{
+			Interlocked.Increment(ref _consecutiveFailures);
+			CalculateBackoffDelay();
+		}
+	}
 
-    [MethodImpl(MethodImplOptions.AggressiveInlining)]
-    private void HandleCircuitBreakerSuccess()
-    {
-        if (_circuitBreakerState == CircuitBreakerState.HalfOpen)
-        {
-            _circuitBreakerState = CircuitBreakerState.Closed;
-            Interlocked.Exchange(ref _circuitBreakerFailureCount, 0);
-            LogCircuitBreakerClosed(_logger, null);
-        }
-        else if (_circuitBreakerState == CircuitBreakerState.Closed)
-        {
-            if (Interlocked.Exchange(ref _circuitBreakerFailureCount, 0) > 0)
-            {
-                LogCircuitBreakerFailureCountReset(_logger, null);
-            }
-        }
-    }
+	[MethodImpl(MethodImplOptions.AggressiveInlining)]
+	private void HandleCircuitBreakerSuccess()
+	{
+		if (_circuitBreakerState == CircuitBreakerState.HalfOpen)
+		{
+			_circuitBreakerState = CircuitBreakerState.Closed;
+			Interlocked.Exchange(ref _circuitBreakerFailureCount, 0);
+			LogCircuitBreakerClosed(_logger);
+		}
+		else if (_circuitBreakerState == CircuitBreakerState.Closed)
+		{
+			if (Interlocked.Exchange(ref _circuitBreakerFailureCount, 0) > 0)
+			{
+				LogCircuitBreakerFailureCountReset(_logger);
+			}
+		}
+	}
 
-    [MethodImpl(MethodImplOptions.AggressiveInlining)]
-    private bool ShouldAttemptCircuitBreakerReset() =>
-        DateTime.UtcNow - _circuitBreakerLastFailureTimeProvider() >= _options.CircuitBreakerTimeout;
+	[MethodImpl(MethodImplOptions.AggressiveInlining)]
+	private bool ShouldAttemptCircuitBreakerReset() =>
+		DateTime.UtcNow - _circuitBreakerLastFailureTimeProvider() >= _options.CircuitBreakerTimeout;
 
-    private void CalculateBackoffDelay()
-    {
-        if (_consecutiveFailures == 0)
-        {
-            return;
-        }
+	private void CalculateBackoffDelay()
+	{
+		if (_consecutiveFailures == 0)
+		{
+			return;
+		}
 
-        var baseDelay = TimeSpan.FromMilliseconds(_options.BackoffBaseDelayMs);
-        var maxDelay = TimeSpan.FromMilliseconds(_options.BackoffMaxDelayMs);
+		var baseDelay = TimeSpan.FromMilliseconds(_options.BackoffBaseDelayMs);
+		var maxDelay = TimeSpan.FromMilliseconds(_options.BackoffMaxDelayMs);
 
-        var exponentialDelay = TimeSpan.FromTicks(baseDelay.Ticks * (1L << Math.Min(_consecutiveFailures - 1, 20)));
+		var exponentialDelay = TimeSpan.FromTicks(baseDelay.Ticks * (1L << Math.Min(_consecutiveFailures - 1, 20)));
 		int jitterMs = GenerateSecureRandomJitter((int)baseDelay.TotalMilliseconds);
-        var jitter = TimeSpan.FromMilliseconds(jitterMs);
-        var calculatedDelay = TimeSpan.FromTicks(Math.Min(exponentialDelay.Ticks + jitter.Ticks, maxDelay.Ticks));
+		var jitter = TimeSpan.FromMilliseconds(jitterMs);
+		var calculatedDelay = TimeSpan.FromTicks(Math.Min(exponentialDelay.Ticks + jitter.Ticks, maxDelay.Ticks));
 
-        LogBackoffApplied(_logger, calculatedDelay.TotalMilliseconds, _consecutiveFailures, null);
-    }
+		LogBackoffApplied(_logger, calculatedDelay.TotalMilliseconds, _consecutiveFailures);
+	}
 
-    [MethodImpl(MethodImplOptions.AggressiveInlining)]
-    private static int GenerateSecureRandomJitter(int maxValue)
-    {
-        if (maxValue <= 0)
+	[MethodImpl(MethodImplOptions.AggressiveInlining)]
+	private static int GenerateSecureRandomJitter(int maxValue)
+	{
+		if (maxValue <= 0)
 		{
 			return 0;
 		}
 
 		using var rng = RandomNumberGenerator.Create();
-        Span<byte> bytes = stackalloc byte[4];
-        rng.GetBytes(bytes);
+		Span<byte> bytes = stackalloc byte[4];
+		rng.GetBytes(bytes);
 		uint randomValue = BitConverter.ToUInt32(bytes);
-        return (int)(randomValue % (uint)maxValue);
-    }
+		return (int)(randomValue % (uint)maxValue);
+	}
 
-    [MethodImpl(MethodImplOptions.AggressiveInlining)]
-    private void ResetBackoffDelay() =>
-        Interlocked.Exchange(ref _consecutiveFailures, 0);
+	[MethodImpl(MethodImplOptions.AggressiveInlining)]
+	private void ResetBackoffDelay() =>
+		Interlocked.Exchange(ref _consecutiveFailures, 0);
 
-    private void AdjustConcurrencyLimiter(int oldMaxConcurrency, int newMaxConcurrency)
-    {
-        if (oldMaxConcurrency == newMaxConcurrency)
+	private void AdjustConcurrencyLimiter(int oldMaxConcurrency, int newMaxConcurrency)
+	{
+		if (oldMaxConcurrency == newMaxConcurrency)
 		{
 			return;
 		}
 
 		int difference = newMaxConcurrency - oldMaxConcurrency;
 
-        if (difference > 0)
-        {
-            _concurrencyLimiter.Release(difference);
-        }
-        else
-        {
-            _ = Task.Run(async () =>
-            {
-                for (int i = 0; i < Math.Abs(difference); i++)
-                {
-                    await _concurrencyLimiter.WaitAsync().ConfigureAwait(false);
-                }
-            });
-        }
-    }
+		if (difference > 0)
+		{
+			_concurrencyLimiter.Release(difference);
+		}
+		else
+		{
+			_ = Task.Run(async () =>
+			{
+				for (int i = 0; i < Math.Abs(difference); i++)
+				{
+					await _concurrencyLimiter.WaitAsync().ConfigureAwait(false);
+				}
+			});
+		}
+	}
 
-    [MethodImpl(MethodImplOptions.AggressiveInlining)]
-    private void UpdateMetrics(int processedCount, int errorCount, TimeSpan elapsed) =>
-        _metrics.UpdateMetrics(processedCount, errorCount, elapsed);
+	[MethodImpl(MethodImplOptions.AggressiveInlining)]
+	private void UpdateMetrics(int processedCount, int errorCount, TimeSpan elapsed) =>
+		_metrics.UpdateMetrics(processedCount, errorCount, elapsed);
 
-    #endregion
+	/// <inheritdoc/>
+	protected sealed override void Dispose(bool disposing)
+	{
+		if (disposing)
+		{
+			_optionsMonitor?.Dispose();
+			_concurrencyLimiter?.Dispose();
 
-    #region Disposal
+			LogSchedulerDisposed(_logger, _metrics.TotalProcessedEvents, _metrics.TotalErrors,
+					_metrics.AverageProcessingTime.TotalMilliseconds);
+		}
 
-    /// <inheritdoc/>
-    protected sealed override void Dispose(bool disposing)
-    {
-        if (disposing)
-        {
-            _optionsMonitor?.Dispose();
-            _concurrencyLimiter?.Dispose();
+		base.Dispose(disposing);
+	}
 
-            LogSchedulerDisposed(_logger, _metrics.TotalProcessedEvents, _metrics.TotalErrors,
-                _metrics.AverageProcessingTime.TotalMilliseconds, null);
-        }
+	private enum CircuitBreakerState
+	{
+		Closed,
+		Open,
+		HalfOpen
+	}
 
-        base.Dispose(disposing);
-    }
+	private readonly record struct BatchResult(int ProcessedCount, int ErrorCount);
 
-    #endregion
+	private sealed class SchedulerMetrics
+	{
+		private long _totalProcessedEvents;
+		private long _totalErrors;
+		private long _totalExecutions;
+		private long _totalProcessingTimeTicks;
 
-    #region Supporting Types
-
-    private enum CircuitBreakerState
-    {
-        Closed,
-        Open,
-        HalfOpen
-    }
-
-    private readonly record struct BatchProcessingResult(
-        int ProcessedCount,
-        int ErrorCount,
-        IReadOnlyList<CompletedOutboxEvent> Successes,
-        IReadOnlyList<FailedOutboxEvent> Failures);
-
-    private sealed class SchedulerMetrics
-    {
-        private long _totalProcessedEvents;
-        private long _totalErrors;
-        private long _totalExecutions;
-        private long _totalProcessingTimeTicks;
-
-        public long TotalProcessedEvents => Interlocked.Read(ref _totalProcessedEvents);
-        public long TotalErrors => Interlocked.Read(ref _totalErrors);
-        public TimeSpan AverageProcessingTime
-        {
-            get
-            {
+		public long TotalProcessedEvents => Interlocked.Read(ref _totalProcessedEvents);
+		public long TotalErrors => Interlocked.Read(ref _totalErrors);
+		public TimeSpan AverageProcessingTime
+		{
+			get
+			{
 				long executions = Interlocked.Read(ref _totalExecutions);
-                return executions > 0
-                    ? TimeSpan.FromTicks(Interlocked.Read(ref _totalProcessingTimeTicks) / executions)
-                    : TimeSpan.Zero;
-            }
-        }
+				return executions > 0
+					? TimeSpan.FromTicks(Interlocked.Read(ref _totalProcessingTimeTicks) / executions)
+					: TimeSpan.Zero;
+			}
+		}
 
-        public void UpdateMetrics(int processedCount, int errorCount, TimeSpan elapsed)
-        {
-            Interlocked.Add(ref _totalProcessedEvents, processedCount);
-            Interlocked.Add(ref _totalErrors, errorCount);
-            Interlocked.Increment(ref _totalExecutions);
-            Interlocked.Add(ref _totalProcessingTimeTicks, elapsed.Ticks);
-        }
+		public void UpdateMetrics(int processedCount, int errorCount, TimeSpan elapsed)
+		{
+			Interlocked.Add(ref _totalProcessedEvents, processedCount);
+			Interlocked.Add(ref _totalErrors, errorCount);
+			Interlocked.Increment(ref _totalExecutions);
+			Interlocked.Add(ref _totalProcessingTimeTicks, elapsed.Ticks);
+		}
 
-        public void IncrementError() => Interlocked.Increment(ref _totalErrors);
-    }
-
-    #endregion
+		public void IncrementError() => Interlocked.Increment(ref _totalErrors);
+	}
 }
