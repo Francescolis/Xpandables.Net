@@ -1,4 +1,4 @@
-/*******************************************************************************
+﻿/*******************************************************************************
  * Copyright (C) 2025-2026 Kamersoft
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
@@ -14,8 +14,10 @@
  * limitations under the License.
  *
 ********************************************************************************/
+using System.ComponentModel.DataAnnotations.Schema;
 using System.Diagnostics.CodeAnalysis;
 using System.Globalization;
+using System.Reflection;
 using System.Text;
 
 namespace System.Data;
@@ -57,6 +59,28 @@ public sealed class PostgreDataSqlBuilder : DataSqlBuilderBase
         // Remove any existing quotes and re-wrap
         identifier = identifier.Trim('"');
         return $"\"{identifier}\"";
+    }
+
+    /// <summary>
+    /// Resolves a table name for a runtime type using unquoted identifiers.
+    /// </summary>
+    /// <remarks>
+    /// PostgreSQL folds unquoted identifiers to lowercase, so quoting is
+    /// unnecessary for the lowercase names that are conventional in PostgreSQL.
+    /// This produces <c>schema.table</c> instead of <c>"schema"."table"</c>.
+    /// </remarks>
+    protected override string GetTableNameForType(Type entityType)
+    {
+        TableAttribute? tableAttr = entityType.GetCustomAttribute<TableAttribute>();
+        if (tableAttr != null)
+        {
+            string schema = string.IsNullOrEmpty(tableAttr.Schema)
+                ? string.Empty
+                : $"{tableAttr.Schema}.";
+            return $"{schema}{tableAttr.Name}";
+        }
+
+        return entityType.Name;
     }
 
     /// <inheritdoc />

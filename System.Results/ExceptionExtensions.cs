@@ -1,4 +1,4 @@
-/*******************************************************************************
+﻿/*******************************************************************************
  * Copyright (C) 2025-2026 Kamersoft
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
@@ -73,7 +73,8 @@ public static class ExceptionExtensions
 				.Failure()
 				.WithStatusCode(statusCode.Value)
 				.WithTitle(isDevelopment ? reason ?? exception.Message : statusCode.Value.Title)
-				.WithDetail(isDevelopment ? $"{exception}" : statusCode.Value.Detail)
+				.WithDetail(statusCode.Value.Detail)
+				.WithException(exception)
 				.WithErrors(exception.GetElementEntries());
 
 			return exception is ValidationException
@@ -121,8 +122,9 @@ public static class ExceptionExtensions
 				.Failure<TValue>()
 				.WithStatusCode(statusCode.Value)
 				.WithTitle(isDevelopment ? reason ?? exception.Message : statusCode.Value.Title)
-				.WithDetail(isDevelopment ? $"{exception}" : statusCode.Value.Detail)
-				.WithErrors(exception.GetElementEntries());
+				.WithDetail(statusCode.Value.Detail)
+				.WithErrors(exception.GetElementEntries())
+				.WithException(exception);
 
 			return exception is ValidationException
 				? builder.Build()

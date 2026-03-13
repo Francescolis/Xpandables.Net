@@ -1,4 +1,4 @@
-/*******************************************************************************
+﻿/*******************************************************************************
  * Copyright (C) 2025-2026 Kamersoft
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
@@ -115,8 +115,9 @@ public static class ResultExtensions
 			return Result
 				.BadRequest()
 				.WithTitle(statusCodeExtension.GetTitle(statusCode))
-				.WithDetail(isDevelopment ? exception.ToString() : statusCodeExtension.GetDetail(statusCode))
+				.WithDetail(statusCodeExtension.GetDetail(statusCode))
 				.WithStatusCode(statusCode)
+				.WithException(exception)
 				.WithError(parameterName, errorMessage)
 				.Build();
 		}
@@ -134,7 +135,7 @@ public static class ResultExtensions
 			return Result
 				.BadRequest()
 				.WithTitle(statusCodeExtension.GetTitle(statusCode))
-				.WithDetail(isDevelopment ? exception.ToString() : statusCodeExtension.GetDetail(statusCode))
+				.WithDetail(statusCodeExtension.GetDetail(statusCode))
 				.WithStatusCode(statusCode)
 				.WithException(exception)
 				.Build();

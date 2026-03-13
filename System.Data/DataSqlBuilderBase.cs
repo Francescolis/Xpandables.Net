@@ -75,29 +75,6 @@ public abstract class DataSqlBuilderBase : IDataSqlBuilder
 	protected abstract bool LimitBeforeColumns { get; }
 
 	/// <inheritdoc />
-	public virtual string GetTableName<[DynamicallyAccessedMembers(DynamicallyAccessedMemberTypes.PublicProperties)] TEntity>()
-		where TEntity : class
-	{
-		return _tableNameCache.GetOrAdd(typeof(TEntity), _ => BuildTableName<TEntity>());
-	}
-
-	private string BuildTableName<[DynamicallyAccessedMembers(DynamicallyAccessedMemberTypes.PublicProperties)] TEntity>()
-		where TEntity : class
-	{
-		Type type = typeof(TEntity);
-		TableAttribute? tableAttr = type.GetCustomAttribute<TableAttribute>();
-
-		if (tableAttr != null)
-		{
-			string schema = string.IsNullOrEmpty(tableAttr.Schema) ? string.Empty : $"{QuoteIdentifier(tableAttr.Schema)}.";
-			return $"{schema}{QuoteIdentifier(tableAttr.Name)}";
-		}
-
-		// Default: use type name as table name
-		return QuoteIdentifier(type.Name);
-	}
-
-	/// <inheritdoc />
 	public virtual IReadOnlyDictionary<string, string> GetColumnMappings<[DynamicallyAccessedMembers(DynamicallyAccessedMemberTypes.PublicProperties)] TEntity>()
 		where TEntity : class
 	{
@@ -712,6 +689,11 @@ public abstract class DataSqlBuilderBase : IDataSqlBuilder
 
 		return column;
 	}
+
+	/// <inheritdoc />
+	public virtual string GetTableName<[DynamicallyAccessedMembers(DynamicallyAccessedMemberTypes.PublicProperties)] TEntity>()
+		where TEntity : class =>
+		GetTableNameForType(typeof(TEntity));
 
 	/// <summary>
 	/// Resolves a table name for a runtime type.
