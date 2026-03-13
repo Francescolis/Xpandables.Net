@@ -479,6 +479,35 @@ public static class IDataExtensions
 		}
 
 		/// <summary>
+		/// Registers a scoped data repository of the specified type using the provided factory for creating unit of work
+		/// instances.
+		/// </summary>
+		/// <remarks>Use this method in dependency injection scenarios to register a repository with a specific
+		/// implementation and unit of work factory. The factory parameter must not return null. The repository will be
+		/// created per scope.</remarks>
+		/// <typeparam name="TRepository">The type of the data repository to register. Must implement the IDataRepository interface.</typeparam>
+		/// <typeparam name="TImplementation">The concrete implementation type of the data repository. Must inherit from TRepository and provide public
+		/// constructors.</typeparam>
+		/// <param name="factory">A factory function that receives an IServiceProvider and returns an IDataUnitOfWork instance used to construct the
+		/// repository.</param>
+		/// <returns>The IServiceCollection instance, allowing for method chaining.</returns>
+		public IServiceCollection AddXDataRepository<TRepository, [DynamicallyAccessedMembers(DynamicallyAccessedMemberTypes.PublicConstructors)] TImplementation>(Func<IServiceProvider, IDataUnitOfWork> factory)
+			where TRepository : class, IDataRepository
+			where TImplementation : class, TRepository
+		{
+			ArgumentNullException.ThrowIfNull(services);
+			ArgumentNullException.ThrowIfNull(factory);
+
+			services.AddScoped(provider =>
+			{
+				IDataUnitOfWork unitOfWork = factory(provider);
+				return (TRepository)ActivatorUtilities.CreateInstance<TImplementation>(provider, [unitOfWork]);
+			});
+
+			return services;
+		}
+
+		/// <summary>
 		/// Registers multiple data repository interfaces and their corresponding implementations with the specified
 		/// service lifetime in the dependency injection container.
 		/// </summary>
