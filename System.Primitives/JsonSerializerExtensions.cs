@@ -22,19 +22,6 @@ using System.Text.Json.Serialization.Metadata;
 namespace System;
 
 /// <summary>
-/// Provides a source-generated context for serializing and deserializing JSON data, including support for DateOnly and
-/// TimeOnly types.
-/// </summary>
-/// <remarks>Use this context with System.Text.Json serialization APIs to enable efficient handling of DateOnly
-/// and TimeOnly values. This class is typically passed to serialization methods to optimize performance and ensure
-/// correct type handling.</remarks>
-[JsonSerializable(typeof(DateOnly))]
-[JsonSerializable(typeof(DateOnly?))]
-[JsonSerializable(typeof(TimeOnly))]
-[JsonSerializable(typeof(TimeOnly?))]
-public partial class DateTimeOnlyJsonContext : JsonSerializerContext;
-
-/// <summary>
 /// Provides extension methods for resolving JSON serialization metadata for .NET types using System.Text.Json.
 /// </summary>
 /// <remarks>These extension methods enable advanced scenarios for obtaining type metadata that reflects the

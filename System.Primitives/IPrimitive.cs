@@ -304,11 +304,17 @@ public sealed class PrimitiveJsonConverter<TPrimitive, TValue> : JsonConverter<T
 [JsonSerializable(typeof(decimal))]
 [JsonSerializable(typeof(bool))]
 [JsonSerializable(typeof(DateTime))]
+[JsonSerializable(typeof(DateTime?))]
 [JsonSerializable(typeof(DateTimeOffset))]
+[JsonSerializable(typeof(DateTimeOffset?))]
 [JsonSerializable(typeof(Guid))]
+[JsonSerializable(typeof(Guid?))]
 [JsonSerializable(typeof(TimeSpan))]
+[JsonSerializable(typeof(TimeSpan?))]
 [JsonSerializable(typeof(DateOnly))]
+[JsonSerializable(typeof(DateOnly?))]
 [JsonSerializable(typeof(TimeOnly))]
+[JsonSerializable(typeof(TimeOnly?))]
 public partial class PrimitiveJsonContext : JsonSerializerContext { }
 
 #pragma warning restore CA1000 // Do not declare static members on generic types
