@@ -1,4 +1,4 @@
-/*******************************************************************************
+﻿/*******************************************************************************
  * Copyright (C) 2025-2026 Kamersoft
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
@@ -15,6 +15,7 @@
  *
 ********************************************************************************/
 using System.Cache;
+using System.ComponentModel.DataAnnotations;
 using System.Events.Integration;
 using System.Text.Json;
 using System.Text.Json.Serialization.Metadata;
@@ -50,7 +51,8 @@ public sealed class EventConverterOutbox(ICacheTypeResolver typeResolver, IEvent
 				EventData = data
 			};
 		}
-		catch (Exception exception) when (exception is not InvalidOperationException)
+		catch (Exception exception)
+			when (exception is not InvalidOperationException and not ValidationException)
 		{
 			throw new InvalidOperationException(
 				$"Failed to convert the event {@event.GetType().Name} to data event. " +
@@ -75,7 +77,8 @@ public sealed class EventConverterOutbox(ICacheTypeResolver typeResolver, IEvent
 
 			return (IIntegrationEvent)@event;
 		}
-		catch (Exception exception) when (exception is not InvalidOperationException)
+		catch (Exception exception)
+			when (exception is not InvalidOperationException and not ValidationException)
 		{
 			throw new InvalidOperationException(
 				"Failed to convert the data event to event. See inner exception for details.",

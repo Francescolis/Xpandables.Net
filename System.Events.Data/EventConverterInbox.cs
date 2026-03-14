@@ -1,4 +1,4 @@
-/*******************************************************************************
+﻿/*******************************************************************************
  * Copyright (C) 2025-2026 Kamersoft
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
@@ -14,6 +14,7 @@
  * limitations under the License.
  *
 ********************************************************************************/
+using System.ComponentModel.DataAnnotations;
 using System.Events.Integration;
 
 namespace System.Events.Data;
@@ -39,7 +40,8 @@ public sealed class EventConverterInbox : IEventConverter<DataEventInbox, IInteg
 				Consumer = string.Empty
 			};
 		}
-		catch (Exception exception) when (exception is not InvalidOperationException)
+		catch (Exception exception)
+			when (exception is not InvalidOperationException and not ValidationException)
 		{
 			throw new InvalidOperationException(
 				$"Failed to convert the event {@event.GetType().Name} to data event. " +
