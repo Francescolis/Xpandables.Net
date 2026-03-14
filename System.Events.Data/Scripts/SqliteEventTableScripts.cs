@@ -17,13 +17,18 @@
 namespace System.Events.Data.Scripts;
 
 /// <summary>
-/// SQLite event table scripts based on AddEventContext migration.
+/// SQLite event table scripts.
 /// </summary>
 public sealed class SqliteEventTableScripts : IEventTableScriptProvider
 {
 	/// <inheritdoc />
-	public string GetCreateAllTablesScript(string schema = "Event") => """
-CREATE TABLE IF NOT EXISTS "DomainEvents" (
+	public string GetCreateAllTablesScript(
+		string schema = "Event",
+		string? eventDomain = "EventDomain",
+		string? eventInbox = "EventInbox",
+		string? eventOutbox = "EventOutbox",
+		string? eventSnapshot = "EventSnapshot") => $$"""
+CREATE TABLE IF NOT EXISTS "{{eventDomain}}" (
     "KeyId" TEXT NOT NULL PRIMARY KEY,
     "StreamId" TEXT NOT NULL,
     "StreamVersion" INTEGER NOT NULL,
@@ -39,7 +44,7 @@ CREATE TABLE IF NOT EXISTS "DomainEvents" (
     "Sequence" INTEGER NOT NULL
 );
 
-CREATE TABLE IF NOT EXISTS "InboxEvents" (
+CREATE TABLE IF NOT EXISTS "{{eventInbox}}" (
     "KeyId" TEXT NOT NULL PRIMARY KEY,
     "ErrorMessage" TEXT NULL,
     "AttemptCount" INTEGER NOT NULL DEFAULT 0,
@@ -56,7 +61,7 @@ CREATE TABLE IF NOT EXISTS "InboxEvents" (
     "Sequence" INTEGER NOT NULL
 );
 
-CREATE TABLE IF NOT EXISTS "OutboxEvents" (
+CREATE TABLE IF NOT EXISTS "{{eventOutbox}}" (
     "KeyId" TEXT NOT NULL PRIMARY KEY,
     "ErrorMessage" TEXT NULL,
     "AttemptCount" INTEGER NOT NULL DEFAULT 0,
@@ -73,7 +78,7 @@ CREATE TABLE IF NOT EXISTS "OutboxEvents" (
     "Sequence" INTEGER NOT NULL
 );
 
-CREATE TABLE IF NOT EXISTS "SnapshotEvents" (
+CREATE TABLE IF NOT EXISTS "{{eventSnapshot}}" (
     "KeyId" TEXT NOT NULL PRIMARY KEY,
     "OwnerId" TEXT NOT NULL,
     "Status" TEXT NOT NULL,
@@ -88,70 +93,75 @@ CREATE TABLE IF NOT EXISTS "SnapshotEvents" (
 );
 
 -- Auto-increment triggers for Sequence columns
-CREATE TRIGGER IF NOT EXISTS "TR_DomainEvents_Sequence"
-AFTER INSERT ON "DomainEvents"
+CREATE TRIGGER IF NOT EXISTS "TR_{{eventDomain}}_Sequence"
+AFTER INSERT ON "{{eventDomain}}"
 FOR EACH ROW WHEN NEW."Sequence" = 0
 BEGIN
-    UPDATE "DomainEvents"
-    SET "Sequence" = (SELECT COALESCE(MAX("Sequence"), 0) + 1 FROM "DomainEvents")
+    UPDATE "{{eventDomain}}"
+    SET "Sequence" = (SELECT COALESCE(MAX("Sequence"), 0) + 1 FROM "{{eventDomain}}")
     WHERE "KeyId" = NEW."KeyId";
 END;
 
-CREATE TRIGGER IF NOT EXISTS "TR_InboxEvents_Sequence"
-AFTER INSERT ON "InboxEvents"
+CREATE TRIGGER IF NOT EXISTS "TR_{{eventInbox}}_Sequence"
+AFTER INSERT ON "{{eventInbox}}"
 FOR EACH ROW WHEN NEW."Sequence" = 0
 BEGIN
-    UPDATE "InboxEvents"
-    SET "Sequence" = (SELECT COALESCE(MAX("Sequence"), 0) + 1 FROM "InboxEvents")
+    UPDATE "{{eventInbox}}"
+    SET "Sequence" = (SELECT COALESCE(MAX("Sequence"), 0) + 1 FROM "{{eventInbox}}")
     WHERE "KeyId" = NEW."KeyId";
 END;
 
-CREATE TRIGGER IF NOT EXISTS "TR_OutboxEvents_Sequence"
-AFTER INSERT ON "OutboxEvents"
+CREATE TRIGGER IF NOT EXISTS "TR_{{eventOutbox}}_Sequence"
+AFTER INSERT ON "{{eventOutbox}}"
 FOR EACH ROW WHEN NEW."Sequence" = 0
 BEGIN
-    UPDATE "OutboxEvents"
-    SET "Sequence" = (SELECT COALESCE(MAX("Sequence"), 0) + 1 FROM "OutboxEvents")
+    UPDATE "{{eventOutbox}}"
+    SET "Sequence" = (SELECT COALESCE(MAX("Sequence"), 0) + 1 FROM "{{eventOutbox}}")
     WHERE "KeyId" = NEW."KeyId";
 END;
 
-CREATE TRIGGER IF NOT EXISTS "TR_SnapshotEvents_Sequence"
-AFTER INSERT ON "SnapshotEvents"
+CREATE TRIGGER IF NOT EXISTS "TR_{{eventSnapshot}}_Sequence"
+AFTER INSERT ON "{{eventSnapshot}}"
 FOR EACH ROW WHEN NEW."Sequence" = 0
 BEGIN
-    UPDATE "SnapshotEvents"
-    SET "Sequence" = (SELECT COALESCE(MAX("Sequence"), 0) + 1 FROM "SnapshotEvents")
+    UPDATE "{{eventSnapshot}}"
+    SET "Sequence" = (SELECT COALESCE(MAX("Sequence"), 0) + 1 FROM "{{eventSnapshot}}")
     WHERE "KeyId" = NEW."KeyId";
 END;
 
-CREATE INDEX IF NOT EXISTS "IX_DomainEvent_StreamId" ON "DomainEvents" ("StreamId");
-CREATE UNIQUE INDEX IF NOT EXISTS "IX_DomainEvent_StreamId_StreamVersion_Unique" ON "DomainEvents" ("StreamId", "StreamVersion");
-CREATE INDEX IF NOT EXISTS "IX_DomainEvent_StreamName" ON "DomainEvents" ("StreamName");
-CREATE INDEX IF NOT EXISTS "IX_DomainEvents_Sequence" ON "DomainEvents" ("Sequence");
+CREATE INDEX IF NOT EXISTS "IX_{{eventDomain}}_StreamId" ON "{{eventDomain}}" ("StreamId");
+CREATE UNIQUE INDEX IF NOT EXISTS "IX_{{eventDomain}}_StreamId_StreamVersion_Unique" ON "{{eventDomain}}" ("StreamId", "StreamVersion");
+CREATE INDEX IF NOT EXISTS "IX_{{eventDomain}}_StreamName" ON "{{eventDomain}}" ("StreamName");
+CREATE INDEX IF NOT EXISTS "IX_{{eventDomain}}_Sequence" ON "{{eventDomain}}" ("Sequence");
 
-CREATE INDEX IF NOT EXISTS "IX_InboxEvent_ClaimId" ON "InboxEvents" ("ClaimId");
-CREATE UNIQUE INDEX IF NOT EXISTS "IX_InboxEvent_EventId_Consumer_Unique" ON "InboxEvents" ("KeyId", "Consumer");
-CREATE INDEX IF NOT EXISTS "IX_InboxEvent_Processing" ON "InboxEvents" ("Status", "NextAttemptOn", "Sequence");
-CREATE INDEX IF NOT EXISTS "IX_InboxEvent_Retry" ON "InboxEvents" ("Status", "AttemptCount", "NextAttemptOn");
-CREATE INDEX IF NOT EXISTS "IX_InboxEvent_Status_NextAttemptOn" ON "InboxEvents" ("Status", "NextAttemptOn");
-CREATE INDEX IF NOT EXISTS "IX_InboxEvents_Sequence" ON "InboxEvents" ("Sequence");
+CREATE INDEX IF NOT EXISTS "IX_{{eventInbox}}_ClaimId" ON "{{eventInbox}}" ("ClaimId");
+CREATE UNIQUE INDEX IF NOT EXISTS "IX_{{eventInbox}}_EventId_Consumer_Unique" ON "{{eventInbox}}" ("KeyId", "Consumer");
+CREATE INDEX IF NOT EXISTS "IX_{{eventInbox}}_Processing" ON "{{eventInbox}}" ("Status", "NextAttemptOn", "Sequence");
+CREATE INDEX IF NOT EXISTS "IX_{{eventInbox}}_Retry" ON "{{eventInbox}}" ("Status", "AttemptCount", "NextAttemptOn");
+CREATE INDEX IF NOT EXISTS "IX_{{eventInbox}}_Status_NextAttemptOn" ON "{{eventInbox}}" ("Status", "NextAttemptOn");
+CREATE INDEX IF NOT EXISTS "IX_{{eventInbox}}_Sequence" ON "{{eventInbox}}" ("Sequence");
 
-CREATE INDEX IF NOT EXISTS "IX_OutboxEvent_ClaimId" ON "OutboxEvents" ("ClaimId");
-CREATE INDEX IF NOT EXISTS "IX_OutboxEvent_Processing" ON "OutboxEvents" ("Status", "NextAttemptOn", "Sequence");
-CREATE INDEX IF NOT EXISTS "IX_OutboxEvent_Retry" ON "OutboxEvents" ("Status", "AttemptCount", "NextAttemptOn");
-CREATE INDEX IF NOT EXISTS "IX_OutboxEvent_Status_NextAttemptOn" ON "OutboxEvents" ("Status", "NextAttemptOn");
-CREATE INDEX IF NOT EXISTS "IX_OutboxEvents_Sequence" ON "OutboxEvents" ("Sequence");
+CREATE INDEX IF NOT EXISTS "IX_{{eventOutbox}}_ClaimId" ON "{{eventOutbox}}" ("ClaimId");
+CREATE INDEX IF NOT EXISTS "IX_{{eventOutbox}}_Processing" ON "{{eventOutbox}}" ("Status", "NextAttemptOn", "Sequence");
+CREATE INDEX IF NOT EXISTS "IX_{{eventOutbox}}_Retry" ON "{{eventOutbox}}" ("Status", "AttemptCount", "NextAttemptOn");
+CREATE INDEX IF NOT EXISTS "IX_{{eventOutbox}}_Status_NextAttemptOn" ON "{{eventOutbox}}" ("Status", "NextAttemptOn");
+CREATE INDEX IF NOT EXISTS "IX_{{eventOutbox}}_Sequence" ON "{{eventOutbox}}" ("Sequence");
 """;
 
 	/// <inheritdoc />
-	public string GetDropAllTablesScript(string schema = "Event") => """
-DROP TRIGGER IF EXISTS "TR_SnapshotEvents_Sequence";
-DROP TRIGGER IF EXISTS "TR_OutboxEvents_Sequence";
-DROP TRIGGER IF EXISTS "TR_InboxEvents_Sequence";
-DROP TRIGGER IF EXISTS "TR_DomainEvents_Sequence";
-DROP TABLE IF EXISTS "SnapshotEvents";
-DROP TABLE IF EXISTS "OutboxEvents";
-DROP TABLE IF EXISTS "InboxEvents";
-DROP TABLE IF EXISTS "DomainEvents";
+	public string GetDropAllTablesScript(
+		string schema = "Event",
+		string? eventDomain = "EventDomain",
+		string? eventInbox = "EventInbox",
+		string? eventOutbox = "EventOutbox",
+		string? eventSnapshot = "EventSnapshot") => """
+DROP TRIGGER IF EXISTS "TR_{{eventSnapshot}}_Sequence";
+DROP TRIGGER IF EXISTS "TR_{{eventOutbox}}_Sequence";
+DROP TRIGGER IF EXISTS "TR_{{eventInbox}}_Sequence";
+DROP TRIGGER IF EXISTS "TR_{{eventDomain}}_Sequence";
+DROP TABLE IF EXISTS "{{eventSnapshot}}";
+DROP TABLE IF EXISTS "{{eventOutbox}}";
+DROP TABLE IF EXISTS "{{eventInbox}}";
+DROP TABLE IF EXISTS "{{eventDomain}}";
 """;
 }

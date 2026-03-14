@@ -25,13 +25,31 @@ public interface IEventTableScriptProvider
 	/// Gets the SQL script to create all event tables.
 	/// </summary>
 	/// <param name="schema">Schema name for the tables.</param>
+	/// <param name="eventDomain">Table name for the event domain.</param>
+	/// <param name="eventInbox">Table name for the event inbox.</param>
+	/// <param name="eventOutbox">Table name for the event outbox.</param>
+	/// <param name="eventSnapshot">Table name for the event snapshot.</param>
 	/// <returns>The SQL script.</returns>
-	string GetCreateAllTablesScript(string schema = "Event");
+	string GetCreateAllTablesScript(
+		string schema = "Event",
+		string? eventDomain = "EventDomain",
+		string? eventInbox = "EventInbox",
+		string? eventOutbox = "EventOutbox",
+		string? eventSnapshot = "EventSnapshot");
 
 	/// <summary>
 	/// Gets the SQL script to drop all event tables.
 	/// </summary>
 	/// <param name="schema">Schema name for the tables.</param>
+	/// <param name="eventDomain">Table name for the event domain.</param>
+	/// <param name="eventInbox">Table name for the event inbox.</param>
+	/// <param name="eventOutbox">Table name for the event outbox.</param>
+	/// <param name="eventSnapshot">Table name for the event snapshot.</param>
 	/// <returns>The SQL script.</returns>
-	string GetDropAllTablesScript(string schema = "Event");
+	string GetDropAllTablesScript(
+		string schema = "Event",
+		string? eventDomain = "EventDomain",
+		string? eventInbox = "EventInbox",
+		string? eventOutbox = "EventOutbox",
+		string? eventSnapshot = "EventSnapshot");
 }

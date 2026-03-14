@@ -29,7 +29,18 @@ public static class EventTableScriptExporter
 	/// <param name="provider">Script provider.</param>
 	/// <param name="directory">Target directory.</param>
 	/// <param name="schema">Schema name.</param>
-	public static void ExportScripts(IEventTableScriptProvider provider, string directory, string schema = "Event")
+	/// <param name="eventDomain">Table name for the event domain.</param>
+	/// <param name="eventInbox">Table name for the event inbox.</param>
+	/// <param name="eventOutbox">Table name for the event outbox.</param>
+	/// <param name="eventSnapshot">Table name for the event snapshot.</param>
+	public static void ExportScripts(
+		IEventTableScriptProvider provider,
+		string directory,
+		string schema = "Event",
+		string? eventDomain = "EventDomain",
+		string? eventInbox = "EventInbox",
+		string? eventOutbox = "EventOutbox",
+		string? eventSnapshot = "EventSnapshot")
 	{
 		ArgumentNullException.ThrowIfNull(provider);
 		ArgumentException.ThrowIfNullOrWhiteSpace(directory);
@@ -37,8 +48,8 @@ public static class EventTableScriptExporter
 		Directory.CreateDirectory(directory);
 
 		File.WriteAllText(Path.Combine(directory, "CreateEventTables.sql"),
-			provider.GetCreateAllTablesScript(schema), Encoding.UTF8);
+			provider.GetCreateAllTablesScript(schema, eventDomain, eventInbox, eventOutbox, eventSnapshot), Encoding.UTF8);
 		File.WriteAllText(Path.Combine(directory, "DropEventTables.sql"),
-			provider.GetDropAllTablesScript(schema), Encoding.UTF8);
+			provider.GetDropAllTablesScript(schema, eventDomain, eventInbox, eventOutbox, eventSnapshot), Encoding.UTF8);
 	}
 }
