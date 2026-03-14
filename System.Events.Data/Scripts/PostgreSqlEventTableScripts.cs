@@ -1,4 +1,4 @@
-/*******************************************************************************
+﻿/*******************************************************************************
  * Copyright (C) 2025-2026 Kamersoft
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
@@ -22,7 +22,7 @@ namespace System.Events.Data.Scripts;
 public sealed class PostgreSqlEventTableScripts : IEventTableScriptProvider
 {
 	/// <inheritdoc />
-	public string GetCreateAllTablesScript(string schema = "events") => $$"""
+	public string GetCreateAllTablesScript(string schema = "Event") => $$"""
 CREATE SCHEMA IF NOT EXISTS "{{schema}}";
 
 CREATE TABLE IF NOT EXISTS "{{schema}}"."DomainEvents" (
@@ -109,7 +109,7 @@ CREATE INDEX IF NOT EXISTS "IX_OutboxEvents_Sequence" ON "{{schema}}"."OutboxEve
 """;
 
 	/// <inheritdoc />
-	public string GetDropAllTablesScript(string schema = "events") => $$"""
+	public string GetDropAllTablesScript(string schema = "Event") => $$"""
 DROP TABLE IF EXISTS "{{schema}}"."SnapshotEvents";
 DROP TABLE IF EXISTS "{{schema}}"."OutboxEvents";
 DROP TABLE IF EXISTS "{{schema}}"."InboxEvents";

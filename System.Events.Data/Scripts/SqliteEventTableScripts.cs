@@ -1,4 +1,4 @@
-/*******************************************************************************
+﻿/*******************************************************************************
  * Copyright (C) 2025-2026 Kamersoft
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
@@ -22,7 +22,7 @@ namespace System.Events.Data.Scripts;
 public sealed class SqliteEventTableScripts : IEventTableScriptProvider
 {
 	/// <inheritdoc />
-	public string GetCreateAllTablesScript(string schema = "Events") => """
+	public string GetCreateAllTablesScript(string schema = "Event") => """
 CREATE TABLE IF NOT EXISTS "DomainEvents" (
     "KeyId" TEXT NOT NULL PRIMARY KEY,
     "StreamId" TEXT NOT NULL,
@@ -144,7 +144,7 @@ CREATE INDEX IF NOT EXISTS "IX_OutboxEvents_Sequence" ON "OutboxEvents" ("Sequen
 """;
 
 	/// <inheritdoc />
-	public string GetDropAllTablesScript(string schema = "Events") => """
+	public string GetDropAllTablesScript(string schema = "Event") => """
 DROP TRIGGER IF EXISTS "TR_SnapshotEvents_Sequence";
 DROP TRIGGER IF EXISTS "TR_OutboxEvents_Sequence";
 DROP TRIGGER IF EXISTS "TR_InboxEvents_Sequence";

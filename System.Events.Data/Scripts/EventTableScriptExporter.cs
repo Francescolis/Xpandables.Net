@@ -1,4 +1,4 @@
-/*******************************************************************************
+﻿/*******************************************************************************
  * Copyright (C) 2025-2026 Kamersoft
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
@@ -23,22 +23,22 @@ namespace System.Events.Data.Scripts;
 /// </summary>
 public static class EventTableScriptExporter
 {
-    /// <summary>
-    /// Exports the given scripts to a target directory.
-    /// </summary>
-    /// <param name="provider">Script provider.</param>
-    /// <param name="directory">Target directory.</param>
-    /// <param name="schema">Schema name.</param>
-    public static void ExportScripts(IEventTableScriptProvider provider, string directory, string schema = "Events")
-    {
-        ArgumentNullException.ThrowIfNull(provider);
-        ArgumentException.ThrowIfNullOrWhiteSpace(directory);
+	/// <summary>
+	/// Exports the given scripts to a target directory.
+	/// </summary>
+	/// <param name="provider">Script provider.</param>
+	/// <param name="directory">Target directory.</param>
+	/// <param name="schema">Schema name.</param>
+	public static void ExportScripts(IEventTableScriptProvider provider, string directory, string schema = "Event")
+	{
+		ArgumentNullException.ThrowIfNull(provider);
+		ArgumentException.ThrowIfNullOrWhiteSpace(directory);
 
-        Directory.CreateDirectory(directory);
+		Directory.CreateDirectory(directory);
 
-        File.WriteAllText(Path.Combine(directory, "CreateEventTables.sql"),
-            provider.GetCreateAllTablesScript(schema), Encoding.UTF8);
-        File.WriteAllText(Path.Combine(directory, "DropEventTables.sql"),
-            provider.GetDropAllTablesScript(schema), Encoding.UTF8);
-    }
+		File.WriteAllText(Path.Combine(directory, "CreateEventTables.sql"),
+			provider.GetCreateAllTablesScript(schema), Encoding.UTF8);
+		File.WriteAllText(Path.Combine(directory, "DropEventTables.sql"),
+			provider.GetDropAllTablesScript(schema), Encoding.UTF8);
+	}
 }

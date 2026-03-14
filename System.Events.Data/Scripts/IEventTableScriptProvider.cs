@@ -1,4 +1,4 @@
-/*******************************************************************************
+﻿/*******************************************************************************
  * Copyright (C) 2025-2026 Kamersoft
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
@@ -21,17 +21,17 @@ namespace System.Events.Data.Scripts;
 /// </summary>
 public interface IEventTableScriptProvider
 {
-    /// <summary>
-    /// Gets the SQL script to create all event tables.
-    /// </summary>
-    /// <param name="schema">Schema name for the tables.</param>
-    /// <returns>The SQL script.</returns>
-    string GetCreateAllTablesScript(string schema = "Events");
+	/// <summary>
+	/// Gets the SQL script to create all event tables.
+	/// </summary>
+	/// <param name="schema">Schema name for the tables.</param>
+	/// <returns>The SQL script.</returns>
+	string GetCreateAllTablesScript(string schema = "Event");
 
-    /// <summary>
-    /// Gets the SQL script to drop all event tables.
-    /// </summary>
-    /// <param name="schema">Schema name for the tables.</param>
-    /// <returns>The SQL script.</returns>
-    string GetDropAllTablesScript(string schema = "Events");
+	/// <summary>
+	/// Gets the SQL script to drop all event tables.
+	/// </summary>
+	/// <param name="schema">Schema name for the tables.</param>
+	/// <returns>The SQL script.</returns>
+	string GetDropAllTablesScript(string schema = "Event");
 }

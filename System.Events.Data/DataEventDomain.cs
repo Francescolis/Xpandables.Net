@@ -1,4 +1,4 @@
-/*******************************************************************************
+﻿/*******************************************************************************
  * Copyright (C) 2025-2026 Kamersoft
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
@@ -22,23 +22,23 @@ namespace System.Events.Data;
 /// <summary>
 /// Represents a class for event data in a domain context.
 /// </summary>
-[Table("DomainEvents")]
+[Table("EventDomain", Schema = "Event")]
 public sealed class DataEventDomain : DataEvent, IDataEventDomain
 {
-    /// <inheritdoc />
-    [Column("StreamId")]
-    public required Guid StreamId { get; init; }
+	/// <inheritdoc />
+	[Column("StreamId")]
+	public required Guid StreamId { get; init; }
 
-    /// <inheritdoc />
-    [Column("StreamVersion")]
-    public required long StreamVersion { get; init; }
+	/// <inheritdoc />
+	[Column("StreamVersion")]
+	public required long StreamVersion { get; init; }
 
-    /// <inheritdoc />
-    [Column("StreamName")]
-    [StringLength(500)]
-    public required string StreamName { get; init; }
+	/// <inheritdoc />
+	[Column("StreamName")]
+	[StringLength(500)]
+	public required string StreamName { get; init; }
 
-    /// <inheritdoc />
-    [Column("EventData")]
-    public required string EventData { get; init; }
+	/// <inheritdoc />
+	[Column("EventData")]
+	public required string EventData { get; init; }
 }

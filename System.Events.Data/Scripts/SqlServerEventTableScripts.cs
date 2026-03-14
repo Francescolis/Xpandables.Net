@@ -1,4 +1,4 @@
-/*******************************************************************************
+﻿/*******************************************************************************
  * Copyright (C) 2025-2026 Kamersoft
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
@@ -22,7 +22,7 @@ namespace System.Events.Data.Scripts;
 public sealed class SqlServerEventTableScripts : IEventTableScriptProvider
 {
 	/// <inheritdoc />
-	public string GetCreateAllTablesScript(string schema = "Events") => $$"""
+	public string GetCreateAllTablesScript(string schema = "Event") => $$"""
 IF NOT EXISTS (SELECT * FROM sys.schemas WHERE name = '{{schema}}')
     EXEC('CREATE SCHEMA [{{schema}}]');
 
@@ -129,7 +129,7 @@ IF NOT EXISTS (SELECT 1 FROM sys.indexes WHERE name = 'IX_OutboxEvents_Sequence'
 """;
 
 	/// <inheritdoc />
-	public string GetDropAllTablesScript(string schema = "Events") => $$"""
+	public string GetDropAllTablesScript(string schema = "Event") => $$"""
 DROP TABLE IF EXISTS [{{schema}}].[SnapshotEvents];
 DROP TABLE IF EXISTS [{{schema}}].[OutboxEvents];
 DROP TABLE IF EXISTS [{{schema}}].[InboxEvents];

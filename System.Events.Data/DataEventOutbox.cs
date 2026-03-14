@@ -1,4 +1,4 @@
-/*******************************************************************************
+﻿/*******************************************************************************
  * Copyright (C) 2025-2026 Kamersoft
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
@@ -25,32 +25,32 @@ namespace System.Events.Data;
 /// <remarks>Use this type to track events that require guaranteed delivery or retry logic. The outbox pattern
 /// helps ensure that events are not lost and are processed even in the presence of failures. This class includes
 /// properties for tracking delivery attempts, scheduling retries, and recording error information.</remarks>
-[Table("OutboxEvents")]
+[Table("EventOutbox", Schema = "Event")]
 public sealed class DataEventOutbox : DataEvent, IDataEventOutbox
 {
-    /// <summary>
-    /// Constructs a new instance of the <see cref="DataEventOutbox" /> class.
-    /// </summary>
-    public DataEventOutbox() => SetStatus(EventStatus.PENDING.Value);
+	/// <summary>
+	/// Constructs a new instance of the <see cref="DataEventOutbox" /> class.
+	/// </summary>
+	public DataEventOutbox() => SetStatus(EventStatus.PENDING.Value);
 
-    /// <inheritdoc/>
-    [Column("ErrorMessage")]
-    [StringLength(4000)]
-    public string? ErrorMessage { get; set; }
+	/// <inheritdoc/>
+	[Column("ErrorMessage")]
+	[StringLength(4000)]
+	public string? ErrorMessage { get; set; }
 
-    /// <inheritdoc/>
-    [Column("AttemptCount")]
-    public int AttemptCount { get; set; }
+	/// <inheritdoc/>
+	[Column("AttemptCount")]
+	public int AttemptCount { get; set; }
 
-    /// <inheritdoc/>
-    [Column("NextAttemptOn")]
-    public DateTime? NextAttemptOn { get; set; }
+	/// <inheritdoc/>
+	[Column("NextAttemptOn")]
+	public DateTime? NextAttemptOn { get; set; }
 
-    /// <inheritdoc/>
-    [Column("ClaimId")]
-    public Guid? ClaimId { get; set; }
+	/// <inheritdoc/>
+	[Column("ClaimId")]
+	public Guid? ClaimId { get; set; }
 
-    /// <inheritdoc />
-    [Column("EventData")]
-    public required string EventData { get; init; }
+	/// <inheritdoc />
+	[Column("EventData")]
+	public required string EventData { get; init; }
 }

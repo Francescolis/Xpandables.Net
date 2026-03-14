@@ -1,4 +1,4 @@
-/*******************************************************************************
+﻿/*******************************************************************************
  * Copyright (C) 2025-2026 Kamersoft
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
@@ -21,16 +21,16 @@ namespace System.Events.Data;
 /// <summary>
 /// Represents a snapshot of an event data.
 /// </summary>
-[Table("SnapshotEvents")]
+[Table("EventSnapshot", Schema = "Event")]
 public sealed class DataEventSnapshot : DataEvent, IDataEventSnapshot
 {
-    /// <summary>
-    /// Gets the owner of the event entity snapshot.
-    /// </summary>
-    [Column("OwnerId")]
-    public required Guid OwnerId { get; init; }
+	/// <summary>
+	/// Gets the owner of the event entity snapshot.
+	/// </summary>
+	[Column("OwnerId")]
+	public required Guid OwnerId { get; init; }
 
-    /// <inheritdoc />
-    [Column("EventData")]
-    public required string EventData { get; init; }
+	/// <inheritdoc />
+	[Column("EventData")]
+	public required string EventData { get; init; }
 }

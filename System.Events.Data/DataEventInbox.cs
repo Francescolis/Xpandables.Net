@@ -1,4 +1,4 @@
-/*******************************************************************************
+﻿/*******************************************************************************
  * Copyright (C) 2025-2026 Kamersoft
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
@@ -26,33 +26,33 @@ namespace System.Events.Data;
 /// <remarks>Use this class to monitor and manage the lifecycle of entity events that require reliable processing,
 /// including retry attempts and error handling. This type is typically used in scenarios where event delivery
 /// guarantees and processing status tracking are required.</remarks>
-[Table("InboxEvents")]
+[Table("EventInbox", Schema = "Event")]
 public sealed class DataEventInbox : DataEvent, IDataEventInbox
 {
-    /// <summary>
-    /// Constructs a new instance of the <see cref="DataEventInbox" /> class.
-    /// </summary>
-    public DataEventInbox() => SetStatus(EventStatus.PROCESSING.Value);
+	/// <summary>
+	/// Constructs a new instance of the <see cref="DataEventInbox" /> class.
+	/// </summary>
+	public DataEventInbox() => SetStatus(EventStatus.PROCESSING.Value);
 
-    /// <inheritdoc/>
-    [Column("ErrorMessage")]
-    [StringLength(4000)]
-    public string? ErrorMessage { get; set; }
+	/// <inheritdoc/>
+	[Column("ErrorMessage")]
+	[StringLength(4000)]
+	public string? ErrorMessage { get; set; }
 
-    /// <inheritdoc/>
-    [Column("AttemptCount")]
-    public int AttemptCount { get; set; }
+	/// <inheritdoc/>
+	[Column("AttemptCount")]
+	public int AttemptCount { get; set; }
 
-    /// <inheritdoc/>
-    [Column("NextAttemptOn")]
-    public DateTime? NextAttemptOn { get; set; }
+	/// <inheritdoc/>
+	[Column("NextAttemptOn")]
+	public DateTime? NextAttemptOn { get; set; }
 
-    /// <inheritdoc/>
-    [Column("ClaimId")]
-    public Guid? ClaimId { get; set; }
+	/// <inheritdoc/>
+	[Column("ClaimId")]
+	public Guid? ClaimId { get; set; }
 
-    /// <inheritdoc/>
-    [Column("Consumer")]
-    [StringLength(500)]
-    public string Consumer { get; set; } = string.Empty;
+	/// <inheritdoc/>
+	[Column("Consumer")]
+	[StringLength(500)]
+	public string Consumer { get; set; } = string.Empty;
 }
