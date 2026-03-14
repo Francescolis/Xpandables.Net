@@ -456,7 +456,102 @@ public static class IDataExtensions
 		}
 
 		/// <summary>
-		/// Registers a data repository implementation of the specified interface with the given service lifetime in the
+		/// Registers a scoped data repository for the specified data type in the service collection.
+		/// </summary>
+		/// <remarks>This method throws an ArgumentNullException if the service collection is null. It is intended for
+		/// use in dependency injection scenarios where a data repository is needed for the specified data type.</remarks>
+		/// <typeparam name="TData">The type of data that the repository will manage. This type must be a class and should have public properties
+		/// accessible at runtime.</typeparam>
+		/// <returns>The updated IServiceCollection instance, allowing for method chaining.</returns>
+		public IServiceCollection AddXDataRepository<[DynamicallyAccessedMembers(DynamicallyAccessedMemberTypes.PublicProperties)] TData>()
+			where TData : class
+		{
+			ArgumentNullException.ThrowIfNull(services);
+			return services.AddScoped<IDataRepository<TData>, DataRepository<TData>>();
+		}
+
+		/// <summary>
+		/// Registers a scoped data repository for the specified data type, enabling dependency injection of a repository that
+		/// manages database connections within a scoped lifetime.
+		/// </summary>
+		/// <remarks>Use this method when configuring services to ensure that each <see cref="IDataRepository{TData}"/> instance
+		/// receives a new database connection scope per request. This approach supports proper resource management and
+		/// isolation of database operations within each dependency injection scope.</remarks>
+		/// <typeparam name="TData">Specifies the type of data managed by the repository. This type must be a class with public properties.</typeparam>
+		/// <param name="factory">A factory function that provides an instance of IDataDbConnectionScope for each repository scope. Cannot be null.</param>
+		/// <returns>The IServiceCollection instance, allowing for method chaining during service configuration.</returns>
+		public IServiceCollection AddXDataRepository<[DynamicallyAccessedMembers(DynamicallyAccessedMemberTypes.PublicProperties)] TData>(
+			Func<IServiceProvider, IDataDbConnectionScope> factory)
+			where TData : class
+		{
+			ArgumentNullException.ThrowIfNull(services);
+			ArgumentNullException.ThrowIfNull(factory);
+
+			ObjectFactory<DataRepository<TData>> objectFactory =
+				ActivatorUtilities.CreateFactory<DataRepository<TData>>([typeof(IDataDbConnectionScope)]);
+
+			services.AddScoped<IDataRepository<TData>>(provider =>
+			{
+				IDataDbConnectionScope dbConnectionScope = factory(provider);
+				return objectFactory(provider, [dbConnectionScope]);
+			});
+
+			return services;
+		}
+
+		/// <summary>
+		/// Registers a keyed scoped data repository service for the specified data type in the dependency injection
+		/// container.
+		/// </summary>
+		/// <remarks>Use this method when you need to register multiple <see cref="IDataRepository{TData}"/> implementations
+		/// distinguished by a key. This is useful in scenarios where different repository instances are required for
+		/// different contexts or configurations.</remarks>
+		/// <typeparam name="TData">Specifies the type of data that the repository will manage. This type must be a class with public properties.</typeparam>
+		/// <param name="key">The unique key used to identify the repository service within the service collection. Cannot be null.</param>
+		/// <returns>The updated IServiceCollection instance, enabling method chaining.</returns>
+		public IServiceCollection AddXDataRepositoryKeyed<[DynamicallyAccessedMembers(DynamicallyAccessedMemberTypes.PublicProperties)] TData>(string key)
+			where TData : class
+		{
+			ArgumentNullException.ThrowIfNull(services);
+			ArgumentNullException.ThrowIfNull(key);
+			return services.AddKeyedScoped<IDataRepository<TData>, DataRepository<TData>>(key);
+		}
+
+		/// <summary>
+		/// Registers a keyed data repository service for the specified data type, enabling dependency injection of a scoped
+		/// data connection within the service collection.
+		/// </summary>
+		/// <remarks>This method is intended for use in configuring services in a dependency injection container. It
+		/// ensures that the data repository is scoped to the lifetime of the request and allows multiple repositories to be
+		/// registered with distinct keys.</remarks>
+		/// <typeparam name="TData">The type of data managed by the repository. Must be a class with public properties accessible at runtime.</typeparam>
+		/// <param name="key">The unique key used to identify the data repository service within the service collection. Cannot be null.</param>
+		/// <param name="factory">A factory function that creates an instance of IDataDbConnectionScope for managing database connections. Cannot be
+		/// null.</param>
+		/// <returns>The updated IServiceCollection instance, allowing for method chaining.</returns>
+		public IServiceCollection AddXDataRepositoryKeyed<[DynamicallyAccessedMembers(DynamicallyAccessedMemberTypes.PublicProperties)] TData>(
+			string key,
+			Func<IServiceProvider, IDataDbConnectionScope> factory)
+			where TData : class
+		{
+			ArgumentNullException.ThrowIfNull(services);
+			ArgumentNullException.ThrowIfNull(key);
+			ArgumentNullException.ThrowIfNull(factory);
+
+			ObjectFactory<DataRepository<TData>> objectFactory =
+				ActivatorUtilities.CreateFactory<DataRepository<TData>>([typeof(IDataDbConnectionScope)]);
+
+			services.AddScoped<IDataRepository<TData>>(provider =>
+			{
+				IDataDbConnectionScope dbConnectionScope = factory(provider);
+				return objectFactory(provider, [dbConnectionScope]);
+			});
+
+			return services;
+		}
+
+		/// <summary>
+		/// Registers a data repository implementation of the specified interface with the scoped service lifetime in the
 		/// dependency injection container.
 		/// </summary>
 		/// <remarks>Use this method to enable dependency injection of a custom data repository throughout
@@ -464,44 +559,104 @@ public static class IDataExtensions
 		/// registration.</remarks>
 		/// <typeparam name="TRepository">The type of the data repository interface to register. Must implement IDataRepository.</typeparam>
 		/// <typeparam name="TImplementation">The concrete implementation type that fulfills the TRepository interface. Must have a public constructor.</typeparam>
-		/// <param name="lifetime">The lifetime with which to register the service. The default is Scoped.</param>
 		/// <returns>The IServiceCollection instance with the repository registration added.</returns>
-		public IServiceCollection AddXDataRepository<TRepository, [DynamicallyAccessedMembers(DynamicallyAccessedMemberTypes.PublicConstructors)] TImplementation>(
-			ServiceLifetime lifetime = ServiceLifetime.Scoped)
+		public IServiceCollection AddXDataRepository<TRepository, [DynamicallyAccessedMembers(DynamicallyAccessedMemberTypes.PublicConstructors)] TImplementation>()
 			where TRepository : class, IDataRepository
 			where TImplementation : class, TRepository
 		{
 			ArgumentNullException.ThrowIfNull(services);
 
-			services.TryAdd(new ServiceDescriptor(typeof(TRepository), typeof(TImplementation), lifetime));
+			services.TryAdd(new ServiceDescriptor(typeof(TRepository), typeof(TImplementation), ServiceLifetime.Scoped));
 
 			return services;
 		}
 
 		/// <summary>
-		/// Registers a scoped data repository of the specified type using the provided factory for creating unit of work
-		/// instances.
+		/// Registers a keyed data repository implementation with the scoped service lifetime.
 		/// </summary>
-		/// <remarks>Use this method in dependency injection scenarios to register a repository with a specific
-		/// implementation and unit of work factory. The factory parameter must not return null. The repository will be
-		/// created per scope.</remarks>
-		/// <typeparam name="TRepository">The type of the data repository to register. Must implement the IDataRepository interface.</typeparam>
-		/// <typeparam name="TImplementation">The concrete implementation type of the data repository. Must inherit from TRepository and provide public
-		/// constructors.</typeparam>
-		/// <param name="factory">A factory function that receives an IServiceProvider and returns an IDataUnitOfWork instance used to construct the
-		/// repository.</param>
-		/// <returns>The IServiceCollection instance, allowing for method chaining.</returns>
-		public IServiceCollection AddXDataRepository<TRepository, [DynamicallyAccessedMembers(DynamicallyAccessedMemberTypes.PublicConstructors)] TImplementation>(Func<IServiceProvider, IDataUnitOfWork> factory)
+		/// <remarks>This method enables registration of a data repository with a specific key, allowing retrieval by
+		/// that key later. Ensure that the key is unique within the service collection to avoid conflicts.</remarks>
+		/// <typeparam name="TRepository">Specifies the type of the data repository interface to be registered. Must implement IDataRepository.</typeparam>
+		/// <typeparam name="TImplementation">Specifies the concrete implementation type for the data repository interface. Must provide public constructors and
+		/// implement TRepository.</typeparam>
+		/// <param name="key">The unique key used to identify the repository registration. Cannot be null.</param>
+		/// <returns>The updated IServiceCollection instance for further configuration.</returns>
+		public IServiceCollection AddXDataRepositoryKeyed<TRepository, [DynamicallyAccessedMembers(DynamicallyAccessedMemberTypes.PublicConstructors)] TImplementation>(
+			string key)
+			where TRepository : class, IDataRepository
+			where TImplementation : class, TRepository
+		{
+			ArgumentNullException.ThrowIfNull(services);
+			ArgumentNullException.ThrowIfNull(key);
+
+			services.Add(new ServiceDescriptor(typeof(TRepository), typeof(TImplementation), ServiceLifetime.Scoped));
+
+			return services;
+		}
+
+		/// <summary>
+		/// Registers a scoped data repository service with the specified implementation and a factory for creating database
+		/// connection scopes.
+		/// </summary>
+		/// <remarks>This method is typically used in dependency injection setups to ensure that the repository is
+		/// created with the appropriate database connection scope. It is important that the factory function does not return
+		/// null.</remarks>
+		/// <typeparam name="TRepository">The type of the data repository interface that the implementation will adhere to.</typeparam>
+		/// <typeparam name="TImplementation">The concrete implementation type of the data repository that will be instantiated.</typeparam>
+		/// <param name="factory">A factory function that provides an instance of IDataDbConnectionScope, which is used to manage database
+		/// connections for the repository.</param>
+		/// <returns>The IServiceCollection instance to allow for method chaining.</returns>
+		public IServiceCollection AddXDataRepository<TRepository, [DynamicallyAccessedMembers(DynamicallyAccessedMemberTypes.PublicConstructors)] TImplementation>(
+			Func<IServiceProvider, IDataDbConnectionScope> factory)
 			where TRepository : class, IDataRepository
 			where TImplementation : class, TRepository
 		{
 			ArgumentNullException.ThrowIfNull(services);
 			ArgumentNullException.ThrowIfNull(factory);
 
-			services.AddScoped(provider =>
+			ObjectFactory<TImplementation> objectFactory =
+				ActivatorUtilities.CreateFactory<TImplementation>([typeof(IDataDbConnectionScope)]);
+
+			services.AddScoped<TRepository>(provider =>
 			{
-				IDataUnitOfWork unitOfWork = factory(provider);
-				return (TRepository)ActivatorUtilities.CreateInstance<TImplementation>(provider, [unitOfWork]);
+				IDataDbConnectionScope dbConnectionScope = factory(provider);
+				return objectFactory(provider, [dbConnectionScope]);
+			});
+
+			return services;
+		}
+
+		/// <summary>
+		/// Registers a keyed scoped service for a data repository implementation, allowing multiple repository types to be
+		/// distinguished by a unique key within the service collection.
+		/// </summary>
+		/// <remarks>Use this method to register multiple implementations of the same repository interface, each
+		/// distinguished by a unique key. Ensure that each key is unique within the service collection to prevent conflicts.
+		/// The factory parameter allows for custom creation of database connection scopes for each repository
+		/// instance.</remarks>
+		/// <typeparam name="TRepository">The type of the data repository interface to register. Must implement IDataRepository.</typeparam>
+		/// <typeparam name="TImplementation">The concrete implementation type of the repository. Must be a class and derive from TRepository.</typeparam>
+		/// <param name="key">The unique key used to identify the registered repository service. Must not be null.</param>
+		/// <param name="factory">A factory function that creates an IDataDbConnectionScope instance for managing database connections. Must not be
+		/// null.</param>
+		/// <returns>The IServiceCollection instance with the keyed repository registration added, enabling method chaining.</returns>
+		public IServiceCollection AddXDataRepositoryKeyed<TRepository, [DynamicallyAccessedMembers(DynamicallyAccessedMemberTypes.PublicConstructors)] TImplementation>(
+			string key,
+			Func<IServiceProvider, IDataDbConnectionScope> factory)
+			where TRepository : class, IDataRepository
+			where TImplementation : class, TRepository
+		{
+			ArgumentNullException.ThrowIfNull(services);
+			ArgumentNullException.ThrowIfNull(key);
+			ArgumentNullException.ThrowIfNull(factory);
+
+			ObjectFactory<TImplementation> objectFactory =
+				ActivatorUtilities.CreateFactory<TImplementation>([typeof(IDataDbConnectionScope)]);
+
+			services.AddKeyedScoped<TRepository>(key, (provider, _) =>
+			{
+				IDataDbConnectionScope dbConnectionScope = factory(provider);
+				return objectFactory(provider, [dbConnectionScope]);
 			});
 
 			return services;
