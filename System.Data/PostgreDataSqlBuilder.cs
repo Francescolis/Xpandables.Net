@@ -14,10 +14,8 @@
  * limitations under the License.
  *
 ********************************************************************************/
-using System.ComponentModel.DataAnnotations.Schema;
 using System.Diagnostics.CodeAnalysis;
 using System.Globalization;
-using System.Reflection;
 using System.Text;
 
 namespace System.Data;
@@ -39,169 +37,147 @@ namespace System.Data;
 [RequiresDynamicCode("Expression compilation requires dynamic code generation.")]
 public sealed class PostgreDataSqlBuilder : DataSqlBuilderBase
 {
-    /// <inheritdoc />
-    public override SqlDialect Dialect => SqlDialect.PostgreSql;
+	/// <inheritdoc />
+	public override SqlDialect Dialect => SqlDialect.PostgreSql;
 
-    /// <inheritdoc />
-    public override string ParameterPrefix => "@";
+	/// <inheritdoc />
+	public override string ParameterPrefix => "@";
 
-    /// <inheritdoc />
-    protected override string LimitKeyword => "LIMIT";
+	/// <inheritdoc />
+	protected override string LimitKeyword => "LIMIT";
 
-    /// <inheritdoc />
-    protected override bool LimitBeforeColumns => false;
+	/// <inheritdoc />
+	protected override bool LimitBeforeColumns => false;
 
-    /// <inheritdoc />
-    public override string QuoteIdentifier(string identifier)
-    {
-        ArgumentException.ThrowIfNullOrWhiteSpace(identifier);
+	/// <inheritdoc />
+	public override string QuoteIdentifier(string identifier)
+	{
+		ArgumentException.ThrowIfNullOrWhiteSpace(identifier);
 
-        // Remove any existing quotes and re-wrap
-        identifier = identifier.Trim('"');
-        return $"\"{identifier}\"";
-    }
+		// Remove any existing quotes and re-wrap
+		identifier = identifier.Trim('"');
+		return $"\"{identifier}\"";
+	}
 
-    /// <summary>
-    /// Resolves a table name for a runtime type using unquoted identifiers.
-    /// </summary>
-    /// <remarks>
-    /// PostgreSQL folds unquoted identifiers to lowercase, so quoting is
-    /// unnecessary for the lowercase names that are conventional in PostgreSQL.
-    /// This produces <c>schema.table</c> instead of <c>"schema"."table"</c>.
-    /// </remarks>
-    protected override string GetTableNameForType(Type entityType)
-    {
-        TableAttribute? tableAttr = entityType.GetCustomAttribute<TableAttribute>();
-        if (tableAttr != null)
-        {
-            string schema = string.IsNullOrEmpty(tableAttr.Schema)
-                ? string.Empty
-                : $"{tableAttr.Schema}.";
-            return $"{schema}{tableAttr.Name}";
-        }
+	/// <inheritdoc />
+	protected override void AppendPaging(StringBuilder sql, int? skip, int? take)
+	{
+		// PostgreSQL uses LIMIT/OFFSET
+		if (take.HasValue)
+		{
+			sql.Append(CultureInfo.InvariantCulture, $" LIMIT {take.Value}");
+		}
 
-        return entityType.Name;
-    }
+		if (skip.HasValue && skip.Value > 0)
+		{
+			sql.Append(CultureInfo.InvariantCulture, $" OFFSET {skip.Value}");
+		}
+	}
 
-    /// <inheritdoc />
-    protected override void AppendPaging(StringBuilder sql, int? skip, int? take)
-    {
-        // PostgreSQL uses LIMIT/OFFSET
-        if (take.HasValue)
-        {
-            sql.Append(CultureInfo.InvariantCulture, $" LIMIT {take.Value}");
-        }
-
-        if (skip.HasValue && skip.Value > 0)
-        {
-            sql.Append(CultureInfo.InvariantCulture, $" OFFSET {skip.Value}");
-        }
-    }
-
-    /// <summary>
-    /// Translates string.Contains to PostgreSQL LIKE with escape handling.
-    /// </summary>
-    /// <remarks>
-    /// Uses standard LIKE. For case-insensitive matching, use ILIKE instead.
-    /// </remarks>
-    protected override string TranslateStringContains(
-        Linq.Expressions.MethodCallExpression methodCall,
-        IReadOnlyDictionary<string, string> columnMappings,
-        List<SqlParameter> parameters)
-    {
+	/// <summary>
+	/// Translates string.Contains to PostgreSQL LIKE with escape handling.
+	/// </summary>
+	/// <remarks>
+	/// Uses standard LIKE. For case-insensitive matching, use ILIKE instead.
+	/// </remarks>
+	protected override string TranslateStringContains(
+		Linq.Expressions.MethodCallExpression methodCall,
+		IReadOnlyDictionary<string, string> columnMappings,
+		List<SqlParameter> parameters)
+	{
 		string column = TranslateExpression(methodCall.Object!, columnMappings, parameters);
 		object? value = ExtractConstantValue(methodCall.Arguments[0]);
 		string escapedValue = EscapeLikePattern(value?.ToString() ?? string.Empty);
 		string paramName = NextParameterName();
-        parameters.Add(new SqlParameter(paramName, $"%{escapedValue}%"));
-        return $"({column} LIKE {ParameterPrefix}{paramName})";
-    }
+		parameters.Add(new SqlParameter(paramName, $"%{escapedValue}%"));
+		return $"({column} LIKE {ParameterPrefix}{paramName})";
+	}
 
-    /// <inheritdoc />
-    protected override string TranslateStringContains(
-        Linq.Expressions.MethodCallExpression methodCall,
-        IReadOnlyDictionary<Linq.Expressions.ParameterExpression, TableBinding> bindings,
-        List<SqlParameter> parameters)
-    {
-        (Linq.Expressions.Expression? columnExpr, Linq.Expressions.Expression? valueExpr) = GetStringMethodOperands(methodCall);
+	/// <inheritdoc />
+	protected override string TranslateStringContains(
+		Linq.Expressions.MethodCallExpression methodCall,
+		IReadOnlyDictionary<Linq.Expressions.ParameterExpression, TableBinding> bindings,
+		List<SqlParameter> parameters)
+	{
+		(Linq.Expressions.Expression? columnExpr, Linq.Expressions.Expression? valueExpr) = GetStringMethodOperands(methodCall);
 		string column = TranslateExpression(columnExpr, bindings, parameters);
 		object? value = ExtractConstantValue(valueExpr);
 		string escapedValue = EscapeLikePattern(value?.ToString() ?? string.Empty);
 		string paramName = NextParameterName();
-        parameters.Add(new SqlParameter(paramName, $"%{escapedValue}%"));
-        return $"({column} LIKE {ParameterPrefix}{paramName})";
-    }
+		parameters.Add(new SqlParameter(paramName, $"%{escapedValue}%"));
+		return $"({column} LIKE {ParameterPrefix}{paramName})";
+	}
 
-    /// <summary>
-    /// Translates string.StartsWith to PostgreSQL LIKE with escape handling.
-    /// </summary>
-    protected override string TranslateStringStartsWith(
-        Linq.Expressions.MethodCallExpression methodCall,
-        IReadOnlyDictionary<string, string> columnMappings,
-        List<SqlParameter> parameters)
-    {
+	/// <summary>
+	/// Translates string.StartsWith to PostgreSQL LIKE with escape handling.
+	/// </summary>
+	protected override string TranslateStringStartsWith(
+		Linq.Expressions.MethodCallExpression methodCall,
+		IReadOnlyDictionary<string, string> columnMappings,
+		List<SqlParameter> parameters)
+	{
 		string column = TranslateExpression(methodCall.Object!, columnMappings, parameters);
 		object? value = ExtractConstantValue(methodCall.Arguments[0]);
 		string escapedValue = EscapeLikePattern(value?.ToString() ?? string.Empty);
 		string paramName = NextParameterName();
-        parameters.Add(new SqlParameter(paramName, $"{escapedValue}%"));
-        return $"({column} LIKE {ParameterPrefix}{paramName})";
-    }
+		parameters.Add(new SqlParameter(paramName, $"{escapedValue}%"));
+		return $"({column} LIKE {ParameterPrefix}{paramName})";
+	}
 
-    /// <inheritdoc />
-    protected override string TranslateStringStartsWith(
-        Linq.Expressions.MethodCallExpression methodCall,
-        IReadOnlyDictionary<Linq.Expressions.ParameterExpression, TableBinding> bindings,
-        List<SqlParameter> parameters)
-    {
-        (Linq.Expressions.Expression? columnExpr, Linq.Expressions.Expression? valueExpr) = GetStringMethodOperands(methodCall);
+	/// <inheritdoc />
+	protected override string TranslateStringStartsWith(
+		Linq.Expressions.MethodCallExpression methodCall,
+		IReadOnlyDictionary<Linq.Expressions.ParameterExpression, TableBinding> bindings,
+		List<SqlParameter> parameters)
+	{
+		(Linq.Expressions.Expression? columnExpr, Linq.Expressions.Expression? valueExpr) = GetStringMethodOperands(methodCall);
 		string column = TranslateExpression(columnExpr, bindings, parameters);
 		object? value = ExtractConstantValue(valueExpr);
 		string escapedValue = EscapeLikePattern(value?.ToString() ?? string.Empty);
 		string paramName = NextParameterName();
-        parameters.Add(new SqlParameter(paramName, $"{escapedValue}%"));
-        return $"({column} LIKE {ParameterPrefix}{paramName})";
-    }
+		parameters.Add(new SqlParameter(paramName, $"{escapedValue}%"));
+		return $"({column} LIKE {ParameterPrefix}{paramName})";
+	}
 
-    /// <summary>
-    /// Translates string.EndsWith to PostgreSQL LIKE with escape handling.
-    /// </summary>
-    protected override string TranslateStringEndsWith(
-        Linq.Expressions.MethodCallExpression methodCall,
-        IReadOnlyDictionary<string, string> columnMappings,
-        List<SqlParameter> parameters)
-    {
+	/// <summary>
+	/// Translates string.EndsWith to PostgreSQL LIKE with escape handling.
+	/// </summary>
+	protected override string TranslateStringEndsWith(
+		Linq.Expressions.MethodCallExpression methodCall,
+		IReadOnlyDictionary<string, string> columnMappings,
+		List<SqlParameter> parameters)
+	{
 		string column = TranslateExpression(methodCall.Object!, columnMappings, parameters);
 		object? value = ExtractConstantValue(methodCall.Arguments[0]);
 		string escapedValue = EscapeLikePattern(value?.ToString() ?? string.Empty);
 		string paramName = NextParameterName();
-        parameters.Add(new SqlParameter(paramName, $"%{escapedValue}"));
-        return $"({column} LIKE {ParameterPrefix}{paramName})";
-    }
+		parameters.Add(new SqlParameter(paramName, $"%{escapedValue}"));
+		return $"({column} LIKE {ParameterPrefix}{paramName})";
+	}
 
-    /// <inheritdoc />
-    protected override string TranslateStringEndsWith(
-        Linq.Expressions.MethodCallExpression methodCall,
-        IReadOnlyDictionary<Linq.Expressions.ParameterExpression, TableBinding> bindings,
-        List<SqlParameter> parameters)
-    {
-        (Linq.Expressions.Expression? columnExpr, Linq.Expressions.Expression? valueExpr) = GetStringMethodOperands(methodCall);
+	/// <inheritdoc />
+	protected override string TranslateStringEndsWith(
+		Linq.Expressions.MethodCallExpression methodCall,
+		IReadOnlyDictionary<Linq.Expressions.ParameterExpression, TableBinding> bindings,
+		List<SqlParameter> parameters)
+	{
+		(Linq.Expressions.Expression? columnExpr, Linq.Expressions.Expression? valueExpr) = GetStringMethodOperands(methodCall);
 		string column = TranslateExpression(columnExpr, bindings, parameters);
 		object? value = ExtractConstantValue(valueExpr);
 		string escapedValue = EscapeLikePattern(value?.ToString() ?? string.Empty);
 		string paramName = NextParameterName();
-        parameters.Add(new SqlParameter(paramName, $"%{escapedValue}"));
-        return $"({column} LIKE {ParameterPrefix}{paramName})";
-    }
+		parameters.Add(new SqlParameter(paramName, $"%{escapedValue}"));
+		return $"({column} LIKE {ParameterPrefix}{paramName})";
+	}
 
-    /// <summary>
-    /// Escapes special characters in a LIKE pattern for PostgreSQL.
-    /// </summary>
-    private static string EscapeLikePattern(string value)
-    {
-        return value
-            .Replace("\\", "\\\\", StringComparison.Ordinal)
-            .Replace("%", "\\%", StringComparison.Ordinal)
-            .Replace("_", "\\_", StringComparison.Ordinal);
-    }
+	/// <summary>
+	/// Escapes special characters in a LIKE pattern for PostgreSQL.
+	/// </summary>
+	private static string EscapeLikePattern(string value)
+	{
+		return value
+			.Replace("\\", "\\\\", StringComparison.Ordinal)
+			.Replace("%", "\\%", StringComparison.Ordinal)
+			.Replace("_", "\\_", StringComparison.Ordinal);
+	}
 }
