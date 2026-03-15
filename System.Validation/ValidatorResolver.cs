@@ -1,4 +1,4 @@
-/*******************************************************************************
+﻿/*******************************************************************************
  * Copyright (C) 2025-2026 Kamersoft
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
@@ -28,23 +28,23 @@ namespace System.ComponentModel.DataAnnotations;
 /// the specified argument type. This enables generic validation scenarios where the argument type is known at compile
 /// time.</remarks>
 /// <typeparam name="TArgument">The type of argument to be validated. Must be a reference type that implements <see cref="IRequiresValidation"/>.</typeparam>
-public sealed class ValidatorResolver<TArgument> : IValidatorResolver
-    where TArgument : class, IRequiresValidation
+public sealed class ValidatorResolver<TArgument> : IValidatorResolver<TArgument>
+	where TArgument : class, IRequiresValidation
 {
-    /// <inheritdoc/>
-    public Type TargetType => typeof(TArgument);
+	/// <inheritdoc/>
+	public Type TargetType => typeof(TArgument);
 
-    /// <inheritdoc/>
-    public IValidator? Resolve(IServiceProvider serviceProvider)
-    {
-        var validators = serviceProvider.GetServices<IValidator<TArgument>>().ToList();
-        Type builtInValidatorType = typeof(Validator<TArgument>);
-        if (validators.Count > 1)
-        {
-            // Remove the built-in validator if a specific validator is registered.
-            validators = [.. validators.Where(validator => validator.GetType() != builtInValidatorType)];
-        }
+	/// <inheritdoc/>
+	public IValidator? Resolve(IServiceProvider serviceProvider)
+	{
+		var validators = serviceProvider.GetServices<IValidator<TArgument>>().ToList();
+		Type builtInValidatorType = typeof(DefaultValidator<TArgument>);
+		if (validators.Count > 1)
+		{
+			// Remove the built-in validator if a specific validator is registered.
+			validators = [.. validators.Where(validator => validator.GetType() != builtInValidatorType)];
+		}
 
-        return validators.FirstOrDefault();
-    }
+		return validators.FirstOrDefault();
+	}
 }

@@ -1,4 +1,4 @@
-/*******************************************************************************
+﻿/*******************************************************************************
  * Copyright (C) 2025-2026 Kamersoft
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
@@ -25,67 +25,50 @@ namespace System.Rests.ResponseBuilders;
 /// <param name="statusCodeExtension">An optional implementation of <see cref="IHttpStatusCodeExtension"/> used to map
 /// HTTP status codes to exceptions. If null, the default <see cref="HttpStatusCodeExtension"/> is used.</param>
 public sealed class RestResponseFailureComposer(
-    IHttpStatusCodeExtension? statusCodeExtension = null) : IRestResponseComposer
+	IHttpStatusCodeExtension? statusCodeExtension = null) : IRestResponseComposer
 {
-    private readonly IHttpStatusCodeExtension _statusCodeExtension =
-        statusCodeExtension ?? new HttpStatusCodeExtension();
-    /// <inheritdoc/>
-    public bool CanCompose(RestResponseContext context)
-    {
-        ArgumentNullException.ThrowIfNull(context);
-        return !context.Message.IsSuccessStatusCode;
-    }
+	private readonly IHttpStatusCodeExtension _statusCodeExtension =
+		statusCodeExtension ?? new HttpStatusCodeExtension();
+	/// <inheritdoc/>
+	public bool CanCompose(RestResponseContext context)
+	{
+		ArgumentNullException.ThrowIfNull(context);
+		return !context.Message.IsSuccessStatusCode;
+	}
 
-    /// <inheritdoc/>
-    public async ValueTask<RestResponse> ComposeAsync(
-        RestResponseContext context, CancellationToken cancellationToken = default)
-    {
-        ArgumentNullException.ThrowIfNull(context);
+	/// <inheritdoc/>
+	public async ValueTask<RestResponse> ComposeAsync(
+		RestResponseContext context, CancellationToken cancellationToken = default)
+	{
+		ArgumentNullException.ThrowIfNull(context);
 
-        HttpResponseMessage response = context.Message;
+		HttpResponseMessage response = context.Message;
 
-        if (!CanCompose(context))
+		if (!CanCompose(context))
 		{
 			throw new InvalidOperationException(
-                $"{nameof(ComposeAsync)}: The response is not a failure. " +
-                $"Status code: {response.StatusCode} ({response.ReasonPhrase}).");
+				$"{nameof(ComposeAsync)}: The response is not a failure. " +
+				$"Status code: {response.StatusCode} ({response.ReasonPhrase}).");
 		}
 
-		try
-        {
-            string? errorContent = default;
-            if (response.Content is not null)
-            {
-                errorContent = await response.Content
-                    .ReadAsStringAsync(cancellationToken)
-                    .ConfigureAwait(false);
-            }
+		string? errorContent = default;
+		if (response.Content is not null)
+		{
+			errorContent = await response.Content
+				.ReadAsStringAsync(cancellationToken)
+				.ConfigureAwait(false);
+		}
 
-            errorContent = $"Response status code does not indicate success: " +
-                $"{(int)response.StatusCode} ({response.ReasonPhrase}). {errorContent}";
+		errorContent = $"Response status code does not indicate success: " +
+			$"{(int)response.StatusCode} ({response.ReasonPhrase}). {errorContent}";
 
-            return new RestResponse
-            {
-                StatusCode = response.StatusCode,
-                ReasonPhrase = response.ReasonPhrase,
-                Headers = response.Headers.ToElementCollection(),
-                Version = response.Version,
-                Exception = _statusCodeExtension.GetException(response.StatusCode, errorContent)
-            };
-        }
-        catch (Exception exception)
-            when (exception is not ArgumentNullException
-                and not OperationCanceledException
-                and not InvalidOperationException)
-        {
-            return new RestResponse
-            {
-                StatusCode = response.StatusCode,
-                ReasonPhrase = response.ReasonPhrase,
-                Headers = response.Headers.ToElementCollection(),
-                Version = response.Version,
-                Exception = exception
-            };
-        }
-    }
+		return new RestResponse
+		{
+			StatusCode = response.StatusCode,
+			ReasonPhrase = response.ReasonPhrase,
+			Headers = response.Headers.ToElementCollection(),
+			Version = response.Version,
+			Exception = _statusCodeExtension.GetException(response.StatusCode, errorContent)
+		};
+	}
 }

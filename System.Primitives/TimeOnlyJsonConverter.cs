@@ -15,6 +15,7 @@
  *
 ********************************************************************************/
 
+using System.ComponentModel.DataAnnotations;
 using System.Globalization;
 using System.Text.Json;
 using System.Text.Json.Serialization;
@@ -43,7 +44,12 @@ public sealed class TimeOnlyJsonConverter : JsonConverter<TimeOnly>
 			return result;
 		}
 
-		return TimeOnly.Parse(value, CultureInfo.InvariantCulture);
+		throw new ValidationException(
+			new ValidationResult(
+				$"The value '{value}' is not a valid time in the current culture.",
+				new[] { reader.TokenType.ToString() }),
+			null,
+			value);
 	}
 
 	/// <inheritdoc/>
@@ -73,12 +79,17 @@ public sealed class NullableTimeOnlyJsonConverter : JsonConverter<TimeOnly?>
 			return null;
 		}
 
-		if (TimeOnly.TryParse(value, CultureInfo.CurrentCulture, DateTimeStyles.None, out var result))
+		if (TimeOnly.TryParse(value, CultureInfo.CurrentCulture, DateTimeStyles.None, out TimeOnly result))
 		{
 			return result;
 		}
 
-		return TimeOnly.Parse(value, CultureInfo.InvariantCulture);
+		throw new ValidationException(
+			new ValidationResult(
+				$"The value '{value}' is not a valid time in the current culture.",
+				new[] { reader.TokenType.ToString() }),
+			null,
+			value);
 	}
 
 	/// <inheritdoc/>

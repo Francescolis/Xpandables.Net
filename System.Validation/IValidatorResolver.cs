@@ -1,4 +1,4 @@
-/*******************************************************************************
+﻿/*******************************************************************************
  * Copyright (C) 2025-2026 Kamersoft
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
@@ -26,15 +26,28 @@ namespace System.ComponentModel.DataAnnotations;
 /// from object creation or where multiple validator implementations may exist for different types.</remarks>
 public interface IValidatorResolver
 {
-    /// <summary>
-    /// Gets the type of object that this instance targets.
-    /// </summary>
-    Type TargetType { get; }
+	/// <summary>
+	/// Gets the type of object that this instance targets.
+	/// </summary>
+	Type TargetType { get; }
 
-    /// <summary>
-    /// Resolves an instance of an <see cref="IValidator"/> using the specified service provider.
-    /// </summary>
-    /// <param name="serviceProvider">The service provider used to obtain the <see cref="IValidator"/> instance. Cannot be null.</param>
-    /// <returns>An <see cref="IValidator"/> instance resolved from the service provider.</returns>
-    IValidator? Resolve(IServiceProvider serviceProvider);
+	/// <summary>
+	/// Resolves an instance of an <see cref="IValidator"/> using the specified service provider.
+	/// </summary>
+	/// <param name="serviceProvider">The service provider used to obtain the <see cref="IValidator"/> instance. Cannot be null.</param>
+	/// <returns>An <see cref="IValidator"/> instance resolved from the service provider.</returns>
+	IValidator? Resolve(IServiceProvider serviceProvider);
+}
+
+/// <summary>
+/// Defines a contract for resolving validators for a specific argument type that requires validation.
+/// </summary>
+/// <remarks>This interface allows for the resolution of validators based on the specified argument type, enabling
+/// type-specific validation logic.</remarks>
+/// <typeparam name="TArgument">The type of the argument that requires validation. Must be a class implementing the IRequiresValidation interface.</typeparam>
+public interface IValidatorResolver<TArgument> : IValidatorResolver
+	where TArgument : class, IRequiresValidation
+{
+	[Diagnostics.CodeAnalysis.SuppressMessage("Design", "CA1033:Interface methods should be callable by child types", Justification = "<Pending>")]
+	Type IValidatorResolver.TargetType => typeof(TArgument);
 }

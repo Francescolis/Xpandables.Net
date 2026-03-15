@@ -1,4 +1,4 @@
-/*******************************************************************************
+﻿/*******************************************************************************
  * Copyright (C) 2025-2026 Kamersoft
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
@@ -25,127 +25,110 @@ namespace System.Rests.ResponseBuilders;
 /// </summary>
 public sealed class RestResponseContentComposer : IRestResponseComposer
 {
-    /// <inheritdoc/>
-    public bool CanCompose(RestResponseContext context)
-    {
-        ArgumentNullException.ThrowIfNull(context);
+	/// <inheritdoc/>
+	public bool CanCompose(RestResponseContext context)
+	{
+		ArgumentNullException.ThrowIfNull(context);
 
-        return context.Message.IsSuccessStatusCode
-            && context.Request.ResultType is null
-            && context.Message.Content is not null
-            && context.Request is not IRestRequestStream or IRestRequestStreamPaged or IRestRequestResult;
-    }
+		return context.Message.IsSuccessStatusCode
+			&& context.Request.ResultType is null
+			&& context.Message.Content is not null
+			&& context.Request is not IRestRequestStream or IRestRequestStreamPaged or IRestRequestResult;
+	}
 
-    /// <inheritdoc/>
-    public async ValueTask<RestResponse> ComposeAsync(
-        RestResponseContext context, CancellationToken cancellationToken = default)
-    {
-        ArgumentNullException.ThrowIfNull(context);
+	/// <inheritdoc/>
+	public async ValueTask<RestResponse> ComposeAsync(
+		RestResponseContext context, CancellationToken cancellationToken = default)
+	{
+		ArgumentNullException.ThrowIfNull(context);
 
-        HttpResponseMessage response = context.Message;
-        JsonSerializerOptions options = context.SerializerOptions;
+		HttpResponseMessage response = context.Message;
+		JsonSerializerOptions options = context.SerializerOptions;
 
-        if (!CanCompose(context))
+		if (!CanCompose(context))
 		{
 			throw new InvalidOperationException(
-                $"{nameof(ComposeAsync)}: The response is not a success. " +
-                $"Status code: {response.StatusCode} ({response.ReasonPhrase}).");
+				$"{nameof(ComposeAsync)}: The response is not a success. " +
+				$"Status code: {response.StatusCode} ({response.ReasonPhrase}).");
 		}
 
-		try
-        {
-            string contentType = response.Content.Headers.ContentType?.MediaType ?? string.Empty;
+		string contentType = response.Content.Headers.ContentType?.MediaType ?? string.Empty;
 
-            if (IsBinaryContentType(contentType))
-            {
-                Stream stream = await response.Content
-                    .ReadAsStreamAsync(cancellationToken)
-                    .ConfigureAwait(false);
+		if (IsBinaryContentType(contentType))
+		{
+			Stream stream = await response.Content
+				.ReadAsStreamAsync(cancellationToken)
+				.ConfigureAwait(false);
 
-                return new RestResponse
-                {
-                    StatusCode = response.StatusCode,
-                    ReasonPhrase = response.ReasonPhrase,
-                    Headers = response.Headers.ToElementCollection(),
-                    Version = response.Version,
-                    Result = stream
-                };
-            }
+			return new RestResponse
+			{
+				StatusCode = response.StatusCode,
+				ReasonPhrase = response.ReasonPhrase,
+				Headers = response.Headers.ToElementCollection(),
+				Version = response.Version,
+				Result = stream
+			};
+		}
 
-            if (IsTextContentType(contentType))
-            {
-                string stringContent = await response.Content
-                    .ReadAsStringAsync(cancellationToken)
-                    .ConfigureAwait(false);
+		if (IsTextContentType(contentType))
+		{
+			string stringContent = await response.Content
+				.ReadAsStringAsync(cancellationToken)
+				.ConfigureAwait(false);
 
-                if (string.IsNullOrEmpty(stringContent))
-                {
-                    return new RestResponse
-                    {
-                        StatusCode = response.StatusCode,
-                        ReasonPhrase = response.ReasonPhrase,
-                        Headers = response.Headers.ToElementCollection(),
-                        Version = response.Version
-                    };
-                }
+			if (string.IsNullOrEmpty(stringContent))
+			{
+				return new RestResponse
+				{
+					StatusCode = response.StatusCode,
+					ReasonPhrase = response.ReasonPhrase,
+					Headers = response.Headers.ToElementCollection(),
+					Version = response.Version
+				};
+			}
 
-                return new RestResponse
-                {
-                    StatusCode = response.StatusCode,
-                    ReasonPhrase = response.ReasonPhrase,
-                    Headers = response.Headers.ToElementCollection(),
-                    Version = response.Version,
-                    Result = stringContent
-                };
-            }
+			return new RestResponse
+			{
+				StatusCode = response.StatusCode,
+				ReasonPhrase = response.ReasonPhrase,
+				Headers = response.Headers.ToElementCollection(),
+				Version = response.Version,
+				Result = stringContent
+			};
+		}
 
-            string generalContent = await response.Content
-                .ReadAsStringAsync(cancellationToken)
-                .ConfigureAwait(false);
+		string generalContent = await response.Content
+			.ReadAsStringAsync(cancellationToken)
+			.ConfigureAwait(false);
 
-            return new RestResponse
-            {
-                StatusCode = response.StatusCode,
-                ReasonPhrase = response.ReasonPhrase,
-                Headers = response.Headers.ToElementCollection(),
-                Version = response.Version,
-                Result = generalContent
-            };
-        }
-        catch (Exception exception)
-            when (exception is not ArgumentNullException
-                and not OperationCanceledException
-                and not InvalidOperationException)
-        {
-            return new RestResponse
-            {
-                StatusCode = response.StatusCode,
-                ReasonPhrase = response.ReasonPhrase,
-                Headers = response.Headers.ToElementCollection(),
-                Version = response.Version,
-                Exception = exception
-            };
-        }
-    }
+		return new RestResponse
+		{
+			StatusCode = response.StatusCode,
+			ReasonPhrase = response.ReasonPhrase,
+			Headers = response.Headers.ToElementCollection(),
+			Version = response.Version,
+			Result = generalContent
+		};
+	}
 
-    private static bool IsBinaryContentType(string contentType) =>
-        contentType.Contains("application/octet-stream", StringComparison.OrdinalIgnoreCase) ||
-        contentType.Contains("image/", StringComparison.OrdinalIgnoreCase) ||
-        contentType.Contains("audio/", StringComparison.OrdinalIgnoreCase) ||
-        contentType.Contains("video/", StringComparison.OrdinalIgnoreCase) ||
-        contentType.Contains("application/pdf", StringComparison.OrdinalIgnoreCase) ||
-        contentType.Contains("application/zip", StringComparison.OrdinalIgnoreCase) ||
-        contentType.Contains("application/x-7z-compressed", StringComparison.OrdinalIgnoreCase) ||
-        contentType.Contains("application/x-msdownload", StringComparison.OrdinalIgnoreCase) ||
-        contentType.Contains("application/vnd.ms-", StringComparison.OrdinalIgnoreCase) ||
-        contentType.Contains("application/vnd.openxmlformats-", StringComparison.OrdinalIgnoreCase);
+	private static bool IsBinaryContentType(string contentType) =>
+		contentType.Contains("application/octet-stream", StringComparison.OrdinalIgnoreCase) ||
+		contentType.Contains("image/", StringComparison.OrdinalIgnoreCase) ||
+		contentType.Contains("audio/", StringComparison.OrdinalIgnoreCase) ||
+		contentType.Contains("video/", StringComparison.OrdinalIgnoreCase) ||
+		contentType.Contains("application/pdf", StringComparison.OrdinalIgnoreCase) ||
+		contentType.Contains("application/zip", StringComparison.OrdinalIgnoreCase) ||
+		contentType.Contains("application/x-7z-compressed", StringComparison.OrdinalIgnoreCase) ||
+		contentType.Contains("application/x-msdownload", StringComparison.OrdinalIgnoreCase) ||
+		contentType.Contains("application/vnd.ms-", StringComparison.OrdinalIgnoreCase) ||
+		contentType.Contains("application/vnd.openxmlformats-", StringComparison.OrdinalIgnoreCase);
 
-    private static bool IsTextContentType(string contentType) =>
-        contentType.Contains("text/", StringComparison.OrdinalIgnoreCase) ||
-        contentType.Contains("application/xml", StringComparison.OrdinalIgnoreCase) ||
-        contentType.Contains("application/json", StringComparison.OrdinalIgnoreCase) ||
-        contentType.Contains("application/javascript", StringComparison.OrdinalIgnoreCase) ||
-        contentType.Contains("application/x-www-form-urlencoded", StringComparison.OrdinalIgnoreCase) ||
-        contentType.Contains("application/xhtml+xml", StringComparison.OrdinalIgnoreCase) ||
-        contentType.Contains("application/atom+xml", StringComparison.OrdinalIgnoreCase);
+	private static bool IsTextContentType(string contentType) =>
+		contentType.Contains("text/", StringComparison.OrdinalIgnoreCase) ||
+		contentType.Contains("application/xml", StringComparison.OrdinalIgnoreCase) ||
+		contentType.Contains("application/json", StringComparison.OrdinalIgnoreCase) ||
+		contentType.Contains("application/javascript", StringComparison.OrdinalIgnoreCase) ||
+		contentType.Contains("application/x-www-form-urlencoded", StringComparison.OrdinalIgnoreCase) ||
+		contentType.Contains("application/xhtml+xml", StringComparison.OrdinalIgnoreCase) ||
+		contentType.Contains("application/atom+xml", StringComparison.OrdinalIgnoreCase);
 }

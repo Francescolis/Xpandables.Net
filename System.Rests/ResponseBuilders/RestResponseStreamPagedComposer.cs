@@ -58,56 +58,39 @@ public sealed class RestResponseStreamPagedComposer : IRestResponseComposer
 				$"Status code: {response.StatusCode} ({response.ReasonPhrase}).");
 		}
 
-		try
+		await Task.Yield();
+
+		object? asyncPagedResult;
+
+		// Use AOT-compatible deserializer if available
+		if (context.Request is IRestStreamPagedDeserializer deserializer)
 		{
-			await Task.Yield();
-
-			object? asyncPagedResult;
-
-			// Use AOT-compatible deserializer if available
-			if (context.Request is IRestStreamPagedDeserializer deserializer)
-			{
-				asyncPagedResult = deserializer.DeserializeAsAsyncPagedEnumerable(
-					response.Content,
-					options,
-					cancellationToken);
-			}
-			else
-			{
-				// Fallback for non-AOT scenarios using JsonTypeInfo
-				Type type = ((IRestRequestStreamPaged)context.Request).ResultType;
-				JsonTypeInfo? typeInfo = options.TypeInfoResolver?.GetTypeInfo(type, options)
-					?? throw new InvalidOperationException(
-						$"{nameof(ComposeAsync)}: The JsonTypeInfo for type {type.Name} could not be resolved. " +
-						$"For AOT compatibility, implement {nameof(IRestStreamPagedDeserializer)} on your request type" +
-						$"or provide JsonContext for the type setting the {RestSettings.SerializerOptions} property.");
-
-				asyncPagedResult = ReadFromJsonAsyncPagedEnumerableInternal(response.Content, typeInfo, cancellationToken);
-			}
-
-			return new RestResponse
-			{
-				StatusCode = response.StatusCode,
-				ReasonPhrase = response.ReasonPhrase,
-				Headers = response.Headers.ToElementCollection(),
-				Version = response.Version,
-				Result = asyncPagedResult
-			};
+			asyncPagedResult = deserializer.DeserializeAsAsyncPagedEnumerable(
+				response.Content,
+				options,
+				cancellationToken);
 		}
-		catch (Exception exception)
-			when (exception is not ArgumentNullException
-				and not OperationCanceledException
-				and not InvalidOperationException)
+		else
 		{
-			return new RestResponse
-			{
-				StatusCode = response.StatusCode,
-				ReasonPhrase = response.ReasonPhrase,
-				Headers = response.Headers.ToElementCollection(),
-				Version = response.Version,
-				Exception = exception
-			};
+			// Fallback for non-AOT scenarios using JsonTypeInfo
+			Type type = ((IRestRequestStreamPaged)context.Request).ResultType;
+			JsonTypeInfo? typeInfo = options.TypeInfoResolver?.GetTypeInfo(type, options)
+				?? throw new InvalidOperationException(
+					$"{nameof(ComposeAsync)}: The JsonTypeInfo for type {type.Name} could not be resolved. " +
+					$"For AOT compatibility, implement {nameof(IRestStreamPagedDeserializer)} on your request type" +
+					$"or provide JsonContext for the type setting the {RestSettings.SerializerOptions} property.");
+
+			asyncPagedResult = ReadFromJsonAsyncPagedEnumerableInternal(response.Content, typeInfo, cancellationToken);
 		}
+
+		return new RestResponse
+		{
+			StatusCode = response.StatusCode,
+			ReasonPhrase = response.ReasonPhrase,
+			Headers = response.Headers.ToElementCollection(),
+			Version = response.Version,
+			Result = asyncPagedResult
+		};
 	}
 
 #pragma warning disable IL2026 // Suppress trimming warning for fallback scenario

@@ -1,4 +1,4 @@
-using BankAccounts.Domain;
+﻿using BankAccounts.Domain;
 using BankAccounts.Infrastructure;
 
 using Microsoft.OpenApi;
@@ -19,6 +19,7 @@ builder.Services
 	.AddXMediatorWithEventSourcingPipelines()
 	.AddXServiceExports(builder.Configuration, [typeof(Account).Assembly, typeof(AccountDataContext).Assembly])
 	.AddXRequestHandlers()
+	.AddXValidators([typeof(Account).Assembly])
 	.AddValidation()
 	.AddXEventStores()
 	.AddXResultMiddleware()

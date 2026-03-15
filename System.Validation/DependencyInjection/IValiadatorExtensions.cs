@@ -1,4 +1,4 @@
-/*******************************************************************************
+﻿/*******************************************************************************
  * Copyright (C) 2025-2026 Kamersoft
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
@@ -136,16 +136,15 @@ public static class IValiadatorExtensions
 			services.AddXValidatorProvider<ValidatorProvider>();
 
 		/// <summary>
-		/// Registers all sealed implementations of <see cref="IValidator{TArgument}"/> found in the specified assemblies 
-		/// with the dependency injection container.
+		/// Registers validators and their resolvers for types found in the specified assemblies, enabling validation support
+		/// within the service collection.
 		/// </summary>
-		/// <remarks>This method uses reflection to locate and register all sealed types implementing
-		/// <see cref="IValidator{TArgument}"/> in the provided assemblies. It also registers corresponding <see cref="ICompositeValidator{TArgument}"/> types for
-		/// each discovered argument type. Dynamic code generation and unreferenced code may be required; see method
-		/// attributes for details.</remarks>
-		/// <param name="assemblies">An array of assemblies to scan for sealed <see cref="IValidator{TArgument}"/>> implementations. If no assemblies are provided, the
+		/// <remarks>This method dynamically registers validators for types implementing <see cref="IValidator{TArgument}"/> and
+		/// IRequiresValidation. It also handles the registration of a default validator and a composite validator for each
+		/// argument type. Ensure that the provided assemblies contain the necessary types for validation.</remarks>
+		/// <param name="assemblies">An array of assemblies to scan for types that implement validation interfaces. If no assemblies are provided, the
 		/// calling assembly is used.</param>
-		/// <returns>The IServiceCollection instance with the discovered validators registered.</returns>
+		/// <returns>The updated IServiceCollection instance, allowing for method chaining.</returns>
 		[RequiresDynamicCode("Dynamic code generation is required for this method.")]
 		[RequiresUnreferencedCode("Calls MakeGenericMethod which may require unreferenced code.")]
 		public IServiceCollection AddXValidators(params IEnumerable<Assembly> assemblies)
@@ -153,6 +152,26 @@ public static class IValiadatorExtensions
 			Assembly[] assembliesArray = assemblies as Assembly[] ?? [.. assemblies];
 			assembliesArray = assembliesArray is { Length: > 0 } ? assembliesArray : [Assembly.GetCallingAssembly()];
 
+			services.AddXCompositeValidator();
+			services.AddXValidatorFactory();
+			services.AddXValidatorProvider();
+			services.AddTransient(typeof(IValidator<>), typeof(DefaultValidator<>));
+
+			// register IValidatorResolver for each argument that implements IRequiresValidation
+			var argumentTypes = assembliesArray
+				 .SelectMany(assembly => assembly.GetTypes())
+				 .Where(type => typeof(IRequiresValidation).IsAssignableFrom(type))
+				 .Select(type => type)
+				 .ToList();
+
+			foreach (Type? type in argumentTypes)
+			{
+				_ = services.AddSingleton(
+					typeof(IValidatorResolver),
+					typeof(ValidatorResolver<>).MakeGenericType(type));
+			}
+
+			// register all sealed types that implement IValidator<TArgument>
 			var validatorTypes = assembliesArray
 				 .SelectMany(assembly => assembly.GetTypes())
 				 .Where(type => type.IsSealed
@@ -173,7 +192,8 @@ public static class IValiadatorExtensions
 
 			foreach (var validatorType in validatorTypes)
 			{
-				if (validatorType.ValidatorType.IsGenericType)
+				if (validatorType.ValidatorType.IsGenericType
+					&& validatorType.ValidatorType.GetGenericTypeDefinition() != typeof(DefaultValidator<>))
 				{
 					_ = services.AddTransient(
 						typeof(IValidator<>),
@@ -186,13 +206,16 @@ public static class IValiadatorExtensions
 					typeof(IValidator<>).MakeGenericType(validatorType.ArgumentType),
 					validatorType.ValidatorType);
 
-				_ = services.AddSingleton(
-					typeof(IValidatorResolver),
-					typeof(ValidatorResolver<>).MakeGenericType(validatorType.ArgumentType));
+				if (argumentTypes.All(arg => arg != validatorType.ArgumentType))
+				{
+					_ = services.AddSingleton(
+						typeof(IValidatorResolver),
+						typeof(ValidatorResolver<>).MakeGenericType(validatorType.ArgumentType));
 
-				_ = services.AddTransient(
-					typeof(ICompositeValidator<>).MakeGenericType(validatorType.ArgumentType),
-					typeof(CompositeValidator<>).MakeGenericType(validatorType.ArgumentType));
+					_ = services.AddTransient(
+						typeof(ICompositeValidator<>).MakeGenericType(validatorType.ArgumentType),
+						typeof(CompositeValidator<>).MakeGenericType(validatorType.ArgumentType));
+				}
 			}
 
 			return services;

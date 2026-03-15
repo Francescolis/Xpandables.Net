@@ -15,6 +15,7 @@
  *
 ********************************************************************************/
 
+using System.ComponentModel.DataAnnotations;
 using System.Globalization;
 using System.Text.Json;
 using System.Text.Json.Serialization;
@@ -41,13 +42,17 @@ public sealed class DateOnlyJsonConverter : JsonConverter<DateOnly>
 		}
 
 		// Try current culture first
-		if (DateOnly.TryParse(value, CultureInfo.CurrentCulture, DateTimeStyles.None, out var result))
+		if (DateOnly.TryParse(value, CultureInfo.CurrentCulture, DateTimeStyles.None, out DateOnly result))
 		{
 			return result;
 		}
 
-		// Fallback to invariant culture
-		return DateOnly.Parse(value, CultureInfo.InvariantCulture);
+		throw new ValidationException(
+			new ValidationResult(
+				$"The value '{value}' is not a valid date in the current culture.",
+				new[] { reader.TokenType.ToString() }),
+			null,
+			value);
 	}
 
 	/// <inheritdoc/>
@@ -79,12 +84,17 @@ public sealed class NullableDateOnlyJsonConverter : JsonConverter<DateOnly?>
 			return null;
 		}
 
-		if (DateOnly.TryParse(value, CultureInfo.CurrentCulture, DateTimeStyles.None, out var result))
+		if (DateOnly.TryParse(value, CultureInfo.CurrentCulture, DateTimeStyles.None, out DateOnly result))
 		{
 			return result;
 		}
 
-		return DateOnly.Parse(value, CultureInfo.InvariantCulture);
+		throw new ValidationException(
+			new ValidationResult(
+				$"The value '{value}' is not a valid date in the current culture.",
+				new[] { reader.TokenType.ToString() }),
+			null,
+			value);
 	}
 
 	/// <inheritdoc/>

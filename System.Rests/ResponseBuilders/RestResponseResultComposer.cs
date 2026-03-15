@@ -1,4 +1,4 @@
-/*******************************************************************************
+﻿/*******************************************************************************
  * Copyright (C) 2025-2026 Kamersoft
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
@@ -26,80 +26,63 @@ namespace System.Rests.ResponseBuilders;
 /// </summary>
 public sealed class RestResponseResultComposer : IRestResponseComposer
 {
-    /// <inheritdoc/>
-    public bool CanCompose(RestResponseContext context)
-    {
-        ArgumentNullException.ThrowIfNull(context);
+	/// <inheritdoc/>
+	public bool CanCompose(RestResponseContext context)
+	{
+		ArgumentNullException.ThrowIfNull(context);
 
-        return context.Message.IsSuccessStatusCode
-            && context.Request.ResultType is not null
-            && context.Message.Content is not null
-            && context.Request is IRestRequestResult;
-    }
+		return context.Message.IsSuccessStatusCode
+			&& context.Request.ResultType is not null
+			&& context.Message.Content is not null
+			&& context.Request is IRestRequestResult;
+	}
 
-    /// <inheritdoc/>
-    public async ValueTask<RestResponse> ComposeAsync(
-        RestResponseContext context, CancellationToken cancellationToken = default)
-    {
-        ArgumentNullException.ThrowIfNull(context);
+	/// <inheritdoc/>
+	public async ValueTask<RestResponse> ComposeAsync(
+		RestResponseContext context, CancellationToken cancellationToken = default)
+	{
+		ArgumentNullException.ThrowIfNull(context);
 
-        HttpResponseMessage response = context.Message;
-        JsonSerializerOptions options = context.SerializerOptions;
+		HttpResponseMessage response = context.Message;
+		JsonSerializerOptions options = context.SerializerOptions;
 
-        if (!CanCompose(context))
+		if (!CanCompose(context))
 		{
 			throw new InvalidOperationException(
-                $"{nameof(ComposeAsync)}: The response is not a success. " +
-                $"Status code: {response.StatusCode} ({response.ReasonPhrase}).");
+				$"{nameof(ComposeAsync)}: The response is not a success. " +
+				$"Status code: {response.StatusCode} ({response.ReasonPhrase}).");
 		}
 
-		try
-        {
-            string stringContent = await response.Content
-                .ReadAsStringAsync(cancellationToken)
-                .ConfigureAwait(false);
+		string stringContent = await response.Content
+			.ReadAsStringAsync(cancellationToken)
+			.ConfigureAwait(false);
 
-            if (string.IsNullOrEmpty(stringContent))
-            {
-                return new RestResponse
-                {
-                    StatusCode = response.StatusCode,
-                    ReasonPhrase = response.ReasonPhrase,
-                    Headers = response.Headers.ToElementCollection(),
-                    Version = response.Version
-                };
-            }
+		if (string.IsNullOrEmpty(stringContent))
+		{
+			return new RestResponse
+			{
+				StatusCode = response.StatusCode,
+				ReasonPhrase = response.ReasonPhrase,
+				Headers = response.Headers.ToElementCollection(),
+				Version = response.Version
+			};
+		}
 
-            Type type = ((IRestRequestResult)context.Request).ResultType;
+		Type type = ((IRestRequestResult)context.Request).ResultType;
 
-            JsonTypeInfo? jsonTypeInfo = (JsonTypeInfo?)options.GetTypeInfo(type)
-                ?? throw new InvalidOperationException(
-                    $"{nameof(ComposeAsync)}: The JsonTypeInfo for type {type.Name} could not be found.");
+		JsonTypeInfo? jsonTypeInfo = (JsonTypeInfo?)options.GetTypeInfo(type)
+			?? throw new InvalidOperationException(
+				$"{nameof(ComposeAsync)}: The JsonTypeInfo for type {type.Name} could not be found.");
 
-            object? typedResult = JsonSerializer.Deserialize(stringContent, jsonTypeInfo);
+		object? typedResult = JsonSerializer.Deserialize(stringContent, jsonTypeInfo);
 
-            return new RestResponse
-            {
-                StatusCode = response.StatusCode,
-                ReasonPhrase = response.ReasonPhrase,
-                Headers = response.Headers.ToElementCollection(),
-                Version = response.Version,
-                Result = typedResult
-            };
-        }
-        catch (Exception exception)
-            when (exception is not ArgumentNullException
-                and not OperationCanceledException
-                and not InvalidOperationException)
-        {
-            return new RestResponse
-            {
-                StatusCode = response.StatusCode,
-                ReasonPhrase = response.ReasonPhrase,
-                Headers = response.Headers.ToElementCollection(),
-                Version = response.Version,
-                Exception = exception
-            };
-        }
-    }
+		return new RestResponse
+		{
+			StatusCode = response.StatusCode,
+			ReasonPhrase = response.ReasonPhrase,
+			Headers = response.Headers.ToElementCollection(),
+			Version = response.Version,
+			Result = typedResult
+		};
+	}
 }

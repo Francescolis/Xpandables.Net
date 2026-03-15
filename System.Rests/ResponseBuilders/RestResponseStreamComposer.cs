@@ -1,4 +1,4 @@
-/*******************************************************************************
+﻿/*******************************************************************************
  * Copyright (C) 2025-2026 Kamersoft
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
@@ -32,100 +32,83 @@ namespace System.Rests.ResponseBuilders;
 /// </remarks>
 public sealed class RestResponseStreamComposer : IRestResponseComposer
 {
-    /// <inheritdoc/>
-    public bool CanCompose(RestResponseContext context)
-    {
-        ArgumentNullException.ThrowIfNull(context);
+	/// <inheritdoc/>
+	public bool CanCompose(RestResponseContext context)
+	{
+		ArgumentNullException.ThrowIfNull(context);
 
-        return context.Message.IsSuccessStatusCode
-        && context.Request.ResultType is not null
-        && context.Request is IRestRequestStream;
-    }
+		return context.Message.IsSuccessStatusCode
+		&& context.Request.ResultType is not null
+		&& context.Request is IRestRequestStream;
+	}
 
-    /// <inheritdoc/>
-    public async ValueTask<RestResponse> ComposeAsync(
-        RestResponseContext context, CancellationToken cancellationToken = default)
-    {
-        ArgumentNullException.ThrowIfNull(context);
+	/// <inheritdoc/>
+	public async ValueTask<RestResponse> ComposeAsync(
+		RestResponseContext context, CancellationToken cancellationToken = default)
+	{
+		ArgumentNullException.ThrowIfNull(context);
 
-        HttpResponseMessage response = context.Message;
-        JsonSerializerOptions options = context.SerializerOptions;
+		HttpResponseMessage response = context.Message;
+		JsonSerializerOptions options = context.SerializerOptions;
 
-        if (!CanCompose(context))
+		if (!CanCompose(context))
 		{
 			throw new InvalidOperationException(
-                $"{nameof(ComposeAsync)}: The response is not a success. " +
-                $"Status code: {response.StatusCode} ({response.ReasonPhrase}).");
+				$"{nameof(ComposeAsync)}: The response is not a success. " +
+				$"Status code: {response.StatusCode} ({response.ReasonPhrase}).");
 		}
 
-		try
-        {
-            await Task.Yield();
+		await Task.Yield();
 
-            object? asyncResult;
+		object? asyncResult;
 
-            // Use AOT-compatible deserializer if available
-            if (context.Request is IRestStreamDeserializer deserializer)
-            {
-                asyncResult = deserializer.DeserializeAsAsyncEnumerable(
-                    response.Content,
-                    options,
-                    cancellationToken);
-            }
-            else
-            {
-                // Fallback for non-AOT scenarios using JsonTypeInfo
-                Type type = ((IRestRequestStream)context.Request).ResultType;
-                JsonTypeInfo? typeInfo = options.TypeInfoResolver?.GetTypeInfo(type, options)
-                    ?? throw new InvalidOperationException(
-                        $"{nameof(ComposeAsync)}: The JsonTypeInfo for type {type.Name} could not be resolved. " +
-                        $"For AOT compatibility, implement {nameof(IRestStreamDeserializer)} on your request type.");
+		// Use AOT-compatible deserializer if available
+		if (context.Request is IRestStreamDeserializer deserializer)
+		{
+			asyncResult = deserializer.DeserializeAsAsyncEnumerable(
+				response.Content,
+				options,
+				cancellationToken);
+		}
+		else
+		{
+			// Fallback for non-AOT scenarios using JsonTypeInfo
+			Type type = ((IRestRequestStream)context.Request).ResultType;
+			JsonTypeInfo? typeInfo = options.TypeInfoResolver?.GetTypeInfo(type, options)
+				?? throw new InvalidOperationException(
+					$"{nameof(ComposeAsync)}: The JsonTypeInfo for type {type.Name} could not be resolved. " +
+					$"For AOT compatibility, implement {nameof(IRestStreamDeserializer)} on your request type.");
 
-                asyncResult = ReadFromJsonAsAsyncEnumerableInternal(response.Content, typeInfo, cancellationToken);
-            }
+			asyncResult = ReadFromJsonAsAsyncEnumerableInternal(response.Content, typeInfo, cancellationToken);
+		}
 
-            return new RestResponse
-            {
-                StatusCode = response.StatusCode,
-                ReasonPhrase = response.ReasonPhrase,
-                Headers = response.Headers.ToElementCollection(),
-                Version = response.Version,
-                Result = asyncResult
-            };
-        }
-        catch (Exception exception)
-            when (exception is not ArgumentNullException
-                and not OperationCanceledException
-                and not InvalidOperationException)
-        {
-            return new RestResponse
-            {
-                StatusCode = response.StatusCode,
-                ReasonPhrase = response.ReasonPhrase,
-                Headers = response.Headers.ToElementCollection(),
-                Version = response.Version,
-                Exception = exception
-            };
-        }
-    }
+		return new RestResponse
+		{
+			StatusCode = response.StatusCode,
+			ReasonPhrase = response.ReasonPhrase,
+			Headers = response.Headers.ToElementCollection(),
+			Version = response.Version,
+			Result = asyncResult
+		};
+	}
 
 #pragma warning disable IL2026 // Suppress trimming warning for fallback scenario
 #pragma warning disable IL3050 // Suppress AOT warning for fallback scenario
-    private static object? ReadFromJsonAsAsyncEnumerableInternal(
-        HttpContent content,
-        JsonTypeInfo jsonTypeInfo,
-        CancellationToken cancellationToken)
-    {
+	private static object? ReadFromJsonAsAsyncEnumerableInternal(
+		HttpContent content,
+		JsonTypeInfo jsonTypeInfo,
+		CancellationToken cancellationToken)
+	{
 		MethodInfo method = typeof(HttpContentJsonExtensions)
-            .GetMethod(nameof(HttpContentJsonExtensions.ReadFromJsonAsAsyncEnumerable),
-            [typeof(HttpContent), typeof(JsonSerializerOptions), typeof(CancellationToken)])
-            ?? throw new InvalidOperationException(
-                $"Could not find method {nameof(HttpContentJsonExtensions.ReadFromJsonAsAsyncEnumerable)}. " +
-                $"For AOT compatibility, implement {nameof(IRestStreamDeserializer)} on your request type.");
+			.GetMethod(nameof(HttpContentJsonExtensions.ReadFromJsonAsAsyncEnumerable),
+			[typeof(HttpContent), typeof(JsonSerializerOptions), typeof(CancellationToken)])
+			?? throw new InvalidOperationException(
+				$"Could not find method {nameof(HttpContentJsonExtensions.ReadFromJsonAsAsyncEnumerable)}. " +
+				$"For AOT compatibility, implement {nameof(IRestStreamDeserializer)} on your request type.");
 
 		MethodInfo genericMethod = method.MakeGenericMethod(jsonTypeInfo.Type);
-        return genericMethod.Invoke(null, [content, jsonTypeInfo.Options, cancellationToken]);
-    }
+		return genericMethod.Invoke(null, [content, jsonTypeInfo.Options, cancellationToken]);
+	}
 #pragma warning restore IL3050
 #pragma warning restore IL2026
 }

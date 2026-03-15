@@ -15,6 +15,7 @@
  *
 ********************************************************************************/
 using System.Collections;
+using System.ComponentModel.DataAnnotations;
 using System.Net;
 using System.Results;
 
@@ -219,7 +220,7 @@ public static class ResultExtensions
 			string detail = result.Detail ?? statusCodeExtension.GetDetail(result.StatusCode);
 			int status = (int)result.StatusCode;
 			string instance = $"{context.Request.Method} {context.Request.Path}{context.Request.QueryString.Value}";
-			string? type = isDevelopment ? result.GetType().Name : null;
+			string? type = result.StatusCode.IsValidationProblem ? nameof(ValidationException) : result.Exception?.GetType().Name ?? result.GetType().Name;
 			IDictionary<string, object?> extensions = result.Extensions.ToDictionaryObject();
 
 			ProblemDetails problemDetails = result.StatusCode.IsValidationProblem

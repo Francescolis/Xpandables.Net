@@ -1,4 +1,4 @@
-/*******************************************************************************
+﻿/*******************************************************************************
  * Copyright (C) 2025-2026 Kamersoft
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
@@ -23,9 +23,9 @@ namespace BankAccounts.Domain;
 [TypeConverter(typeof(PrimitiveTypeConverter<AccountType, string>))]
 public readonly record struct AccountType : IPrimitive<AccountType, string>
 {
-	private const string s_savings = "SAVINGS";
-	private const string s_checking = "CHECKING";
-	private const string s_business = "BUSINESS";
+	internal const string s_savings = "SAVINGS";
+	internal const string s_checking = "CHECKING";
+	internal const string s_business = "BUSINESS";
 
 	public static readonly AccountType Savings = new(s_savings);
 	public static readonly AccountType Checking = new(s_checking);
@@ -77,7 +77,13 @@ public sealed class AccountTypeValidationAttribute : ValidationAttribute
 		return value switch
 		{
 			AccountType _ => true,
-			string accountType => AccountType.TryParse(accountType, null, out _),
+			string accountType => accountType.ToUpperInvariant() switch
+			{
+				AccountType.s_savings => true,
+				AccountType.s_checking => true,
+				AccountType.s_business => true,
+				_ => false
+			},
 			_ => false
 		};
 	}
