@@ -1,4 +1,4 @@
-/*******************************************************************************
+﻿/*******************************************************************************
  * Copyright (C) 2024 Francis-Black EWANE
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
@@ -94,7 +94,7 @@ public sealed class CacheTypeResolver : Disposable, ICacheTypeResolver
 
 		foreach (Assembly assembly in _assemblies)
 		{
-			foreach (Type type in assembly.ExportedTypes)
+			foreach (Type type in assembly.GetTypes())
 			{
 				if (predicate(type))
 				{
