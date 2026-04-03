@@ -31,7 +31,7 @@ public readonly record struct Optional
 	/// </summary>
 	/// <typeparam name="T">The type of the value.</typeparam>
 	/// <returns>An empty <see cref="Optional{T}"/>.</returns>
-	public static Optional<T> Empty<T>() => new(default);
+	public static Optional<T> Empty<T>() => new(default, false);
 
 	/// <summary>
 	/// Returns an <see cref="Optional{T}"/> with a value.

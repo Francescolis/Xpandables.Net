@@ -32,10 +32,23 @@ namespace System.Optionals;
 [SuppressMessage("Naming", "CA1716:Identifiers should not match keywords", Justification = "<Pending>")]
 public readonly partial record struct Optional<T> : IEnumerable<T>
 {
-	private readonly T? _value = default;
+	private readonly T? _value;
+	private readonly bool _hasValue;
+
 	[MemberNotNullWhen(true, nameof(Value), nameof(_value))]
-	private readonly bool HasValue => _value is not null;
-	internal Optional(T? value) => _value = value;
+	private readonly bool HasValue => _hasValue;
+
+	internal Optional(T? value)
+	{
+		_value = value;
+		_hasValue = true;
+	}
+
+	internal Optional(T? value, bool hasValue)
+	{
+		_value = value;
+		_hasValue = hasValue;
+	}
 
 	/// <summary>
 	/// Gets the value of the optional if it is present.

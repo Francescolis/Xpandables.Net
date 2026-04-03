@@ -74,15 +74,29 @@ public sealed class RestResponseResultComposer : IRestResponseComposer
 			?? throw new InvalidOperationException(
 				$"{nameof(ComposeAsync)}: The JsonTypeInfo for type {type.Name} could not be found.");
 
-		object? typedResult = JsonSerializer.Deserialize(stringContent, jsonTypeInfo);
-
-		return new RestResponse
+		try
 		{
-			StatusCode = response.StatusCode,
-			ReasonPhrase = response.ReasonPhrase,
-			Headers = response.Headers.ToElementCollection(),
-			Version = response.Version,
-			Result = typedResult
-		};
+			object? typedResult = JsonSerializer.Deserialize(stringContent, jsonTypeInfo);
+
+			return new RestResponse
+			{
+				StatusCode = response.StatusCode,
+				ReasonPhrase = response.ReasonPhrase,
+				Headers = response.Headers.ToElementCollection(),
+				Version = response.Version,
+				Result = typedResult
+			};
+		}
+		catch (JsonException ex)
+		{
+			return new RestResponse
+			{
+				StatusCode = response.StatusCode,
+				ReasonPhrase = response.ReasonPhrase,
+				Headers = response.Headers.ToElementCollection(),
+				Version = response.Version,
+				Exception = ex
+			};
+		}
 	}
 }
