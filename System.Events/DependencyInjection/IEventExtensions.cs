@@ -1,4 +1,4 @@
-/*******************************************************************************
+﻿/*******************************************************************************
  * Copyright (C) 2025-2026 Kamersoft
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
@@ -46,7 +46,7 @@ public static class IEventExtensions
 		/// Adds services required for event context propagation and enrichment to the dependency injection container.
 		/// <code>
 		/// If you want to set correlation/causation for a scope
-		/// 
+		///
 		///     var accessor = app.Services.GetRequiredService&lt;IEventContextAccessor&gt;();
 		///
 		///     using var _ = accessor.BeginScope(new EventContext
@@ -120,7 +120,7 @@ public static class IEventExtensions
 		/// </list>
 		/// </para>
 		/// <para>
-		/// The decorator ensures idempotent event handling via <see cref="IInboxStore"/> 
+		/// The decorator ensures idempotent event handling via <see cref="IInboxStore"/>
 		/// by calling Receive/Complete/Fail around the inner handler.
 		/// Handlers that do not implement <see cref="IInboxConsumer"/> are not decorated.
 		/// </para>
@@ -346,7 +346,7 @@ public static class IEventExtensions
 			ArgumentNullException.ThrowIfNull(services);
 
 			services.TryAddSingleton<IEventBus, TEventBus>();
-			services.TryAddScoped<IEventPublisher, EventBusPublisher>();
+			services.TryAddSingleton<IEventPublisher, EventBusPublisher>();
 
 			return services;
 		}
@@ -368,10 +368,10 @@ public static class IEventExtensions
 		{
 			ArgumentNullException.ThrowIfNull(services);
 
-			services.TryAddEnumerable(ServiceDescriptor.Scoped<IEventPublisher, EventPublisherSubscriber>());
-			services.TryAddEnumerable(ServiceDescriptor.Scoped<IEventPublisher, EventBusPublisher>());
+			services.TryAddEnumerable(ServiceDescriptor.Singleton<IEventPublisher, EventPublisherSubscriber>());
+			services.TryAddEnumerable(ServiceDescriptor.Singleton<IEventPublisher, EventBusPublisher>());
 
-			services.Replace(ServiceDescriptor.Scoped<IEventPublisher>(sp =>
+			services.Replace(ServiceDescriptor.Singleton<IEventPublisher>(sp =>
 			{
 				IEventPublisher[] publishers = sp.GetServices<IEventPublisher>()
 					.Where(static p => p is not CompositeEventPublisher)
@@ -395,7 +395,7 @@ public static class IEventExtensions
 		/// <param name="lifetime">The service lifetime for the publisher registration. Defaults to <see cref="ServiceLifetime.Singleton"/>.</param>
 		/// <returns>The <see cref="IServiceCollection"/> instance with the publisher registration added.</returns>
 		public IServiceCollection AddXEventPublisher<[DynamicallyAccessedMembers(DynamicallyAccessedMemberTypes.PublicConstructors)] TEventPublisher>(
-				ServiceLifetime lifetime = ServiceLifetime.Scoped)
+				ServiceLifetime lifetime = ServiceLifetime.Singleton)
 				where TEventPublisher : class, IEventPublisher
 		{
 			services.TryAdd(
@@ -411,10 +411,10 @@ public static class IEventExtensions
 		/// Adds the default Publisher implementation to the service collection for dependency injection.
 		/// It also registers the same instance as an IEventSubscriber, along with the necessary event handler registries.
 		/// <code language="csharp"> Sample usage:
-		/// 
+		///
 		///     var dynamicRegistry = app.Services.GetRequiredService&lt;DynamicEventHandlerRegistry&gt;();
 		///     dynamicRegistry.Register(new[] { new PluginEventHandler() }); // runtime registration
-		///     
+		///
 		///     // Later:
 		///     dynamicRegistry.Unregister&lt;PluginEvent&gt;();
 		/// </code>
@@ -427,7 +427,7 @@ public static class IEventExtensions
 		/// <returns>The updated IServiceCollection instance with the Publisher services registered.</returns>
 		public IServiceCollection AddXEventPublisher(
 			EventRegistryMode registryMode = EventRegistryMode.Default,
-			ServiceLifetime lifetime = ServiceLifetime.Scoped)
+			ServiceLifetime lifetime = ServiceLifetime.Singleton)
 		{
 			services
 				.AddXEventPublisher<EventPublisherSubscriber>(lifetime)
@@ -438,9 +438,11 @@ public static class IEventExtensions
 
 			_ = registryMode switch
 			{
-				EventRegistryMode.Default => services.AddScoped<IEventHandlerRegistry, EventHandlerRegistry>(),
+				EventRegistryMode.Default => services.AddSingleton<IEventHandlerRegistry, EventHandlerRegistry>(),
 				EventRegistryMode.Static => services.AddSingleton<IEventHandlerRegistry, StaticEventHandlerRegistry>(),
-				EventRegistryMode.Dynamic => services.AddSingleton<IEventHandlerRegistry, DynamicEventHandlerRegistry>(),
+				EventRegistryMode.Dynamic => services
+					.AddSingleton<DynamicEventHandlerRegistry>()
+					.AddSingleton<IEventHandlerRegistry>(sp => sp.GetRequiredService<DynamicEventHandlerRegistry>()),
 				_ => services
 					.AddSingleton<StaticEventHandlerRegistry>()
 					.AddSingleton<DynamicEventHandlerRegistry>()
@@ -497,8 +499,12 @@ public static class IEventExtensions
 		/// reference type.</typeparam>
 		/// <returns>The <see cref="IServiceCollection"/> instance with the event handler wrapper registration added.</returns>
 		public IServiceCollection AddXEventHandlerWrapper<TEvent>()
-			where TEvent : class, IEvent =>
-			services.AddScoped<IEventHandlerWrapper, EventHandlerWrapper<TEvent>>();
+			where TEvent : class, IEvent
+		{
+			services.TryAddEnumerable(
+				ServiceDescriptor.Singleton<IEventHandlerWrapper, EventHandlerWrapper<TEvent>>());
+			return services;
+		}
 
 		/// <summary>
 		/// Registers all sealed event handler classes implementing the <see cref="IEventHandler{TEvent}"/> interface from the
