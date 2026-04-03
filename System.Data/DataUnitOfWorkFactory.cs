@@ -1,4 +1,4 @@
-/*******************************************************************************
+﻿/*******************************************************************************
  * Copyright (C) 2025-2026 Kamersoft
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
@@ -31,7 +31,7 @@ namespace System.Data;
 [RequiresDynamicCode("Expression compilation requires dynamic code generation.")]
 public class DataUnitOfWorkFactory : IDataUnitOfWorkFactory
 {
-	private readonly IDataDbConnectionScopeFactory _connectionScopeFactory;
+	private readonly IDataConnectionScopeFactory _connectionScopeFactory;
 	private readonly IDataSqlBuilderFactory _sqlBuilderFactory;
 	private readonly IDataSqlMapper _sqlMapper;
 	private readonly IDataCommandInterceptor _interceptor;
@@ -47,7 +47,7 @@ public class DataUnitOfWorkFactory : IDataUnitOfWorkFactory
 	/// <param name="interceptor">The optional command interceptor for logging and telemetry.
 	/// When <see langword="null"/>, <see cref="DataCommandInterceptor.Default"/> is used.</param>
 	public DataUnitOfWorkFactory(
-		IDataDbConnectionScopeFactory connectionScopeFactory,
+		IDataConnectionScopeFactory connectionScopeFactory,
 		IDataSqlBuilderFactory sqlBuilderFactory,
 		IDataSqlMapper sqlMapper,
 		string providerInvariantName,

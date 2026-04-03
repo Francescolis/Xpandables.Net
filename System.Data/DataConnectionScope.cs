@@ -1,4 +1,4 @@
-/*******************************************************************************
+﻿/*******************************************************************************
  * Copyright (C) 2025-2026 Kamersoft
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
@@ -19,7 +19,7 @@ using System.Data.Common;
 namespace System.Data;
 
 /// <summary>
-/// Provides a default implementation of <see cref="IDataDbConnectionScope"/> that manages the 
+/// Provides a default implementation of <see cref="IDataConnectionScope"/> that manages the 
 /// lifecycle of a database connection and its associated transaction.
 /// </summary>
 /// <remarks>
@@ -30,7 +30,7 @@ namespace System.Data;
 /// </remarks>
 /// <param name="connection">The open database connection to manage.</param>
 /// <exception cref="ArgumentNullException">Thrown when <paramref name="connection"/> is null.</exception>
-public sealed class DataDbConnectionScope(DbConnection connection) : IDataDbConnectionScope
+public sealed class DataConnectionScope(DbConnection connection) : IDataConnectionScope
 {
 	private readonly DbConnection _connection = connection ?? throw new ArgumentNullException(nameof(connection));
 	private DataTransaction? _currentTransaction;
@@ -172,30 +172,30 @@ public sealed class DataDbConnectionScope(DbConnection connection) : IDataDbConn
 }
 
 /// <summary>
-/// Provides a default implementation of <see cref="IDataDbConnectionScopeFactory"/> that creates 
-/// <see cref="DataDbConnectionScope"/> instances using an <see cref="IDataDbConnectionFactory"/>.
+/// Provides a default implementation of <see cref="IDataConnectionScopeFactory"/> that creates 
+/// <see cref="DataConnectionScope"/> instances using an <see cref="IDataConnectionFactory"/>.
 /// </summary>
 /// <param name="connectionFactory">The factory used to create database connections.</param>
 /// <exception cref="ArgumentNullException">Thrown when <paramref name="connectionFactory"/> is null.</exception>
-public sealed class DataDbConnectionScopeFactory(IDataDbConnectionFactory connectionFactory) : IDataDbConnectionScopeFactory
+public sealed class DataDbConnectionScopeFactory(IDataConnectionFactory connectionFactory) : IDataConnectionScopeFactory
 {
-	private readonly IDataDbConnectionFactory _connectionFactory = connectionFactory
+	private readonly IDataConnectionFactory _connectionFactory = connectionFactory
 		?? throw new ArgumentNullException(nameof(connectionFactory));
 
 	/// <inheritdoc />
-	public async Task<IDataDbConnectionScope> CreateScopeAsync(CancellationToken cancellationToken = default)
+	public async Task<IDataConnectionScope> CreateScopeAsync(CancellationToken cancellationToken = default)
 	{
 		DbConnection connection = await _connectionFactory
 			.CreateOpenConnectionAsync(cancellationToken)
 			.ConfigureAwait(false);
 
-		return new DataDbConnectionScope(connection);
+		return new DataConnectionScope(connection);
 	}
 
 	/// <inheritdoc />
-	public IDataDbConnectionScope CreateScope()
+	public IDataConnectionScope CreateScope()
 	{
 		DbConnection connection = _connectionFactory.CreateOpenConnection();
-		return new DataDbConnectionScope(connection);
+		return new DataConnectionScope(connection);
 	}
 }

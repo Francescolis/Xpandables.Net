@@ -1,4 +1,4 @@
-/*******************************************************************************
+﻿/*******************************************************************************
  * Copyright (C) 2025-2026 Kamersoft
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
@@ -26,27 +26,27 @@ namespace System.Data;
 /// allowing consumers to obtain factories based on connection names and, if needed, override the default provider using
 /// a provider invariant name. The interface supports both direct retrieval and safe attempts to obtain a factory
 /// without throwing exceptions, facilitating robust and customizable database connectivity strategies.</remarks>
-public interface IDataDbConnectionFactoryProvider
+public interface IDataConnectionFactoryProvider
 {
     /// <summary>
     /// Gets the connection factory for the specified connection name.
     /// </summary>
     /// <param name="name">The name of the connection.</param>
-    IDataDbConnectionFactory GetFactory(string name);
+    IDataConnectionFactory GetFactory(string name);
 
     /// <summary>
     /// Gets the connection factory for the specified connection name and provider override.
     /// </summary>
     /// <param name="name">The name of the connection.</param>
     /// <param name="providerInvariantName">The provider invariant name to override the default provider.</param>
-    IDataDbConnectionFactory GetFactory(string name, string providerInvariantName);
+    IDataConnectionFactory GetFactory(string name, string providerInvariantName);
 
     /// <summary>
     /// Tries to get the connection factory for the specified connection name.
     /// </summary>
     /// <param name="name">The name of the connection.</param>
     /// <param name="factory">When this method returns, contains the connection factory associated with the specified name, if the name is found; otherwise, null.</param>
-    bool TryGetFactory(string name, [NotNullWhen(true)] out IDataDbConnectionFactory? factory);
+    bool TryGetFactory(string name, [NotNullWhen(true)] out IDataConnectionFactory? factory);
 
     /// <summary>
     /// Tries to get the connection factory for the specified connection name and provider override.
@@ -54,5 +54,5 @@ public interface IDataDbConnectionFactoryProvider
     /// <param name="name">The name of the connection.</param>
     /// <param name="providerInvariantName">The provider invariant name to override the default provider.</param>
     /// <param name="factory">When this method returns, contains the connection factory associated with the specified name and provider, if the name is found; otherwise, null.</param>
-    bool TryGetFactory(string name, string providerInvariantName, [NotNullWhen(true)] out IDataDbConnectionFactory? factory);
+    bool TryGetFactory(string name, string providerInvariantName, [NotNullWhen(true)] out IDataConnectionFactory? factory);
 }

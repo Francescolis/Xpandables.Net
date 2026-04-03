@@ -1,4 +1,4 @@
-/*******************************************************************************
+ï»¿/*******************************************************************************
  * Copyright (C) 2025-2026 Kamersoft
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
@@ -78,7 +78,7 @@ public sealed class DataCommandInterceptorTests : IDisposable
 	public async Task WhenInsertAsyncThenInterceptorReceivesNonQueryContext()
 	{
 		var recording = new RecordingCommandInterceptor();
-		using var scope = new DataDbConnectionScope(_connection);
+		using var scope = new DataConnectionScope(_connection);
 		using var repo = new DataRepository<Product>(scope, new MsDataSqlBuilder(), new DataSqlMapper(), recording);
 
 		var product = new Product { Id = 1, Name = "Widget", Price = 9.99 };
@@ -101,7 +101,7 @@ public sealed class DataCommandInterceptorTests : IDisposable
 	public async Task WhenQueryCountAsyncThenInterceptorReceivesScalarContext()
 	{
 		var recording = new RecordingCommandInterceptor();
-		using var scope = new DataDbConnectionScope(_connection);
+		using var scope = new DataConnectionScope(_connection);
 		using var repo = new DataRepository<Product>(scope, new MsDataSqlBuilder(), new DataSqlMapper(), recording);
 
 		DataSpecification<Product, Product> spec = DataSpecification
@@ -122,7 +122,7 @@ public sealed class DataCommandInterceptorTests : IDisposable
 	public async Task WhenCommandFailsThenInterceptorReceivesFailedCallback()
 	{
 		var recording = new RecordingCommandInterceptor();
-		using var scope = new DataDbConnectionScope(_connection);
+		using var scope = new DataConnectionScope(_connection);
 		using var repo = new DataRepository<Product>(scope, new MsDataSqlBuilder(), new DataSqlMapper(), recording);
 
 		// Execute raw SQL that will fail
@@ -150,7 +150,7 @@ public sealed class DataCommandInterceptorTests : IDisposable
 	public async Task WhenCommandSucceedsThenInterceptorReceivesExecutedWithDuration()
 	{
 		var recording = new RecordingCommandInterceptor();
-		using var scope = new DataDbConnectionScope(_connection);
+		using var scope = new DataConnectionScope(_connection);
 		using var repo = new DataRepository<Product>(scope, new MsDataSqlBuilder(), new DataSqlMapper(), recording);
 
 		await repo.ExecuteAsync("INSERT INTO Product (Id, Name, Price) VALUES (1, 'Test', 5.0)");
@@ -166,7 +166,7 @@ public sealed class DataCommandInterceptorTests : IDisposable
 	public async Task WhenQueryRawAsyncThenInterceptorReceivesReaderContext()
 	{
 		var recording = new RecordingCommandInterceptor();
-		using var scope = new DataDbConnectionScope(_connection);
+		using var scope = new DataConnectionScope(_connection);
 		using var repo = new DataRepository<Product>(scope, new MsDataSqlBuilder(), new DataSqlMapper(), recording);
 
 		await repo.ExecuteAsync("INSERT INTO Product (Id, Name, Price) VALUES (1, 'Test', 5.0)");
@@ -189,7 +189,7 @@ public sealed class DataCommandInterceptorTests : IDisposable
 	public void WhenUnitOfWorkWithInterceptorThenRepositoryUsesIt()
 	{
 		var recording = new RecordingCommandInterceptor();
-		using var scope = new DataDbConnectionScope(_connection);
+		using var scope = new DataConnectionScope(_connection);
 		using var uow = new DataUnitOfWork(new TestScopeFactory(scope), new MsDataSqlBuilder(), new DataSqlMapper(), recording);
 
 		IDataRepository<Product> repo = uow.GetRepository<Product>();
@@ -200,7 +200,7 @@ public sealed class DataCommandInterceptorTests : IDisposable
 	[Fact]
 	public void WhenUnitOfWorkWithoutInterceptorThenUsesDefault()
 	{
-		using var scope = new DataDbConnectionScope(_connection);
+		using var scope = new DataConnectionScope(_connection);
 		using var uow = new DataUnitOfWork(new TestScopeFactory(scope), new MsDataSqlBuilder(), new DataSqlMapper());
 
 		IDataRepository<Product> repo = uow.GetRepository<Product>();
@@ -294,10 +294,10 @@ public sealed class DataCommandInterceptorTests : IDisposable
 		ServiceProvider provider = services.BuildServiceProvider();
 		IDataCommandInterceptor interceptor = provider.GetRequiredService<IDataCommandInterceptor>();
 
-		using var scope = new DataDbConnectionScope(_connection);
+		using var scope = new DataConnectionScope(_connection);
 		using var repo = new DataRepository<Product>(scope, new MsDataSqlBuilder(), new DataSqlMapper(), interceptor);
 
-		// Should not throw — logging interceptor handles all callbacks
+		// Should not throw â€” logging interceptor handles all callbacks
 		await repo.ExecuteAsync("INSERT INTO Product (Id, Name, Price) VALUES (1, 'Test', 5.0)");
 	}
 
@@ -311,10 +311,10 @@ public sealed class DataCommandInterceptorTests : IDisposable
 		ServiceProvider provider = services.BuildServiceProvider();
 		IDataCommandInterceptor interceptor = provider.GetRequiredService<IDataCommandInterceptor>();
 
-		using var scope = new DataDbConnectionScope(_connection);
+		using var scope = new DataConnectionScope(_connection);
 		using var repo = new DataRepository<Product>(scope, new MsDataSqlBuilder(), new DataSqlMapper(), interceptor);
 
-		// Should not throw — sensitive data logging enabled
+		// Should not throw â€” sensitive data logging enabled
 		await repo.ExecuteAsync("INSERT INTO Product (Id, Name, Price) VALUES (2, 'Sensitive', 10.0)");
 	}
 
@@ -370,11 +370,11 @@ public sealed class DataCommandInterceptorTests : IDisposable
 		internal sealed record FailedRecord(DataCommandContext Context, TimeSpan Duration, Exception Exception);
 	}
 
-	private sealed class TestScopeFactory(IDataDbConnectionScope scope) : IDataDbConnectionScopeFactory
+	private sealed class TestScopeFactory(IDataConnectionScope scope) : IDataConnectionScopeFactory
 	{
-		public IDataDbConnectionScope CreateScope() => scope;
+		public IDataConnectionScope CreateScope() => scope;
 
-		public Task<IDataDbConnectionScope> CreateScopeAsync(CancellationToken cancellationToken = default)
+		public Task<IDataConnectionScope> CreateScopeAsync(CancellationToken cancellationToken = default)
 			=> Task.FromResult(scope);
 	}
 }

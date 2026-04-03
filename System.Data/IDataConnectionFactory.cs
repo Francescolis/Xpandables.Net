@@ -1,4 +1,4 @@
-/*******************************************************************************
+﻿/*******************************************************************************
  * Copyright (C) 2025-2026 Kamersoft
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
@@ -25,9 +25,9 @@ namespace System.Data;
 /// Implementations of this interface should use <see cref="DbProviderFactories"/> to create
 /// connections based on the registered provider. The factory is responsible for creating
 /// connections but not for managing their lifecycle - that responsibility belongs to
-/// <see cref="IDataDbConnectionScope"/>.
+/// <see cref="IDataConnectionScope"/>.
 /// </remarks>
-public interface IDataDbConnectionFactory
+public interface IDataConnectionFactory
 {
 	/// <summary>
 	/// Gets the invariant name of the database provider.

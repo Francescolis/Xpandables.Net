@@ -1,4 +1,4 @@
-/*******************************************************************************
+﻿/*******************************************************************************
  * Copyright (C) 2025-2026 Kamersoft
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
@@ -38,7 +38,7 @@ public sealed class DbConnectionScopeTests : IDisposable
     [Fact]
     public void WhenBeginTransactionThenHasActiveTransactionIsTrue()
     {
-        var scope = new DataDbConnectionScope(_connection);
+        var scope = new DataConnectionScope(_connection);
 
 		IDataTransaction transaction = scope.BeginTransaction();
 
@@ -49,7 +49,7 @@ public sealed class DbConnectionScopeTests : IDisposable
     [Fact]
     public async Task WhenBeginTransactionAsyncThenHasActiveTransactionIsTrue()
     {
-        var scope = new DataDbConnectionScope(_connection);
+        var scope = new DataConnectionScope(_connection);
 
 		IDataTransaction transaction = await scope.BeginTransactionAsync();
 
@@ -60,7 +60,7 @@ public sealed class DbConnectionScopeTests : IDisposable
     [Fact]
     public void WhenTwoActiveTransactionsThenThrowsInvalidOperationException()
     {
-        var scope = new DataDbConnectionScope(_connection);
+        var scope = new DataConnectionScope(_connection);
         scope.BeginTransaction();
 
 		Func<IDataTransaction> act = () => scope.BeginTransaction();
@@ -72,7 +72,7 @@ public sealed class DbConnectionScopeTests : IDisposable
     [Fact]
     public void WhenTransactionCommittedThenNewTransactionAllowed()
     {
-        var scope = new DataDbConnectionScope(_connection);
+        var scope = new DataConnectionScope(_connection);
 
 		IDataTransaction first = scope.BeginTransaction();
         first.Commit();
@@ -85,7 +85,7 @@ public sealed class DbConnectionScopeTests : IDisposable
     [Fact]
     public void WhenTransactionRolledBackThenNewTransactionAllowed()
     {
-        var scope = new DataDbConnectionScope(_connection);
+        var scope = new DataConnectionScope(_connection);
 
 		IDataTransaction first = scope.BeginTransaction();
         first.Rollback();
@@ -98,7 +98,7 @@ public sealed class DbConnectionScopeTests : IDisposable
     [Fact]
     public void WhenCreateCommandWithActiveTransactionThenCommandHasTransaction()
     {
-        var scope = new DataDbConnectionScope(_connection);
+        var scope = new DataConnectionScope(_connection);
 		IDataTransaction transaction = scope.BeginTransaction();
 
 		DbCommand command = scope.CreateCommand();
@@ -109,7 +109,7 @@ public sealed class DbConnectionScopeTests : IDisposable
     [Fact]
     public void WhenCreateCommandWithoutTransactionThenCommandHasNoTransaction()
     {
-        var scope = new DataDbConnectionScope(_connection);
+        var scope = new DataConnectionScope(_connection);
 
 		DbCommand command = scope.CreateCommand();
 
@@ -119,7 +119,7 @@ public sealed class DbConnectionScopeTests : IDisposable
     [Fact]
     public void WhenCreateCommandWithQueryResultThenCommandHasSqlAndParameters()
     {
-        var scope = new DataDbConnectionScope(_connection);
+        var scope = new DataConnectionScope(_connection);
         var queryResult = new SqlQueryResult("SELECT 1 WHERE @p0 = 1", [new SqlParameter("p0", 1)]);
 
 		DbCommand command = scope.CreateCommand(queryResult);
@@ -131,7 +131,7 @@ public sealed class DbConnectionScopeTests : IDisposable
     [Fact]
     public void WhenDisposedThenConnectionPropertyThrowsObjectDisposedException()
     {
-        var scope = new DataDbConnectionScope(_connection);
+        var scope = new DataConnectionScope(_connection);
 
         scope.Dispose();
 
@@ -142,7 +142,7 @@ public sealed class DbConnectionScopeTests : IDisposable
     [Fact]
     public void WhenDisposedThenBeginTransactionThrowsObjectDisposedException()
     {
-        var scope = new DataDbConnectionScope(_connection);
+        var scope = new DataConnectionScope(_connection);
 
         scope.Dispose();
 
@@ -153,7 +153,7 @@ public sealed class DbConnectionScopeTests : IDisposable
     [Fact]
     public void WhenDisposedThenCreateCommandThrowsObjectDisposedException()
     {
-        var scope = new DataDbConnectionScope(_connection);
+        var scope = new DataConnectionScope(_connection);
 
         scope.Dispose();
 
@@ -164,7 +164,7 @@ public sealed class DbConnectionScopeTests : IDisposable
     [Fact]
     public void WhenNoTransactionThenHasActiveTransactionIsFalse()
     {
-        var scope = new DataDbConnectionScope(_connection);
+        var scope = new DataConnectionScope(_connection);
 
         scope.HasActiveTransaction.Should().BeFalse();
         scope.CurrentTransaction.Should().BeNull();
@@ -173,7 +173,7 @@ public sealed class DbConnectionScopeTests : IDisposable
     [Fact]
     public void WhenTransactionCommittedThenCurrentTransactionIsNull()
     {
-        var scope = new DataDbConnectionScope(_connection);
+        var scope = new DataConnectionScope(_connection);
 
 		IDataTransaction transaction = scope.BeginTransaction();
         transaction.Commit();

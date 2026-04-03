@@ -1,4 +1,4 @@
-/*******************************************************************************
+﻿/*******************************************************************************
  * Copyright (C) 2025-2026 Kamersoft
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
@@ -45,7 +45,7 @@ namespace System.Data;
 /// await transaction.CommitAsync(cancellationToken);
 /// </code>
 /// </example>
-public interface IDataDbConnectionScope : IDisposable, IAsyncDisposable
+public interface IDataConnectionScope : IDisposable, IAsyncDisposable
 {
 	/// <summary>
 	/// Gets the database connection managed by this scope.

@@ -1,4 +1,4 @@
-/*******************************************************************************
+﻿/*******************************************************************************
  * Copyright (C) 2025-2026 Kamersoft
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
@@ -30,20 +30,20 @@ namespace System.Data;
 /// <remarks>This class manages a collection of database connection factories, allowing retrieval based on
 /// connection string names and provider invariant names. It automatically clears the factory cache when the
 /// configuration changes, ensuring that the latest settings are used.</remarks>
-public sealed class DataDbConnectionFactoryProvider : IDataDbConnectionFactoryProvider, IDisposable
+public sealed class DataConnectionFactoryProvider : IDataConnectionFactoryProvider, IDisposable
 {
 	private readonly IConfiguration _configuration;
-	private readonly ConcurrentDictionary<string, IDataDbConnectionFactory> _factories;
+	private readonly ConcurrentDictionary<string, IDataConnectionFactory> _factories;
 	private readonly IDisposable _reloadSubscription;
 
 	/// <summary>
-	/// Initializes a new instance of the <see cref="DataDbConnectionFactoryProvider"/> class.
+	/// Initializes a new instance of the <see cref="DataConnectionFactoryProvider"/> class.
 	/// </summary>
 	/// <param name="configuration">The application configuration.</param>
-	public DataDbConnectionFactoryProvider(IConfiguration configuration)
+	public DataConnectionFactoryProvider(IConfiguration configuration)
 	{
 		_configuration = configuration ?? throw new ArgumentNullException(nameof(configuration));
-		_factories = new ConcurrentDictionary<string, IDataDbConnectionFactory>(StringComparer.OrdinalIgnoreCase);
+		_factories = new ConcurrentDictionary<string, IDataConnectionFactory>(StringComparer.OrdinalIgnoreCase);
 
 		_reloadSubscription = ChangeToken.OnChange(
 			() => _configuration.GetReloadToken(),
@@ -51,10 +51,10 @@ public sealed class DataDbConnectionFactoryProvider : IDataDbConnectionFactoryPr
 	}
 
 	/// <inheritdoc />
-	public IDataDbConnectionFactory GetFactory(string name)
+	public IDataConnectionFactory GetFactory(string name)
 	{
 		ArgumentNullException.ThrowIfNull(name);
-		if (TryGetFactory(name, out IDataDbConnectionFactory? factory))
+		if (TryGetFactory(name, out IDataConnectionFactory? factory))
 		{
 			return factory;
 		}
@@ -63,12 +63,12 @@ public sealed class DataDbConnectionFactoryProvider : IDataDbConnectionFactoryPr
 	}
 
 	/// <inheritdoc />
-	public IDataDbConnectionFactory GetFactory(string name, string providerInvariantName)
+	public IDataConnectionFactory GetFactory(string name, string providerInvariantName)
 	{
 		ArgumentNullException.ThrowIfNull(name);
 		ArgumentException.ThrowIfNullOrWhiteSpace(providerInvariantName);
 
-		if (!TryGetFactory(name, providerInvariantName, out IDataDbConnectionFactory? factory))
+		if (!TryGetFactory(name, providerInvariantName, out IDataConnectionFactory? factory))
 		{
 			throw new InvalidOperationException($"No connection string named '{name}' was found.");
 		}
@@ -77,7 +77,7 @@ public sealed class DataDbConnectionFactoryProvider : IDataDbConnectionFactoryPr
 	}
 
 	/// <inheritdoc />
-	public bool TryGetFactory(string name, [NotNullWhen(true)] out IDataDbConnectionFactory? factory)
+	public bool TryGetFactory(string name, [NotNullWhen(true)] out IDataConnectionFactory? factory)
 	{
 		ArgumentNullException.ThrowIfNull(name);
 
@@ -92,13 +92,13 @@ public sealed class DataDbConnectionFactoryProvider : IDataDbConnectionFactoryPr
 		string cacheKey = $"{name}|{resolvedProvider}";
 
 		factory = _factories.GetOrAdd(cacheKey,
-			_ => new DataDbConnectionFactory(resolvedProvider, connectionString));
+			_ => new DataConnectionFactory(resolvedProvider, connectionString));
 
 		return true;
 	}
 
 	/// <inheritdoc />
-	public bool TryGetFactory(string name, string providerInvariantName, [NotNullWhen(true)] out IDataDbConnectionFactory? factory)
+	public bool TryGetFactory(string name, string providerInvariantName, [NotNullWhen(true)] out IDataConnectionFactory? factory)
 	{
 		ArgumentNullException.ThrowIfNull(name);
 
@@ -113,7 +113,7 @@ public sealed class DataDbConnectionFactoryProvider : IDataDbConnectionFactoryPr
 		string cacheKey = $"{name}|{resolvedProvider}";
 
 		factory = _factories.GetOrAdd(cacheKey,
-			_ => new DataDbConnectionFactory(resolvedProvider, connectionString));
+			_ => new DataConnectionFactory(resolvedProvider, connectionString));
 
 		return true;
 	}

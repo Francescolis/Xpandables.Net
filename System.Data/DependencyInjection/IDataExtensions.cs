@@ -75,7 +75,7 @@ public static class IDataExtensions
 		public IServiceCollection AddXDataDbConnectionFactoryProvider()
 		{
 			ArgumentNullException.ThrowIfNull(services);
-			return services.AddXDataDbConnectionFactoryProvider<DataDbConnectionFactoryProvider>();
+			return services.AddXDataDbConnectionFactoryProvider<DataConnectionFactoryProvider>();
 		}
 
 		/// <summary>
@@ -88,7 +88,7 @@ public static class IDataExtensions
 		public IServiceCollection AddXDataDbConnectionScopeFactoryProvider()
 		{
 			ArgumentNullException.ThrowIfNull(services);
-			return services.AddXDataDbConnectionScopeFactoryProvider<DataDbConnectionScopeFactoryProvider>();
+			return services.AddXDataDbConnectionScopeFactoryProvider<DataConnectionScopeFactoryProvider>();
 		}
 
 		/// <summary>
@@ -103,10 +103,10 @@ public static class IDataExtensions
 		/// <returns>The IServiceCollection instance with the provider registered, to support method chaining.</returns>
 		public IServiceCollection AddXDataDbConnectionFactoryProvider
 			<[DynamicallyAccessedMembers(DynamicallyAccessedMemberTypes.PublicConstructors)] TProvider>()
-			where TProvider : class, IDataDbConnectionFactoryProvider
+			where TProvider : class, IDataConnectionFactoryProvider
 		{
 			ArgumentNullException.ThrowIfNull(services);
-			services.TryAddSingleton<IDataDbConnectionFactoryProvider, TProvider>();
+			services.TryAddSingleton<IDataConnectionFactoryProvider, TProvider>();
 			return services;
 		}
 
@@ -121,10 +121,10 @@ public static class IDataExtensions
 		/// <returns>The IServiceCollection instance, to allow for method chaining.</returns>
 		public IServiceCollection AddXDataDbConnectionScopeFactoryProvider
 			<[DynamicallyAccessedMembers(DynamicallyAccessedMemberTypes.PublicConstructors)] TProvider>()
-			where TProvider : class, IDataDbConnectionScopeFactoryProvider
+			where TProvider : class, IDataConnectionScopeFactoryProvider
 		{
 			ArgumentNullException.ThrowIfNull(services);
-			services.TryAddSingleton<IDataDbConnectionScopeFactoryProvider, TProvider>();
+			services.TryAddSingleton<IDataConnectionScopeFactoryProvider, TProvider>();
 			return services;
 		}
 
@@ -142,8 +142,8 @@ public static class IDataExtensions
 		{
 			ArgumentNullException.ThrowIfNull(services);
 			ArgumentException.ThrowIfNullOrWhiteSpace(connectionString);
-			services.TryAddSingleton<IDataDbConnectionFactory>(
-				_ => new DataDbConnectionFactory(DbProviders.MsSqlServer.InvariantName, connectionString));
+			services.TryAddSingleton<IDataConnectionFactory>(
+				_ => new DataConnectionFactory(DbProviders.MsSqlServer.InvariantName, connectionString));
 			return services;
 		}
 
@@ -162,8 +162,8 @@ public static class IDataExtensions
 		{
 			ArgumentNullException.ThrowIfNull(services);
 			ArgumentException.ThrowIfNullOrWhiteSpace(connectionString);
-			services.TryAddSingleton<IDataDbConnectionFactory>(
-				_ => new DataDbConnectionFactory(DbProviders.PostgreSql.InvariantName, connectionString));
+			services.TryAddSingleton<IDataConnectionFactory>(
+				_ => new DataConnectionFactory(DbProviders.PostgreSql.InvariantName, connectionString));
 			return services;
 		}
 
@@ -181,8 +181,8 @@ public static class IDataExtensions
 		{
 			ArgumentNullException.ThrowIfNull(services);
 			ArgumentException.ThrowIfNullOrWhiteSpace(connectionString);
-			services.TryAddSingleton<IDataDbConnectionFactory>(
-				_ => new DataDbConnectionFactory(DbProviders.MySql.InvariantName, connectionString));
+			services.TryAddSingleton<IDataConnectionFactory>(
+				_ => new DataConnectionFactory(DbProviders.MySql.InvariantName, connectionString));
 			return services;
 		}
 
@@ -198,8 +198,8 @@ public static class IDataExtensions
 			ArgumentException.ThrowIfNullOrWhiteSpace(providerInvariantName);
 			ArgumentException.ThrowIfNullOrWhiteSpace(connectionString);
 
-			services.TryAddSingleton<IDataDbConnectionFactory>(
-				_ => new DataDbConnectionFactory(providerInvariantName, connectionString));
+			services.TryAddSingleton<IDataConnectionFactory>(
+				_ => new DataConnectionFactory(providerInvariantName, connectionString));
 
 			return services;
 		}
@@ -210,10 +210,10 @@ public static class IDataExtensions
 		/// <typeparam name="TFactory">The connection factory type.</typeparam>
 		/// <returns>The <see cref="IServiceCollection"/> instance for chaining.</returns>
 		public IServiceCollection AddXDataDbConnectionFactory<[DynamicallyAccessedMembers(DynamicallyAccessedMemberTypes.PublicConstructors)] TFactory>()
-			where TFactory : class, IDataDbConnectionFactory
+			where TFactory : class, IDataConnectionFactory
 		{
 			ArgumentNullException.ThrowIfNull(services);
-			return services.AddSingleton<IDataDbConnectionFactory, TFactory>();
+			return services.AddSingleton<IDataConnectionFactory, TFactory>();
 		}
 
 		/// <summary>
@@ -223,7 +223,7 @@ public static class IDataExtensions
 		public IServiceCollection AddXDataDbConnectionScopeFactory()
 		{
 			ArgumentNullException.ThrowIfNull(services);
-			return services.AddSingleton<IDataDbConnectionScopeFactory, DataDbConnectionScopeFactory>();
+			return services.AddSingleton<IDataConnectionScopeFactory, DataDbConnectionScopeFactory>();
 		}
 
 		/// <summary>
@@ -238,7 +238,7 @@ public static class IDataExtensions
 		{
 			ArgumentNullException.ThrowIfNull(services);
 			return services.AddXDataDbConnectionScope(sp =>
-				sp.GetRequiredService<IDataDbConnectionScopeFactory>().CreateScope());
+				sp.GetRequiredService<IDataConnectionScopeFactory>().CreateScope());
 		}
 
 		/// <summary>
@@ -249,7 +249,7 @@ public static class IDataExtensions
 		/// connections in a scoped manner.</remarks>
 		/// <param name="factory">A factory function that creates an instance of IDataDbConnectionScope. This parameter cannot be null.</param>
 		/// <returns>The IServiceCollection instance to allow for method chaining.</returns>
-		public IServiceCollection AddXDataDbConnectionScope(Func<IServiceProvider, IDataDbConnectionScope> factory)
+		public IServiceCollection AddXDataDbConnectionScope(Func<IServiceProvider, IDataConnectionScope> factory)
 		{
 			ArgumentNullException.ThrowIfNull(services);
 			ArgumentNullException.ThrowIfNull(factory);
@@ -481,18 +481,18 @@ public static class IDataExtensions
 		/// <param name="factory">A factory function that provides an instance of IDataDbConnectionScope for each repository scope. Cannot be null.</param>
 		/// <returns>The IServiceCollection instance, allowing for method chaining during service configuration.</returns>
 		public IServiceCollection AddXDataRepository<[DynamicallyAccessedMembers(DynamicallyAccessedMemberTypes.PublicProperties)] TData>(
-			Func<IServiceProvider, IDataDbConnectionScope> factory)
+			Func<IServiceProvider, IDataConnectionScope> factory)
 			where TData : class
 		{
 			ArgumentNullException.ThrowIfNull(services);
 			ArgumentNullException.ThrowIfNull(factory);
 
 			ObjectFactory<DataRepository<TData>> objectFactory =
-				ActivatorUtilities.CreateFactory<DataRepository<TData>>([typeof(IDataDbConnectionScope)]);
+				ActivatorUtilities.CreateFactory<DataRepository<TData>>([typeof(IDataConnectionScope)]);
 
 			services.AddScoped<IDataRepository<TData>>(provider =>
 			{
-				IDataDbConnectionScope dbConnectionScope = factory(provider);
+				IDataConnectionScope dbConnectionScope = factory(provider);
 				return objectFactory(provider, [dbConnectionScope]);
 			});
 
@@ -531,7 +531,7 @@ public static class IDataExtensions
 		/// <returns>The updated IServiceCollection instance, allowing for method chaining.</returns>
 		public IServiceCollection AddXDataRepositoryKeyed<[DynamicallyAccessedMembers(DynamicallyAccessedMemberTypes.PublicProperties)] TData>(
 			string key,
-			Func<IServiceProvider, IDataDbConnectionScope> factory)
+			Func<IServiceProvider, IDataConnectionScope> factory)
 			where TData : class
 		{
 			ArgumentNullException.ThrowIfNull(services);
@@ -539,11 +539,11 @@ public static class IDataExtensions
 			ArgumentNullException.ThrowIfNull(factory);
 
 			ObjectFactory<DataRepository<TData>> objectFactory =
-				ActivatorUtilities.CreateFactory<DataRepository<TData>>([typeof(IDataDbConnectionScope)]);
+				ActivatorUtilities.CreateFactory<DataRepository<TData>>([typeof(IDataConnectionScope)]);
 
 			services.AddScoped<IDataRepository<TData>>(provider =>
 			{
-				IDataDbConnectionScope dbConnectionScope = factory(provider);
+				IDataConnectionScope dbConnectionScope = factory(provider);
 				return objectFactory(provider, [dbConnectionScope]);
 			});
 
@@ -607,7 +607,7 @@ public static class IDataExtensions
 		/// connections for the repository.</param>
 		/// <returns>The IServiceCollection instance to allow for method chaining.</returns>
 		public IServiceCollection AddXDataRepository<TRepository, [DynamicallyAccessedMembers(DynamicallyAccessedMemberTypes.PublicConstructors)] TImplementation>(
-			Func<IServiceProvider, IDataDbConnectionScope> factory)
+			Func<IServiceProvider, IDataConnectionScope> factory)
 			where TRepository : class, IDataRepository
 			where TImplementation : class, TRepository
 		{
@@ -615,11 +615,11 @@ public static class IDataExtensions
 			ArgumentNullException.ThrowIfNull(factory);
 
 			ObjectFactory<TImplementation> objectFactory =
-				ActivatorUtilities.CreateFactory<TImplementation>([typeof(IDataDbConnectionScope)]);
+				ActivatorUtilities.CreateFactory<TImplementation>([typeof(IDataConnectionScope)]);
 
 			services.AddScoped<TRepository>(provider =>
 			{
-				IDataDbConnectionScope dbConnectionScope = factory(provider);
+				IDataConnectionScope dbConnectionScope = factory(provider);
 				return objectFactory(provider, [dbConnectionScope]);
 			});
 
@@ -642,7 +642,7 @@ public static class IDataExtensions
 		/// <returns>The IServiceCollection instance with the keyed repository registration added, enabling method chaining.</returns>
 		public IServiceCollection AddXDataRepositoryKeyed<TRepository, [DynamicallyAccessedMembers(DynamicallyAccessedMemberTypes.PublicConstructors)] TImplementation>(
 			string key,
-			Func<IServiceProvider, IDataDbConnectionScope> factory)
+			Func<IServiceProvider, IDataConnectionScope> factory)
 			where TRepository : class, IDataRepository
 			where TImplementation : class, TRepository
 		{
@@ -651,11 +651,11 @@ public static class IDataExtensions
 			ArgumentNullException.ThrowIfNull(factory);
 
 			ObjectFactory<TImplementation> objectFactory =
-				ActivatorUtilities.CreateFactory<TImplementation>([typeof(IDataDbConnectionScope)]);
+				ActivatorUtilities.CreateFactory<TImplementation>([typeof(IDataConnectionScope)]);
 
 			services.AddKeyedScoped<TRepository>(key, (provider, _) =>
 			{
-				IDataDbConnectionScope dbConnectionScope = factory(provider);
+				IDataConnectionScope dbConnectionScope = factory(provider);
 				return objectFactory(provider, [dbConnectionScope]);
 			});
 

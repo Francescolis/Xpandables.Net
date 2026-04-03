@@ -1,4 +1,4 @@
-/*******************************************************************************
+﻿/*******************************************************************************
  * Copyright (C) 2025-2026 Kamersoft
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
@@ -38,7 +38,7 @@ public sealed class DataUnitOfWorkTests : IDisposable
 	[Fact]
 	public void WhenGetRepositoryThenReturnsSameInstanceForSameType()
 	{
-		using var scope = new DataDbConnectionScope(_connection);
+		using var scope = new DataConnectionScope(_connection);
 		using var uow = new DataUnitOfWork(new TestScopeFactory(scope), new MsDataSqlBuilder(), new DataSqlMapper());
 
 		IDataRepository<Person> repo1 = uow.GetRepository<Person>();
@@ -50,7 +50,7 @@ public sealed class DataUnitOfWorkTests : IDisposable
 	[Fact]
 	public void WhenGetRepositoryForDifferentTypesThenReturnsDifferentInstances()
 	{
-		using var scope = new DataDbConnectionScope(_connection);
+		using var scope = new DataConnectionScope(_connection);
 		using var uow = new DataUnitOfWork(new TestScopeFactory(scope), new MsDataSqlBuilder(), new DataSqlMapper());
 
 		IDataRepository<Person> personRepo = uow.GetRepository<Person>();
@@ -62,7 +62,7 @@ public sealed class DataUnitOfWorkTests : IDisposable
 	[Fact]
 	public void WhenDisposedThenGetRepositoryThrowsObjectDisposedException()
 	{
-		var scope = new DataDbConnectionScope(_connection);
+		var scope = new DataConnectionScope(_connection);
 		var uow = new DataUnitOfWork(new TestScopeFactory(scope), new MsDataSqlBuilder(), new DataSqlMapper());
 
 		uow.Dispose();
@@ -74,19 +74,19 @@ public sealed class DataUnitOfWorkTests : IDisposable
 	[Fact]
 	public void WhenDisposedThenConnectionScopeThrowsObjectDisposedException()
 	{
-		var scope = new DataDbConnectionScope(_connection);
+		var scope = new DataConnectionScope(_connection);
 		var uow = new DataUnitOfWork(new TestScopeFactory(scope), new MsDataSqlBuilder(), new DataSqlMapper());
 
 		uow.Dispose();
 
-		Func<IDataDbConnectionScope> act = () => _ = uow.ConnectionScope;
+		Func<IDataConnectionScope> act = () => _ = uow.ConnectionScope;
 		act.Should().Throw<ObjectDisposedException>();
 	}
 
 	[Fact]
 	public void WhenDisposedThenCurrentTransactionThrowsObjectDisposedException()
 	{
-		var scope = new DataDbConnectionScope(_connection);
+		var scope = new DataConnectionScope(_connection);
 		var uow = new DataUnitOfWork(new TestScopeFactory(scope), new MsDataSqlBuilder(), new DataSqlMapper());
 
 		uow.Dispose();
@@ -98,7 +98,7 @@ public sealed class DataUnitOfWorkTests : IDisposable
 	[Fact]
 	public void WhenDisposedThenHasActiveTransactionThrowsObjectDisposedException()
 	{
-		var scope = new DataDbConnectionScope(_connection);
+		var scope = new DataConnectionScope(_connection);
 		var uow = new DataUnitOfWork(new TestScopeFactory(scope), new MsDataSqlBuilder(), new DataSqlMapper());
 
 		uow.Dispose();
@@ -110,7 +110,7 @@ public sealed class DataUnitOfWorkTests : IDisposable
 	[Fact]
 	public void WhenBeginTransactionThenDelegatesToScope()
 	{
-		using var scope = new DataDbConnectionScope(_connection);
+		using var scope = new DataConnectionScope(_connection);
 		using var uow = new DataUnitOfWork(new TestScopeFactory(scope), new MsDataSqlBuilder(), new DataSqlMapper());
 
 		IDataTransaction transaction = uow.BeginTransaction();
@@ -123,7 +123,7 @@ public sealed class DataUnitOfWorkTests : IDisposable
 	[Fact]
 	public async Task WhenBeginTransactionAsyncThenDelegatesToScope()
 	{
-		using var scope = new DataDbConnectionScope(_connection);
+		using var scope = new DataConnectionScope(_connection);
 		using var uow = new DataUnitOfWork(new TestScopeFactory(scope), new MsDataSqlBuilder(), new DataSqlMapper());
 
 		IDataTransaction transaction = await uow.BeginTransactionAsync();
@@ -136,7 +136,7 @@ public sealed class DataUnitOfWorkTests : IDisposable
 	[Fact]
 	public void WhenNoTransactionThenHasActiveTransactionIsFalse()
 	{
-		using var scope = new DataDbConnectionScope(_connection);
+		using var scope = new DataConnectionScope(_connection);
 		using var uow = new DataUnitOfWork(new TestScopeFactory(scope), new MsDataSqlBuilder(), new DataSqlMapper());
 
 		uow.HasActiveTransaction.Should().BeFalse();
@@ -146,7 +146,7 @@ public sealed class DataUnitOfWorkTests : IDisposable
 	[Fact]
 	public async Task WhenDisposeAsyncThenDisposesScope()
 	{
-		var scope = new DataDbConnectionScope(_connection);
+		var scope = new DataConnectionScope(_connection);
 		var uow = new DataUnitOfWork(new TestScopeFactory(scope), new MsDataSqlBuilder(), new DataSqlMapper());
 
 		await uow.DisposeAsync();
@@ -158,7 +158,7 @@ public sealed class DataUnitOfWorkTests : IDisposable
 	[Fact]
 	public void WhenDisposedThenBeginTransactionThrowsObjectDisposedException()
 	{
-		var scope = new DataDbConnectionScope(_connection);
+		var scope = new DataConnectionScope(_connection);
 		var uow = new DataUnitOfWork(new TestScopeFactory(scope), new MsDataSqlBuilder(), new DataSqlMapper());
 
 		uow.Dispose();
@@ -180,11 +180,11 @@ public sealed class DataUnitOfWorkTests : IDisposable
 		public string City { get; set; } = string.Empty;
 	}
 
-	private sealed class TestScopeFactory(IDataDbConnectionScope scope) : IDataDbConnectionScopeFactory
+	private sealed class TestScopeFactory(IDataConnectionScope scope) : IDataConnectionScopeFactory
 	{
-		public IDataDbConnectionScope CreateScope() => scope;
+		public IDataConnectionScope CreateScope() => scope;
 
-		public Task<IDataDbConnectionScope> CreateScopeAsync(CancellationToken cancellationToken = default)
+		public Task<IDataConnectionScope> CreateScopeAsync(CancellationToken cancellationToken = default)
 			=> Task.FromResult(scope);
 	}
 }

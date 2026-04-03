@@ -1,4 +1,4 @@
-/*******************************************************************************
+﻿/*******************************************************************************
  * Copyright (C) 2025-2026 Kamersoft
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
@@ -17,24 +17,24 @@
 namespace System.Data;
 
 /// <summary>
-/// Defines a factory for creating <see cref="IDataDbConnectionScope"/> instances.
+/// Defines a factory for creating <see cref="IDataConnectionScope"/> instances.
 /// </summary>
 /// <remarks>
 /// Use this factory to create scoped connections that manage their own lifecycle.
 /// The factory is typically registered as a singleton in the dependency injection container.
 /// </remarks>
-public interface IDataDbConnectionScopeFactory
+public interface IDataConnectionScopeFactory
 {
 	/// <summary>
 	/// Creates a new connection scope asynchronously with an open connection.
 	/// </summary>
 	/// <param name="cancellationToken">A token to cancel the operation.</param>
 	/// <returns>A task representing the asynchronous operation, containing the connection scope.</returns>
-	Task<IDataDbConnectionScope> CreateScopeAsync(CancellationToken cancellationToken = default);
+	Task<IDataConnectionScope> CreateScopeAsync(CancellationToken cancellationToken = default);
 
 	/// <summary>
 	/// Creates a new connection scope synchronously with an open connection.
 	/// </summary>
 	/// <returns>The connection scope with an open connection.</returns>
-	IDataDbConnectionScope CreateScope();
+	IDataConnectionScope CreateScope();
 }

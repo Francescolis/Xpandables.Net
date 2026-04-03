@@ -1,4 +1,4 @@
-/*******************************************************************************
+﻿/*******************************************************************************
  * Copyright (C) 2025-2026 Kamersoft
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
@@ -25,27 +25,27 @@ namespace System.Data;
 /// provider invariant name to control which database provider is used. This interface is intended to abstract the
 /// creation and retrieval of connection scopes, allowing consumers to manage database lifetimes and contexts in a
 /// consistent manner.</remarks>
-public interface IDataDbConnectionScopeFactoryProvider
+public interface IDataConnectionScopeFactoryProvider
 {
 	/// <summary>
 	/// Gets the scope factory for the specified connection name.
 	/// </summary>
 	/// <param name="name">The name of the connection.</param>
-	IDataDbConnectionScopeFactory GetScopeFactory(string name);
+	IDataConnectionScopeFactory GetScopeFactory(string name);
 
 	/// <summary>
 	/// Gets the scope factory for the specified connection name and provider override.
 	/// </summary>
 	/// <param name="name">The name of the connection.</param>
 	/// <param name="providerInvariantName">The provider invariant name override.</param>
-	IDataDbConnectionScopeFactory GetScopeFactory(string name, string providerInvariantName);
+	IDataConnectionScopeFactory GetScopeFactory(string name, string providerInvariantName);
 
 	/// <summary>
 	/// Creates a new scope for the specified connection name.
 	/// </summary>
 	/// <param name="name">The name of the connection.</param>
 	/// <param name="cancellationToken">The cancellation token.</param>
-	Task<IDataDbConnectionScope> CreateScopeAsync(string name, CancellationToken cancellationToken = default);
+	Task<IDataConnectionScope> CreateScopeAsync(string name, CancellationToken cancellationToken = default);
 
 	/// <summary>
 	/// Creates a new scope for the specified connection name and provider override.
@@ -53,18 +53,18 @@ public interface IDataDbConnectionScopeFactoryProvider
 	/// <param name="name">The name of the connection.</param>
 	/// <param name="providerInvariantName">The provider invariant name override.</param>
 	/// <param name="cancellationToken">The cancellation token.</param>
-	Task<IDataDbConnectionScope> CreateScopeAsync(string name, string providerInvariantName, CancellationToken cancellationToken = default);
+	Task<IDataConnectionScope> CreateScopeAsync(string name, string providerInvariantName, CancellationToken cancellationToken = default);
 
 	/// <summary>
 	/// Creates a new scope for the specified connection name.
 	/// </summary>
 	/// <param name="name">The name of the connection.</param>
-	IDataDbConnectionScope CreateScope(string name);
+	IDataConnectionScope CreateScope(string name);
 
 	/// <summary>
 	/// Creates a new scope for the specified connection name and provider override.
 	/// </summary>
 	/// <param name="name">The name of the connection.</param>
 	/// <param name="providerInvariantName">The provider invariant name override.</param>
-	IDataDbConnectionScope CreateScope(string name, string providerInvariantName);
+	IDataConnectionScope CreateScope(string name, string providerInvariantName);
 }

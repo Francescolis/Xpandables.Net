@@ -1,4 +1,4 @@
-/*******************************************************************************
+﻿/*******************************************************************************
  * Copyright (C) 2025-2026 Kamersoft
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
@@ -19,7 +19,7 @@ using System.Data.Common;
 namespace System.Data;
 
 /// <summary>
-/// Provides a default implementation of <see cref="IDataDbConnectionFactory"/> that creates 
+/// Provides a default implementation of <see cref="IDataConnectionFactory"/> that creates 
 /// database connections using <see cref="DbProviderFactories"/>.
 /// </summary>
 /// <remarks>
@@ -33,7 +33,7 @@ namespace System.Data;
 /// <exception cref="ArgumentException">
 /// Thrown when <paramref name="providerInvariantName"/> or <paramref name="connectionString"/> is null or empty.
 /// </exception>
-public sealed class DataDbConnectionFactory(string providerInvariantName, string connectionString) : IDataDbConnectionFactory
+public sealed class DataConnectionFactory(string providerInvariantName, string connectionString) : IDataConnectionFactory
 {
 	private readonly DbProviderFactory _providerFactory = DbProviders.GetFactory(providerInvariantName);
 
