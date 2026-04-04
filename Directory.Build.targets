@@ -39,12 +39,12 @@
     <IsAotCompatible>true</IsAotCompatible>
 
     <!-- Versioning — single source of truth -->
-    <Version>10.0.2</Version>
-    <AssemblyVersion>10.0.2.0</AssemblyVersion>
-    <FileVersion>10.0.2.0</FileVersion>
-    <PackageVersion>10.0.2</PackageVersion>
+    <Version>10.0.3</Version>
+    <AssemblyVersion>10.0.3.0</AssemblyVersion>
+    <FileVersion>10.0.3.0</FileVersion>
+    <PackageVersion>10.0.3</PackageVersion>
   </PropertyGroup>
-  
+
   <!-- Shared packaging items for library projects -->
   <ItemGroup Condition="'$(IsPackable)' != 'false' And '$(OutputType)' != 'Exe'">
     <!--<Content Include="Xpandables.Net.ico" />-->
