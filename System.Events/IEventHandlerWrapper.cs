@@ -43,12 +43,20 @@ public interface IEventHandlerWrapper
 }
 
 /// <summary>
-/// Provides a singleton-safe wrapper that resolves event handlers from a new service scope on each invocation.
-/// This prevents the captive dependency anti-pattern by ensuring scoped handlers are never trapped
-/// inside a singleton wrapper.
+/// Provides a singleton-safe wrapper that resolves event handlers from the ambient request scope
+/// (via <see cref="RequestScopeAccessor"/>) when available, or from a new service scope as a fallback.
 /// </summary>
+/// <remarks>
+/// <para>When called within a request pipeline (where the <see cref="RequestScopeAccessor.Current"/>
+/// is set by the Mediator), handlers are resolved from the existing request scope. This ensures that
+/// scoped services (such as <c>IPendingIntegrationEventsBuffer</c>) are shared between pipeline decorators
+/// and domain event handlers.</para>
+/// <para>When no ambient scope is available (e.g., events published from a background service or
+/// outside a pipeline), a new scope is created via <see cref="IServiceScopeFactory"/> to prevent
+/// the captive dependency anti-pattern.</para>
+/// </remarks>
 /// <typeparam name="TEvent">The type of event to be handled. Must implement <see cref="IEvent"/> and be a reference type.</typeparam>
-/// <param name="serviceScopeFactory">The factory used to create service scopes for resolving scoped event handlers.</param>
+/// <param name="serviceScopeFactory">The factory used to create service scopes when no ambient scope is available.</param>
 public sealed class EventHandlerWrapper<TEvent>(IServiceScopeFactory serviceScopeFactory) : IEventHandlerWrapper
 	where TEvent : class, IEvent
 {
@@ -65,15 +73,29 @@ public sealed class EventHandlerWrapper<TEvent>(IServiceScopeFactory serviceScop
 			throw new ArgumentException($"Invalid event type. Expected {typeof(TEvent).Name}, but got {@event.GetType().Name}.", nameof(@event));
 		}
 
-		AsyncServiceScope scope = serviceScopeFactory.CreateAsyncScope();
-		await using (scope.ConfigureAwait(false))
+		IServiceProvider? ambient = RequestScopeAccessor.Current;
+		if (ambient is not null)
 		{
-			IEnumerable<IEventHandler<TEvent>> handlers = scope.ServiceProvider
+			IEnumerable<IEventHandler<TEvent>> handlers = ambient
 				.GetServices<IEventHandler<TEvent>>();
 
 			foreach (IEventHandler<TEvent> handler in handlers)
 			{
 				await handler.HandleAsync(instance, cancellationToken).ConfigureAwait(false);
+			}
+		}
+		else
+		{
+			AsyncServiceScope scope = serviceScopeFactory.CreateAsyncScope();
+			await using (scope.ConfigureAwait(false))
+			{
+				IEnumerable<IEventHandler<TEvent>> handlers = scope.ServiceProvider
+					.GetServices<IEventHandler<TEvent>>();
+
+				foreach (IEventHandler<TEvent> handler in handlers)
+				{
+					await handler.HandleAsync(instance, cancellationToken).ConfigureAwait(false);
+				}
 			}
 		}
 	}

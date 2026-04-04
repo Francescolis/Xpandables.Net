@@ -1,4 +1,4 @@
-/*******************************************************************************
+﻿/*******************************************************************************
  * Copyright (C) 2025-2026 Kamersoft
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
@@ -14,6 +14,7 @@
  * limitations under the License.
  *
 ********************************************************************************/
+using System.Events;
 using System.Results.Pipelines;
 using System.Results.Requests;
 
@@ -26,9 +27,12 @@ namespace System.Results.Tasks;
 /// handlers using dependency injection.
 /// </summary>
 /// <remarks>
-/// <para>This mediator is a pure dispatcher � it resolves the appropriate <see cref="IPipelineRequestHandler{TRequest}"/>
+/// <para>This mediator is a pure dispatcher — it resolves the appropriate <see cref="IPipelineRequestHandler{TRequest}"/>
 /// from the service provider and delegates execution entirely to the pipeline. Exception handling, validation, and
 /// cross-cutting concerns must be handled by pipeline decorators (e.g., <c>PipelineExceptionDecorator</c>).</para>
+/// <para>Before dispatching, the mediator publishes the current request-scoped <see cref="IServiceProvider"/>
+/// via <see cref="RequestScopeAccessor"/> so that singleton services (such as <c>EventHandlerWrapper&lt;TEvent&gt;</c>)
+/// can resolve scoped event handlers from the correct request scope instead of creating an isolated child scope.</para>
 /// <para><strong>Thread safety:</strong> This class is thread-safe. Each call to <see cref="SendAsync{TRequest}"/>
 /// or <see cref="SendAsync{TRequest, TResponse}"/> resolves a fresh <see cref="IPipelineRequestHandler{TRequest}"/>
 /// from the service provider. The resolved handler's <see cref="PipelineRequestHandler{TRequest}"/> pre-builds and
@@ -43,16 +47,18 @@ namespace System.Results.Tasks;
 public sealed class Mediator(IServiceProvider provider) : IMediator
 {
     /// <inheritdoc />
-    public Task<Result> SendAsync<TRequest>(
+    public async Task<Result> SendAsync<TRequest>(
         TRequest request, CancellationToken cancellationToken = default)
         where TRequest : class, IRequest
     {
         ArgumentNullException.ThrowIfNull(request);
 
+        using IDisposable scope = RequestScopeAccessor.BeginScope(provider);
+
         IPipelineRequestHandler<TRequest> handler =
             provider.GetRequiredService<IPipelineRequestHandler<TRequest>>();
 
-        return handler.HandleAsync(request, cancellationToken);
+        return await handler.HandleAsync(request, cancellationToken).ConfigureAwait(false);
     }
 
     /// <inheritdoc />
@@ -61,6 +67,8 @@ public sealed class Mediator(IServiceProvider provider) : IMediator
         where TRequest : class, IRequest<TResponse>
     {
         ArgumentNullException.ThrowIfNull(request);
+
+        using IDisposable scope = RequestScopeAccessor.BeginScope(provider);
 
         IPipelineRequestHandler<TRequest> handler =
             provider.GetRequiredService<IPipelineRequestHandler<TRequest>>();
