@@ -47,18 +47,15 @@ public static class IAsyncPagedRouteExtensions
     }
 
     /// <summary>
+    /// Adds an asynchronous paged endpoint filter to the builder configuration.
     /// </summary>
-    extension<TBuilder>(TBuilder builder)
-        where TBuilder : IEndpointConventionBuilder
-    {
-        /// <summary>
-        /// Adds an asynchronous paged endpoint filter to the builder configuration.
-        /// </summary>
-        /// <remarks>Use this method to enable support for paged asynchronous operations on endpoints.
-        /// This is typically used when implementing APIs that return large datasets in pages. The filter must be
-        /// compatible with the builder's endpoint configuration.</remarks>
-        /// <returns>The builder instance with the asynchronous paged filter applied.</returns>
-        public TBuilder WithXAsyncPagedFilterSupport() =>
-            builder.AddEndpointFilter<TBuilder, AsyncPagedEndpointFilter>();
-    }
+    /// <remarks>Use this method to enable support for paged asynchronous operations on endpoints.
+    /// This is typically used when implementing APIs that return large datasets in pages. The filter must be
+    /// compatible with the builder's endpoint configuration.</remarks>
+    /// <typeparam name="TBuilder">The type of the endpoint convention builder.</typeparam>
+    /// <param name="builder">The endpoint convention builder to apply the filter to.</param>
+    /// <returns>The builder instance with the asynchronous paged filter applied.</returns>
+    public static TBuilder WithXAsyncPagedFilterSupport<TBuilder>(this TBuilder builder)
+        where TBuilder : IEndpointConventionBuilder =>
+        builder.AddEndpointFilter<TBuilder, AsyncPagedEndpointFilter>();
 }

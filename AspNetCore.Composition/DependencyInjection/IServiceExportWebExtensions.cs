@@ -1,4 +1,4 @@
-/*******************************************************************************
+﻿/*******************************************************************************
  * Copyright (C) 2025-2026 Kamersoft
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
@@ -34,87 +34,87 @@ namespace Microsoft.Extensions.DependencyInjection;
 /// publishing applications; ensure that all required types are preserved if trimming is enabled.</remarks>
 public static class IServiceExportWebExtensions
 {
-	extension(WebApplication application)
+	/// <summary>
+	/// Uses the service exports with default options.
+	/// </summary>
+	/// <param name="application">The <see cref="WebApplication"/> to configure.</param>
+	/// <returns>The web application with applied service exports.</returns>
+	[RequiresAssemblyFiles]
+	[RequiresUnreferencedCode("UseXServiceExports uses MEF composition which relies on reflection.")]
+	[RequiresDynamicCode("UseXServiceExports uses MEF composition which relies on runtime code generation.")]
+	public static WebApplication UseXServiceExports(this WebApplication application)
 	{
-		/// <summary>
-		/// Uses the service exports with default options.
-		/// </summary>
-		/// <returns>The web application with applied service exports.</returns>
-		[RequiresAssemblyFiles]
-		[RequiresUnreferencedCode("UseXServiceExports uses MEF composition which relies on reflection.")]
-		[RequiresDynamicCode("UseXServiceExports uses MEF composition which relies on runtime code generation.")]
-		public WebApplication UseXServiceExports()
-		{
-			ArgumentNullException.ThrowIfNull(application);
-			return application.UseXServiceExports(_ => { });
-		}
+		ArgumentNullException.ThrowIfNull(application);
+		return application.UseXServiceExports(_ => { });
+	}
 
-		/// <summary>
-		/// Uses the service exports with specified options.
-		/// </summary>
-		/// <param name="configureOptions">The action to configure export options.</param>
-		/// <returns>The web application with applied service exports.</returns>
-		// ReSharper disable once MemberCanBePrivate.Global
-		[RequiresAssemblyFiles()]
-		[RequiresUnreferencedCode("UseXServiceExports uses MEF composition which relies on reflection.")]
-		[RequiresDynamicCode("UseXServiceExports uses MEF composition which relies on runtime code generation.")]
-		public WebApplication UseXServiceExports(Action<ExportOptions> configureOptions)
-		{
-			ArgumentNullException.ThrowIfNull(application);
-			ArgumentNullException.ThrowIfNull(configureOptions);
+	/// <summary>
+	/// Uses the service exports with specified options.
+	/// </summary>
+	/// <param name="application">The <see cref="WebApplication"/> to configure.</param>
+	/// <param name="configureOptions">The action to configure export options.</param>
+	/// <returns>The web application with applied service exports.</returns>
+	// ReSharper disable once MemberCanBePrivate.Global
+	[RequiresAssemblyFiles()]
+	[RequiresUnreferencedCode("UseXServiceExports uses MEF composition which relies on reflection.")]
+	[RequiresDynamicCode("UseXServiceExports uses MEF composition which relies on runtime code generation.")]
+	public static WebApplication UseXServiceExports(this WebApplication application, Action<ExportOptions> configureOptions)
+	{
+		ArgumentNullException.ThrowIfNull(application);
+		ArgumentNullException.ThrowIfNull(configureOptions);
 
-			ExportOptions options = new();
-			configureOptions(options);
+		ExportOptions options = new();
+		configureOptions(options);
 
-			IServiceExportExtensions.ApplyServiceExports<IUseServiceExport>(
-				options, exports =>
-				{
-					foreach (IUseServiceExport export in exports)
-					{
-						export.UseServices(application);
-					}
-				});
-
-			return application;
-		}
-
-		/// <summary>
-		/// Uses the specified assemblies to apply services to the web application.
-		/// </summary>
-		/// <param name="assemblies">The assemblies to scan for services.</param>
-		/// <returns>The web application with applied services.</returns>
-		[RequiresUnreferencedCode("UseXServices scans assemblies via reflection which is not compatible with trimming.")]
-		[RequiresDynamicCode("UseXServices uses Activator.CreateInstance which requires runtime code generation.")]
-		public WebApplication UseXServices(params IEnumerable<Assembly> assemblies)
-		{
-			ArgumentNullException.ThrowIfNull(application);
-			ArgumentNullException.ThrowIfNull(assemblies);
-
-			Assembly[] assembliesArray = assemblies as Assembly[] ?? [.. assemblies];
-			assembliesArray = assembliesArray is { Length: > 0 } ? assembliesArray : [Assembly.GetCallingAssembly()];
-
-			List<Type> types = [.. assembliesArray
-				.SelectMany(assembly => assembly.GetTypes())
-				.Where(type =>
-					type is
-					{
-						IsAbstract: false,
-						IsInterface: false,
-						IsGenericType: false
-					}
-					&& Array.Exists(type.GetInterfaces(),
-						t => !t.IsGenericType
-						&& t == typeof(IUseService)))];
-
-			foreach (Type type in types)
+		IServiceExportExtensions.ApplyServiceExports<IUseServiceExport>(
+			options, exports =>
 			{
-				if (Activator.CreateInstance(type) is IUseService useService)
+				foreach (IUseServiceExport export in exports)
 				{
-					useService.UseServices(application);
+					export.UseServices(application);
 				}
-			}
+			});
 
-			return application;
+		return application;
+	}
+
+	/// <summary>
+	/// Uses the specified assemblies to apply services to the web application.
+	/// </summary>
+	/// <param name="application">The <see cref="WebApplication"/> to configure.</param>
+	/// <param name="assemblies">The assemblies to scan for services.</param>
+	/// <returns>The web application with applied services.</returns>
+	[RequiresUnreferencedCode("UseXServices scans assemblies via reflection which is not compatible with trimming.")]
+	[RequiresDynamicCode("UseXServices uses Activator.CreateInstance which requires runtime code generation.")]
+	public static WebApplication UseXServices(this WebApplication application, params IEnumerable<Assembly> assemblies)
+	{
+		ArgumentNullException.ThrowIfNull(application);
+		ArgumentNullException.ThrowIfNull(assemblies);
+
+		Assembly[] assembliesArray = assemblies as Assembly[] ?? [.. assemblies];
+		assembliesArray = assembliesArray is { Length: > 0 } ? assembliesArray : [Assembly.GetCallingAssembly()];
+
+		List<Type> types = [.. assembliesArray
+			.SelectMany(assembly => assembly.GetTypes())
+			.Where(type =>
+				type is
+				{
+					IsAbstract: false,
+					IsInterface: false,
+					IsGenericType: false
+				}
+				&& Array.Exists(type.GetInterfaces(),
+					t => !t.IsGenericType
+					&& t == typeof(IUseService)))];
+
+		foreach (Type type in types)
+		{
+			if (Activator.CreateInstance(type) is IUseService useService)
+			{
+				useService.UseServices(application);
+			}
 		}
+
+		return application;
 	}
 }

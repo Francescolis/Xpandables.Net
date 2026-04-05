@@ -1,4 +1,4 @@
-/*******************************************************************************
+﻿/*******************************************************************************
  * Copyright (C) 2025-2026 Kamersoft
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
@@ -24,21 +24,19 @@ namespace Microsoft.Extensions.DependencyInjection;
 /// </summary>
 public static class LazyResolveExtensions
 {
-    extension(IServiceCollection services)
+    /// <summary>
+    /// Registers support for resolving <see cref="Lazy{T}"/> dependencies using the <see cref="LazyResolved{T}"/> implementation in the service
+    /// collection.
+    /// </summary>
+    /// <remarks>Use this method to allow constructor injection of <see cref="Lazy{T}"/> in services registered with
+    /// the dependency injection container. Each <see cref="Lazy{T}"/> will resolve its value from the container when first
+    /// accessed.</remarks>
+    /// <param name="services">The <see cref="IServiceCollection"/> to add the services to.</param>
+    /// <returns>The IServiceCollection instance with <see cref="Lazy{T}"/> registration added. This enables <see cref="Lazy{T}"/> to be injected and
+    /// resolved by the dependency injection container.</returns>
+    public static IServiceCollection AddXLazyResolved(this IServiceCollection services)
     {
-        /// <summary>
-        /// Registers support for resolving <see cref="Lazy{T}"/> dependencies using the <see cref="LazyResolved{T}"/> implementation in the service
-        /// collection.
-        /// </summary>
-        /// <remarks>Use this method to allow constructor injection of <see cref="Lazy{T}"/> in services registered with
-        /// the dependency injection container. Each <see cref="Lazy{T}"/> will resolve its value from the container when first
-        /// accessed.</remarks>
-        /// <returns>The IServiceCollection instance with <see cref="Lazy{T}"/> registration added. This enables <see cref="Lazy{T}"/> to be injected and
-        /// resolved by the dependency injection container.</returns>
-        public IServiceCollection AddXLazyResolved()
-        {
-            ArgumentNullException.ThrowIfNull(services);
-            return services.AddTransient(typeof(Lazy<>), typeof(LazyResolved<>));
-        }
+        ArgumentNullException.ThrowIfNull(services);
+        return services.AddTransient(typeof(Lazy<>), typeof(LazyResolved<>));
     }
 }
