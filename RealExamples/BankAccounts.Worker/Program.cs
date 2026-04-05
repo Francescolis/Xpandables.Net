@@ -1,4 +1,4 @@
-using System.Data;
+﻿using System.Data;
 using System.Data.Common;
 using System.Events.Integration;
 
@@ -21,7 +21,7 @@ builder.Services.Configure<JsonOptions>(options =>
 builder.AddSqlServerClient("accountDB");
 builder.AddSqlServerClient("eventDB");
 
-builder.Services.AddXDataDbConnectionMsSqlServer(builder.Configuration.GetConnectionString("eventDB")!);
+builder.Services.AddXDataConnectionMsSqlServer(builder.Configuration.GetConnectionString("eventDB")!);
 DbProviderFactories.RegisterFactory(
 	DbProviders.MsSqlServer.InvariantName,
 	Microsoft.Data.SqlClient.SqlClientFactory.Instance);
@@ -44,8 +44,8 @@ builder.Services
 	.AddXDataUnitOfWork()
 	.AddXDataSqlMapper()
 	.AddXDataMsSqlBuilder()
-	.AddXDataDbConnectionScopeFactory()
-	.AddXDataDbConnectionScope();
+	.AddXDataConnectionScopeFactory()
+	.AddXDataConnectionScope();
 
 IHost host = builder.Build();
 await host.RunAsync().ConfigureAwait(false);

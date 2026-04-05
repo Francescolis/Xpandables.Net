@@ -29,11 +29,11 @@ public sealed class DataConnectionScopeFactoryProvider(IDataConnectionFactoryPro
 
 	/// <inheritdoc />
 	public IDataConnectionScopeFactory GetScopeFactory(string name) =>
-		new DataDbConnectionScopeFactory(_factoryProvider.GetFactory(name));
+		new DataConnectionScopeFactory(_factoryProvider.GetFactory(name));
 
 	/// <inheritdoc />
 	public IDataConnectionScopeFactory GetScopeFactory(string name, string providerInvariantName) =>
-		new DataDbConnectionScopeFactory(_factoryProvider.GetFactory(name, providerInvariantName));
+		new DataConnectionScopeFactory(_factoryProvider.GetFactory(name, providerInvariantName));
 
 	/// <inheritdoc />
 	public Task<IDataConnectionScope> CreateScopeAsync(string name, CancellationToken cancellationToken = default) =>

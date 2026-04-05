@@ -42,9 +42,9 @@ public static class IDataExtensions
 		/// Registers the database connection factory and scope factory providers in the service collection.
 		/// <code language="csharp">
 		///     You can use the registered providers in your services as shown below:
-		///     public sealed class ReportingRepository(IDataDbConnectionScopeFactoryProvider provider)
+		///     public sealed class ReportingRepository(IDataConnectionScopeFactoryProvider provider)
 		///     {
-		///         private readonly IDataDbConnectionScope _scope = provider.CreateScope("Reporting");
+		///         private readonly IDataConnectionScope _scope = provider.CreateScope("Reporting");
 		///         public Task OpenReporting()
 		///         {
 		///             var command = _scope.Connection.CreateCommand();
@@ -55,11 +55,11 @@ public static class IDataExtensions
 		/// <remarks>This method is typically used in the startup configuration of an application to set
 		/// up database connection management services.</remarks>
 		/// <returns>The updated IServiceCollection instance, allowing for method chaining.</returns>
-		public IServiceCollection AddXDataDbConnectionFactoryProviders()
+		public IServiceCollection AddXDataConnectionFactoryProviders()
 		{
 			ArgumentNullException.ThrowIfNull(services);
-			services.AddXDataDbConnectionFactoryProvider();
-			services.AddXDataDbConnectionScopeFactoryProvider();
+			services.AddXDataConnectionFactoryProvider();
+			services.AddXDataConnectionScopeFactoryProvider();
 
 			return services;
 		}
@@ -68,40 +68,40 @@ public static class IDataExtensions
 		/// Adds a database connection factory provider to the service collection for dependency injection.
 		/// </summary>
 		/// <remarks>Call this method during application startup to register the
-		/// DataDbConnectionFactoryProvider implementation. This allows application components to resolve and use
+		/// DataConnectionFactoryProvider implementation. This allows application components to resolve and use
 		/// database connection factories via dependency injection.</remarks>
 		/// <returns>The service collection instance with the database connection factory provider registered. This enables
 		/// further configuration of additional services.</returns>
-		public IServiceCollection AddXDataDbConnectionFactoryProvider()
+		public IServiceCollection AddXDataConnectionFactoryProvider()
 		{
 			ArgumentNullException.ThrowIfNull(services);
-			return services.AddXDataDbConnectionFactoryProvider<DataConnectionFactoryProvider>();
+			return services.AddXDataConnectionFactoryProvider<DataConnectionFactoryProvider>();
 		}
 
 		/// <summary>
 		/// Adds a provider for managing database connection scopes using the Data framework.
 		/// </summary>
 		/// <remarks>This method is intended to be called during the service configuration phase,
-		/// typically in the Startup class. It registers the DataDbConnectionScopeFactoryProvider as the implementation
+		/// typically in the Startup class. It registers the DataConnectionScopeFactoryProvider as the implementation
 		/// for managing database connection scopes.</remarks>
 		/// <returns>An instance of IServiceCollection that can be used to configure additional services.</returns>
-		public IServiceCollection AddXDataDbConnectionScopeFactoryProvider()
+		public IServiceCollection AddXDataConnectionScopeFactoryProvider()
 		{
 			ArgumentNullException.ThrowIfNull(services);
-			return services.AddXDataDbConnectionScopeFactoryProvider<DataConnectionScopeFactoryProvider>();
+			return services.AddXDataConnectionScopeFactoryProvider<DataConnectionScopeFactoryProvider>();
 		}
 
 		/// <summary>
 		/// Registers the specified implementation of IDataDbConnectionFactoryProvider as a singleton service in the
 		/// dependency injection container.
 		/// </summary>
-		/// <remarks>Use this method to make a custom IDataDbConnectionFactoryProvider implementation
+		/// <remarks>Use this method to make a custom IDataConnectionFactoryProvider implementation
 		/// available for dependency injection throughout the application. The provider will be registered as a
 		/// singleton, ensuring a single shared instance is used.</remarks>
 		/// <typeparam name="TProvider">The type of the connection factory provider to register. Must be a class that implements
 		/// IDataDbConnectionFactoryProvider and has a public constructor.</typeparam>
 		/// <returns>The IServiceCollection instance with the provider registered, to support method chaining.</returns>
-		public IServiceCollection AddXDataDbConnectionFactoryProvider
+		public IServiceCollection AddXDataConnectionFactoryProvider
 			<[DynamicallyAccessedMembers(DynamicallyAccessedMemberTypes.PublicConstructors)] TProvider>()
 			where TProvider : class, IDataConnectionFactoryProvider
 		{
@@ -117,9 +117,9 @@ public static class IDataExtensions
 		/// <remarks>This method is intended for use when configuring dependency injection for database
 		/// connection scope management. It throws an ArgumentNullException if the service collection is null.</remarks>
 		/// <typeparam name="TProvider">The type of the database connection scope factory provider to register. Must be a class that implements
-		/// IDataDbConnectionScopeFactoryProvider and has a public constructor.</typeparam>
+		/// IDataConnectionScopeFactoryProvider and has a public constructor.</typeparam>
 		/// <returns>The IServiceCollection instance, to allow for method chaining.</returns>
-		public IServiceCollection AddXDataDbConnectionScopeFactoryProvider
+		public IServiceCollection AddXDataConnectionScopeFactoryProvider
 			<[DynamicallyAccessedMembers(DynamicallyAccessedMemberTypes.PublicConstructors)] TProvider>()
 			where TProvider : class, IDataConnectionScopeFactoryProvider
 		{
@@ -138,7 +138,7 @@ public static class IDataExtensions
 		/// <param name="connectionString">The connection string used to establish connections to the SQL Server database. This value must not be null,
 		/// empty, or consist only of white-space characters.</param>
 		/// <returns>The updated IServiceCollection instance, enabling method chaining.</returns>
-		public IServiceCollection AddXDataDbConnectionMsSqlServer(string connectionString)
+		public IServiceCollection AddXDataConnectionMsSqlServer(string connectionString)
 		{
 			ArgumentNullException.ThrowIfNull(services);
 			ArgumentException.ThrowIfNullOrWhiteSpace(connectionString);
@@ -154,11 +154,11 @@ public static class IDataExtensions
 		/// <remarks>Throws an ArgumentNullException if the services collection is null, or an
 		/// ArgumentException if the connection string is null or consists only of white-space characters. Use this
 		/// method during application startup to configure PostgreSQL database connectivity for services that depend on
-		/// IDbConnectionFactory.</remarks>
+		/// <see cref="IDataConnectionFactory"/>>.</remarks>
 		/// <param name="connectionString">The connection string used to establish connections to the PostgreSQL database. This value cannot be null or
 		/// whitespace.</param>
 		/// <returns>The updated IServiceCollection instance, enabling method chaining.</returns>
-		public IServiceCollection AddXDataDbConnectionPostgreSql(string connectionString)
+		public IServiceCollection AddXDataConnectionPostgreSql(string connectionString)
 		{
 			ArgumentNullException.ThrowIfNull(services);
 			ArgumentException.ThrowIfNullOrWhiteSpace(connectionString);
@@ -177,7 +177,7 @@ public static class IDataExtensions
 		/// <param name="connectionString">The connection string used to establish connections to the MySQL database. This value cannot be null or
 		/// whitespace.</param>
 		/// <returns>The updated <see cref="IServiceCollection"/> instance, enabling method chaining.</returns>
-		public IServiceCollection AddXDataDbConnectionMySql(string connectionString)
+		public IServiceCollection AddXDataConnectionMySql(string connectionString)
 		{
 			ArgumentNullException.ThrowIfNull(services);
 			ArgumentException.ThrowIfNullOrWhiteSpace(connectionString);
@@ -192,7 +192,7 @@ public static class IDataExtensions
 		/// <param name="providerInvariantName">The provider invariant name.</param>
 		/// <param name="connectionString">The connection string.</param>
 		/// <returns>The <see cref="IServiceCollection"/> instance for chaining.</returns>
-		public IServiceCollection AddXDataDbConnectionFactory(string providerInvariantName, string connectionString)
+		public IServiceCollection AddXDataConnectionFactory(string providerInvariantName, string connectionString)
 		{
 			ArgumentNullException.ThrowIfNull(services);
 			ArgumentException.ThrowIfNullOrWhiteSpace(providerInvariantName);
@@ -209,7 +209,7 @@ public static class IDataExtensions
 		/// </summary>
 		/// <typeparam name="TFactory">The connection factory type.</typeparam>
 		/// <returns>The <see cref="IServiceCollection"/> instance for chaining.</returns>
-		public IServiceCollection AddXDataDbConnectionFactory<[DynamicallyAccessedMembers(DynamicallyAccessedMemberTypes.PublicConstructors)] TFactory>()
+		public IServiceCollection AddXDataConnectionFactory<[DynamicallyAccessedMembers(DynamicallyAccessedMemberTypes.PublicConstructors)] TFactory>()
 			where TFactory : class, IDataConnectionFactory
 		{
 			ArgumentNullException.ThrowIfNull(services);
@@ -220,10 +220,10 @@ public static class IDataExtensions
 		/// Registers the default connection scope factory.
 		/// </summary>
 		/// <returns>The <see cref="IServiceCollection"/> instance for chaining.</returns>
-		public IServiceCollection AddXDataDbConnectionScopeFactory()
+		public IServiceCollection AddXDataConnectionScopeFactory()
 		{
 			ArgumentNullException.ThrowIfNull(services);
-			return services.AddSingleton<IDataConnectionScopeFactory, DataDbConnectionScopeFactory>();
+			return services.AddSingleton<IDataConnectionScopeFactory, DataConnectionScopeFactory>();
 		}
 
 		/// <summary>
@@ -234,22 +234,22 @@ public static class IDataExtensions
 		/// implementation of IDataDbConnectionScopeFactory is registered. It configures the service collection to
 		/// provide a scoped database connection for each request or operation scope.</remarks>
 		/// <returns>The same IServiceCollection instance so that additional calls can be chained.</returns>
-		public IServiceCollection AddXDataDbConnectionScope()
+		public IServiceCollection AddXDataConnectionScope()
 		{
 			ArgumentNullException.ThrowIfNull(services);
-			return services.AddXDataDbConnectionScope(sp =>
+			return services.AddXDataConnectionScope(sp =>
 				sp.GetRequiredService<IDataConnectionScopeFactory>().CreateScope());
 		}
 
 		/// <summary>
-		/// Registers a factory for creating instances of IDataDbConnectionScope with a scoped service lifetime.
+		/// Registers a factory for creating instances of IDataConnectionScope with a scoped service lifetime.
 		/// </summary>
-		/// <remarks>A new instance of IDataDbConnectionScope is created for each scope, which is
+		/// <remarks>A new instance of IDataConnectionScope is created for each scope, which is
 		/// typically per web request in ASP.NET Core applications. This approach is recommended for managing database
 		/// connections in a scoped manner.</remarks>
-		/// <param name="factory">A factory function that creates an instance of IDataDbConnectionScope. This parameter cannot be null.</param>
+		/// <param name="factory">A factory function that creates an instance of IDataConnectionScope. This parameter cannot be null.</param>
 		/// <returns>The IServiceCollection instance to allow for method chaining.</returns>
-		public IServiceCollection AddXDataDbConnectionScope(Func<IServiceProvider, IDataConnectionScope> factory)
+		public IServiceCollection AddXDataConnectionScope(Func<IServiceProvider, IDataConnectionScope> factory)
 		{
 			ArgumentNullException.ThrowIfNull(services);
 			ArgumentNullException.ThrowIfNull(factory);
@@ -336,6 +336,7 @@ public static class IDataExtensions
 			ArgumentNullException.ThrowIfNull(services);
 			return services.AddSingleton<IDataSqlBuilder, TBuilder>();
 		}
+
 		/// <summary>
 		/// Registers the default <see cref="DataLoggingCommandInterceptor"/> as a singleton
 		/// with optional configuration of <see cref="DataCommandInterceptorOptions"/>.

@@ -177,7 +177,7 @@ public sealed class DataConnectionScope(DbConnection connection) : IDataConnecti
 /// </summary>
 /// <param name="connectionFactory">The factory used to create database connections.</param>
 /// <exception cref="ArgumentNullException">Thrown when <paramref name="connectionFactory"/> is null.</exception>
-public sealed class DataDbConnectionScopeFactory(IDataConnectionFactory connectionFactory) : IDataConnectionScopeFactory
+public sealed class DataConnectionScopeFactory(IDataConnectionFactory connectionFactory) : IDataConnectionScopeFactory
 {
 	private readonly IDataConnectionFactory _connectionFactory = connectionFactory
 		?? throw new ArgumentNullException(nameof(connectionFactory));
