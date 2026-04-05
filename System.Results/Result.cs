@@ -31,20 +31,20 @@ namespace System.Results;
 /// supports integration with HTTP-based APIs and can be used to standardize result handling across application
 /// layers.</remarks>
 [DebuggerDisplay($"{{{nameof(DebuggerDisplay)},nq}}")]
-public record Result : ResultBase
+public partial record Result : ResultBase
 {
-    /// <summary>
-    /// Initializes a new instance of the Result class for use by derived types and JSON deserialization.
-    /// </summary>
-    /// <remarks>This constructor is intended for use by subclasses and JSON serialization frameworks. It
-    /// cannot be called directly from external assemblies.</remarks>
-    [JsonConstructor]
-    protected internal Result() { }
+	/// <summary>
+	/// Initializes a new instance of the Result class for use by derived types and JSON deserialization.
+	/// </summary>
+	/// <remarks>This constructor is intended for use by subclasses and JSON serialization frameworks. It
+	/// cannot be called directly from external assemblies.</remarks>
+	[JsonConstructor]
+	protected internal Result() { }
 
-    /// <summary>
-    /// Indicates whether the operation result is generic. The value is false for non-generic result types.
-    /// </summary>
-    public override bool IsGeneric => false;
+	/// <summary>
+	/// Indicates whether the operation result is generic. The value is false for non-generic result types.
+	/// </summary>
+	public override bool IsGeneric => false;
 }
 
 /// <summary>
@@ -60,98 +60,98 @@ public record Result : ResultBase
 /// <typeparam name="TValue">The type of the value contained in the result.</typeparam>
 public record Result<TValue> : ResultBase
 {
-    /// <summary>
-    /// Typed backing store for <see cref="Value"/>.
-    /// Avoids boxing value types during normal get/set operations.
-    /// </summary>
-    private protected TValue? _typedValue;
+	/// <summary>
+	/// Typed backing store for <see cref="Value"/>.
+	/// Avoids boxing value types during normal get/set operations.
+	/// </summary>
+	private protected TValue? _typedValue;
 
-    /// <summary>
-    /// Initializes a new instance of the Result class for use by derived types and JSON deserialization.
-    /// </summary>
-    /// <remarks>This constructor is intended for use by subclasses and JSON serialization frameworks. It
-    /// should not be called directly in application code.</remarks>
-    [JsonConstructor]
-    protected internal Result() { }
+	/// <summary>
+	/// Initializes a new instance of the Result class for use by derived types and JSON deserialization.
+	/// </summary>
+	/// <remarks>This constructor is intended for use by subclasses and JSON serialization frameworks. It
+	/// should not be called directly in application code.</remarks>
+	[JsonConstructor]
+	protected internal Result() { }
 
-    /// <summary>
-    /// Indicates whether the operation result is generic. The value is true for generic result types.
-    /// </summary>
-    public sealed override bool IsGeneric => true;
+	/// <summary>
+	/// Indicates whether the operation result is generic. The value is true for generic result types.
+	/// </summary>
+	public sealed override bool IsGeneric => true;
 
-    /// <summary>
-    /// Provides polymorphic access to the stored value for non-generic consumers.
-    /// Delegates to <see cref="_typedValue"/>, boxing only when accessed through this property.
-    /// </summary>
-    [MaybeNull, AllowNull]
-    [JsonIgnore]
-    protected internal sealed override object? InternalValue
-    {
-        get => _typedValue;
-        init => _typedValue = value is TValue tv ? tv : default;
-    }
+	/// <summary>
+	/// Provides polymorphic access to the stored value for non-generic consumers.
+	/// Delegates to <see cref="_typedValue"/>, boxing only when accessed through this property.
+	/// </summary>
+	[MaybeNull, AllowNull]
+	[JsonIgnore]
+	protected internal sealed override object? InternalValue
+	{
+		get => _typedValue;
+		init => _typedValue = value is TValue tv ? tv : default;
+	}
 
-    /// <summary>
-    /// Gets or sets the value of the result.
-    /// </summary>
-    [MaybeNull, AllowNull]
-    public TValue Value
-    {
-        get => _typedValue;
-        protected internal init => _typedValue = value;
-    }
+	/// <summary>
+	/// Gets or sets the value of the result.
+	/// </summary>
+	[MaybeNull, AllowNull]
+	public TValue Value
+	{
+		get => _typedValue;
+		protected internal init => _typedValue = value;
+	}
 
-    /// <summary>
-    /// Converts a generic <see cref="Result{TValue}"/> instance to a non-generic <see cref="Result"/> instance,
-    /// preserving all relevant result information.
-    /// </summary>
-    /// <remarks>This operator enables seamless conversion from a generic result to a non-generic result,
-    /// allowing code that expects a non-generic <see cref="Result"/> to accept a <see cref="Result{TValue}"/> without
-    /// explicit casting. All status, error, and metadata fields are copied; the value is assigned to the non-generic
-    /// result's value property.</remarks>
-    /// <param name="result">The generic result to convert. Cannot be null.</param>
-    [SuppressMessage("Usage", "CA2225:Operator overloads have named alternates", Justification = "<Pending>")]
-    public static implicit operator Result(Result<TValue> result)
-    {
-        ArgumentNullException.ThrowIfNull(result);
+	/// <summary>
+	/// Converts a generic <see cref="Result{TValue}"/> instance to a non-generic <see cref="Result"/> instance,
+	/// preserving all relevant result information.
+	/// </summary>
+	/// <remarks>This operator enables seamless conversion from a generic result to a non-generic result,
+	/// allowing code that expects a non-generic <see cref="Result"/> to accept a <see cref="Result{TValue}"/> without
+	/// explicit casting. All status, error, and metadata fields are copied; the value is assigned to the non-generic
+	/// result's value property.</remarks>
+	/// <param name="result">The generic result to convert. Cannot be null.</param>
+	[SuppressMessage("Usage", "CA2225:Operator overloads have named alternates", Justification = "<Pending>")]
+	public static implicit operator Result(Result<TValue> result)
+	{
+		ArgumentNullException.ThrowIfNull(result);
 
-        return new()
-        {
-            StatusCode = result.StatusCode,
-            Title = result.Title,
-            Detail = result.Detail,
-            Location = result.Location,
-            Errors = result.Errors,
-            Headers = result.Headers,
-            Extensions = result.Extensions,
-            Exception = result.Exception,
-            InternalValue = result.Value
-        };
-    }
+		return new()
+		{
+			StatusCode = result.StatusCode,
+			Title = result.Title,
+			Detail = result.Detail,
+			Location = result.Location,
+			Errors = result.Errors,
+			Headers = result.Headers,
+			Extensions = result.Extensions,
+			Exception = result.Exception,
+			InternalValue = result.Value
+		};
+	}
 
-    /// <summary>
-    /// Defines an implicit conversion from a non-generic Result to a generic <see cref="Result{TValue}"/> instance.
-    /// </summary>
-    /// <remarks>All properties from the source Result are copied to the new <see cref="Result{TValue}"/> instance. The
-    /// Value property is set to the source InternalValue if it is of type TValue; otherwise, it is set to the default value of
-    /// TValue.</remarks>
-    /// <param name="result">The non-generic Result instance to convert. Cannot be null.</param>
-    [SuppressMessage("Usage", "CA2225:Operator overloads have named alternates", Justification = "<Pending>")]
-    public static implicit operator Result<TValue>(Result result)
-    {
-        ArgumentNullException.ThrowIfNull(result);
+	/// <summary>
+	/// Defines an implicit conversion from a non-generic Result to a generic <see cref="Result{TValue}"/> instance.
+	/// </summary>
+	/// <remarks>All properties from the source Result are copied to the new <see cref="Result{TValue}"/> instance. The
+	/// Value property is set to the source InternalValue if it is of type TValue; otherwise, it is set to the default value of
+	/// TValue.</remarks>
+	/// <param name="result">The non-generic Result instance to convert. Cannot be null.</param>
+	[SuppressMessage("Usage", "CA2225:Operator overloads have named alternates", Justification = "<Pending>")]
+	public static implicit operator Result<TValue>(Result result)
+	{
+		ArgumentNullException.ThrowIfNull(result);
 
-        return new()
-        {
-            StatusCode = result.StatusCode,
-            Title = result.Title,
-            Detail = result.Detail,
-            Location = result.Location,
-            Errors = result.Errors,
-            Headers = result.Headers,
-            Extensions = result.Extensions,
-            Exception = result.Exception,
-            Value = result.InternalValue is TValue value ? value : default
-        };
-    }
+		return new()
+		{
+			StatusCode = result.StatusCode,
+			Title = result.Title,
+			Detail = result.Detail,
+			Location = result.Location,
+			Errors = result.Errors,
+			Headers = result.Headers,
+			Extensions = result.Extensions,
+			Exception = result.Exception,
+			Value = result.InternalValue is TValue value ? value : default
+		};
+	}
 }
