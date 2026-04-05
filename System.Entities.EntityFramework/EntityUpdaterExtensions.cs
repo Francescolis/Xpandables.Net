@@ -1,4 +1,4 @@
-/*******************************************************************************
+﻿/*******************************************************************************
  * Copyright (C) 2024 Francis-Black EWANE
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
@@ -27,19 +27,15 @@ namespace System.Entities.EntityFramework;
 public static class EntityUpdaterExtensions
 {
     /// <summary>
-    /// <see cref="EntityUpdater{TSource}"/> extensions.
+    /// Builds an update setters action for EF Core 10 RC1 ExecuteUpdate APIs.
     /// </summary>
     /// <typeparam name="TSource">The type of the entity being updated.</typeparam>
-    extension<TSource>(EntityUpdater<TSource> updater)
+    /// <param name="updater">The entity updater containing the updates to apply.</param>
+    /// <returns>An action that applies all configured property updates to a <see cref="UpdateSettersBuilder{TSource}"/>.</returns>
+    public static Action<UpdateSettersBuilder<TSource>> ToSetPropertyCalls<TSource>(this EntityUpdater<TSource> updater)
         where TSource : class
     {
-        /// <summary>
-        /// Builds an update setters action for EF Core 10 RC1 ExecuteUpdate APIs.
-        /// </summary>
-        public Action<UpdateSettersBuilder<TSource>> ToSetPropertyCalls()
-        {
-            ArgumentNullException.ThrowIfNull(updater);
-            return updater.Updates.ToSetPropertyCalls();
-        }
+        ArgumentNullException.ThrowIfNull(updater);
+        return updater.Updates.ToSetPropertyCalls();
     }
 }

@@ -1,4 +1,4 @@
-/*******************************************************************************
+﻿/*******************************************************************************
  * Copyright (C) 2025-2026 Kamersoft
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
@@ -33,101 +33,95 @@ namespace Microsoft.Extensions.DependencyInjection;
 /// application's request pipeline and dependency injection container.</remarks>
 public static class IResultExtensions
 {
-    /// <summary>
-    /// Adds Result MVC options configuration for Controller to the service collection.
-    /// </summary>
-    /// <remarks>Call this method during application startup to enable custom MVC options for
-    /// XController. This method registers the necessary configuration as a singleton service.</remarks>
-    /// <returns>The service collection with Controller MVC options configured. The same instance as the input is returned
-    /// for chaining.</returns>
-    public static IServiceCollection AddXControllerResultMvcOptions(this IServiceCollection services)
-    {
-        ArgumentNullException.ThrowIfNull(services);
-        services.AddSingleton<IConfigureOptions<MvcOptions>, ControllerResultMvcOptions>();
+	/// <summary>
+	/// Adds Result MVC options configuration for Controller to the service collection.
+	/// </summary>
+	/// <remarks>Call this method during application startup to enable custom MVC options for
+	/// XController. This method registers the necessary configuration as a singleton service.</remarks>
+	/// <returns>The service collection with Controller MVC options configured. The same instance as the input is returned
+	/// for chaining.</returns>
+	public static IServiceCollection AddXControllerResultMvcOptions(this IServiceCollection services)
+	{
+		ArgumentNullException.ThrowIfNull(services);
+		services.AddSingleton<IConfigureOptions<MvcOptions>, ControllerResultMvcOptions>();
 
-        return services;
-    }
+		return services;
+	}
 
-    /// <summary>
-    /// Adds the Result middleware to the application's service collection for dependency injection.
-    /// </summary>
-    /// <remarks>Registers ResultMiddleware as a singleton service. This method should be called during
-    /// application startup to ensure the middleware is available for request processing.</remarks>
-    /// <param name="services">The service collection to which the Result middleware will be added. Cannot be null.</param>
-    /// <returns>The same IServiceCollection instance, enabling method chaining.</returns>
-    public static IServiceCollection AddXResultMiddleware(this IServiceCollection services)
-    {
-        ArgumentNullException.ThrowIfNull(services);
+	/// <summary>
+	/// Adds the Result middleware to the application's service collection for dependency injection.
+	/// </summary>
+	/// <remarks>Registers ResultMiddleware as a singleton service. This method should be called during
+	/// application startup to ensure the middleware is available for request processing.</remarks>
+	/// <param name="services">The service collection to which the Result middleware will be added. Cannot be null.</param>
+	/// <returns>The same IServiceCollection instance, enabling method chaining.</returns>
+	public static IServiceCollection AddXResultMiddleware(this IServiceCollection services)
+	{
+		ArgumentNullException.ThrowIfNull(services);
 
-        services.AddSingleton<ResultMiddleware>();
-        return services;
-    }
+		services.AddSingleton<ResultMiddleware>();
+		return services;
+	}
 
-    extension(IApplicationBuilder builder)
-    {
-        /// <summary>
-        /// Adds the Result middleware to the application's request pipeline. This enables standardized result handling
-        /// for HTTP responses.
-        /// </summary>
-        /// <remarks>This method should be called after all required services have been registered,
-        /// typically in the application's startup configuration. The Result middleware provides consistent formatting
-        /// and handling of API results across the application.</remarks>
-        /// <returns>The <see cref="IApplicationBuilder"/> instance with the Result middleware configured. This allows for
-        /// further chaining of middleware registrations.</returns>
-        /// <exception cref="InvalidOperationException">Thrown if the Result middleware has not been registered in the application's services. Ensure that
-        /// AddXResultSupport() is called during service registration before invoking this method.</exception>
-        public IApplicationBuilder UseXResultMiddleware()
-        {
-            ArgumentNullException.ThrowIfNull(builder);
+	/// <summary>
+	/// Adds the Result middleware to the application's request pipeline. This enables standardized result handling
+	/// for HTTP responses.
+	/// </summary>
+	/// <remarks>This method should be called after all required services have been registered,
+	/// typically in the application's startup configuration. The Result middleware provides consistent formatting
+	/// and handling of API results across the application.</remarks>
+	/// <returns>The <see cref="IApplicationBuilder"/> instance with the Result middleware configured. This allows for
+	/// further chaining of middleware registrations.</returns>
+	/// <exception cref="InvalidOperationException">Thrown if the Result middleware has not been registered in the application's services. Ensure that
+	/// AddXResultSupport() is called during service registration before invoking this method.</exception>
+	public static IApplicationBuilder UseXResultMiddleware(this IApplicationBuilder builder)
+	{
+		ArgumentNullException.ThrowIfNull(builder);
 
-            if (builder.ApplicationServices.GetService<ResultMiddleware>() is null)
-			{
-				throw new InvalidOperationException(
-                    "ResultMiddleware is not registered. " +
-                    "Please ensure AddXResultMiddleware() is called during service registration.");
-			}
+		if (builder.ApplicationServices.GetService<ResultMiddleware>() is null)
+		{
+			throw new InvalidOperationException(
+					"ResultMiddleware is not registered. " +
+					"Please ensure AddXResultMiddleware() is called during service registration.");
+		}
 
-			builder.UseMiddleware<ResultMiddleware>();
-            return builder;
-        }
-    }
+		builder.UseMiddleware<ResultMiddleware>();
+		return builder;
+	}
 
-    /// <summary>
-    /// </summary>
-    extension<TBuilder>(TBuilder builder)
-        where TBuilder : IEndpointConventionBuilder
-    {
-        /// <summary>
-        /// Configures the builder to use the Result pattern API features, including filtering and validation.
-        /// </summary>
-        /// <returns>The builder instance configured with Result pattern API support. This enables both Result pattern filtering and
-        /// validation.</returns>
-        public TBuilder WithXResultSupport() =>
-            builder
-                .WithXResultFilter()
-                .WithXResultValidation();
+	/// <summary>
+	/// Configures the builder to use the Result pattern API features, including filtering and validation.
+	/// </summary>
+	/// <returns>The builder instance configured with Result pattern API support. This enables both Result pattern filtering and
+	/// validation.</returns>
+	public static TBuilder WithXResultSupport<TBuilder>(this TBuilder builder)
+		where TBuilder : IEndpointConventionBuilder =>
+		builder
+			.WithXResultFilter()
+			.WithXResultValidation();
 
-        /// <summary>
-        /// Adds result pattern validation for endpoint results to the current builder.
-        /// </summary>
-        /// <remarks>This method configures the builder to use a minimal validation filter for endpoint
-        /// results. Use this when only basic validation is required for endpoint responses. The returned builder can be
-        /// further configured or used to build the endpoint.</remarks>
-        /// <returns>The builder instance with minimal result pattern validation applied.</returns>
-        public TBuilder WithXResultValidation()
-        {
-            ArgumentNullException.ThrowIfNull(builder);
-            return builder.AddEndpointFilter(new ResultEndpointValidationFilter().InvokeAsync);
-        }
+	/// <summary>
+	/// Adds result pattern validation for endpoint results to the current builder.
+	/// </summary>
+	/// <remarks>This method configures the builder to use a minimal validation filter for endpoint
+	/// results. Use this when only basic validation is required for endpoint responses. The returned builder can be
+	/// further configured or used to build the endpoint.</remarks>
+	/// <returns>The builder instance with minimal result pattern validation applied.</returns>
+	public static TBuilder WithXResultValidation<TBuilder>(this TBuilder builder)
+		where TBuilder : IEndpointConventionBuilder
+	{
+		ArgumentNullException.ThrowIfNull(builder);
+		return builder.AddEndpointFilter(new ResultEndpointValidationFilter().InvokeAsync);
+	}
 
-        /// <summary>
-        /// Adds a result pattern endpoint filter to the current builder configuration.
-        /// </summary>
-        /// <remarks>Use this method to ensure that endpoints only return results, which can help
-        /// enforce consistent API responses. This method is typically used when configuring endpoints that should not
-        /// include additional metadata or formatting.</remarks>
-        /// <returns>The builder instance with the result pattern endpoint filter applied.</returns>
-        public TBuilder WithXResultFilter() =>
-            builder.AddEndpointFilter<TBuilder, ResultEndpointFilter>();
-    }
+	/// <summary>
+	/// Adds a result pattern endpoint filter to the current builder configuration.
+	/// </summary>
+	/// <remarks>Use this method to ensure that endpoints only return results, which can help
+	/// enforce consistent API responses. This method is typically used when configuring endpoints that should not
+	/// include additional metadata or formatting.</remarks>
+	/// <returns>The builder instance with the result pattern endpoint filter applied.</returns>
+	public static TBuilder WithXResultFilter<TBuilder>(this TBuilder builder)
+		where TBuilder : IEndpointConventionBuilder =>
+		builder.AddEndpointFilter<TBuilder, ResultEndpointFilter>();
 }

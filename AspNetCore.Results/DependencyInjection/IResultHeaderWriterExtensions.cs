@@ -1,4 +1,4 @@
-/*******************************************************************************
+﻿/*******************************************************************************
  * Copyright (C) 2025-2026 Kamersoft
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
@@ -32,35 +32,31 @@ namespace Microsoft.Extensions.DependencyInjection;
 /// responses.</remarks>
 public static class IResultHeaderWriterExtensions
 {
-    extension(IServiceCollection services)
-    {
-        /// <summary>
-        /// Adds the default X-Execution-Result header writer to the service collection for use in HTTP responses.
-        /// </summary>
-        /// <remarks>This method registers <see cref="ResultHeaderWriter"/> as the implementation
-        /// for writing X-Execution-Result headers. Call this method during application startup to enable automatic
-        /// inclusion of execution result information in HTTP response headers.</remarks>
-        /// <returns>The updated <see cref="IServiceCollection"/> instance with the X-Execution-Result header writer registered.</returns>
-        public IServiceCollection AddXResultHeaderWriter()
-            => services.AddXResultHeaderWriter<ResultHeaderWriter>();
+	/// <summary>
+	/// Adds the default X-Execution-Result header writer to the service collection for use in HTTP responses.
+	/// </summary>
+	/// <remarks>This method registers <see cref="ResultHeaderWriter"/> as the implementation
+	/// for writing X-Execution-Result headers. Call this method during application startup to enable automatic
+	/// inclusion of execution result information in HTTP response headers.</remarks>
+	/// <returns>The updated <see cref="IServiceCollection"/> instance with the X-Execution-Result header writer registered.</returns>
+	public static IServiceCollection AddXResultHeaderWriter(this IServiceCollection services)
+		=> services.AddXResultHeaderWriter<ResultHeaderWriter>();
 
-        /// <summary>
-        /// Registers a scoped implementation of <see cref="IResultHeaderWriter"/> using the specified type in
-        /// the service collection.
-        /// </summary>
-        /// <remarks>Use this method to configure dependency injection for custom execution result header
-        /// writers. Each request will receive a new instance of <typeparamref
-        /// name="TResultHeaderWriter"/>.</remarks>
-        /// <typeparam name="TResultHeaderWriter">The type that implements <see cref="IResultHeaderWriter"/> and will be registered as a scoped
-        /// service. Must have a public constructor.</typeparam>
-        /// <returns>The <see cref="IServiceCollection"/> instance with the registration applied.</returns>
-        public IServiceCollection AddXResultHeaderWriter<[DynamicallyAccessedMembers(DynamicallyAccessedMemberTypes.PublicConstructors)] TResultHeaderWriter>()
-            where TResultHeaderWriter : class, IResultHeaderWriter
-        {
-            ArgumentNullException.ThrowIfNull(services);
-            services.AddScoped<IResultHeaderWriter, TResultHeaderWriter>();
-            return services;
-        }
-    }
-
+	/// <summary>
+	/// Registers a scoped implementation of <see cref="IResultHeaderWriter"/> using the specified type in
+	/// the service collection.
+	/// </summary>
+	/// <remarks>Use this method to configure dependency injection for custom execution result header
+	/// writers. Each request will receive a new instance of <typeparamref
+	/// name="TResultHeaderWriter"/>.</remarks>
+	/// <typeparam name="TResultHeaderWriter">The type that implements <see cref="IResultHeaderWriter"/> and will be registered as a scoped
+	/// service. Must have a public constructor.</typeparam>
+	/// <returns>The <see cref="IServiceCollection"/> instance with the registration applied.</returns>
+	public static IServiceCollection AddXResultHeaderWriter<[DynamicallyAccessedMembers(DynamicallyAccessedMemberTypes.PublicConstructors)] TResultHeaderWriter>(this IServiceCollection services)
+		where TResultHeaderWriter : class, IResultHeaderWriter
+	{
+		ArgumentNullException.ThrowIfNull(services);
+		services.AddScoped<IResultHeaderWriter, TResultHeaderWriter>();
+		return services;
+	}
 }

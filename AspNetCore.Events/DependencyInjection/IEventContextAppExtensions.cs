@@ -1,4 +1,4 @@
-/*******************************************************************************
+﻿/*******************************************************************************
  * Copyright (C) 2025-2026 Kamersoft
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
@@ -31,49 +31,42 @@ namespace Microsoft.Extensions.DependencyInjection;
 /// correlation, or custom event processing scenarios.</remarks>
 public static class IEventContextAppExtensions
 {
-    /// <summary>
-    /// Adds the specified event context middleware to the application's request pipeline.
-    /// </summary>
-    /// <param name="app">The WebApplication instance to configure.</param>
-    extension(WebApplication app)
-    {
-        /// <summary>
-        /// Adds the specified event context middleware to the application's request pipeline.
-        /// </summary>
-        /// <remarks>Use this method to register custom middleware that provides event context handling
-        /// for incoming HTTP requests. The middleware type must be registered in the application's dependency injection
-        /// container.</remarks>
-        /// <typeparam name="TEventContextMiddleware">The middleware type to add to the pipeline. Must implement the IMiddleware interface and have public
-        /// constructors and methods.</typeparam>
-        /// <returns>The current WebApplication instance for method chaining.</returns>
-        public WebApplication UseXEventContextMiddleware<[DynamicallyAccessedMembers(DynamicallyAccessedMemberTypes.PublicMethods | DynamicallyAccessedMemberTypes.PublicConstructors)] TEventContextMiddleware>()
-            where TEventContextMiddleware : class, IMiddleware
-        {
-            ArgumentNullException.ThrowIfNull(app);
+	/// <summary>
+	/// Adds the specified event context middleware to the application's request pipeline.
+	/// </summary>
+	/// <remarks>Use this method to register custom middleware that provides event context handling
+	/// for incoming HTTP requests. The middleware type must be registered in the application's dependency injection
+	/// container.</remarks>
+	/// <typeparam name="TEventContextMiddleware">The middleware type to add to the pipeline. Must implement the IMiddleware interface and have public
+	/// constructors and methods.</typeparam>
+	/// <returns>The current WebApplication instance for method chaining.</returns>
+	public static WebApplication UseXEventContextMiddleware<[DynamicallyAccessedMembers(DynamicallyAccessedMemberTypes.PublicMethods | DynamicallyAccessedMemberTypes.PublicConstructors)] TEventContextMiddleware>(this WebApplication app)
+		where TEventContextMiddleware : class, IMiddleware
+	{
+		ArgumentNullException.ThrowIfNull(app);
 
-            if (app.Services.GetService<TEventContextMiddleware>() is null)
-			{
-				throw new InvalidOperationException(
-                    $"{typeof(TEventContextMiddleware).Name} is not registered. " +
-                    $"Please ensure AddXEventContextMiddleware<{typeof(TEventContextMiddleware).Name}>() is called during service registration.");
-			}
+		if (app.Services.GetService<TEventContextMiddleware>() is null)
+		{
+			throw new InvalidOperationException(
+					$"{typeof(TEventContextMiddleware).Name} is not registered. " +
+					$"Please ensure AddXEventContextMiddleware<{typeof(TEventContextMiddleware).Name}>() is called during service registration.");
+		}
 
-			app.UseMiddleware<TEventContextMiddleware>();
-            return app;
-        }
+		app.UseMiddleware<TEventContextMiddleware>();
+		return app;
+	}
 
-        /// <summary>
-        /// Adds the Event context middleware to the application's request pipeline.
-        /// </summary>
-        /// <remarks>Call this method during application startup to ensure that event context information
-        /// is available throughout the request pipeline. This is typically used to support distributed tracing or
-        /// correlation scenarios.</remarks>
-        /// <returns>The <see cref="WebApplication"/> instance with the Event context middleware configured. This enables
-        /// event context propagation for subsequent middleware and services.</returns>
-        public WebApplication UseXEventContextMiddleware()
-        {
-            ArgumentNullException.ThrowIfNull(app);
-            return app.UseXEventContextMiddleware<EventContextMiddleware>();
-        }
-    }
+	/// <summary>
+	/// Adds the Event context middleware to the application's request pipeline.
+	/// </summary>
+	/// <remarks>Call this method during application startup to ensure that event context information
+	/// is available throughout the request pipeline. This is typically used to support distributed tracing or
+	/// correlation scenarios.</remarks>
+	/// <returns>The <see cref="WebApplication"/> instance with the Event context middleware configured. This enables
+	/// event context propagation for subsequent middleware and services.</returns>
+	public static WebApplication UseXEventContextMiddleware(this WebApplication app)
+	{
+		ArgumentNullException.ThrowIfNull(app);
+		return app.UseXEventContextMiddleware<EventContextMiddleware>();
+	}
 }

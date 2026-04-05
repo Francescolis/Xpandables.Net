@@ -1,4 +1,4 @@
-/*******************************************************************************
+﻿/*******************************************************************************
  * Copyright (C) 2025-2026 Kamersoft
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
@@ -32,53 +32,50 @@ namespace Microsoft.Extensions.DependencyInjection;
 /// and supporting services during application startup.</remarks>
 public static class IValidatorExtensions
 {
-    extension(IServiceCollection services)
-    {
-        /// <summary>
-        /// Adds and configures a custom implementation of the problem details service for use with Result in the
-        /// application's dependency injection container.
-        /// </summary>
-        /// <remarks>This method replaces the default <see cref="IProblemDetailsService"/> with a custom
-        /// implementation that integrates with Result. Call this method during application startup to ensure that
-        /// problem details responses are handled consistently with Result conventions.</remarks>
-        /// <returns>The <see cref="IServiceCollection"/> instance with the problem details services configured. This enables
-        /// method chaining.</returns>
-        public IServiceCollection AddXResultProblemDetails()
-        {
-            return services
-                .AddProblemDetails()
-                .Replace(new ServiceDescriptor(
-                    typeof(IProblemDetailsService),
-                    typeof(ResultProblemDetailsService),
-                    ServiceLifetime.Singleton));
-        }
+	/// <summary>
+	/// Adds and configures a custom implementation of the problem details service for use with Result in the
+	/// application's dependency injection container.
+	/// </summary>
+	/// <remarks>This method replaces the default <see cref="IProblemDetailsService"/> with a custom
+	/// implementation that integrates with Result. Call this method during application startup to ensure that
+	/// problem details responses are handled consistently with Result conventions.</remarks>
+	/// <returns>The <see cref="IServiceCollection"/> instance with the problem details services configured. This enables
+	/// method chaining.</returns>
+	public static IServiceCollection AddXResultProblemDetails(this IServiceCollection services)
+	{
+		return services
+			.AddProblemDetails()
+			.Replace(new ServiceDescriptor(
+				typeof(IProblemDetailsService),
+				typeof(ResultProblemDetailsService),
+				ServiceLifetime.Singleton));
+	}
 
-        /// <summary>
-        /// Adds the default endpoint validator for minimal result endpoints to the service collection.
-        /// </summary>
-        /// <remarks>Call this method during application startup to enable validation of minimal result
-        /// endpoints. This method registers the <see cref="ResultEndpointValidator"/> as the implementation for
-        /// endpoint validation.</remarks>
-        /// <returns>The <see cref="IServiceCollection"/> instance with the minimal result endpoint validator registered.</returns>
-        public IServiceCollection AddXResultEndpointValidator()
-            => services
-                .AddXResultEndpointValidator<ResultEndpointValidator>()
-                .AddXValidatorProvider()
-                .AddXValidatorFactory()
-                .AddXResultHeaderWriter();
+	/// <summary>
+	/// Adds the default endpoint validator for minimal result endpoints to the service collection.
+	/// </summary>
+	/// <remarks>Call this method during application startup to enable validation of minimal result
+	/// endpoints. This method registers the <see cref="ResultEndpointValidator"/> as the implementation for
+	/// endpoint validation.</remarks>
+	/// <returns>The <see cref="IServiceCollection"/> instance with the minimal result endpoint validator registered.</returns>
+	public static IServiceCollection AddXResultEndpointValidator(this IServiceCollection services)
+		=> services
+			.AddXResultEndpointValidator<ResultEndpointValidator>()
+			.AddXValidatorProvider()
+			.AddXValidatorFactory()
+			.AddXResultHeaderWriter();
 
-        /// <summary>
-        /// Registers a scoped implementation of <see cref="IResultEndpointValidator"/> using the specified
-        /// validator type.
-        /// </summary>
-        /// <remarks>Use this method to add a custom minimal result endpoint validator to the dependency
-        /// injection container. The validator will be resolved with scoped lifetime for each request.</remarks>
-        /// <typeparam name="TResultEndpointValidator">The type of the minimal result endpoint validator to register. Must be a class that implements <see
-        /// cref="IResultEndpointValidator"/> and have a public constructor.</typeparam>
-        /// <returns>The <see cref="IServiceCollection"/> instance with the validator registration added. This enables chaining
-        /// additional service registrations.</returns>
-        public IServiceCollection AddXResultEndpointValidator<[DynamicallyAccessedMembers(DynamicallyAccessedMemberTypes.PublicConstructors)] TResultEndpointValidator>()
-            where TResultEndpointValidator : class, IResultEndpointValidator
-            => services.AddScoped<IResultEndpointValidator, TResultEndpointValidator>();
-    }
+	/// <summary>
+	/// Registers a scoped implementation of <see cref="IResultEndpointValidator"/> using the specified
+	/// validator type.
+	/// </summary>
+	/// <remarks>Use this method to add a custom minimal result endpoint validator to the dependency
+	/// injection container. The validator will be resolved with scoped lifetime for each request.</remarks>
+	/// <typeparam name="TResultEndpointValidator">The type of the minimal result endpoint validator to register. Must be a class that implements <see
+	/// cref="IResultEndpointValidator"/> and have a public constructor.</typeparam>
+	/// <returns>The <see cref="IServiceCollection"/> instance with the validator registration added. This enables chaining
+	/// additional service registrations.</returns>
+	public static IServiceCollection AddXResultEndpointValidator<[DynamicallyAccessedMembers(DynamicallyAccessedMemberTypes.PublicConstructors)] TResultEndpointValidator>(this IServiceCollection services)
+		where TResultEndpointValidator : class, IResultEndpointValidator
+		=> services.AddScoped<IResultEndpointValidator, TResultEndpointValidator>();
 }

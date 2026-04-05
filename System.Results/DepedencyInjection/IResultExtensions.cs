@@ -1,4 +1,4 @@
-/*******************************************************************************
+﻿/*******************************************************************************
  * Copyright (C) 2025-2026 Kamersoft
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
@@ -36,69 +36,79 @@ public static class IResultExtensions
 	internal readonly record struct HandlerType(Type Type, IEnumerable<Type> Interfaces);
 
 	/// <summary>
-	/// Provides extension methods for configuring and managing services within an <see cref="IServiceCollection"/>
+	/// Registers the specified pipeline decorator type as a transient implementation of the <see cref="IPipelineDecorator{TRequest}"/>
+	/// interface in the service collection.
 	/// </summary>
-	/// <param name="services">The service collection to extend. Cannot be null.</param>"
-	extension(IServiceCollection services)
+	/// <param name="services">The IServiceCollection instance to which the cache type resolver will be added.</param>
+	/// <remarks>Use this method to add custom pipeline decorators to the dependency injection
+	/// container. The decorator type must implement the <see cref="IPipelineDecorator{TRequest}"/> interface to be registered
+	/// successfully.</remarks>
+	/// <param name="pipeline">The type of the pipeline decorator to register. Must implement the <see cref="IPipelineDecorator{TRequest}"/> interface and have
+	/// public constructors.</param>
+	/// <returns>The updated IServiceCollection instance with the pipeline decorator registered.</returns>
+	/// <exception cref="InvalidOperationException">Thrown if pipeline does not implement the <see cref="IPipelineDecorator{TRequest}"/> interface.</exception>
+	public static IServiceCollection AddXPipelineDecorator(this IServiceCollection services, [DynamicallyAccessedMembers(DynamicallyAccessedMemberTypes.Interfaces | DynamicallyAccessedMemberTypes.PublicConstructors)] Type pipeline)
 	{
-		/// <summary>
-		/// Registers the specified pipeline decorator type as a transient implementation of the <see cref="IPipelineDecorator{TRequest}"/>
-		/// interface in the service collection.
-		/// </summary>
-		/// <remarks>Use this method to add custom pipeline decorators to the dependency injection
-		/// container. The decorator type must implement the <see cref="IPipelineDecorator{TRequest}"/> interface to be registered
-		/// successfully.</remarks>
-		/// <param name="pipeline">The type of the pipeline decorator to register. Must implement the <see cref="IPipelineDecorator{TRequest}"/> interface and have
-		/// public constructors.</param>
-		/// <returns>The updated IServiceCollection instance with the pipeline decorator registered.</returns>
-		/// <exception cref="InvalidOperationException">Thrown if pipeline does not implement the <see cref="IPipelineDecorator{TRequest}"/> interface.</exception>
-		public IServiceCollection AddXPipelineDecorator([DynamicallyAccessedMembers(DynamicallyAccessedMemberTypes.Interfaces | DynamicallyAccessedMemberTypes.PublicConstructors)] Type pipeline)
+		ArgumentNullException.ThrowIfNull(pipeline);
+		ArgumentNullException.ThrowIfNull(services);
+
+		if (!pipeline.GetInterfaces().Any(i =>
+				i.IsGenericType
+				&& i.GetGenericTypeDefinition() == typeof(IPipelineDecorator<>)))
 		{
-			ArgumentNullException.ThrowIfNull(pipeline);
-			ArgumentNullException.ThrowIfNull(services);
-
-			if (!pipeline.GetInterfaces().Any(i =>
-					i.IsGenericType
-					&& i.GetGenericTypeDefinition() == typeof(IPipelineDecorator<>)))
-			{
-				throw new InvalidOperationException(
-					$"{pipeline.Name} does not implement IPipelineDecorator<> interface.");
-			}
-
-			return services.AddScoped(typeof(IPipelineDecorator<>), pipeline);
+			throw new InvalidOperationException(
+				$"{pipeline.Name} does not implement IPipelineDecorator<> interface.");
 		}
 
-		/// <summary>
-		/// Registers all sealed request handler types from the specified assemblies with the dependency injection container as
-		/// transient services.
-		/// </summary>
-		/// <remarks>Handler types are identified by their implementation of supported handler interfaces,
-		/// such as <see cref="IRequestHandler{TRequest}"/>, <see cref="IRequestContextHandler{TRequest}"/>, and related
-		/// interfaces. Only sealed, non-abstract, non-generic classes are registered. Each handler interface is
-		/// registered as a transient service. This method requires dynamic code generation and may require unreferenced
-		/// code; see the method attributes for details.</remarks>
-		/// <param name="assemblies">An array of assemblies to scan for handler implementations. If not specified or empty, the calling assembly
-		/// is used.</param>
-		/// <returns>The <see cref="IServiceCollection"/> instance with handler services registered.</returns>
-		[RequiresDynamicCode("Dynamic code generation is required for this method.")]
-		[RequiresUnreferencedCode("Calls MakeGenericMethod which may require unreferenced code.")]
-		public IServiceCollection AddXRequestHandlers(params IEnumerable<Assembly> assemblies)
-		{
-			Assembly[] assembliesArray = assemblies as Assembly[] ?? [.. assemblies];
-			assembliesArray = assembliesArray is { Length: > 0 } ? assembliesArray : [Assembly.GetCallingAssembly()];
+		return services.AddScoped(typeof(IPipelineDecorator<>), pipeline);
+	}
 
-			IEnumerable<HandlerType> handlerTypes = assembliesArray.SelectMany(assembly =>
-					assembly.GetTypes()
-						.Where(type =>
-							type is
-							{
-								IsClass: true,
-								IsAbstract: false,
-								IsSealed: true,
-								IsGenericType: false
-							}
-							&& type.GetInterfaces().Any(i =>
-								i.IsGenericType &&
+	/// <summary>
+	/// Registers all sealed request handler types from the specified assemblies with the dependency injection container as
+	/// transient services.
+	/// </summary>
+	/// <param name="services">The IServiceCollection instance to which the cache type resolver will be added.</param>
+	/// <remarks>Handler types are identified by their implementation of supported handler interfaces,
+	/// such as <see cref="IRequestHandler{TRequest}"/>, <see cref="IRequestContextHandler{TRequest}"/>, and related
+	/// interfaces. Only sealed, non-abstract, non-generic classes are registered. Each handler interface is
+	/// registered as a transient service. This method requires dynamic code generation and may require unreferenced
+	/// code; see the method attributes for details.</remarks>
+	/// <param name="assemblies">An array of assemblies to scan for handler implementations. If not specified or empty, the calling assembly
+	/// is used.</param>
+	/// <returns>The <see cref="IServiceCollection"/> instance with handler services registered.</returns>
+	[RequiresDynamicCode("Dynamic code generation is required for this method.")]
+	[RequiresUnreferencedCode("Calls MakeGenericMethod which may require unreferenced code.")]
+	public static IServiceCollection AddXRequestHandlers(this IServiceCollection services, params IEnumerable<Assembly> assemblies)
+	{
+		Assembly[] assembliesArray = assemblies as Assembly[] ?? [.. assemblies];
+		assembliesArray = assembliesArray is { Length: > 0 } ? assembliesArray : [Assembly.GetCallingAssembly()];
+
+		IEnumerable<HandlerType> handlerTypes = assembliesArray.SelectMany(assembly =>
+				assembly.GetTypes()
+					.Where(type =>
+						type is
+						{
+							IsClass: true,
+							IsAbstract: false,
+							IsSealed: true,
+							IsGenericType: false
+						}
+						&& type.GetInterfaces().Any(i =>
+							i.IsGenericType &&
+							(i.GetGenericTypeDefinition() == typeof(IRequestHandler<>)
+							|| i.GetGenericTypeDefinition() == typeof(IRequestHandler<,>)
+							|| i.GetGenericTypeDefinition() == typeof(IRequestContextHandler<>)
+							|| i.GetGenericTypeDefinition() == typeof(IRequestContextHandler<,>)
+							|| i.GetGenericTypeDefinition() == typeof(IRequestPostHandler<>)
+							|| i.GetGenericTypeDefinition() == typeof(IStreamRequestHandler<,>)
+							|| i.GetGenericTypeDefinition() == typeof(IStreamPagedRequestHandler<,>)
+							|| i.GetGenericTypeDefinition() == typeof(IStreamRequestContextHandler<,>)
+							|| i.GetGenericTypeDefinition() == typeof(IStreamPagedRequestContextHandler<,>)
+							|| i.GetGenericTypeDefinition() == typeof(IRequestPreHandler<>)))))
+			.Select(type => new HandlerType(
+				type,
+				type.GetInterfaces()
+					.Where(i => i.IsGenericType &&
 								(i.GetGenericTypeDefinition() == typeof(IRequestHandler<>)
 								|| i.GetGenericTypeDefinition() == typeof(IRequestHandler<,>)
 								|| i.GetGenericTypeDefinition() == typeof(IRequestContextHandler<>)
@@ -108,31 +118,16 @@ public static class IResultExtensions
 								|| i.GetGenericTypeDefinition() == typeof(IStreamPagedRequestHandler<,>)
 								|| i.GetGenericTypeDefinition() == typeof(IStreamRequestContextHandler<,>)
 								|| i.GetGenericTypeDefinition() == typeof(IStreamPagedRequestContextHandler<,>)
-								|| i.GetGenericTypeDefinition() == typeof(IRequestPreHandler<>)))))
-				.Select(type => new HandlerType(
-					type,
-					type.GetInterfaces()
-						.Where(i => i.IsGenericType &&
-									(i.GetGenericTypeDefinition() == typeof(IRequestHandler<>)
-									|| i.GetGenericTypeDefinition() == typeof(IRequestHandler<,>)
-									|| i.GetGenericTypeDefinition() == typeof(IRequestContextHandler<>)
-									|| i.GetGenericTypeDefinition() == typeof(IRequestContextHandler<,>)
-									|| i.GetGenericTypeDefinition() == typeof(IRequestPostHandler<>)
-									|| i.GetGenericTypeDefinition() == typeof(IStreamRequestHandler<,>)
-									|| i.GetGenericTypeDefinition() == typeof(IStreamPagedRequestHandler<,>)
-									|| i.GetGenericTypeDefinition() == typeof(IStreamRequestContextHandler<,>)
-									|| i.GetGenericTypeDefinition() == typeof(IStreamPagedRequestContextHandler<,>)
-									|| i.GetGenericTypeDefinition() == typeof(IRequestPreHandler<>)))));
+								|| i.GetGenericTypeDefinition() == typeof(IRequestPreHandler<>)))));
 
-			foreach (HandlerType handlerType in handlerTypes)
+		foreach (HandlerType handlerType in handlerTypes)
+		{
+			foreach (Type interfaceType in handlerType.Interfaces)
 			{
-				foreach (Type interfaceType in handlerType.Interfaces)
-				{
-					_ = services.AddScoped(interfaceType, handlerType.Type);
-				}
+				_ = services.AddScoped(interfaceType, handlerType.Type);
 			}
-
-			return services;
 		}
+
+		return services;
 	}
 }

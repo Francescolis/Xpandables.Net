@@ -1,4 +1,4 @@
-/*******************************************************************************
+﻿/*******************************************************************************
  * Copyright (C) 2025-2026 Kamersoft
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
@@ -23,624 +23,650 @@ namespace System.Linq;
 /// </summary>
 public static class PaginationExtensions
 {
-    /// <summary>
-    /// Pagination and filtering operations over an <see cref="IAsyncPagedEnumerable{TSource}"/>.
-    /// </summary>
-    /// <typeparam name="TSource">The element type of the source sequence.</typeparam>
-    /// <param name="source">The source asynchronous paged enumerable.</param>
-    extension<TSource>(IAsyncPagedEnumerable<TSource> source)
-    {
-        #region Take / Skip
+	#region Take / Skip
 
-        /// <summary>
-        /// Returns a specified number of contiguous elements from the start of the asynchronous paged sequence.
-        /// </summary>
-        /// <param name="count">The number of elements to return.</param>
-        /// <returns>An <see cref="IAsyncPagedEnumerable{TSource}"/> that contains the specified number of elements from the start of the source sequence.</returns>
-        /// <exception cref="ArgumentNullException">Thrown when the source sequence is null.</exception>
-        /// <exception cref="ArgumentOutOfRangeException">Thrown when <paramref name="count"/> is negative.</exception>
-        public IAsyncPagedEnumerable<TSource> TakePaged(int count)
-        {
-            ArgumentNullException.ThrowIfNull(source);
-            ArgumentOutOfRangeException.ThrowIfNegative(count);
+	/// <summary>
+	/// Returns a specified number of contiguous elements from the start of the asynchronous paged sequence.
+	/// </summary>
+	/// <typeparam name="TSource">Source element type.</typeparam>
+	/// <param name="source">The source asynchronous paged sequence.</param>
+	/// <param name="count">The number of elements to return.</param>
+	/// <returns>An <see cref="IAsyncPagedEnumerable{TSource}"/> that contains the specified number of elements from the start of the source sequence.</returns>
+	/// <exception cref="ArgumentNullException">Thrown when the source sequence is null.</exception>
+	/// <exception cref="ArgumentOutOfRangeException">Thrown when <paramref name="count"/> is negative.</exception>
+	public static IAsyncPagedEnumerable<TSource> TakePaged<TSource>(this IAsyncPagedEnumerable<TSource> source, int count)
+	{
+		ArgumentNullException.ThrowIfNull(source);
+		ArgumentOutOfRangeException.ThrowIfNegative(count);
 
-            if (count == 0)
-            {
-                return AsyncPagedEnumerable.Create(
-                    AsyncEnumerable.Empty<TSource>(),
-                    ct => new ValueTask<Pagination>(source.GetPaginationAsync(ct)));
-            }
+		if (count == 0)
+		{
+			return AsyncPagedEnumerable.Create(
+				AsyncEnumerable.Empty<TSource>(),
+				ct => new ValueTask<Pagination>(source.GetPaginationAsync(ct)));
+		}
 
-            async IAsyncEnumerable<TSource> Iterator([EnumeratorCancellation] CancellationToken ct = default)
-            {
-                ct.ThrowIfCancellationRequested();
+		async IAsyncEnumerable<TSource> Iterator([EnumeratorCancellation] CancellationToken ct = default)
+		{
+			ct.ThrowIfCancellationRequested();
 
-                int taken = 0;
-                await foreach (TSource? item in source.WithCancellation(ct).ConfigureAwait(false))
-                {
-                    if (taken >= count)
-					{
-						yield break;
-					}
-
-					yield return item;
-                    taken++;
-                }
-            }
-
-            return AsyncPagedEnumerable.Create(
-                Iterator(),
-                ct => new ValueTask<Pagination>(source.GetPaginationAsync(ct)));
-        }
-
-        /// <summary>
-        /// Bypasses a specified number of elements in the asynchronous paged sequence and returns the remaining elements.
-        /// </summary>
-        /// <param name="count">The number of elements to skip before returning the remaining elements.</param>
-        /// <returns>An <see cref="IAsyncPagedEnumerable{TSource}"/> that contains the elements that occur after the specified index in the source sequence.</returns>
-        /// <exception cref="ArgumentNullException">Thrown when the source sequence is null.</exception>
-        /// <exception cref="ArgumentOutOfRangeException">Thrown when <paramref name="count"/> is negative.</exception>
-        public IAsyncPagedEnumerable<TSource> SkipPaged(int count)
-        {
-            ArgumentNullException.ThrowIfNull(source);
-            ArgumentOutOfRangeException.ThrowIfNegative(count);
-
-            if (count == 0)
+			int taken = 0;
+			await foreach (TSource? item in source.WithCancellation(ct).ConfigureAwait(false))
 			{
-				return source;
+				if (taken >= count)
+				{
+					yield break;
+				}
+
+				yield return item;
+				taken++;
+			}
+		}
+
+		return AsyncPagedEnumerable.Create(
+			Iterator(),
+			ct => new ValueTask<Pagination>(source.GetPaginationAsync(ct)));
+	}
+
+	/// <summary>
+	/// Bypasses a specified number of elements in the asynchronous paged sequence and returns the remaining elements.
+	/// </summary>
+	/// <typeparam name="TSource">Source element type.</typeparam>
+	/// <param name="source">The source asynchronous paged sequence.</param>
+	/// <param name="count">The number of elements to skip before returning the remaining elements.</param>
+	/// <returns>An <see cref="IAsyncPagedEnumerable{TSource}"/> that contains the elements that occur after the specified index in the source sequence.</returns>
+	/// <exception cref="ArgumentNullException">Thrown when the source sequence is null.</exception>
+	/// <exception cref="ArgumentOutOfRangeException">Thrown when <paramref name="count"/> is negative.</exception>
+	public static IAsyncPagedEnumerable<TSource> SkipPaged<TSource>(this IAsyncPagedEnumerable<TSource> source, int count)
+	{
+		ArgumentNullException.ThrowIfNull(source);
+		ArgumentOutOfRangeException.ThrowIfNegative(count);
+
+		if (count == 0)
+		{
+			return source;
+		}
+
+		async IAsyncEnumerable<TSource> Iterator([EnumeratorCancellation] CancellationToken ct = default)
+		{
+			ct.ThrowIfCancellationRequested();
+
+			int skipped = 0;
+			await foreach (TSource? item in source.WithCancellation(ct).ConfigureAwait(false))
+			{
+				if (skipped < count)
+				{
+					skipped++;
+					continue;
+				}
+				yield return item;
+			}
+		}
+
+		return AsyncPagedEnumerable.Create(
+			Iterator(),
+			ct => new ValueTask<Pagination>(source.GetPaginationAsync(ct)));
+	}
+
+	/// <summary>
+	/// Returns elements from the asynchronous paged sequence as long as a specified condition is true.
+	/// </summary>
+	/// <typeparam name="TSource">Source element type.</typeparam>
+	/// <param name="source">The source asynchronous paged sequence.</param>
+	/// <param name="predicate">A function to test each element for a condition.</param>
+	/// <returns>An <see cref="IAsyncPagedEnumerable{TSource}"/> that contains elements from the source sequence that occur before the element at which the test no longer passes.</returns>
+	/// <exception cref="ArgumentNullException">Thrown when the source sequence or predicate is null.</exception>
+	public static IAsyncPagedEnumerable<TSource> TakeWhilePaged<TSource>(this IAsyncPagedEnumerable<TSource> source, Func<TSource, bool> predicate)
+	{
+		ArgumentNullException.ThrowIfNull(source);
+		ArgumentNullException.ThrowIfNull(predicate);
+
+		async IAsyncEnumerable<TSource> Iterator([EnumeratorCancellation] CancellationToken ct = default)
+		{
+			ct.ThrowIfCancellationRequested();
+
+			await foreach (TSource? item in source.WithCancellation(ct).ConfigureAwait(false))
+			{
+				if (!predicate(item))
+				{
+					yield break;
+				}
+
+				yield return item;
+			}
+		}
+
+		return AsyncPagedEnumerable.Create(
+			Iterator(),
+			ct => new ValueTask<Pagination>(source.GetPaginationAsync(ct)));
+	}
+
+	/// <summary>
+	/// Returns elements from the asynchronous paged sequence as long as a specified condition is true, with the predicate also receiving the element's index.
+	/// </summary>
+	/// <typeparam name="TSource">Source element type.</typeparam>
+	/// <param name="source">The source asynchronous paged sequence.</param>
+	/// <param name="predicate">A function to test each element for a condition; the second parameter represents the index of the element.</param>
+	/// <returns>An <see cref="IAsyncPagedEnumerable{TSource}"/> that contains elements from the source sequence that occur before the element at which the test no longer passes.</returns>
+	/// <exception cref="ArgumentNullException">Thrown when the source sequence or predicate is null.</exception>
+	public static IAsyncPagedEnumerable<TSource> TakeWhilePaged<TSource>(this IAsyncPagedEnumerable<TSource> source, Func<TSource, int, bool> predicate)
+	{
+		ArgumentNullException.ThrowIfNull(source);
+		ArgumentNullException.ThrowIfNull(predicate);
+
+		async IAsyncEnumerable<TSource> Iterator([EnumeratorCancellation] CancellationToken ct = default)
+		{
+			ct.ThrowIfCancellationRequested();
+
+			int index = 0;
+			await foreach (TSource? item in source.WithCancellation(ct).ConfigureAwait(false))
+			{
+				if (!predicate(item, index))
+				{
+					yield break;
+				}
+
+				yield return item;
+				index++;
+			}
+		}
+
+		return AsyncPagedEnumerable.Create(
+			Iterator(),
+			ct => new ValueTask<Pagination>(source.GetPaginationAsync(ct)));
+	}
+
+	/// <summary>
+	/// Bypasses elements in the asynchronous paged sequence as long as a specified condition is true and then returns the remaining elements.
+	/// </summary>
+	/// <typeparam name="TSource">Source element type.</typeparam>
+	/// <param name="source">The source asynchronous paged sequence.</param>
+	/// <param name="predicate">A function to test each element for a condition.</param>
+	/// <returns>An <see cref="IAsyncPagedEnumerable{TSource}"/> that contains the elements from the source sequence starting at the first element in the linear series that does not pass the test specified by predicate.</returns>
+	/// <exception cref="ArgumentNullException">Thrown when the source sequence or predicate is null.</exception>
+	public static IAsyncPagedEnumerable<TSource> SkipWhilePaged<TSource>(this IAsyncPagedEnumerable<TSource> source, Func<TSource, bool> predicate)
+	{
+		ArgumentNullException.ThrowIfNull(source);
+		ArgumentNullException.ThrowIfNull(predicate);
+
+		async IAsyncEnumerable<TSource> Iterator([EnumeratorCancellation] CancellationToken ct = default)
+		{
+			ct.ThrowIfCancellationRequested();
+
+			bool yielding = false;
+			await foreach (TSource? item in source.WithCancellation(ct).ConfigureAwait(false))
+			{
+				if (!yielding && !predicate(item))
+				{
+					yielding = true;
+				}
+
+				if (yielding)
+				{
+					yield return item;
+				}
+			}
+		}
+
+		return AsyncPagedEnumerable.Create(
+			Iterator(),
+			ct => new ValueTask<Pagination>(source.GetPaginationAsync(ct)));
+	}
+
+	/// <summary>
+	/// Bypasses elements in the asynchronous paged sequence as long as a specified condition is true and then returns the remaining elements, with the predicate also receiving the element's index.
+	/// </summary>
+	/// <typeparam name="TSource">Source element type.</typeparam>
+	/// <param name="source">The source asynchronous paged sequence.</param>
+	/// <param name="predicate">A function to test each element for a condition; the second parameter represents the index of the element.</param>
+	/// <returns>An <see cref="IAsyncPagedEnumerable{TSource}"/> that contains the elements from the source sequence starting at the first element in the linear series that does not pass the test specified by predicate.</returns>
+	/// <exception cref="ArgumentNullException">Thrown when the source sequence or predicate is null.</exception>
+	public static IAsyncPagedEnumerable<TSource> SkipWhilePaged<TSource>(this IAsyncPagedEnumerable<TSource> source, Func<TSource, int, bool> predicate)
+	{
+		ArgumentNullException.ThrowIfNull(source);
+		ArgumentNullException.ThrowIfNull(predicate);
+
+		async IAsyncEnumerable<TSource> Iterator([EnumeratorCancellation] CancellationToken ct = default)
+		{
+			ct.ThrowIfCancellationRequested();
+
+			bool yielding = false;
+			int index = 0;
+			await foreach (TSource? item in source.WithCancellation(ct).ConfigureAwait(false))
+			{
+				if (!yielding && !predicate(item, index))
+				{
+					yielding = true;
+				}
+
+				if (yielding)
+				{
+					yield return item;
+				}
+
+				index++;
+			}
+		}
+
+		return AsyncPagedEnumerable.Create(
+			Iterator(),
+			ct => new ValueTask<Pagination>(source.GetPaginationAsync(ct)));
+	}
+
+	/// <summary>
+	/// Returns the last specified number of contiguous elements from the end of the asynchronous paged sequence.
+	/// </summary>
+	/// <typeparam name="TSource">Source element type.</typeparam>
+	/// <param name="source">The source asynchronous paged sequence.</param>
+	/// <param name="count">The number of elements to return from the end of the sequence.</param>
+	/// <returns>An <see cref="IAsyncPagedEnumerable{TSource}"/> that contains the specified number of elements from the end of the source sequence.</returns>
+	/// <exception cref="ArgumentNullException">Thrown when the source sequence is null.</exception>
+	/// <exception cref="ArgumentOutOfRangeException">Thrown when <paramref name="count"/> is negative.</exception>
+	public static IAsyncPagedEnumerable<TSource> TakeLastPaged<TSource>(this IAsyncPagedEnumerable<TSource> source, int count)
+	{
+		ArgumentNullException.ThrowIfNull(source);
+		ArgumentOutOfRangeException.ThrowIfNegative(count);
+
+		if (count == 0)
+		{
+			return AsyncPagedEnumerable.Create(
+				AsyncEnumerable.Empty<TSource>(),
+				ct => new ValueTask<Pagination>(source.GetPaginationAsync(ct)));
+		}
+
+		async IAsyncEnumerable<TSource> Iterator([EnumeratorCancellation] CancellationToken ct = default)
+		{
+			ct.ThrowIfCancellationRequested();
+
+			var buffer = new Queue<TSource>(count);
+			await foreach (TSource? item in source.WithCancellation(ct).ConfigureAwait(false))
+			{
+				if (buffer.Count == count)
+				{
+					buffer.Dequeue();
+				}
+
+				buffer.Enqueue(item);
 			}
 
-			async IAsyncEnumerable<TSource> Iterator([EnumeratorCancellation] CancellationToken ct = default)
-            {
-                ct.ThrowIfCancellationRequested();
-
-                int skipped = 0;
-                await foreach (TSource? item in source.WithCancellation(ct).ConfigureAwait(false))
-                {
-                    if (skipped < count)
-                    {
-                        skipped++;
-                        continue;
-                    }
-                    yield return item;
-                }
-            }
-
-            return AsyncPagedEnumerable.Create(
-                Iterator(),
-                ct => new ValueTask<Pagination>(source.GetPaginationAsync(ct)));
-        }
-
-        /// <summary>
-        /// Returns elements from the asynchronous paged sequence as long as a specified condition is true.
-        /// </summary>
-        /// <param name="predicate">A function to test each element for a condition.</param>
-        /// <returns>An <see cref="IAsyncPagedEnumerable{TSource}"/> that contains elements from the source sequence that occur before the element at which the test no longer passes.</returns>
-        /// <exception cref="ArgumentNullException">Thrown when the source sequence or predicate is null.</exception>
-        public IAsyncPagedEnumerable<TSource> TakeWhilePaged(Func<TSource, bool> predicate)
-        {
-            ArgumentNullException.ThrowIfNull(source);
-            ArgumentNullException.ThrowIfNull(predicate);
-
-                async IAsyncEnumerable<TSource> Iterator([EnumeratorCancellation] CancellationToken ct = default)
-                {
-                    ct.ThrowIfCancellationRequested();
-
-                    await foreach (TSource? item in source.WithCancellation(ct).ConfigureAwait(false))
-                    {
-                        if (!predicate(item))
-					{
-						yield break;
-					}
-
-					yield return item;
-                    }
-                }
-
-                return AsyncPagedEnumerable.Create(
-                    Iterator(),
-                    ct => new ValueTask<Pagination>(source.GetPaginationAsync(ct)));
-            }
-
-            /// <summary>
-            /// Returns elements from the asynchronous paged sequence as long as a specified condition is true, with the predicate also receiving the element's index.
-            /// </summary>
-            /// <param name="predicate">A function to test each element for a condition; the second parameter represents the index of the element.</param>
-            /// <returns>An <see cref="IAsyncPagedEnumerable{TSource}"/> that contains elements from the source sequence that occur before the element at which the test no longer passes.</returns>
-            /// <exception cref="ArgumentNullException">Thrown when the source sequence or predicate is null.</exception>
-            public IAsyncPagedEnumerable<TSource> TakeWhilePaged(Func<TSource, int, bool> predicate)
-            {
-                ArgumentNullException.ThrowIfNull(source);
-                ArgumentNullException.ThrowIfNull(predicate);
-
-                async IAsyncEnumerable<TSource> Iterator([EnumeratorCancellation] CancellationToken ct = default)
-                {
-                    ct.ThrowIfCancellationRequested();
-
-                    int index = 0;
-                    await foreach (TSource? item in source.WithCancellation(ct).ConfigureAwait(false))
-                    {
-                        if (!predicate(item, index))
-					{
-						yield break;
-					}
-
-					yield return item;
-                        index++;
-                    }
-                }
-
-            return AsyncPagedEnumerable.Create(
-                Iterator(),
-                ct => new ValueTask<Pagination>(source.GetPaginationAsync(ct)));
-        }
-
-        /// <summary>
-        /// Bypasses elements in the asynchronous paged sequence as long as a specified condition is true and then returns the remaining elements.
-        /// </summary>
-        /// <param name="predicate">A function to test each element for a condition.</param>
-        /// <returns>An <see cref="IAsyncPagedEnumerable{TSource}"/> that contains the elements from the source sequence starting at the first element in the linear series that does not pass the test specified by predicate.</returns>
-        /// <exception cref="ArgumentNullException">Thrown when the source sequence or predicate is null.</exception>
-        public IAsyncPagedEnumerable<TSource> SkipWhilePaged(Func<TSource, bool> predicate)
-        {
-            ArgumentNullException.ThrowIfNull(source);
-            ArgumentNullException.ThrowIfNull(predicate);
-
-                async IAsyncEnumerable<TSource> Iterator([EnumeratorCancellation] CancellationToken ct = default)
-                {
-                    ct.ThrowIfCancellationRequested();
-
-                    bool yielding = false;
-                    await foreach (TSource? item in source.WithCancellation(ct).ConfigureAwait(false))
-                    {
-                        if (!yielding && !predicate(item))
-					{
-						yielding = true;
-					}
-
-					if (yielding)
-					{
-						yield return item;
-					}
-				}
-                }
-
-                return AsyncPagedEnumerable.Create(
-                    Iterator(),
-                    ct => new ValueTask<Pagination>(source.GetPaginationAsync(ct)));
-            }
-
-            /// <summary>
-            /// Bypasses elements in the asynchronous paged sequence as long as a specified condition is true and then returns the remaining elements, with the predicate also receiving the element's index.
-            /// </summary>
-            /// <param name="predicate">A function to test each element for a condition; the second parameter represents the index of the element.</param>
-            /// <returns>An <see cref="IAsyncPagedEnumerable{TSource}"/> that contains the elements from the source sequence starting at the first element in the linear series that does not pass the test specified by predicate.</returns>
-            /// <exception cref="ArgumentNullException">Thrown when the source sequence or predicate is null.</exception>
-            public IAsyncPagedEnumerable<TSource> SkipWhilePaged(Func<TSource, int, bool> predicate)
-            {
-                ArgumentNullException.ThrowIfNull(source);
-                ArgumentNullException.ThrowIfNull(predicate);
-
-                async IAsyncEnumerable<TSource> Iterator([EnumeratorCancellation] CancellationToken ct = default)
-                {
-                    ct.ThrowIfCancellationRequested();
-
-                    bool yielding = false;
-                    int index = 0;
-                    await foreach (TSource? item in source.WithCancellation(ct).ConfigureAwait(false))
-                    {
-                        if (!yielding && !predicate(item, index))
-					{
-						yielding = true;
-					}
-
-					if (yielding)
-					{
-						yield return item;
-					}
-
-					index++;
-                    }
-                }
-
-            return AsyncPagedEnumerable.Create(
-                Iterator(),
-                ct => new ValueTask<Pagination>(source.GetPaginationAsync(ct)));
-        }
-
-        /// <summary>
-        /// Returns the last specified number of contiguous elements from the end of the asynchronous paged sequence.
-        /// </summary>
-        /// <param name="count">The number of elements to return from the end of the sequence.</param>
-        /// <returns>An <see cref="IAsyncPagedEnumerable{TSource}"/> that contains the specified number of elements from the end of the source sequence.</returns>
-        /// <exception cref="ArgumentNullException">Thrown when the source sequence is null.</exception>
-        /// <exception cref="ArgumentOutOfRangeException">Thrown when <paramref name="count"/> is negative.</exception>
-        public IAsyncPagedEnumerable<TSource> TakeLastPaged(int count)
-        {
-            ArgumentNullException.ThrowIfNull(source);
-            ArgumentOutOfRangeException.ThrowIfNegative(count);
-
-            if (count == 0)
-            {
-                return AsyncPagedEnumerable.Create(
-                    AsyncEnumerable.Empty<TSource>(),
-                    ct => new ValueTask<Pagination>(source.GetPaginationAsync(ct)));
-            }
-
-            async IAsyncEnumerable<TSource> Iterator([EnumeratorCancellation] CancellationToken ct = default)
-            {
-                ct.ThrowIfCancellationRequested();
-
-                var buffer = new Queue<TSource>(count);
-                await foreach (TSource? item in source.WithCancellation(ct).ConfigureAwait(false))
-                {
-                    if (buffer.Count == count)
-					{
-						buffer.Dequeue();
-					}
-
-					buffer.Enqueue(item);
-                }
-
-                while (buffer.Count > 0)
-                {
-                    ct.ThrowIfCancellationRequested();
-                    yield return buffer.Dequeue();
-                }
-            }
-
-            return AsyncPagedEnumerable.Create(
-                Iterator(),
-                ct => new ValueTask<Pagination>(source.GetPaginationAsync(ct)));
-        }
-
-        /// <summary>
-        /// Bypasses the last specified number of elements in the asynchronous paged sequence and returns the remaining elements.
-        /// </summary>
-        /// <param name="count">The number of elements to omit from the end of the sequence.</param>
-        /// <returns>An <see cref="IAsyncPagedEnumerable{TSource}"/> that contains the elements that occur before the omitted elements at the end of the source sequence.</returns>
-        /// <exception cref="ArgumentNullException">Thrown when the source sequence is null.</exception>
-        /// <exception cref="ArgumentOutOfRangeException">Thrown when <paramref name="count"/> is negative.</exception>
-        public IAsyncPagedEnumerable<TSource> SkipLastPaged(int count)
-        {
-            ArgumentNullException.ThrowIfNull(source);
-            ArgumentOutOfRangeException.ThrowIfNegative(count);
-
-            if (count == 0)
+			while (buffer.Count > 0)
 			{
-				return source;
+				ct.ThrowIfCancellationRequested();
+				yield return buffer.Dequeue();
 			}
+		}
 
-			async IAsyncEnumerable<TSource> Iterator([EnumeratorCancellation] CancellationToken ct = default)
-            {
-                ct.ThrowIfCancellationRequested();
+		return AsyncPagedEnumerable.Create(
+			Iterator(),
+			ct => new ValueTask<Pagination>(source.GetPaginationAsync(ct)));
+	}
 
-                var buffer = new Queue<TSource>(count + 1);
-                await foreach (TSource? item in source.WithCancellation(ct).ConfigureAwait(false))
-                {
-                    buffer.Enqueue(item);
-                    if (buffer.Count > count)
-					{
-						yield return buffer.Dequeue();
-					}
+	/// <summary>
+	/// Bypasses the last specified number of elements in the asynchronous paged sequence and returns the remaining elements.
+	/// </summary>
+	/// <typeparam name="TSource">Source element type.</typeparam>
+	/// <param name="source">The source asynchronous paged sequence.</param>
+	/// <param name="count">The number of elements to omit from the end of the sequence.</param>
+	/// <returns>An <see cref="IAsyncPagedEnumerable{TSource}"/> that contains the elements that occur before the omitted elements at the end of the source sequence.</returns>
+	/// <exception cref="ArgumentNullException">Thrown when the source sequence is null.</exception>
+	/// <exception cref="ArgumentOutOfRangeException">Thrown when <paramref name="count"/> is negative.</exception>
+	public static IAsyncPagedEnumerable<TSource> SkipLastPaged<TSource>(this IAsyncPagedEnumerable<TSource> source, int count)
+	{
+		ArgumentNullException.ThrowIfNull(source);
+		ArgumentOutOfRangeException.ThrowIfNegative(count);
+
+		if (count == 0)
+		{
+			return source;
+		}
+
+		async IAsyncEnumerable<TSource> Iterator([EnumeratorCancellation] CancellationToken ct = default)
+		{
+			ct.ThrowIfCancellationRequested();
+
+			var buffer = new Queue<TSource>(count + 1);
+			await foreach (TSource? item in source.WithCancellation(ct).ConfigureAwait(false))
+			{
+				buffer.Enqueue(item);
+				if (buffer.Count > count)
+				{
+					yield return buffer.Dequeue();
 				}
-            }
+			}
+		}
 
-            return AsyncPagedEnumerable.Create(
-                Iterator(),
-                ct => new ValueTask<Pagination>(source.GetPaginationAsync(ct)));
-        }
+		return AsyncPagedEnumerable.Create(
+			Iterator(),
+			ct => new ValueTask<Pagination>(source.GetPaginationAsync(ct)));
+	}
 
-        #endregion
+	#endregion
 
-        #region Chunk / Batch
+	#region Chunk / Batch
 
-        /// <summary>
-        /// Splits the elements of the asynchronous paged sequence into chunks of a specified size.
-        /// </summary>
-        /// <param name="size">The size of each chunk.</param>
-        /// <returns>An <see cref="IAsyncPagedEnumerable{TSource}"/> that contains arrays of elements from the source sequence, each with the specified size except potentially the last chunk.</returns>
-        /// <exception cref="ArgumentNullException">Thrown when the source sequence is null.</exception>
-        /// <exception cref="ArgumentOutOfRangeException">Thrown when <paramref name="size"/> is less than 1.</exception>
-        public IAsyncPagedEnumerable<TSource[]> ChunkPaged(int size)
-        {
-            ArgumentNullException.ThrowIfNull(source);
-            ArgumentOutOfRangeException.ThrowIfLessThan(size, 1);
+	/// <summary>
+	/// Splits the elements of the asynchronous paged sequence into chunks of a specified size.
+	/// </summary>
+	/// <typeparam name="TSource">Source element type.</typeparam>
+	/// <param name="source">The source asynchronous paged sequence.</param>
+	/// <param name="size">The size of each chunk.</param>
+	/// <returns>An <see cref="IAsyncPagedEnumerable{TSource}"/> that contains arrays of elements from the source sequence, each with the specified size except potentially the last chunk.</returns>
+	/// <exception cref="ArgumentNullException">Thrown when the source sequence is null.</exception>
+	/// <exception cref="ArgumentOutOfRangeException">Thrown when <paramref name="size"/> is less than 1.</exception>
+	public static IAsyncPagedEnumerable<TSource[]> ChunkPaged<TSource>(this IAsyncPagedEnumerable<TSource> source, int size)
+	{
+		ArgumentNullException.ThrowIfNull(source);
+		ArgumentOutOfRangeException.ThrowIfLessThan(size, 1);
 
-            async IAsyncEnumerable<TSource[]> Iterator([EnumeratorCancellation] CancellationToken ct = default)
-            {
-                ct.ThrowIfCancellationRequested();
+		async IAsyncEnumerable<TSource[]> Iterator([EnumeratorCancellation] CancellationToken ct = default)
+		{
+			ct.ThrowIfCancellationRequested();
 
-                var chunk = new List<TSource>(size);
-                await foreach (TSource? item in source.WithCancellation(ct).ConfigureAwait(false))
-                {
-                    chunk.Add(item);
-                    if (chunk.Count == size)
-                    {
-                        yield return [.. chunk];
-                        chunk.Clear();
-                    }
-                }
-
-                if (chunk.Count > 0)
+			var chunk = new List<TSource>(size);
+			await foreach (TSource? item in source.WithCancellation(ct).ConfigureAwait(false))
+			{
+				chunk.Add(item);
+				if (chunk.Count == size)
 				{
 					yield return [.. chunk];
+					chunk.Clear();
 				}
 			}
 
-            return AsyncPagedEnumerable.Create(
-                Iterator(),
-                ct => new ValueTask<Pagination>(source.GetPaginationAsync(ct)));
-        }
+			if (chunk.Count > 0)
+			{
+				yield return [.. chunk];
+			}
+		}
 
-        #endregion
+		return AsyncPagedEnumerable.Create(
+			Iterator(),
+			ct => new ValueTask<Pagination>(source.GetPaginationAsync(ct)));
+	}
 
-        #region Where / Filter
+	#endregion
 
-        /// <summary>
-        /// Filters the elements of the asynchronous paged sequence based on a predicate.
-        /// </summary>
-        /// <param name="predicate">A function to test each element for a condition.</param>
-        /// <returns>An <see cref="IAsyncPagedEnumerable{TSource}"/> that contains elements from the source sequence that satisfy the condition.</returns>
-        /// <exception cref="ArgumentNullException">Thrown when the source sequence or predicate is null.</exception>
-        /// <remarks>
-        /// <para>
-        /// <b>Pagination Note:</b> The original pagination metadata is preserved, but may not accurately
-        /// reflect the filtered result count. Use MaterializationExtensions.MaterializeAsync
-        /// if accurate post-filter pagination is required.
-        /// </para>
-        /// </remarks>
-        public IAsyncPagedEnumerable<TSource> WherePaged(Func<TSource, bool> predicate)
-        {
-            ArgumentNullException.ThrowIfNull(source);
-            ArgumentNullException.ThrowIfNull(predicate);
+	#region Where / Filter
 
-                async IAsyncEnumerable<TSource> Iterator([EnumeratorCancellation] CancellationToken ct = default)
-                {
-                    ct.ThrowIfCancellationRequested();
+	/// <summary>
+	/// Filters the elements of the asynchronous paged sequence based on a predicate.
+	/// </summary>
+	/// <typeparam name="TSource">Source element type.</typeparam>
+	/// <param name="source">The source asynchronous paged sequence.</param>
+	/// <param name="predicate">A function to test each element for a condition.</param>
+	/// <returns>An <see cref="IAsyncPagedEnumerable{TSource}"/> that contains elements from the source sequence that satisfy the condition.</returns>
+	/// <exception cref="ArgumentNullException">Thrown when the source sequence or predicate is null.</exception>
+	/// <remarks>
+	/// <para>
+	/// <b>Pagination Note:</b> The original pagination metadata is preserved, but may not accurately
+	/// reflect the filtered result count. Use MaterializationExtensions.MaterializeAsync
+	/// if accurate post-filter pagination is required.
+	/// </para>
+	/// </remarks>
+	public static IAsyncPagedEnumerable<TSource> WherePaged<TSource>(this IAsyncPagedEnumerable<TSource> source, Func<TSource, bool> predicate)
+	{
+		ArgumentNullException.ThrowIfNull(source);
+		ArgumentNullException.ThrowIfNull(predicate);
 
-                    await foreach (TSource? item in source.WithCancellation(ct).ConfigureAwait(false))
-                    {
-                        if (predicate(item))
-					{
-						yield return item;
-					}
-				}
-                }
+		async IAsyncEnumerable<TSource> Iterator([EnumeratorCancellation] CancellationToken ct = default)
+		{
+			ct.ThrowIfCancellationRequested();
 
-                return AsyncPagedEnumerable.Create(
-                    Iterator(),
-                    ct => new ValueTask<Pagination>(source.GetPaginationAsync(ct)));
-            }
-
-            /// <summary>
-            /// Filters the elements of the asynchronous paged sequence based on a predicate that also uses the element's index.
-            /// </summary>
-            /// <param name="predicate">A function to test each element for a condition; the second parameter represents the index of the element.</param>
-            /// <returns>An <see cref="IAsyncPagedEnumerable{TSource}"/> that contains elements from the source sequence that satisfy the condition.</returns>
-            /// <exception cref="ArgumentNullException">Thrown when the source sequence or predicate is null.</exception>
-            public IAsyncPagedEnumerable<TSource> WherePaged(Func<TSource, int, bool> predicate)
-            {
-                ArgumentNullException.ThrowIfNull(source);
-                ArgumentNullException.ThrowIfNull(predicate);
-
-                async IAsyncEnumerable<TSource> Iterator([EnumeratorCancellation] CancellationToken ct = default)
-                {
-                    ct.ThrowIfCancellationRequested();
-
-                    int index = 0;
-                    await foreach (TSource? item in source.WithCancellation(ct).ConfigureAwait(false))
-                    {
-                        if (predicate(item, index))
-					{
-						yield return item;
-					}
-
-					index++;
-                    }
-                }
-
-                        return AsyncPagedEnumerable.Create(
-                            Iterator(),
-                            ct => new ValueTask<Pagination>(source.GetPaginationAsync(ct)));
-                    }
-
-                    /// <summary>
-                    /// Filters the elements of the asynchronous paged sequence based on an asynchronous predicate.
-                    /// </summary>
-                    /// <param name="predicate">An asynchronous function to test each element for a condition.</param>
-                    /// <returns>An <see cref="IAsyncPagedEnumerable{TSource}"/> that contains elements from the source sequence that satisfy the condition.</returns>
-                    /// <exception cref="ArgumentNullException">Thrown when the source sequence or predicate is null.</exception>
-                    /// <remarks>
-                    /// Use this overload when the predicate requires asynchronous evaluation, such as database lookups or API calls.
-                    /// </remarks>
-                    public IAsyncPagedEnumerable<TSource> WherePagedAsync(Func<TSource, ValueTask<bool>> predicate)
-                    {
-                        ArgumentNullException.ThrowIfNull(source);
-                        ArgumentNullException.ThrowIfNull(predicate);
-
-                        async IAsyncEnumerable<TSource> Iterator([EnumeratorCancellation] CancellationToken ct = default)
-                        {
-                            ct.ThrowIfCancellationRequested();
-
-                            await foreach (TSource? item in source.WithCancellation(ct).ConfigureAwait(false))
-                            {
-                                if (await predicate(item).ConfigureAwait(false))
-					{
-						yield return item;
-					}
-				}
-                        }
-
-                        return AsyncPagedEnumerable.Create(
-                            Iterator(),
-                            ct => new ValueTask<Pagination>(source.GetPaginationAsync(ct)));
-                    }
-
-                    /// <summary>
-                    /// Filters the elements of the asynchronous paged sequence based on a cancellation-aware asynchronous predicate.
-                    /// </summary>
-                    /// <param name="predicate">A cancellation-aware asynchronous function to test each element for a condition.</param>
-                    /// <returns>An <see cref="IAsyncPagedEnumerable{TSource}"/> that contains elements from the source sequence that satisfy the condition.</returns>
-                    /// <exception cref="ArgumentNullException">Thrown when the source sequence or predicate is null.</exception>
-                    /// <remarks>
-                    /// Use this overload when the predicate requires asynchronous evaluation with cancellation support.
-                    /// </remarks>
-                    public IAsyncPagedEnumerable<TSource> WherePagedAsync(Func<TSource, CancellationToken, ValueTask<bool>> predicate)
-                    {
-                        ArgumentNullException.ThrowIfNull(source);
-                        ArgumentNullException.ThrowIfNull(predicate);
-
-                        async IAsyncEnumerable<TSource> Iterator([EnumeratorCancellation] CancellationToken ct = default)
-                        {
-                            ct.ThrowIfCancellationRequested();
-
-                            await foreach (TSource? item in source.WithCancellation(ct).ConfigureAwait(false))
-                            {
-                                if (await predicate(item, ct).ConfigureAwait(false))
-					{
-						yield return item;
-					}
-				}
-                        }
-
-                        return AsyncPagedEnumerable.Create(
-                            Iterator(),
-                            ct => new ValueTask<Pagination>(source.GetPaginationAsync(ct)));
-                    }
-
-                    /// <summary>
-                    /// Returns elements from the asynchronous paged sequence as long as an asynchronous condition is true.
-                    /// </summary>
-                    /// <param name="predicate">An asynchronous function to test each element for a condition.</param>
-                    /// <returns>An <see cref="IAsyncPagedEnumerable{TSource}"/> that contains elements from the source sequence that occur before the element at which the test no longer passes.</returns>
-                    /// <exception cref="ArgumentNullException">Thrown when the source sequence or predicate is null.</exception>
-                    public IAsyncPagedEnumerable<TSource> TakeWhilePagedAsync(Func<TSource, ValueTask<bool>> predicate)
-                    {
-                        ArgumentNullException.ThrowIfNull(source);
-                        ArgumentNullException.ThrowIfNull(predicate);
-
-                        async IAsyncEnumerable<TSource> Iterator([EnumeratorCancellation] CancellationToken ct = default)
-                        {
-                            ct.ThrowIfCancellationRequested();
-
-                            await foreach (TSource? item in source.WithCancellation(ct).ConfigureAwait(false))
-                            {
-                                if (!await predicate(item).ConfigureAwait(false))
-					{
-						yield break;
-					}
-
+			await foreach (TSource? item in source.WithCancellation(ct).ConfigureAwait(false))
+			{
+				if (predicate(item))
+				{
 					yield return item;
-                            }
-                        }
+				}
+			}
+		}
 
-                        return AsyncPagedEnumerable.Create(
-                            Iterator(),
-                            ct => new ValueTask<Pagination>(source.GetPaginationAsync(ct)));
-                    }
+		return AsyncPagedEnumerable.Create(
+			Iterator(),
+			ct => new ValueTask<Pagination>(source.GetPaginationAsync(ct)));
+	}
 
-                    /// <summary>
-                    /// Returns elements from the asynchronous paged sequence as long as a cancellation-aware asynchronous condition is true.
-                    /// </summary>
-                    /// <param name="predicate">A cancellation-aware asynchronous function to test each element for a condition.</param>
-                    /// <returns>An <see cref="IAsyncPagedEnumerable{TSource}"/> that contains elements from the source sequence that occur before the element at which the test no longer passes.</returns>
-                    /// <exception cref="ArgumentNullException">Thrown when the source sequence or predicate is null.</exception>
-                    public IAsyncPagedEnumerable<TSource> TakeWhilePagedAsync(Func<TSource, CancellationToken, ValueTask<bool>> predicate)
-                    {
-                        ArgumentNullException.ThrowIfNull(source);
-                        ArgumentNullException.ThrowIfNull(predicate);
+	/// <summary>
+	/// Filters the elements of the asynchronous paged sequence based on a predicate that also uses the element's index.
+	/// </summary>
+	/// <typeparam name="TSource">Source element type.</typeparam>
+	/// <param name="source">The source asynchronous paged sequence.</param>
+	/// <param name="predicate">A function to test each element for a condition; the second parameter represents the index of the element.</param>
+	/// <returns>An <see cref="IAsyncPagedEnumerable{TSource}"/> that contains elements from the source sequence that satisfy the condition.</returns>
+	/// <exception cref="ArgumentNullException">Thrown when the source sequence or predicate is null.</exception>
+	public static IAsyncPagedEnumerable<TSource> WherePaged<TSource>(this IAsyncPagedEnumerable<TSource> source, Func<TSource, int, bool> predicate)
+	{
+		ArgumentNullException.ThrowIfNull(source);
+		ArgumentNullException.ThrowIfNull(predicate);
 
-                        async IAsyncEnumerable<TSource> Iterator([EnumeratorCancellation] CancellationToken ct = default)
-                        {
-                            ct.ThrowIfCancellationRequested();
+		async IAsyncEnumerable<TSource> Iterator([EnumeratorCancellation] CancellationToken ct = default)
+		{
+			ct.ThrowIfCancellationRequested();
 
-                            await foreach (TSource? item in source.WithCancellation(ct).ConfigureAwait(false))
-                            {
-                                if (!await predicate(item, ct).ConfigureAwait(false))
-					{
-						yield break;
-					}
-
+			int index = 0;
+			await foreach (TSource? item in source.WithCancellation(ct).ConfigureAwait(false))
+			{
+				if (predicate(item, index))
+				{
 					yield return item;
-                            }
-                        }
-
-                        return AsyncPagedEnumerable.Create(
-                            Iterator(),
-                            ct => new ValueTask<Pagination>(source.GetPaginationAsync(ct)));
-                    }
-
-                    /// <summary>
-                    /// Bypasses elements in the asynchronous paged sequence as long as an asynchronous condition is true and then returns the remaining elements.
-                    /// </summary>
-                    /// <param name="predicate">An asynchronous function to test each element for a condition.</param>
-                    /// <returns>An <see cref="IAsyncPagedEnumerable{TSource}"/> that contains the elements from the source sequence starting at the first element in the linear series that does not pass the test specified by predicate.</returns>
-                    /// <exception cref="ArgumentNullException">Thrown when the source sequence or predicate is null.</exception>
-                    public IAsyncPagedEnumerable<TSource> SkipWhilePagedAsync(Func<TSource, ValueTask<bool>> predicate)
-                    {
-                        ArgumentNullException.ThrowIfNull(source);
-                        ArgumentNullException.ThrowIfNull(predicate);
-
-                        async IAsyncEnumerable<TSource> Iterator([EnumeratorCancellation] CancellationToken ct = default)
-                        {
-                            ct.ThrowIfCancellationRequested();
-
-                            bool yielding = false;
-                            await foreach (TSource? item in source.WithCancellation(ct).ConfigureAwait(false))
-                            {
-                                if (!yielding && !await predicate(item).ConfigureAwait(false))
-					{
-						yielding = true;
-					}
-
-					if (yielding)
-					{
-						yield return item;
-					}
 				}
-                        }
 
-                        return AsyncPagedEnumerable.Create(
-                            Iterator(),
-                            ct => new ValueTask<Pagination>(source.GetPaginationAsync(ct)));
-                    }
+				index++;
+			}
+		}
 
-                    /// <summary>
-                    /// Bypasses elements in the asynchronous paged sequence as long as a cancellation-aware asynchronous condition is true and then returns the remaining elements.
-                    /// </summary>
-                    /// <param name="predicate">A cancellation-aware asynchronous function to test each element for a condition.</param>
-                    /// <returns>An <see cref="IAsyncPagedEnumerable{TSource}"/> that contains the elements from the source sequence starting at the first element in the linear series that does not pass the test specified by predicate.</returns>
-                    /// <exception cref="ArgumentNullException">Thrown when the source sequence or predicate is null.</exception>
-                    public IAsyncPagedEnumerable<TSource> SkipWhilePagedAsync(Func<TSource, CancellationToken, ValueTask<bool>> predicate)
-                    {
-                        ArgumentNullException.ThrowIfNull(source);
-                        ArgumentNullException.ThrowIfNull(predicate);
+		return AsyncPagedEnumerable.Create(
+			Iterator(),
+			ct => new ValueTask<Pagination>(source.GetPaginationAsync(ct)));
+	}
 
-                        async IAsyncEnumerable<TSource> Iterator([EnumeratorCancellation] CancellationToken ct = default)
-                        {
-                            ct.ThrowIfCancellationRequested();
+	/// <summary>
+	/// Filters the elements of the asynchronous paged sequence based on an asynchronous predicate.
+	/// </summary>
+	/// <typeparam name="TSource">Source element type.</typeparam>
+	/// <param name="source">The source asynchronous paged sequence.</param>
+	/// <param name="predicate">An asynchronous function to test each element for a condition.</param>
+	/// <returns>An <see cref="IAsyncPagedEnumerable{TSource}"/> that contains elements from the source sequence that satisfy the condition.</returns>
+	/// <exception cref="ArgumentNullException">Thrown when the source sequence or predicate is null.</exception>
+	/// <remarks>
+	/// Use this overload when the predicate requires asynchronous evaluation, such as database lookups or API calls.
+	/// </remarks>
+	public static IAsyncPagedEnumerable<TSource> WherePagedAsync<TSource>(this IAsyncPagedEnumerable<TSource> source, Func<TSource, ValueTask<bool>> predicate)
+	{
+		ArgumentNullException.ThrowIfNull(source);
+		ArgumentNullException.ThrowIfNull(predicate);
 
-                            bool yielding = false;
-                            await foreach (TSource? item in source.WithCancellation(ct).ConfigureAwait(false))
-                            {
-                                if (!yielding && !await predicate(item, ct).ConfigureAwait(false))
-					{
-						yielding = true;
-					}
+		async IAsyncEnumerable<TSource> Iterator([EnumeratorCancellation] CancellationToken ct = default)
+		{
+			ct.ThrowIfCancellationRequested();
 
-					if (yielding)
-					{
-						yield return item;
-					}
+			await foreach (TSource? item in source.WithCancellation(ct).ConfigureAwait(false))
+			{
+				if (await predicate(item).ConfigureAwait(false))
+				{
+					yield return item;
 				}
-                        }
+			}
+		}
 
-                        return AsyncPagedEnumerable.Create(
-                            Iterator(),
-                            ct => new ValueTask<Pagination>(source.GetPaginationAsync(ct)));
-                    }
+		return AsyncPagedEnumerable.Create(
+			Iterator(),
+			ct => new ValueTask<Pagination>(source.GetPaginationAsync(ct)));
+	}
 
-                    #endregion
-                }
-            }
+	/// <summary>
+	/// Filters the elements of the asynchronous paged sequence based on a cancellation-aware asynchronous predicate.
+	/// </summary>
+	/// <typeparam name="TSource">Source element type.</typeparam>
+	/// <param name="source">The source asynchronous paged sequence.</param>
+	/// <param name="predicate">A cancellation-aware asynchronous function to test each element for a condition.</param>
+	/// <returns>An <see cref="IAsyncPagedEnumerable{TSource}"/> that contains elements from the source sequence that satisfy the condition.</returns>
+	/// <exception cref="ArgumentNullException">Thrown when the source sequence or predicate is null.</exception>
+	/// <remarks>
+	/// Use this overload when the predicate requires asynchronous evaluation with cancellation support.
+	/// </remarks>
+	public static IAsyncPagedEnumerable<TSource> WherePagedAsync<TSource>(this IAsyncPagedEnumerable<TSource> source, Func<TSource, CancellationToken, ValueTask<bool>> predicate)
+	{
+		ArgumentNullException.ThrowIfNull(source);
+		ArgumentNullException.ThrowIfNull(predicate);
+
+		async IAsyncEnumerable<TSource> Iterator([EnumeratorCancellation] CancellationToken ct = default)
+		{
+			ct.ThrowIfCancellationRequested();
+
+			await foreach (TSource? item in source.WithCancellation(ct).ConfigureAwait(false))
+			{
+				if (await predicate(item, ct).ConfigureAwait(false))
+				{
+					yield return item;
+				}
+			}
+		}
+
+		return AsyncPagedEnumerable.Create(
+			Iterator(),
+			ct => new ValueTask<Pagination>(source.GetPaginationAsync(ct)));
+	}
+
+	/// <summary>
+	/// Returns elements from the asynchronous paged sequence as long as an asynchronous condition is true.
+	/// </summary>
+	/// <typeparam name="TSource">Source element type.</typeparam>
+	/// <param name="source">The source asynchronous paged sequence.</param>
+	/// <param name="predicate">An asynchronous function to test each element for a condition.</param>
+	/// <returns>An <see cref="IAsyncPagedEnumerable{TSource}"/> that contains elements from the source sequence that occur before the element at which the test no longer passes.</returns>
+	/// <exception cref="ArgumentNullException">Thrown when the source sequence or predicate is null.</exception>
+	public static IAsyncPagedEnumerable<TSource> TakeWhilePagedAsync<TSource>(this IAsyncPagedEnumerable<TSource> source, Func<TSource, ValueTask<bool>> predicate)
+	{
+		ArgumentNullException.ThrowIfNull(source);
+		ArgumentNullException.ThrowIfNull(predicate);
+
+		async IAsyncEnumerable<TSource> Iterator([EnumeratorCancellation] CancellationToken ct = default)
+		{
+			ct.ThrowIfCancellationRequested();
+
+			await foreach (TSource? item in source.WithCancellation(ct).ConfigureAwait(false))
+			{
+				if (!await predicate(item).ConfigureAwait(false))
+				{
+					yield break;
+				}
+
+				yield return item;
+			}
+		}
+
+		return AsyncPagedEnumerable.Create(
+			Iterator(),
+			ct => new ValueTask<Pagination>(source.GetPaginationAsync(ct)));
+	}
+
+	/// <summary>
+	/// Returns elements from the asynchronous paged sequence as long as a cancellation-aware asynchronous condition is true.
+	/// </summary>
+	/// <typeparam name="TSource">Source element type.</typeparam>
+	/// <param name="source">The source asynchronous paged sequence.</param>
+	/// <param name="predicate">A cancellation-aware asynchronous function to test each element for a condition.</param>
+	/// <returns>An <see cref="IAsyncPagedEnumerable{TSource}"/> that contains elements from the source sequence that occur before the element at which the test no longer passes.</returns>
+	/// <exception cref="ArgumentNullException">Thrown when the source sequence or predicate is null.</exception>
+	public static IAsyncPagedEnumerable<TSource> TakeWhilePagedAsync<TSource>(this IAsyncPagedEnumerable<TSource> source, Func<TSource, CancellationToken, ValueTask<bool>> predicate)
+	{
+		ArgumentNullException.ThrowIfNull(source);
+		ArgumentNullException.ThrowIfNull(predicate);
+
+		async IAsyncEnumerable<TSource> Iterator([EnumeratorCancellation] CancellationToken ct = default)
+		{
+			ct.ThrowIfCancellationRequested();
+
+			await foreach (TSource? item in source.WithCancellation(ct).ConfigureAwait(false))
+			{
+				if (!await predicate(item, ct).ConfigureAwait(false))
+				{
+					yield break;
+				}
+
+				yield return item;
+			}
+		}
+
+		return AsyncPagedEnumerable.Create(
+			Iterator(),
+			ct => new ValueTask<Pagination>(source.GetPaginationAsync(ct)));
+	}
+
+	/// <summary>
+	/// Bypasses elements in the asynchronous paged sequence as long as an asynchronous condition is true and then returns the remaining elements.
+	/// </summary>
+	/// <typeparam name="TSource">Source element type.</typeparam>
+	/// <param name="source">The source asynchronous paged sequence.</param>
+	/// <param name="predicate">An asynchronous function to test each element for a condition.</param>
+	/// <returns>An <see cref="IAsyncPagedEnumerable{TSource}"/> that contains the elements from the source sequence starting at the first element in the linear series that does not pass the test specified by predicate.</returns>
+	/// <exception cref="ArgumentNullException">Thrown when the source sequence or predicate is null.</exception>
+	public static IAsyncPagedEnumerable<TSource> SkipWhilePagedAsync<TSource>(this IAsyncPagedEnumerable<TSource> source, Func<TSource, ValueTask<bool>> predicate)
+	{
+		ArgumentNullException.ThrowIfNull(source);
+		ArgumentNullException.ThrowIfNull(predicate);
+
+		async IAsyncEnumerable<TSource> Iterator([EnumeratorCancellation] CancellationToken ct = default)
+		{
+			ct.ThrowIfCancellationRequested();
+
+			bool yielding = false;
+			await foreach (TSource? item in source.WithCancellation(ct).ConfigureAwait(false))
+			{
+				if (!yielding && !await predicate(item).ConfigureAwait(false))
+				{
+					yielding = true;
+				}
+
+				if (yielding)
+				{
+					yield return item;
+				}
+			}
+		}
+
+		return AsyncPagedEnumerable.Create(
+			Iterator(),
+			ct => new ValueTask<Pagination>(source.GetPaginationAsync(ct)));
+	}
+
+	/// <summary>
+	/// Bypasses elements in the asynchronous paged sequence as long as a cancellation-aware asynchronous condition is true and then returns the remaining elements.
+	/// </summary>
+	/// <typeparam name="TSource">Source element type.</typeparam>
+	/// <param name="source">The source asynchronous paged sequence.</param>
+	/// <param name="predicate">A cancellation-aware asynchronous function to test each element for a condition.</param>
+	/// <returns>An <see cref="IAsyncPagedEnumerable{TSource}"/> that contains the elements from the source sequence starting at the first element in the linear series that does not pass the test specified by predicate.</returns>
+	/// <exception cref="ArgumentNullException">Thrown when the source sequence or predicate is null.</exception>
+	public static IAsyncPagedEnumerable<TSource> SkipWhilePagedAsync<TSource>(this IAsyncPagedEnumerable<TSource> source, Func<TSource, CancellationToken, ValueTask<bool>> predicate)
+	{
+		ArgumentNullException.ThrowIfNull(source);
+		ArgumentNullException.ThrowIfNull(predicate);
+
+		async IAsyncEnumerable<TSource> Iterator([EnumeratorCancellation] CancellationToken ct = default)
+		{
+			ct.ThrowIfCancellationRequested();
+
+			bool yielding = false;
+			await foreach (TSource? item in source.WithCancellation(ct).ConfigureAwait(false))
+			{
+				if (!yielding && !await predicate(item, ct).ConfigureAwait(false))
+				{
+					yielding = true;
+				}
+
+				if (yielding)
+				{
+					yield return item;
+				}
+			}
+		}
+
+		return AsyncPagedEnumerable.Create(
+			Iterator(),
+			ct => new ValueTask<Pagination>(source.GetPaginationAsync(ct)));
+	}
+
+	#endregion
+}

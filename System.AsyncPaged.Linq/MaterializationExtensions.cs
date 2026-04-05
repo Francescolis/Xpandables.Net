@@ -29,38 +29,32 @@ namespace System.Linq;
 public static class MaterializationExtensions
 {
 	/// <summary>
-	/// Extension methods for <see cref="IAsyncPagedEnumerable{T}"/>.
+	/// Eagerly computes pagination metadata to avoid computation during enumeration.
 	/// </summary>
-	/// <typeparam name="T">The type of elements in the collection.</typeparam>
-	/// <param name="source">The source async paged enumerable.</param>
-	extension<T>(IAsyncPagedEnumerable<T> source)
+	/// <typeparam name="TSource">Source element type.</typeparam>
+	/// <param name="source">The source asynchronous paged sequence.</param>
+	/// <param name="cancellationToken">A token to monitor for cancellation requests.</param>
+	/// <returns>The same paged enumerable with pre-computed pagination metadata.</returns>
+	/// <remarks>
+	/// PERFORMANCE: Use this when you know pagination will be accessed multiple times or before enumeration starts.
+	/// This triggers the lazy computation mechanism once and caches the result.
+	/// </remarks>
+	public static async ValueTask<IAsyncPagedEnumerable<TSource>> PrecomputePaginationAsync<TSource>(this IAsyncPagedEnumerable<TSource> source,
+		CancellationToken cancellationToken = default)
 	{
-		/// <summary>
-		/// Eagerly computes pagination metadata to avoid computation during enumeration.
-		/// </summary>
-		/// <param name="cancellationToken">A token to monitor for cancellation requests.</param>
-		/// <returns>The same paged enumerable with pre-computed pagination metadata.</returns>
-		/// <remarks>
-		/// PERFORMANCE: Use this when you know pagination will be accessed multiple times or before enumeration starts.
-		/// This triggers the lazy computation mechanism once and caches the result.
-		/// </remarks>
-		public async ValueTask<IAsyncPagedEnumerable<T>> PrecomputePaginationAsync(
-			CancellationToken cancellationToken = default)
-		{
-			ArgumentNullException.ThrowIfNull(source);
+		ArgumentNullException.ThrowIfNull(source);
 
-			// Force pagination computation by calling GetPaginationAsync
-			// This will trigger the lazy computation and cache the result
-			_ = await source.GetPaginationAsync(cancellationToken).ConfigureAwait(false);
+		// Force pagination computation by calling GetPaginationAsync
+		// This will trigger the lazy computation and cache the result
+		_ = await source.GetPaginationAsync(cancellationToken).ConfigureAwait(false);
 
-			return source;
-		}
+		return source;
 	}
 
 	/// <summary>
 	/// Fully materializes the async paged enumerable into memory with accurate pagination metadata.
 	/// </summary>
-	/// <typeparam name="T">The type of elements in the collection.</typeparam>
+	/// <typeparam name="TSource">The type of elements in the collection.</typeparam>
 	/// <param name="source">The source async paged enumerable.</param>
 	/// <param name="cancellationToken">A token to monitor for cancellation requests.</param>
 	/// <returns>A new paged enumerable with all items materialized and accurate pagination.</returns>
@@ -75,14 +69,14 @@ public static class MaterializationExtensions
 	/// Consider using streaming with PrecomputePaginationAsync instead.
 	/// </remarks>
 	/// <exception cref="ArgumentNullException">Thrown when <paramref name="source"/> is null.</exception>
-	public static async ValueTask<IAsyncPagedEnumerable<T>> MaterializeAsync<T>(
-		this IAsyncPagedEnumerable<T> source,
+	public static async ValueTask<IAsyncPagedEnumerable<TSource>> MaterializeAsync<TSource>(
+		this IAsyncPagedEnumerable<TSource> source,
 		CancellationToken cancellationToken = default)
 	{
 		ArgumentNullException.ThrowIfNull(source);
 
 		// Enumerate and collect all items
-		List<T> items = await source.ToListAsync(cancellationToken).ConfigureAwait(false);
+		List<TSource> items = await source.ToListAsync(cancellationToken).ConfigureAwait(false);
 
 		// Create pagination with accurate count
 		var pagination = Pagination.Create(
@@ -99,7 +93,7 @@ public static class MaterializationExtensions
 	/// <summary>
 	/// Materializes the async paged enumerable into memory with custom page size.
 	/// </summary>
-	/// <typeparam name="T">The type of elements in the collection.</typeparam>
+	/// <typeparam name="TSource">The type of elements in the collection.</typeparam>
 	/// <param name="source">The source async paged enumerable.</param>
 	/// <param name="pageSize">The page size to use in pagination metadata.</param>
 	/// <param name="currentPage">The current page number (1-based).</param>
@@ -111,8 +105,8 @@ public static class MaterializationExtensions
 	/// </remarks>
 	/// <exception cref="ArgumentNullException">Thrown when <paramref name="source"/> is null.</exception>
 	/// <exception cref="ArgumentOutOfRangeException">Thrown when <paramref name="pageSize"/> or <paramref name="currentPage"/> is less than or equal to zero.</exception>
-	public static async ValueTask<IAsyncPagedEnumerable<T>> MaterializeAsync<T>(
-		this IAsyncPagedEnumerable<T> source,
+	public static async ValueTask<IAsyncPagedEnumerable<TSource>> MaterializeAsync<TSource>(
+		this IAsyncPagedEnumerable<TSource> source,
 		int pageSize,
 		int currentPage = 1,
 		CancellationToken cancellationToken = default)
@@ -122,7 +116,7 @@ public static class MaterializationExtensions
 		ArgumentOutOfRangeException.ThrowIfNegativeOrZero(currentPage);
 
 		// Enumerate and collect all items
-		List<T> items = await source.ToListAsync(cancellationToken).ConfigureAwait(false);
+		List<TSource> items = await source.ToListAsync(cancellationToken).ConfigureAwait(false);
 
 		// Create pagination with accurate count and specified page size
 		var pagination = Pagination.Create(
@@ -139,7 +133,7 @@ public static class MaterializationExtensions
 	/// <summary>
 	/// Converts an async enumerable to a materialized paged enumerable with accurate pagination.
 	/// </summary>
-	/// <typeparam name="T">The type of elements in the collection.</typeparam>
+	/// <typeparam name="TSource">The type of elements in the collection.</typeparam>
 	/// <param name="source">The source async enumerable.</param>
 	/// <param name="cancellationToken">A token to monitor for cancellation requests.</param>
 	/// <returns>A paged enumerable with all items materialized.</returns>
@@ -149,14 +143,14 @@ public static class MaterializationExtensions
 	/// Best for small to medium datasets where accurate count is needed.
 	/// </remarks>
 	/// <exception cref="ArgumentNullException">Thrown when <paramref name="source"/> is null.</exception>
-	public static async ValueTask<IAsyncPagedEnumerable<T>> ToMaterializedAsyncPagedEnumerableAsync<T>(
-		this IAsyncEnumerable<T> source,
+	public static async ValueTask<IAsyncPagedEnumerable<TSource>> ToMaterializedAsyncPagedEnumerableAsync<TSource>(
+		this IAsyncEnumerable<TSource> source,
 		CancellationToken cancellationToken = default)
 	{
 		ArgumentNullException.ThrowIfNull(source);
 
 		// Enumerate and collect all items in one pass
-		List<T> items = await source.ToListAsync(cancellationToken).ConfigureAwait(false);
+		List<TSource> items = await source.ToListAsync(cancellationToken).ConfigureAwait(false);
 
 		// Create pagination with accurate count
 		var pagination = Pagination.FromTotalCount(items.Count);
@@ -170,7 +164,7 @@ public static class MaterializationExtensions
 	/// <summary>
 	/// Converts an async enumerable to a materialized paged enumerable with custom pagination.
 	/// </summary>
-	/// <typeparam name="T">The type of elements in the collection.</typeparam>
+	/// <typeparam name="TSource">The type of elements in the collection.</typeparam>
 	/// <param name="source">The source async enumerable.</param>
 	/// <param name="pageSize">The page size to use in pagination metadata.</param>
 	/// <param name="currentPage">The current page number (1-based).</param>
@@ -178,8 +172,8 @@ public static class MaterializationExtensions
 	/// <returns>A paged enumerable with all items materialized.</returns>
 	/// <exception cref="ArgumentNullException">Thrown when <paramref name="source"/> is null.</exception>
 	/// <exception cref="ArgumentOutOfRangeException">Thrown when <paramref name="pageSize"/> or <paramref name="currentPage"/> is less than or equal to zero.</exception>
-	public static async ValueTask<IAsyncPagedEnumerable<T>> ToMaterializedAsyncPagedEnumerableAsync<T>(
-		this IAsyncEnumerable<T> source,
+	public static async ValueTask<IAsyncPagedEnumerable<TSource>> ToMaterializedAsyncPagedEnumerableAsync<TSource>(
+		this IAsyncEnumerable<TSource> source,
 		int pageSize,
 		int currentPage = 1,
 		CancellationToken cancellationToken = default)
@@ -189,7 +183,7 @@ public static class MaterializationExtensions
 		ArgumentOutOfRangeException.ThrowIfNegativeOrZero(currentPage);
 
 		// Enumerate and collect all items
-		List<T> items = await source.ToListAsync(cancellationToken).ConfigureAwait(false);
+		List<TSource> items = await source.ToListAsync(cancellationToken).ConfigureAwait(false);
 
 		// Create pagination with specified parameters
 		var pagination = Pagination.Create(

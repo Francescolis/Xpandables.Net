@@ -1,4 +1,4 @@
-/*******************************************************************************
+﻿/*******************************************************************************
  * Copyright (C) 2025-2026 Kamersoft
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
@@ -31,143 +31,179 @@ namespace Microsoft.AspNetCore.Routing;
 /// common route prefix.</remarks>
 public static class MinimalRouteBuilderExtensions
 {
-    extension(MinimalRouteBuilder builder)
-    {
-        #region MapGroup
+	#region MapGroup
 
-        /// <summary>
-        /// Creates a <see cref="RouteGroupBuilder"/> for defining endpoints with a common prefix.
-        /// Filters are automatically inherited by all endpoints in the group.
-        /// </summary>
-        public RouteGroupBuilder MapGroup([StringSyntax("Route")] string prefix) =>
-            builder._rootGroup.MapGroup(prefix);
+	/// <summary>
+	/// Creates a <see cref="RouteGroupBuilder"/> for defining endpoints with a common prefix.
+	/// Filters are automatically inherited by all endpoints in the group.
+	/// </summary>
+	public static RouteGroupBuilder MapGroup(this MinimalRouteBuilder builder, [StringSyntax("Route")] string prefix)
+	{
+		ArgumentNullException.ThrowIfNull(builder);
+		return builder._rootGroup.MapGroup(prefix);
+	}
 
-        #endregion
+	#endregion
 
-        #region MapGet
+	#region MapGet
 
-        /// <summary>
-        /// Maps a GET endpoint with a <see cref="Delegate"/> handler.
-        /// Filters are automatically applied.
-        /// </summary>
-        [RequiresUnreferencedCode(MinimalRouteBuilder.MapEndpointUnreferencedCodeWarning)]
-        [RequiresDynamicCode(MinimalRouteBuilder.MapEndpointDynamicCodeWarning)]
-        public RouteHandlerBuilder MapGet([StringSyntax("Route")] string pattern, Delegate handler) =>
-            builder.ApplyFilters(builder._rootGroup.MapGet(pattern, handler));
+	/// <summary>
+	/// Maps a GET endpoint with a <see cref="Delegate"/> handler.
+	/// Filters are automatically applied.
+	/// </summary>
+	[RequiresUnreferencedCode(MinimalRouteBuilder.MapEndpointUnreferencedCodeWarning)]
+	[RequiresDynamicCode(MinimalRouteBuilder.MapEndpointDynamicCodeWarning)]
+	public static RouteHandlerBuilder MapGet(this MinimalRouteBuilder builder, [StringSyntax("Route")] string pattern, Delegate handler)
+	{
+		ArgumentNullException.ThrowIfNull(builder);
+		return builder.ApplyFilters(builder._rootGroup.MapGet(pattern, handler));
+	}
 
-        /// <summary>
-        /// Maps a GET endpoint with a <see cref="RequestDelegate"/> handler.
-        /// Filters are automatically applied.
-        /// </summary>
-        public IEndpointConventionBuilder MapGet([StringSyntax("Route")] string pattern, RequestDelegate requestDelegate) =>
-            builder.ApplyFilters(builder._rootGroup.MapGet(pattern, requestDelegate));
+	/// <summary>
+	/// Maps a GET endpoint with a <see cref="RequestDelegate"/> handler.
+	/// Filters are automatically applied.
+	/// </summary>
+	public static IEndpointConventionBuilder MapGet(this MinimalRouteBuilder builder, [StringSyntax("Route")] string pattern, RequestDelegate requestDelegate)
+	{
+		ArgumentNullException.ThrowIfNull(builder);
+		return builder.ApplyFilters(builder._rootGroup.MapGet(pattern, requestDelegate));
+	}
 
-        #endregion
+	#endregion
 
-        #region MapPost
+	#region MapPost
 
-        /// <summary>
-        /// Maps a POST endpoint with a <see cref="Delegate"/> handler.
-        /// Filters are automatically applied.
-        /// </summary>
-        [RequiresUnreferencedCode(MinimalRouteBuilder.MapEndpointUnreferencedCodeWarning)]
-        [RequiresDynamicCode(MinimalRouteBuilder.MapEndpointDynamicCodeWarning)]
-        public RouteHandlerBuilder MapPost([StringSyntax("Route")] string pattern, Delegate handler) =>
-            builder.ApplyFilters(builder._rootGroup.MapPost(pattern, handler));
+	/// <summary>
+	/// Maps a POST endpoint with a <see cref="Delegate"/> handler.
+	/// Filters are automatically applied.
+	/// </summary>
+	[RequiresUnreferencedCode(MinimalRouteBuilder.MapEndpointUnreferencedCodeWarning)]
+	[RequiresDynamicCode(MinimalRouteBuilder.MapEndpointDynamicCodeWarning)]
+	public static RouteHandlerBuilder MapPost(this MinimalRouteBuilder builder, [StringSyntax("Route")] string pattern, Delegate handler)
+	{
+		ArgumentNullException.ThrowIfNull(builder);
+		return builder.ApplyFilters(builder._rootGroup.MapPost(pattern, handler));
+	}
 
-        /// <summary>
-        /// Maps a POST endpoint with a <see cref="RequestDelegate"/> handler.
-        /// Filters are automatically applied.
-        /// </summary>
-        public IEndpointConventionBuilder MapPost([StringSyntax("Route")] string pattern, RequestDelegate requestDelegate) =>
-            builder.ApplyFilters(builder._rootGroup.MapPost(pattern, requestDelegate));
+	/// <summary>
+	/// Maps a POST endpoint with a <see cref="RequestDelegate"/> handler.
+	/// Filters are automatically applied.
+	/// </summary>
+	public static IEndpointConventionBuilder MapPost(this MinimalRouteBuilder builder, [StringSyntax("Route")] string pattern, RequestDelegate requestDelegate)
+	{
+		ArgumentNullException.ThrowIfNull(builder);
+		return builder.ApplyFilters(builder._rootGroup.MapPost(pattern, requestDelegate));
+	}
 
-        #endregion
+	#endregion
 
-        #region MapPut
+	#region MapPut
 
-        /// <summary>
-        /// Maps a PUT endpoint with a <see cref="Delegate"/> handler.
-        /// Filters are automatically applied.
-        /// </summary>
-        [RequiresUnreferencedCode(MinimalRouteBuilder.MapEndpointUnreferencedCodeWarning)]
-        [RequiresDynamicCode(MinimalRouteBuilder.MapEndpointDynamicCodeWarning)]
-        public RouteHandlerBuilder MapPut([StringSyntax("Route")] string pattern, Delegate handler) =>
-            builder.ApplyFilters(builder._rootGroup.MapPut(pattern, handler));
+	/// <summary>
+	/// Maps a PUT endpoint with a <see cref="Delegate"/> handler.
+	/// Filters are automatically applied.
+	/// </summary>
+	[RequiresUnreferencedCode(MinimalRouteBuilder.MapEndpointUnreferencedCodeWarning)]
+	[RequiresDynamicCode(MinimalRouteBuilder.MapEndpointDynamicCodeWarning)]
+	public static RouteHandlerBuilder MapPut(this MinimalRouteBuilder builder, [StringSyntax("Route")] string pattern, Delegate handler)
+	{
+		ArgumentNullException.ThrowIfNull(builder);
+		return builder.ApplyFilters(builder._rootGroup.MapPut(pattern, handler));
+	}
 
-        /// <summary>
-        /// Maps a PUT endpoint with a <see cref="RequestDelegate"/> handler.
-        /// Filters are automatically applied.
-        /// </summary>
-        public IEndpointConventionBuilder MapPut([StringSyntax("Route")] string pattern, RequestDelegate requestDelegate) =>
-            builder.ApplyFilters(builder._rootGroup.MapPut(pattern, requestDelegate));
+	/// <summary>
+	/// Maps a PUT endpoint with a <see cref="RequestDelegate"/> handler.
+	/// Filters are automatically applied.
+	/// </summary>
+	public static IEndpointConventionBuilder MapPut(this MinimalRouteBuilder builder, [StringSyntax("Route")] string pattern, RequestDelegate requestDelegate)
+	{
+		ArgumentNullException.ThrowIfNull(builder);
+		return builder.ApplyFilters(builder._rootGroup.MapPut(pattern, requestDelegate));
+	}
 
-        #endregion
+	#endregion
 
-        #region MapDelete
+	#region MapDelete
 
-        /// <summary>
-        /// Maps a DELETE endpoint with a <see cref="Delegate"/> handler.
-        /// Filters are automatically applied.
-        /// </summary>
-        [RequiresUnreferencedCode(MinimalRouteBuilder.MapEndpointUnreferencedCodeWarning)]
-        [RequiresDynamicCode(MinimalRouteBuilder.MapEndpointDynamicCodeWarning)]
-        public RouteHandlerBuilder MapDelete([StringSyntax("Route")] string pattern, Delegate handler) =>
-            builder.ApplyFilters(builder._rootGroup.MapDelete(pattern, handler));
+	/// <summary>
+	/// Maps a DELETE endpoint with a <see cref="Delegate"/> handler.
+	/// Filters are automatically applied.
+	/// </summary>
+	[RequiresUnreferencedCode(MinimalRouteBuilder.MapEndpointUnreferencedCodeWarning)]
+	[RequiresDynamicCode(MinimalRouteBuilder.MapEndpointDynamicCodeWarning)]
+	public static RouteHandlerBuilder MapDelete(this MinimalRouteBuilder builder, [StringSyntax("Route")] string pattern, Delegate handler)
+	{
+		ArgumentNullException.ThrowIfNull(builder);
+		return builder.ApplyFilters(builder._rootGroup.MapDelete(pattern, handler));
+	}
 
-        /// <summary>
-        /// Maps a DELETE endpoint with a <see cref="RequestDelegate"/> handler.
-        /// Filters are automatically applied.
-        /// </summary>
-        public IEndpointConventionBuilder MapDelete([StringSyntax("Route")] string pattern, RequestDelegate requestDelegate) =>
-            builder.ApplyFilters(builder._rootGroup.MapDelete(pattern, requestDelegate));
+	/// <summary>
+	/// Maps a DELETE endpoint with a <see cref="RequestDelegate"/> handler.
+	/// Filters are automatically applied.
+	/// </summary>
+	public static IEndpointConventionBuilder MapDelete(this MinimalRouteBuilder builder, [StringSyntax("Route")] string pattern, RequestDelegate requestDelegate)
+	{
+		ArgumentNullException.ThrowIfNull(builder);
+		return builder.ApplyFilters(builder._rootGroup.MapDelete(pattern, requestDelegate));
+	}
 
-        #endregion
+	#endregion
 
-        #region MapPatch
+	#region MapPatch
 
-        /// <summary>
-        /// Maps a PATCH endpoint with a <see cref="Delegate"/> handler.
-        /// Filters are automatically applied.
-        /// </summary>
-        [RequiresUnreferencedCode(MinimalRouteBuilder.MapEndpointUnreferencedCodeWarning)]
-        [RequiresDynamicCode(MinimalRouteBuilder.MapEndpointDynamicCodeWarning)]
-        public RouteHandlerBuilder MapPatch([StringSyntax("Route")] string pattern, Delegate handler) =>
-            builder.ApplyFilters(builder._rootGroup.MapPatch(pattern, handler));
+	/// <summary>
+	/// Maps a PATCH endpoint with a <see cref="Delegate"/> handler.
+	/// Filters are automatically applied.
+	/// </summary>
+	[RequiresUnreferencedCode(MinimalRouteBuilder.MapEndpointUnreferencedCodeWarning)]
+	[RequiresDynamicCode(MinimalRouteBuilder.MapEndpointDynamicCodeWarning)]
+	public static RouteHandlerBuilder MapPatch(this MinimalRouteBuilder builder, [StringSyntax("Route")] string pattern, Delegate handler)
+	{
+		ArgumentNullException.ThrowIfNull(builder);
+		return builder.ApplyFilters(builder._rootGroup.MapPatch(pattern, handler));
+	}
 
-        /// <summary>
-        /// Maps a PATCH endpoint with a <see cref="RequestDelegate"/> handler.
-        /// Filters are automatically applied.
-        /// </summary>
-        public IEndpointConventionBuilder MapPatch([StringSyntax("Route")] string pattern, RequestDelegate requestDelegate) =>
-            builder.ApplyFilters(builder._rootGroup.MapPatch(pattern, requestDelegate));
+	/// <summary>
+	/// Maps a PATCH endpoint with a <see cref="RequestDelegate"/> handler.
+	/// Filters are automatically applied.
+	/// </summary>
+	public static IEndpointConventionBuilder MapPatch(this MinimalRouteBuilder builder, [StringSyntax("Route")] string pattern, RequestDelegate requestDelegate)
+	{
+		ArgumentNullException.ThrowIfNull(builder);
+		return builder.ApplyFilters(builder._rootGroup.MapPatch(pattern, requestDelegate));
+	}
 
-        #endregion
+	#endregion
 
-        #region MapMethods
+	#region MapMethods
 
-        /// <summary>
-        /// Maps endpoints for the specified HTTP methods with a <see cref="Delegate"/> handler.
-        /// Filters are automatically applied.
-        /// </summary>
-        [RequiresUnreferencedCode(MinimalRouteBuilder.MapEndpointUnreferencedCodeWarning)]
-        [RequiresDynamicCode(MinimalRouteBuilder.MapEndpointDynamicCodeWarning)]
-        public RouteHandlerBuilder MapMethods(
-            [StringSyntax("Route")] string pattern,
-            IEnumerable<string> httpMethods,
-            Delegate handler) =>
-            builder.ApplyFilters(builder._rootGroup.MapMethods(pattern, httpMethods, handler));
+	/// <summary>
+	/// Maps endpoints for the specified HTTP methods with a <see cref="Delegate"/> handler.
+	/// Filters are automatically applied.
+	/// </summary>
+	[RequiresUnreferencedCode(MinimalRouteBuilder.MapEndpointUnreferencedCodeWarning)]
+	[RequiresDynamicCode(MinimalRouteBuilder.MapEndpointDynamicCodeWarning)]
+	public static RouteHandlerBuilder MapMethods(this MinimalRouteBuilder builder,
+		[StringSyntax("Route")] string pattern,
+		IEnumerable<string> httpMethods,
+		Delegate handler)
+	{
+		ArgumentNullException.ThrowIfNull(builder);
+		return builder.ApplyFilters(builder._rootGroup.MapMethods(pattern, httpMethods, handler));
+	}
 
-        /// <summary>
-        /// Maps endpoints for the specified HTTP methods with a <see cref="RequestDelegate"/> handler.
-        /// Filters are automatically applied.
-        /// </summary>
-        public IEndpointConventionBuilder MapMethods(
-            [StringSyntax("Route")] string pattern,
-            IEnumerable<string> httpMethods,
-            RequestDelegate requestDelegate) =>
-            builder.ApplyFilters(builder._rootGroup.MapMethods(pattern, httpMethods, requestDelegate));
+	/// <summary>
+	/// Maps endpoints for the specified HTTP methods with a <see cref="RequestDelegate"/> handler.
+	/// Filters are automatically applied.
+	/// </summary>
+	public static IEndpointConventionBuilder MapMethods(this MinimalRouteBuilder builder,
+		[StringSyntax("Route")] string pattern,
+		IEnumerable<string> httpMethods,
+		RequestDelegate requestDelegate)
+	{
+		ArgumentNullException.ThrowIfNull(builder);
+		return builder.ApplyFilters(builder._rootGroup.MapMethods(pattern, httpMethods, requestDelegate));
+	}
 
-        #endregion
-    }
+	#endregion
 }

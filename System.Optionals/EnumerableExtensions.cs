@@ -1,4 +1,4 @@
-/*******************************************************************************
+﻿/*******************************************************************************
  * Copyright (C) 2025-2026 Kamersoft
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
@@ -27,137 +27,111 @@ namespace System.Optionals;
 /// without throwing exceptions when the sequence is empty.</remarks>
 public static class EnumerableExtensions
 {
-    /// <summary>
-    /// </summary>
-    /// <typeparam name="TSource">The type of the elements of <paramref name="source"/>.</typeparam>
-    /// <param name="source">The collection to act on.</param>
-    extension<TSource>(IEnumerable<TSource> source)
-    {
-        /// <summary>
-        /// Returns the first element of the sequence as an optional value, or an empty optional if the sequence
-        /// contains no elements.
-        /// </summary>
-        /// <returns>An <see cref="Optional{TSource}"/> containing the first element of the sequence, or an empty optional if the
-        /// sequence is empty.</returns>
-        public Optional<TSource> FirstOrEmpty()
-        {
-            ArgumentNullException.ThrowIfNull(source);
+	/// <summary>
+	/// Returns the first element of the sequence as an optional value, or an empty optional if the sequence
+	/// contains no elements.
+	/// </summary>
+	/// <returns>An <see cref="Optional{TSource}"/> containing the first element of the sequence, or an empty optional if the
+	/// sequence is empty.</returns>
+	public static Optional<TSource> FirstOrEmpty<TSource>(this IEnumerable<TSource> source)
+	{
+		ArgumentNullException.ThrowIfNull(source);
 
-            foreach (TSource? item in source)
-            {
-                return Optional.Some(item);
-            }
-            return Optional.Empty<TSource>();
-        }
+		foreach (TSource? item in source)
+		{
+			return Optional.Some(item);
+		}
+		return Optional.Empty<TSource>();
+	}
 
-        /// <summary>
-        /// Returns the first element that matches the specified predicate, or an empty optional if no
-        /// such element is found.
-        /// </summary>
-        /// <param name="predicate">A function to test each element for a condition. Cannot be null.</param>
-        /// <returns>An <see cref="Optional{TSource}"/> containing the first element of the sequence, or an empty optional if the
-        /// sequence is empty.</returns>
-        public Optional<TSource> FirstOrEmpty(Func<TSource, bool> predicate)
-        {
-            ArgumentNullException.ThrowIfNull(source);
-            ArgumentNullException.ThrowIfNull(predicate);
+	/// <summary>
+	/// Returns the first element that matches the specified predicate, or an empty optional if no
+	/// such element is found.
+	/// </summary>
+	/// <param name="source"></param>
+	/// <param name="predicate">A function to test each element for a condition. Cannot be null.</param>
+	/// <returns>An <see cref="Optional{TSource}"/> containing the first element of the sequence, or an empty optional if the
+	/// sequence is empty.</returns>
+	public static Optional<TSource> FirstOrEmpty<TSource>(this IEnumerable<TSource> source, Func<TSource, bool> predicate)
+	{
+		ArgumentNullException.ThrowIfNull(source);
+		ArgumentNullException.ThrowIfNull(predicate);
 
-            foreach (TSource? item in source)
-            {
-                if (predicate(item))
-                {
-                    return Optional.Some(item);
-                }
-            }
-            return Optional.Empty<TSource>();
-        }
-    }
+		foreach (TSource? item in source)
+		{
+			if (predicate(item))
+			{
+				return Optional.Some(item);
+			}
+		}
+		return Optional.Empty<TSource>();
+	}
 
-    /// <summary>
-    /// </summary>
-    /// <typeparam name="TSource">The type of the elements of <paramref name="source"/>.</typeparam>
-    /// <param name="source">The collection to act on.</param>
-    extension<TSource>(IEnumerable<Optional<TSource>> source)
-    {
-        /// <summary>
-        /// Returns a sequence of values contained in non-empty optional elements from the source collection.
-        /// </summary>
-        /// <returns>An enumerable collection of values of type TSource extracted from non-empty optional elements. The
-        /// collection is empty if no optional elements contain a value.</returns>
-        public IEnumerable<TSource> WhereSome()
-        {
-            ArgumentNullException.ThrowIfNull(source);
-            return source
-                .Where(optional => optional.IsNotEmpty)
-                .Select(optional => optional.Value);
-        }
-    }
+	/// <summary>
+	/// Returns a sequence of values contained in non-empty optional elements from the source collection.
+	/// </summary>
+	/// <returns>An enumerable collection of values of type TSource extracted from non-empty optional elements. The
+	/// collection is empty if no optional elements contain a value.</returns>
+	public static IEnumerable<TSource> WhereSome<TSource>(this IEnumerable<Optional<TSource>> source)
+	{
+		ArgumentNullException.ThrowIfNull(source);
+		return source
+			.Where(optional => optional.IsNotEmpty)
+			.Select(optional => optional.Value);
+	}
 
-    /// <summary>
-    /// </summary>
-    /// <typeparam name="TSource">The type of the elements of <paramref name="source"/>.</typeparam>
-    /// <param name="source">The collection to act on.</param>
-    extension<TSource>(IAsyncEnumerable<TSource> source)
-    {
-        /// <summary>
-        /// Returns the first element of the sequence as an optional value, or an empty optional if the sequence
-        /// contains no elements.
-        /// </summary>
-        /// <returns>An <see cref="Optional{TSource}"/> containing the first element of the sequence, or an empty optional if the
-        /// sequence is empty.</returns>
-        public async Task<Optional<TSource>> FirstOrEmptyAsync()
-        {
-            ArgumentNullException.ThrowIfNull(source);
-            await foreach (TSource? item in source.ConfigureAwait(false))
-            {
-                return Optional.Some(item);
-            }
+	/// <summary>
+	/// Returns the first element of the sequence as an optional value, or an empty optional if the sequence
+	/// contains no elements.
+	/// </summary>
+	/// <returns>An <see cref="Optional{TSource}"/> containing the first element of the sequence, or an empty optional if the
+	/// sequence is empty.</returns>
+	public static async Task<Optional<TSource>> FirstOrEmptyAsync<TSource>(this IAsyncEnumerable<TSource> source)
+	{
+		ArgumentNullException.ThrowIfNull(source);
+		await foreach (TSource? item in source.ConfigureAwait(false))
+		{
+			return Optional.Some(item);
+		}
 
-            return Optional.Empty<TSource>();
-        }
+		return Optional.Empty<TSource>();
+	}
 
-        /// <summary>
-        /// Asynchronously returns the first element that matches the specified predicate, or an empty optional if no
-        /// such element is found.
-        /// </summary>
-        /// <param name="predicate">A function to test each element for a condition. Cannot be null.</param>
-        /// <returns>A task that represents the asynchronous operation. The task result contains an <see
-        /// cref="Optional{TSource}"/> with the first matching element, or an empty optional if no element matches the
-        /// predicate.</returns>
-        public async Task<Optional<TSource>> FirstOrEmptyAsync(Func<TSource, bool> predicate)
-        {
-            ArgumentNullException.ThrowIfNull(source);
-            ArgumentNullException.ThrowIfNull(predicate);
+	/// <summary>
+	/// Asynchronously returns the first element that matches the specified predicate, or an empty optional if no
+	/// such element is found.
+	/// </summary>
+	/// <param name="source"></param>
+	/// <param name="predicate">A function to test each element for a condition. Cannot be null.</param>
+	/// <returns>A task that represents the asynchronous operation. The task result contains an <see
+	/// cref="Optional{TSource}"/> with the first matching element, or an empty optional if no element matches the
+	/// predicate.</returns>
+	public static async Task<Optional<TSource>> FirstOrEmptyAsync<TSource>(this IAsyncEnumerable<TSource> source, Func<TSource, bool> predicate)
+	{
+		ArgumentNullException.ThrowIfNull(source);
+		ArgumentNullException.ThrowIfNull(predicate);
 
-            await foreach (TSource? item in source.ConfigureAwait(false))
-            {
-                if (predicate(item))
-                {
-                    return Optional.Some(item);
-                }
-            }
+		await foreach (TSource? item in source.ConfigureAwait(false))
+		{
+			if (predicate(item))
+			{
+				return Optional.Some(item);
+			}
+		}
 
-            return Optional.Empty<TSource>();
-        }
-    }
+		return Optional.Empty<TSource>();
+	}
 
-    /// <summary>
-    /// </summary>
-    /// <typeparam name="TSource">The type of the elements of <paramref name="source"/>.</typeparam>
-    /// <param name="source">The collection to act on.</param>
-    extension<TSource>(IAsyncEnumerable<Optional<TSource>> source)
-    {
-        /// <summary>
-        /// Returns a sequence of values contained in non-empty optional elements from the source collection.
-        /// </summary>
-        /// <returns>An enumerable collection of values of type TSource extracted from non-empty optional elements. The
-        /// collection is empty if no optional elements contain a value.</returns>
-        public IAsyncEnumerable<TSource> WhereSomeAsync()
-        {
-            ArgumentNullException.ThrowIfNull(source);
-            return source
-                .Where(optional => optional.IsNotEmpty)
-                .Select(optional => optional.Value);
-        }
-    }
+	/// <summary>
+	/// Returns a sequence of values contained in non-empty optional elements from the source collection.
+	/// </summary>
+	/// <returns>An enumerable collection of values of type TSource extracted from non-empty optional elements. The
+	/// collection is empty if no optional elements contain a value.</returns>
+	public static IAsyncEnumerable<TSource> WhereSomeAsync<TSource>(this IAsyncEnumerable<Optional<TSource>> source)
+	{
+		ArgumentNullException.ThrowIfNull(source);
+		return source
+			.Where(optional => optional.IsNotEmpty)
+			.Select(optional => optional.Value);
+	}
 }

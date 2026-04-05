@@ -1,4 +1,4 @@
-/*******************************************************************************
+﻿/*******************************************************************************
  * Copyright (C) 2025-2026 Kamersoft
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
@@ -28,24 +28,18 @@ namespace System.Results;
 /// such as in web APIs or service layers.</remarks>
 public static class ResultExtensions
 {
-    /// <summary>
-    /// Provides extension methods for <see cref="Result"/> instances.
-    /// </summary>
-    /// <param name="result">The result instance to extend.</param>"
-    extension(Result result)
-    {
         /// <summary>
         /// Creates a new ResultException that represents the current result.
         /// </summary>
         /// <returns>An ResultException initialized with the current result.</returns>
-        public ResultException ToResultException() => new(result);
+        public static ResultException ToResultException(this Result result) => new(result);
 
         /// <summary>
         /// Creates a new <see cref="FailureResult"/> instance that represents the current failure state.
         /// </summary>
         /// <returns>A <see cref="FailureResult"/> containing the status code, title, detail, location, errors, headers,
         /// extensions, and exception from the current result.</returns>
-        public FailureResult ToFailureResult()
+        public static FailureResult ToFailureResult(this Result result)
         {
             return new FailureResult
             {
@@ -66,7 +60,7 @@ public static class ResultExtensions
         /// <typeparam name="TValue">The type of the value associated with the failure result.</typeparam>
         /// <returns>A <see cref="FailureResult{TValue}"/> containing the status code, error details, and metadata from the
         /// current result.</returns>
-        public FailureResult<TValue> ToFailureResult<TValue>()
+        public static FailureResult<TValue> ToFailureResult<TValue>(this Result result)
         {
             return new FailureResult<TValue>
             {
@@ -384,5 +378,4 @@ public static class ResultExtensions
         /// <returns>A <see cref="Result{TValue}"/> representing a failure due to service
         /// unavailability.</returns>
         public static FailureResultBuilder<TValue> ServiceUnavailable<TValue>() => new(HttpStatusCode.ServiceUnavailable);
-    }
 }

@@ -1,4 +1,4 @@
-/*******************************************************************************
+﻿/*******************************************************************************
  * Copyright (C) 2024 Francis-Black EWANE
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
@@ -24,22 +24,22 @@ namespace System.Entities.EntityFramework;
 /// EF Core implementation of <see cref="IPropertyUpdateApplicator{TSource, TBuilder}"/>.
 /// </summary>
 internal sealed class EfCorePropertyUpdateApplicator<TSource>
-    : IPropertyUpdateApplicator<TSource, UpdateSettersBuilder<TSource>>
-    where TSource : class
+	: IPropertyUpdateApplicator<TSource, UpdateSettersBuilder<TSource>>
+	where TSource : class
 {
-    public static readonly EfCorePropertyUpdateApplicator<TSource> Instance = new();
+	public static readonly EfCorePropertyUpdateApplicator<TSource> Instance = new();
 
-    public void ApplyComputed<TProperty>(
-        UpdateSettersBuilder<TSource> builder,
-        Expression<Func<TSource, TProperty>> propertyExpression,
-        Expression<Func<TSource, TProperty>> valueExpression)
-        => builder.SetProperty(propertyExpression, valueExpression);
+	public void ApplyComputed<TProperty>(
+		UpdateSettersBuilder<TSource> builder,
+		Expression<Func<TSource, TProperty>> propertyExpression,
+		Expression<Func<TSource, TProperty>> valueExpression)
+		=> builder.SetProperty(propertyExpression, valueExpression);
 
-    public void ApplyConstant<TProperty>(
-        UpdateSettersBuilder<TSource> builder,
-        Expression<Func<TSource, TProperty>> propertyExpression,
-        TProperty value)
-        => builder.SetProperty(propertyExpression, value);
+	public void ApplyConstant<TProperty>(
+		UpdateSettersBuilder<TSource> builder,
+		Expression<Func<TSource, TProperty>> propertyExpression,
+		TProperty value)
+		=> builder.SetProperty(propertyExpression, value);
 }
 
 /// <summary>
@@ -52,41 +52,39 @@ internal sealed class EfCorePropertyUpdateApplicator<TSource>
 /// </remarks>
 public static class IEntityPropertyUpdateExtensions
 {
-    /// <summary>
-    /// <see cref="IEntityPropertyUpdate{TSource}"/> extensions.
-    /// </summary>
-    /// <typeparam name="TSource">The type of the entity being updated.</typeparam>
-    extension<TSource>(IEnumerable<IEntityPropertyUpdate<TSource>> updates)
-        where TSource : class
-    {
-        /// <summary>
-        /// Builds an <see cref="Action{T}"/> that applies all configured property updates
-        /// to a given <see cref="UpdateSettersBuilder{TSource}"/> instance.
-        /// </summary>
-        /// <remarks>
-        /// This method is AOT-compliant and does not use dynamic code generation
-        /// or MakeGenericMethod at runtime.
-        /// </remarks>
-        /// <returns>An action that applies all updates to the builder.</returns>
-        public Action<UpdateSettersBuilder<TSource>> ToSetPropertyCalls()
-        {
-            ArgumentNullException.ThrowIfNull(updates);
+	/// <summary>
+	/// <see cref="IEntityPropertyUpdate{TSource}"/> extensions.
+	/// </summary>
+	/// <typeparam name="TSource">The type of the entity being updated.</typeparam>
+	/// <summary>
+	/// Builds an <see cref="Action{T}"/> that applies all configured property updates
+	/// to a given <see cref="UpdateSettersBuilder{TSource}"/> instance.
+	/// </summary>
+	/// <remarks>
+	/// This method is AOT-compliant and does not use dynamic code generation
+	/// or MakeGenericMethod at runtime.
+	/// </remarks>
+	/// <param name="updates">The collection of property updates to apply.</param>
+	/// <returns>An action that applies all updates to the builder.</returns>
+	public static Action<UpdateSettersBuilder<TSource>> ToSetPropertyCalls<TSource>(this IEnumerable<IEntityPropertyUpdate<TSource>> updates)
+		where TSource : class
+	{
+		ArgumentNullException.ThrowIfNull(updates);
 
-			IReadOnlyList<IEntityPropertyUpdate<TSource>> list = updates as IReadOnlyList<IEntityPropertyUpdate<TSource>> ?? [.. updates];
-            if (list.Count == 0)
-            {
-                return static _ => { };
-            }
+		IReadOnlyList<IEntityPropertyUpdate<TSource>> list = updates as IReadOnlyList<IEntityPropertyUpdate<TSource>> ?? [.. updates];
+		if (list.Count == 0)
+		{
+			return static _ => { };
+		}
 
-            // Capture list in closure - polymorphic dispatch handles type safety
-            return builder =>
-            {
-				EfCorePropertyUpdateApplicator<TSource> applicator = EfCorePropertyUpdateApplicator<TSource>.Instance;
-                foreach (IEntityPropertyUpdate<TSource> update in list)
-                {
-                    update.Apply(builder, applicator);
-                }
-            };
-        }
-    }
+		// Capture list in closure - polymorphic dispatch handles type safety
+		return builder =>
+		{
+			EfCorePropertyUpdateApplicator<TSource> applicator = EfCorePropertyUpdateApplicator<TSource>.Instance;
+			foreach (IEntityPropertyUpdate<TSource> update in list)
+			{
+				update.Apply(builder, applicator);
+			}
+		};
+	}
 }

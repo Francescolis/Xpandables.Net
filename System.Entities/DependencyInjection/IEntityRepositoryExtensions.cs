@@ -1,4 +1,4 @@
-/*******************************************************************************
+﻿/*******************************************************************************
  * Copyright (C) 2025-2026 Kamersoft
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
@@ -25,40 +25,36 @@ namespace Microsoft.Extensions.DependencyInjection;
 /// </summary>
 public static class IEntityRepositoryExtensions
 {
-    /// <summary>
-    /// <see cref="IEntityRepository"/> extensions.
-    /// </summary>
-    extension(IEntityRepository repository)
-    {
-        /// <summary>
-        /// Injects the specified ambient <typeparamref name="TContext"/> into the repository instance,
-        /// enabling it to participate in the current unit of work.
-        /// </summary>
-        /// <remarks>
-        /// The repository must implement <see cref="IAmbientContextReceiver{TContext}"/> 
-        /// to receive the ambient context. This is an AOT-compliant approach that avoids reflection.
-        /// </remarks>
-        /// <param name="context">The <typeparamref name="TContext"/> to inject into the repository.</param>
-        /// <exception cref="ArgumentNullException">Thrown when <paramref name="context"/> is null.</exception>
-        /// <exception cref="InvalidOperationException">
-        /// Thrown if the repository does not implement <see cref="IAmbientContextReceiver{TContext}"/>.
-        /// </exception>
-        public void InjectAmbientContext<TContext>(TContext context)
-            where TContext : class
-        {
-            ArgumentNullException.ThrowIfNull(context);
+	/// <summary>
+	/// Injects the specified ambient <typeparamref name="TContext"/> into the repository instance,
+	/// enabling it to participate in the current unit of work.
+	/// </summary>
+	/// <remarks>
+	/// The repository must implement <see cref="IAmbientContextReceiver{TContext}"/> 
+	/// to receive the ambient context. This is an AOT-compliant approach that avoids reflection.
+	/// </remarks>
+	/// <param name="repository">The repository to inject the context into.</param>
+	/// <param name="context">The <typeparamref name="TContext"/> to inject into the repository.</param>
+	/// <exception cref="ArgumentNullException">Thrown when <paramref name="context"/> is null.</exception>
+	/// <exception cref="InvalidOperationException">
+	/// Thrown if the repository does not implement <see cref="IAmbientContextReceiver{TContext}"/>.
+	/// </exception>
+	public static void InjectAmbientContext<TContext>(this IEntityRepository repository, TContext context)
+		where TContext : class
+	{
+		ArgumentNullException.ThrowIfNull(context);
+		ArgumentNullException.ThrowIfNull(repository);
 
-            if (repository is IAmbientContextReceiver<TContext> receiver)
-            {
-                receiver.SetAmbientContext(context);
-            }
-            else
-            {
-                throw new InvalidOperationException(
-                    $"The repository type '{repository.GetType().Name}' does not implement " +
-                    $"'{nameof(IAmbientContextReceiver<>)}'. " +
-                    $"Ensure the repository implements this interface to support ambient context injection.");
-            }
-        }
-    }
+		if (repository is IAmbientContextReceiver<TContext> receiver)
+		{
+			receiver.SetAmbientContext(context);
+		}
+		else
+		{
+			throw new InvalidOperationException(
+				$"The repository type '{repository.GetType().Name}' does not implement " +
+				$"'{nameof(IAmbientContextReceiver<>)}'. " +
+				$"Ensure the repository implements this interface to support ambient context injection.");
+		}
+	}
 }

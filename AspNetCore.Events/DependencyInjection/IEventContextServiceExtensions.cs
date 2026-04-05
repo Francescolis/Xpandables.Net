@@ -1,4 +1,4 @@
-/*******************************************************************************
+﻿/*******************************************************************************
  * Copyright (C) 2025-2026 Kamersoft
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
@@ -29,33 +29,30 @@ namespace Microsoft.Extensions.DependencyInjection;
 /// </summary>
 public static class IEventContextServiceExtensions
 {
-    extension(IServiceCollection services)
-    {
-        /// <summary>
-        /// Adds the specified event context middleware type to the service collection for dependency injection.
-        /// </summary>
-        /// <typeparam name="TEventContextMiddleware">The type of the event context middleware to register. Must be a reference type with a public constructor.</typeparam>
-        /// <returns>The same IServiceCollection instance so that additional calls can be chained.</returns>
-        public IServiceCollection AddXEventContextMiddleware<[DynamicallyAccessedMembers(DynamicallyAccessedMemberTypes.PublicConstructors)] TEventContextMiddleware>()
-            where TEventContextMiddleware : class, IMiddleware
-        {
-            ArgumentNullException.ThrowIfNull(services);
-            services.AddTransient<TEventContextMiddleware>();
-            return services;
-        }
+	/// <summary>
+	/// Adds the specified event context middleware type to the service collection for dependency injection.
+	/// </summary>
+	/// <typeparam name="TEventContextMiddleware">The type of the event context middleware to register. Must be a reference type with a public constructor.</typeparam>
+	/// <returns>The same IServiceCollection instance so that additional calls can be chained.</returns>
+	public static IServiceCollection AddXEventContextMiddleware<[DynamicallyAccessedMembers(DynamicallyAccessedMemberTypes.PublicConstructors)] TEventContextMiddleware>(this IServiceCollection services)
+		where TEventContextMiddleware : class, IMiddleware
+	{
+		ArgumentNullException.ThrowIfNull(services);
+		services.AddTransient<TEventContextMiddleware>();
+		return services;
+	}
 
-        /// <summary>
-        /// Adds the default XEvent context middleware to the application's service collection.
-        /// </summary>
-        /// <remarks>Call this method during application startup to ensure that event context information
-        /// is available throughout the request pipeline. This is typically used to support distributed tracing or
-        /// correlation scenarios.</remarks>
-        /// <returns>The <see cref="IServiceCollection"/> instance with the XEvent context middleware registered. This enables
-        /// event context propagation for subsequent middleware and services.</returns>
-        public IServiceCollection AddXEventContextMiddleware()
-        {
-            ArgumentNullException.ThrowIfNull(services);
-            return services.AddXEventContextMiddleware<EventContextMiddleware>();
-        }
-    }
+	/// <summary>
+	/// Adds the default XEvent context middleware to the application's service collection.
+	/// </summary>
+	/// <remarks>Call this method during application startup to ensure that event context information
+	/// is available throughout the request pipeline. This is typically used to support distributed tracing or
+	/// correlation scenarios.</remarks>
+	/// <returns>The <see cref="IServiceCollection"/> instance with the XEvent context middleware registered. This enables
+	/// event context propagation for subsequent middleware and services.</returns>
+	public static IServiceCollection AddXEventContextMiddleware(this IServiceCollection services)
+	{
+		ArgumentNullException.ThrowIfNull(services);
+		return services.AddXEventContextMiddleware<EventContextMiddleware>();
+	}
 }
