@@ -1,4 +1,4 @@
-/*******************************************************************************
+﻿/*******************************************************************************
  * Copyright (C) 2025-2026 Kamersoft
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
@@ -14,6 +14,7 @@
  * limitations under the License.
  *
 ********************************************************************************/
+using System.ComponentModel.DataAnnotations;
 using System.Data;
 using System.Diagnostics.CodeAnalysis;
 using System.Events.Integration;
@@ -146,7 +147,7 @@ public sealed class OutboxStore<
 			return [];
 		}
 
-		// Step 3: Fetch the claimed events
+		// Step 3: Fetch the claimed events and convert them individually
 		DataSpecification<TDataEventOutbox, TDataEventOutbox> selectSpec = DataSpecification
 			.For<TDataEventOutbox>()
 			.Where(e => e.ClaimId == claimId)
@@ -154,12 +155,29 @@ public sealed class OutboxStore<
 			.Build();
 
 		var list = new List<IIntegrationEvent>();
+		var conversionFailures = new List<FailedOutboxEvent>();
+
 		await foreach (TDataEventOutbox? entity in _outboxRepository.QueryAsync(selectSpec, cancellationToken).ConfigureAwait(false))
 		{
-			if (_converter.ConvertDataToEvent(entity) is IIntegrationEvent ie)
+			try
 			{
-				list.Add(ie);
+				if (_converter.ConvertDataToEvent(entity) is IIntegrationEvent ie)
+				{
+					list.Add(ie);
+				}
 			}
+			catch (Exception ex)
+				when (ex is InvalidOperationException or ValidationException)
+			{
+				conversionFailures.Add(new FailedOutboxEvent(entity.KeyId, ex.Message));
+			}
+		}
+
+		// Step 4: Restore state for events that failed conversion
+		if (conversionFailures.Count > 0)
+		{
+			await FailAsync(conversionFailures, cancellationToken)
+				.ConfigureAwait(false);
 		}
 
 		return list;

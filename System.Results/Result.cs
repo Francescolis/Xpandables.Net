@@ -45,6 +45,12 @@ public partial record Result : ResultBase
 	/// Indicates whether the operation result is generic. The value is false for non-generic result types.
 	/// </summary>
 	public override bool IsGeneric => false;
+
+	/// <summary>
+	/// Retrieves the underlying value represented by the current instance.
+	/// </summary>
+	/// <returns>An object containing the internal value, or null if no value is set.</returns>
+	public virtual object? GetUnderlyingValue() => InternalValue;
 }
 
 /// <summary>

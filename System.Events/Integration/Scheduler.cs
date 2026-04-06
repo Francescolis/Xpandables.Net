@@ -209,12 +209,17 @@ public sealed partial class Scheduler : Disposable, IScheduler
 			IEventPublisher eventPublisher = batchScope.ServiceProvider.GetRequiredService<IEventPublisher>();
 			IOutboxStore outbox = batchScope.ServiceProvider.GetRequiredService<IOutboxStore>();
 
-			foreach (IIntegrationEvent @event in events)
+			for (int eventIndex = 0; eventIndex < events.Count; eventIndex++)
 			{
+				IIntegrationEvent @event = events[eventIndex];
+
 				if (cancellationToken.IsCancellationRequested)
 				{
-					await MarkEventAsErrorSafeAsync(outbox, @event, "Operation was cancelled").ConfigureAwait(false);
-					errorCount++;
+					for (int remaining = eventIndex; remaining < events.Count; remaining++)
+					{
+						await MarkEventAsErrorSafeAsync(outbox, events[remaining], "Operation was cancelled").ConfigureAwait(false);
+						errorCount++;
+					}
 					cancellationToken.ThrowIfCancellationRequested();
 				}
 
@@ -227,14 +232,27 @@ public sealed partial class Scheduler : Disposable, IScheduler
 					await outbox.CompleteAsync([new(@event.EventId)], cancellationToken).ConfigureAwait(false);
 					processedCount++;
 				}
+				catch (OperationCanceledException oce) when (!cancellationToken.IsCancellationRequested)
+				{
+					// Per-event timeout: mark current event as failed and continue to the next
+					errorCount++;
+					await MarkEventAsErrorSafeAsync(outbox, @event, "Event processing timeout exceeded").ConfigureAwait(false);
+					LogEventProcessingFailed(_logger, oce, @event.EventId, @event.GetType().Name);
+				}
 				catch (OperationCanceledException)
 				{
+					// External cancellation: mark current and all remaining events, then propagate
 					errorCount++;
 					await MarkEventAsErrorSafeAsync(outbox, @event, "Operation was cancelled during processing").ConfigureAwait(false);
+					for (int remaining = eventIndex + 1; remaining < events.Count; remaining++)
+					{
+						await MarkEventAsErrorSafeAsync(outbox, events[remaining], "Operation was cancelled").ConfigureAwait(false);
+						errorCount++;
+					}
 					LogEventCancelled(_logger, @event.EventId);
 					throw;
 				}
-				#pragma warning disable CA1031
+#pragma warning disable CA1031
 				catch (Exception exception)
 #pragma warning restore CA1031
 				{
@@ -265,7 +283,7 @@ public sealed partial class Scheduler : Disposable, IScheduler
 		{
 			await outbox.FailAsync([new(@event.EventId, errorMessage)], CancellationToken.None).ConfigureAwait(false);
 		}
-		#pragma warning disable CA1031
+#pragma warning disable CA1031
 		catch (Exception exception)
 #pragma warning restore CA1031
 		{
