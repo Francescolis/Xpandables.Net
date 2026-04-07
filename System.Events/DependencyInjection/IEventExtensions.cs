@@ -519,6 +519,8 @@ public static class IEventExtensions
 	/// specified assemblies into the service collection.
 	/// </summary>
 	/// <remarks>Only sealed, non-abstract classes implementing <see cref="IEventHandler{TEvent}"/> are registered.
+	/// Open generic implementations (e.g., <c>MyHandler&lt;TEvent&gt; : IEventHandler&lt;TEvent&gt;</c>) are
+	/// registered as open generic services, allowing the DI container to resolve them for any concrete event type.
 	/// This method requires dynamic code and may not be compatible with trimming or ahead-of-time compilation
 	/// scenarios.</remarks>
 	/// <param name="services"></param>
@@ -530,33 +532,43 @@ public static class IEventExtensions
 	[RequiresDynamicCode("The event handlers may not be fully referenced.")]
 	public static IServiceCollection AddXEventHandlers(this IServiceCollection services, params IEnumerable<Assembly> assemblies)
 	{
+		ArgumentNullException.ThrowIfNull(services);
+
 		Assembly[] assembliesArray = assemblies as Assembly[] ?? [.. assemblies];
 		assembliesArray = assembliesArray is { Length: > 0 } ? assembliesArray : [Assembly.GetCallingAssembly()];
 
-		var eventHandlerTypes = assembliesArray
+		IEnumerable<Type> eventHandlerTypes = assembliesArray
 			.SelectMany(assembly => assembly.GetTypes())
 			.Where(type =>
 				type is { IsClass: true, IsAbstract: false, IsSealed: true }
 				&& type.GetInterfaces().Any(@interface =>
 					@interface.IsGenericType
-					&& @interface.GetGenericTypeDefinition() == typeof(IEventHandler<>)))
-			.Select(type => new
-			{
-				InterfaceTypes = type.GetInterfaces()
-					.Where(@interface =>
-						@interface.IsGenericType
-						&& @interface.GetGenericTypeDefinition() == typeof(IEventHandler<>)),
-				EventHandlerType = type
-			});
+					&& @interface.GetGenericTypeDefinition() == typeof(IEventHandler<>)));
 
-		foreach (var eventHandlerType in eventHandlerTypes)
+		foreach (Type type in eventHandlerTypes)
 		{
-			foreach (Type interfaceType in eventHandlerType.InterfaceTypes)
+			if (type.IsGenericTypeDefinition)
+			{
+				services.Add(
+					new ServiceDescriptor(
+						typeof(IEventHandler<>),
+						type,
+						ServiceLifetime.Scoped));
+
+				continue;
+			}
+
+			IEnumerable<Type> interfaceTypes = type.GetInterfaces()
+				.Where(@interface =>
+					@interface.IsGenericType
+					&& @interface.GetGenericTypeDefinition() == typeof(IEventHandler<>));
+
+			foreach (Type interfaceType in interfaceTypes)
 			{
 				MethodInfo addEventHandlerMethod = AddEventHandlerMethod
 					.MakeGenericMethod(
 						interfaceType.GetGenericArguments()[0],
-						eventHandlerType.EventHandlerType);
+						type);
 
 				_ = addEventHandlerMethod.Invoke(null, [services, null]);
 			}

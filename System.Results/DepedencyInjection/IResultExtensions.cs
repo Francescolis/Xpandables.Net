@@ -35,6 +35,23 @@ public static class IResultExtensions
 {
 	internal readonly record struct HandlerType(Type Type, IEnumerable<Type> Interfaces);
 
+	private static readonly HashSet<Type> HandlerInterfaceDefinitions =
+	[
+		typeof(IRequestHandler<>),
+		typeof(IRequestHandler<,>),
+		typeof(IRequestContextHandler<>),
+		typeof(IRequestContextHandler<,>),
+		typeof(IRequestPostHandler<>),
+		typeof(IStreamRequestHandler<,>),
+		typeof(IStreamPagedRequestHandler<,>),
+		typeof(IStreamRequestContextHandler<,>),
+		typeof(IStreamPagedRequestContextHandler<,>),
+		typeof(IRequestPreHandler<>)
+	];
+
+	private static bool IsHandlerInterface(Type i) =>
+		i.IsGenericType && HandlerInterfaceDefinitions.Contains(i.GetGenericTypeDefinition());
+
 	/// <summary>
 	/// Registers the specified pipeline decorator type as a transient implementation of the <see cref="IPipelineDecorator{TRequest}"/>
 	/// interface in the service collection.
@@ -70,9 +87,11 @@ public static class IResultExtensions
 	/// <param name="services">The IServiceCollection instance to which the cache type resolver will be added.</param>
 	/// <remarks>Handler types are identified by their implementation of supported handler interfaces,
 	/// such as <see cref="IRequestHandler{TRequest}"/>, <see cref="IRequestContextHandler{TRequest}"/>, and related
-	/// interfaces. Only sealed, non-abstract, non-generic classes are registered. Each handler interface is
-	/// registered as a transient service. This method requires dynamic code generation and may require unreferenced
-	/// code; see the method attributes for details.</remarks>
+	/// interfaces. Only sealed, non-abstract classes are registered. Open generic implementations
+	/// (e.g., <c>MyHandler&lt;TRequest&gt; : IRequestHandler&lt;TRequest&gt;</c>) are registered as open generic
+	/// services, allowing the DI container to resolve them for any concrete request type.
+	/// Each handler interface is registered as a scoped service. This method requires dynamic code generation
+	/// and may require unreferenced code; see the method attributes for details.</remarks>
 	/// <param name="assemblies">An array of assemblies to scan for handler implementations. If not specified or empty, the calling assembly
 	/// is used.</param>
 	/// <returns>The <see cref="IServiceCollection"/> instance with handler services registered.</returns>
@@ -80,51 +99,34 @@ public static class IResultExtensions
 	[RequiresUnreferencedCode("Calls MakeGenericMethod which may require unreferenced code.")]
 	public static IServiceCollection AddXRequestHandlers(this IServiceCollection services, params IEnumerable<Assembly> assemblies)
 	{
+		ArgumentNullException.ThrowIfNull(services);
+
 		Assembly[] assembliesArray = assemblies as Assembly[] ?? [.. assemblies];
 		assembliesArray = assembliesArray is { Length: > 0 } ? assembliesArray : [Assembly.GetCallingAssembly()];
 
-		IEnumerable<HandlerType> handlerTypes = assembliesArray.SelectMany(assembly =>
-				assembly.GetTypes()
-					.Where(type =>
-						type is
-						{
-							IsClass: true,
-							IsAbstract: false,
-							IsSealed: true,
-							IsGenericType: false
-						}
-						&& type.GetInterfaces().Any(i =>
-							i.IsGenericType &&
-							(i.GetGenericTypeDefinition() == typeof(IRequestHandler<>)
-							|| i.GetGenericTypeDefinition() == typeof(IRequestHandler<,>)
-							|| i.GetGenericTypeDefinition() == typeof(IRequestContextHandler<>)
-							|| i.GetGenericTypeDefinition() == typeof(IRequestContextHandler<,>)
-							|| i.GetGenericTypeDefinition() == typeof(IRequestPostHandler<>)
-							|| i.GetGenericTypeDefinition() == typeof(IStreamRequestHandler<,>)
-							|| i.GetGenericTypeDefinition() == typeof(IStreamPagedRequestHandler<,>)
-							|| i.GetGenericTypeDefinition() == typeof(IStreamRequestContextHandler<,>)
-							|| i.GetGenericTypeDefinition() == typeof(IStreamPagedRequestContextHandler<,>)
-							|| i.GetGenericTypeDefinition() == typeof(IRequestPreHandler<>)))))
-			.Select(type => new HandlerType(
-				type,
-				type.GetInterfaces()
-					.Where(i => i.IsGenericType &&
-								(i.GetGenericTypeDefinition() == typeof(IRequestHandler<>)
-								|| i.GetGenericTypeDefinition() == typeof(IRequestHandler<,>)
-								|| i.GetGenericTypeDefinition() == typeof(IRequestContextHandler<>)
-								|| i.GetGenericTypeDefinition() == typeof(IRequestContextHandler<,>)
-								|| i.GetGenericTypeDefinition() == typeof(IRequestPostHandler<>)
-								|| i.GetGenericTypeDefinition() == typeof(IStreamRequestHandler<,>)
-								|| i.GetGenericTypeDefinition() == typeof(IStreamPagedRequestHandler<,>)
-								|| i.GetGenericTypeDefinition() == typeof(IStreamRequestContextHandler<,>)
-								|| i.GetGenericTypeDefinition() == typeof(IStreamPagedRequestContextHandler<,>)
-								|| i.GetGenericTypeDefinition() == typeof(IRequestPreHandler<>)))));
+		IEnumerable<Type> handlerTypes = assembliesArray
+			.SelectMany(assembly => assembly.GetTypes())
+			.Where(type =>
+				type is { IsClass: true, IsAbstract: false, IsSealed: true }
+				&& type.GetInterfaces().Any(IsHandlerInterface));
 
-		foreach (HandlerType handlerType in handlerTypes)
+		foreach (Type type in handlerTypes)
 		{
-			foreach (Type interfaceType in handlerType.Interfaces)
+			IEnumerable<Type> interfaceTypes = type.GetInterfaces().Where(IsHandlerInterface);
+
+			if (type.IsGenericTypeDefinition)
 			{
-				_ = services.AddScoped(interfaceType, handlerType.Type);
+				foreach (Type interfaceType in interfaceTypes)
+				{
+					services.AddScoped(interfaceType.GetGenericTypeDefinition(), type);
+				}
+
+				continue;
+			}
+
+			foreach (Type interfaceType in interfaceTypes)
+			{
+				services.AddScoped(interfaceType, type);
 			}
 		}
 
