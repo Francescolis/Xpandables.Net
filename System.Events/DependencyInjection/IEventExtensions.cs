@@ -130,31 +130,28 @@ public static class IEventExtensions
 	{
 		ArgumentNullException.ThrowIfNull(services);
 
-		return services.XTryDecorate(
-			typeof(IEventHandler<>),
-			(service, provider) =>
+		ServiceDescriptor[] descriptors = services.GetServiceDescriptors(typeof(IEventHandler<>));
+
+		foreach (ServiceDescriptor descriptor in descriptors)
+		{
+			// Extract TEvent from the service descriptor's IEventHandler<TEvent> type,
+			// not from the handler's interfaces, to correctly support handlers that
+			// implement multiple IEventHandler<> interfaces.
+			Type eventType = descriptor.ServiceType.GenericTypeArguments[0];
+
+			// TEvent : class, IIntegrationEvent
+			if (!typeof(IIntegrationEvent).IsAssignableFrom(eventType))
 			{
+				continue;
+			}
+
+			int index = services.IndexOf(descriptor);
+			ServiceDescriptor captured = descriptor;
+
+			services[index] = captured.WithFactory(provider =>
+			{
+				object service = provider.GetInstance(captured);
 				Type handlerType = service.GetType();
-
-				// Find the IEventHandler<TEvent> interface implemented by this handler
-				Type? eventHandlerInterface = handlerType
-					.GetInterfaces()
-					.FirstOrDefault(i =>
-						i.IsGenericType &&
-						i.GetGenericTypeDefinition() == typeof(IEventHandler<>));
-
-				if (eventHandlerInterface is null)
-				{
-					return service;
-				}
-
-				Type eventType = eventHandlerInterface.GenericTypeArguments[0];
-
-				// TEvent : class, IIntegrationEvent
-				if (!typeof(IIntegrationEvent).IsAssignableFrom(eventType))
-				{
-					return service;
-				}
 
 				// TEventHandler : class, IEventHandler<TEvent>, IInboxConsumer
 				if (!handlerType.IsClass
@@ -174,6 +171,9 @@ public static class IEventExtensions
 					provider.GetRequiredService(
 						typeof(ILogger<>).MakeGenericType(closedDecorator)));
 			});
+		}
+
+		return services;
 	}
 
 	/// <summary>
