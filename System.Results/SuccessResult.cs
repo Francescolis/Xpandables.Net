@@ -1,4 +1,4 @@
-/*******************************************************************************
+﻿/*******************************************************************************
  * Copyright (C) 2025-2026 Kamersoft
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
@@ -26,9 +26,6 @@ namespace System.Results;
 /// value is required.</remarks>
 public sealed record SuccessResult : Result
 {
-    /// <inheritdoc/>
-    public sealed override bool IsGeneric => false;
-
     /// <inheritdoc/>
     public sealed override bool IsFailure => false;
 

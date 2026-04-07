@@ -1,4 +1,4 @@
-using System.Net;
+﻿using System.Net;
 using System.Results;
 
 using FluentAssertions;
@@ -8,21 +8,23 @@ namespace Xpandables.Net.UnitTests.Systems.Results;
 public sealed class ResultConversionTests
 {
 	[Fact]
-	public void ImplicitConversion_FromGenericToNonGeneric_PreservesStatusAndValue()
+	public void NaturalUpcast_FromGenericToNonGeneric_PreservesRuntimeType()
 	{
 		// Arrange
 		Result<int> typedResult = Result.Success(42);
 
-		// Act
+		// Act — natural reference upcast via inheritance
 		Result result = typedResult;
 
 		// Assert
 		Assert.Equal(HttpStatusCode.OK, result.StatusCode);
-		result.IsGeneric.Should().BeFalse();
+		result.IsGeneric.Should().BeTrue();
+		result.GetUnderlyingValue().Should().Be(42);
+		Assert.Same(typedResult, result);
 	}
 
 	[Fact]
-	public void ImplicitConversion_FromNonGenericToGeneric_CastsValueWhenCompatible()
+	public void ToResult_FromNonGenericToGeneric_CastsValueWhenCompatible()
 	{
 		// Arrange
 		Result source = Result.Success()
@@ -31,7 +33,7 @@ public sealed class ResultConversionTests
 			.Build();
 
 		// Act
-		Result<string> typed = source;
+		Result<string> typed = source.ToResult<string>();
 
 		// Assert
 		Assert.Equal(HttpStatusCode.Created, typed.StatusCode);
@@ -39,7 +41,7 @@ public sealed class ResultConversionTests
 	}
 
 	[Fact]
-	public void ImplicitConversion_FromNonGenericToGeneric_IncompatibleValueUsesDefault()
+	public void ToResult_FromNonGenericToGeneric_IncompatibleValueUsesDefault()
 	{
 		// Arrange
 		Result source = Result.Success()
@@ -48,7 +50,7 @@ public sealed class ResultConversionTests
 			.Build();
 
 		// Act
-		Result<string> typed = source;
+		Result<string> typed = source.ToResult<string>();
 
 		// Assert
 		Assert.Equal(HttpStatusCode.Accepted, typed.StatusCode);
@@ -56,15 +58,16 @@ public sealed class ResultConversionTests
 	}
 
 	[Fact]
-	public void ImplicitConversion_FromGeneric_NullSource_Throws()
+	public void ToResult_WhenAlreadyCorrectType_ReturnsSameInstance()
 	{
 		// Arrange
-		Result<int>? source = null;
+		Result<int> original = Result.Success(42);
+		Result asBase = original;
 
 		// Act
-		void Act() => _ = (Result)source!;
+		Result<int> converted = asBase.ToResult<int>();
 
-		// Assert
-		Assert.Throws<ArgumentNullException>(Act);
+		// Assert — zero-copy: same instance returned
+		Assert.Same(original, converted);
 	}
 }

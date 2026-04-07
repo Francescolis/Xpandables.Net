@@ -1,4 +1,4 @@
-/*******************************************************************************
+﻿/*******************************************************************************
  * Copyright (C) 2025-2026 Kamersoft
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
@@ -57,7 +57,7 @@ public static class ResultDelegateExtensions
         }
         catch (ResultException executionException)
         {
-            return executionException.Result;
+            return executionException.Result.ToResult<TResult>();
         }
         catch (Exception exception)
             when (exception is not ResultException)
@@ -133,12 +133,12 @@ public static class ResultDelegateExtensions
         }
         catch (ResultException executionException)
         {
-            return executionException.Result;
+            return executionException.Result.ToResult<TValue>();
         }
         catch (Exception exception)
             when (exception is not ResultException)
         {
-            return exception.ToResult();
+            return exception.ToResult<TValue>();
         }
     }
 }

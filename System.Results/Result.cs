@@ -14,8 +14,10 @@
  * limitations under the License.
  *
 ********************************************************************************/
+using System.Collections;
 using System.Diagnostics;
 using System.Diagnostics.CodeAnalysis;
+using System.Net;
 using System.Text.Json.Serialization;
 
 namespace System.Results;
@@ -31,7 +33,7 @@ namespace System.Results;
 /// supports integration with HTTP-based APIs and can be used to standardize result handling across application
 /// layers.</remarks>
 [DebuggerDisplay($"{{{nameof(DebuggerDisplay)},nq}}")]
-public partial record Result : ResultBase
+public partial record Result
 {
 	/// <summary>
 	/// Initializes a new instance of the Result class for use by derived types and JSON deserialization.
@@ -42,15 +44,122 @@ public partial record Result : ResultBase
 	protected internal Result() { }
 
 	/// <summary>
+	/// Represents the HTTP status code associated with the operation result.
+	/// </summary>
+	public HttpStatusCode StatusCode { get; init; } = HttpStatusCode.OK;
+
+	/// <summary>
+	/// Represents a short, human-readable summary of the problem type.
+	/// </summary>
+	public string? Title { get; protected internal init; }
+
+	/// <summary>
+	/// Represents a detailed, human-readable explanation specific to this occurrence of the problem.
+	/// </summary>
+	public string? Detail { get; protected internal init; }
+
+	/// <summary>
+	/// Represents a URI reference that identifies a resource relevant to the operation result.
+	/// </summary>
+	public Uri? Location { get; protected internal init; }
+
+	/// <summary>
+	/// Represents the internal value associated with the operation result, which can be of any type.
+	/// </summary>
+	/// <remarks>This property is designed to hold the result of the operation internally.
+	/// Derived types should override this property to provide typed storage and avoid boxing.
+	/// Use <see cref="Result{TValue}"/> for strongly-typed results.</remarks>
+	[MaybeNull, AllowNull]
+	[JsonIgnore]
+	protected internal virtual object? InternalValue { get; init; }
+
+	/// <summary>
+	/// Represents a collection of errors associated with the operation result.
+	/// </summary>
+	public ElementCollection Errors { get; protected internal init; } = [];
+
+	/// <summary>
+	/// Represents a collection of headers associated with the operation result.
+	/// The headers can include additional metadata relevant to the operation context.
+	/// </summary>
+	public ElementCollection Headers { get; init; } = [];
+
+	/// <summary>
+	/// Represents a collection of extensions associated with the operation result.
+	/// </summary>
+	public ElementCollection Extensions { get; init; } = [];
+
+	/// <summary>
+	/// Represents an exception associated with the operation result, if any.
+	/// </summary>
+	[JsonIgnore]
+	public Exception? Exception { get; protected internal init; }
+
+	/// <summary>
 	/// Indicates whether the operation result is generic. The value is false for non-generic result types.
 	/// </summary>
-	public override bool IsGeneric => false;
+	public virtual bool IsGeneric => false;
+
+	/// <summary>
+	/// Indicates whether the HTTP status code of the operation result signifies a successful outcome.
+	/// </summary>
+	public virtual bool IsSuccess => StatusCode.IsSuccess;
+
+	/// <summary>
+	/// Gets a value indicating whether the result represents a failure state.
+	/// </summary>
+	public virtual bool IsFailure => !IsSuccess;
+
+	/// <summary>
+	/// Ensures that the HTTP status code of the operation result indicates success.
+	/// </summary>
+	/// <exception cref="ResultException">Thrown if the operation result indicates a failure.</exception>
+	public void EnsureSuccess()
+	{
+		if (IsFailure)
+		{
+			throw new ResultException(this);
+		}
+	}
 
 	/// <summary>
 	/// Retrieves the underlying value represented by the current instance.
 	/// </summary>
 	/// <returns>An object containing the internal value, or null if no value is set.</returns>
 	public virtual object? GetUnderlyingValue() => InternalValue;
+
+	/// <summary>
+	/// Converts this <see cref="Result"/> to a <see cref="Result{TValue}"/> instance.
+	/// If this instance is already of type <see cref="Result{TValue}"/>, it is returned directly (zero-copy).
+	/// Otherwise, a new instance is created, copying all metadata properties.
+	/// </summary>
+	/// <typeparam name="TValue">The type of the value for the target result.</typeparam>
+	/// <returns>A <see cref="Result{TValue}"/> containing the metadata from this result.</returns>
+	public Result<TValue> ToResult<TValue>()
+	{
+		if (this is Result<TValue> typed)
+		{
+			return typed;
+		}
+
+		return new()
+		{
+			StatusCode = StatusCode,
+			Title = Title,
+			Detail = Detail,
+			Location = Location,
+			Errors = Errors,
+			Headers = Headers,
+			Extensions = Extensions,
+			Exception = Exception,
+			Value = InternalValue is TValue value ? value : default
+		};
+	}
+
+	/// <summary>
+	/// Returns a string that provides a concise, human-readable representation of the response for debugging purposes.
+	/// </summary>
+	protected string DebuggerDisplay => $"{(int)StatusCode} {StatusCode} - {(IsSuccess ? "Success" : "Failure")}{(Title is not null ? $": {Title}" : string.Empty)}";
 }
 
 /// <summary>
@@ -64,7 +173,7 @@ public partial record Result : ResultBase
 /// supports integration with HTTP-based APIs and can be used to standardize result handling across application
 /// layers.</remarks>
 /// <typeparam name="TValue">The type of the value contained in the result.</typeparam>
-public record Result<TValue> : ResultBase
+public record Result<TValue> : Result
 {
 	/// <summary>
 	/// Typed backing store for <see cref="Value"/>.
@@ -105,59 +214,5 @@ public record Result<TValue> : ResultBase
 	{
 		get => _typedValue;
 		protected internal init => _typedValue = value;
-	}
-
-	/// <summary>
-	/// Converts a generic <see cref="Result{TValue}"/> instance to a non-generic <see cref="Result"/> instance,
-	/// preserving all relevant result information.
-	/// </summary>
-	/// <remarks>This operator enables seamless conversion from a generic result to a non-generic result,
-	/// allowing code that expects a non-generic <see cref="Result"/> to accept a <see cref="Result{TValue}"/> without
-	/// explicit casting. All status, error, and metadata fields are copied; the value is assigned to the non-generic
-	/// result's value property.</remarks>
-	/// <param name="result">The generic result to convert. Cannot be null.</param>
-	[SuppressMessage("Usage", "CA2225:Operator overloads have named alternates", Justification = "<Pending>")]
-	public static implicit operator Result(Result<TValue> result)
-	{
-		ArgumentNullException.ThrowIfNull(result);
-
-		return new()
-		{
-			StatusCode = result.StatusCode,
-			Title = result.Title,
-			Detail = result.Detail,
-			Location = result.Location,
-			Errors = result.Errors,
-			Headers = result.Headers,
-			Extensions = result.Extensions,
-			Exception = result.Exception,
-			InternalValue = result.Value
-		};
-	}
-
-	/// <summary>
-	/// Defines an implicit conversion from a non-generic Result to a generic <see cref="Result{TValue}"/> instance.
-	/// </summary>
-	/// <remarks>All properties from the source Result are copied to the new <see cref="Result{TValue}"/> instance. The
-	/// Value property is set to the source InternalValue if it is of type TValue; otherwise, it is set to the default value of
-	/// TValue.</remarks>
-	/// <param name="result">The non-generic Result instance to convert. Cannot be null.</param>
-	[SuppressMessage("Usage", "CA2225:Operator overloads have named alternates", Justification = "<Pending>")]
-	public static implicit operator Result<TValue>(Result result)
-	{
-		ArgumentNullException.ThrowIfNull(result);
-
-		return new()
-		{
-			StatusCode = result.StatusCode,
-			Title = result.Title,
-			Detail = result.Detail,
-			Location = result.Location,
-			Errors = result.Errors,
-			Headers = result.Headers,
-			Extensions = result.Extensions,
-			Exception = result.Exception,
-			Value = result.InternalValue is TValue value ? value : default
-		};
 	}
 }

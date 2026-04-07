@@ -74,6 +74,6 @@ public sealed class Mediator(IServiceProvider provider) : IMediator
             provider.GetRequiredService<IPipelineRequestHandler<TRequest>>();
 
         Result result = await handler.HandleAsync(request, cancellationToken).ConfigureAwait(false);
-        return result;
+        return result.ToResult<TResponse>();
     }
 }
