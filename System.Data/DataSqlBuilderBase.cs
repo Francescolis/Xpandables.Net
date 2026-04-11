@@ -120,7 +120,7 @@ public abstract class DataSqlBuilderBase : IDataSqlBuilder
 		IReadOnlyDictionary<string, string> baseColumns = GetColumnMappings<TEntity>();
 		List<TableBinding> bindings = BuildTableBindings<TEntity, TResult>(specification, baseColumns);
 		IReadOnlyDictionary<ParameterExpression, TableBinding> selectorParameters = BuildParameterBindings(specification.Selector, bindings);
-		string columns = BuildSelectColumns(specification.Selector, selectorParameters, parameters);
+		string columns = BuildSelectColumns(specification.Selector, selectorParameters, parameters, specification.SelectorEvaluation);
 
 		// SELECT
 		sql.Append("SELECT ");
@@ -432,6 +432,7 @@ public abstract class DataSqlBuilderBase : IDataSqlBuilder
 
 		string tableName = GetTableName<TEntity>();
 		IReadOnlyDictionary<string, string> columnMappings = GetColumnMappings<TEntity>();
+		var bindings = new List<TableBinding> { new(typeof(TEntity), "t0", columnMappings) };
 
 		sql.Append("UPDATE ");
 		sql.Append(tableName);
@@ -440,7 +441,7 @@ public abstract class DataSqlBuilderBase : IDataSqlBuilder
 		var setClauses = new List<string>();
 		foreach (IDataPropertyUpdate<TEntity> update in updater.Updates)
 		{
-			string setClause = BuildSetClause(update, columnMappings, parameters);
+			string setClause = BuildSetClause(update, bindings, parameters);
 			setClauses.Add(setClause);
 		}
 		sql.Append(string.Join(", ", setClauses));
@@ -448,7 +449,8 @@ public abstract class DataSqlBuilderBase : IDataSqlBuilder
 		if (specification.Predicate != null)
 		{
 			sql.Append(" WHERE ");
-			string whereClause = TranslateExpression(specification.Predicate.Body, columnMappings, parameters);
+			IReadOnlyDictionary<ParameterExpression, TableBinding> predicateBindings = BuildParameterBindings(specification.Predicate, bindings);
+			string whereClause = TranslateExpression(specification.Predicate.Body, predicateBindings, parameters);
 			sql.Append(whereClause);
 		}
 
@@ -468,6 +470,7 @@ public abstract class DataSqlBuilderBase : IDataSqlBuilder
 
 		string tableName = GetTableName<TEntity>();
 		IReadOnlyDictionary<string, string> columnMappings = GetColumnMappings<TEntity>();
+		var bindings = new List<TableBinding> { new(typeof(TEntity), "t0", columnMappings) };
 
 		sql.Append("DELETE FROM ");
 		sql.Append(tableName);
@@ -475,7 +478,8 @@ public abstract class DataSqlBuilderBase : IDataSqlBuilder
 		if (specification.Predicate != null)
 		{
 			sql.Append(" WHERE ");
-			string whereClause = TranslateExpression(specification.Predicate.Body, columnMappings, parameters);
+			IReadOnlyDictionary<ParameterExpression, TableBinding> predicateBindings = BuildParameterBindings(specification.Predicate, bindings);
+			string whereClause = TranslateExpression(specification.Predicate.Body, predicateBindings, parameters);
 			sql.Append(whereClause);
 		}
 
@@ -759,8 +763,16 @@ public abstract class DataSqlBuilderBase : IDataSqlBuilder
 	protected virtual string BuildSelectColumns(
 		LambdaExpression selector,
 		IReadOnlyDictionary<ParameterExpression, TableBinding> bindings,
-		List<SqlParameter> parameters)
+		List<SqlParameter> parameters,
+		SelectorEvaluation evaluation)
 	{
+		// Client-side evaluation: select all mapped columns and let the mapper apply the projection.
+		if (evaluation == SelectorEvaluation.Client)
+		{
+			return BuildAllColumns(bindings);
+		}
+
+		// Server-side evaluation: translate the selector to SQL column projections.
 		if (selector.Body is ParameterExpression parameter && bindings.TryGetValue(parameter, out TableBinding? binding))
 		{
 			return string.Join(", ", binding.Columns.Values.Select(column =>
@@ -788,43 +800,37 @@ public abstract class DataSqlBuilderBase : IDataSqlBuilder
 		}
 
 		if (selector.Body is MemberInitExpression memberInit)
+		{
+			var selectedColumns = new List<string>();
+			foreach (MemberAssignment bindingInfo in memberInit.Bindings.OfType<MemberAssignment>())
 			{
-				var selectedColumns = new List<string>();
-				foreach (MemberAssignment bindingInfo in memberInit.Bindings.OfType<MemberAssignment>())
-				{
-					selectedColumns.Add(BuildSelectColumnExpression(bindingInfo.Expression, bindings, parameters, bindingInfo.Member.Name));
-				}
-				if (selectedColumns.Count > 0)
-				{
-					return string.Join(", ", selectedColumns);
-				}
+				selectedColumns.Add(BuildSelectColumnExpression(bindingInfo.Expression, bindings, parameters, bindingInfo.Member.Name));
 			}
-
-			// Handle client-side method calls on the entity parameter (e.g. u => u.ToContext()).
-			// These cannot be translated to SQL, so select all columns from the entity
-			// and let the mapper apply the projection after reading the data.
-			if (selector.Body is MethodCallExpression methodCall)
+			if (selectedColumns.Count > 0)
 			{
-				// Instance method on entity parameter
-				if (methodCall.Object is ParameterExpression instanceParam
-					&& bindings.TryGetValue(instanceParam, out TableBinding? instanceBinding))
-				{
-					return string.Join(", ", instanceBinding.Columns.Values.Select(column =>
-						$"{instanceBinding.Alias}.{QuoteIdentifier(column)}"));
-				}
-
-				// Static or extension method with entity parameter as the first argument
-				if (methodCall.Arguments.Count > 0
-					&& methodCall.Arguments[0] is ParameterExpression argParam
-					&& bindings.TryGetValue(argParam, out TableBinding? argBinding))
-				{
-					return string.Join(", ", argBinding.Columns.Values.Select(column =>
-						$"{argBinding.Alias}.{QuoteIdentifier(column)}"));
-				}
+				return string.Join(", ", selectedColumns);
 			}
+		}
 
-			string expressionColumn = TranslateExpression(selector.Body, bindings, parameters);
-			return expressionColumn;
+		string expressionColumn = TranslateExpression(selector.Body, bindings, parameters);
+		return expressionColumn;
+	}
+
+	/// <summary>
+	/// Builds a SELECT column list containing all mapped columns from all table bindings.
+	/// Used for client-side selector evaluation.
+	/// </summary>
+	private string BuildAllColumns(IReadOnlyDictionary<ParameterExpression, TableBinding> bindings)
+	{
+		var columns = new List<string>();
+		foreach (TableBinding binding in bindings.Values)
+		{
+			foreach (string column in binding.Columns.Values)
+			{
+				columns.Add($"{binding.Alias}.{QuoteIdentifier(column)}");
+			}
+		}
+		return string.Join(", ", columns);
 	}
 
 	/// <summary>
@@ -850,7 +856,7 @@ public abstract class DataSqlBuilderBase : IDataSqlBuilder
 	/// </summary>
 	protected virtual string BuildSetClause<TEntity>(
 		IDataPropertyUpdate<TEntity> update,
-		IReadOnlyDictionary<string, string> columnMappings,
+		IReadOnlyList<TableBinding> bindings,
 		List<SqlParameter> parameters)
 		where TEntity : class
 	{
@@ -860,13 +866,8 @@ public abstract class DataSqlBuilderBase : IDataSqlBuilder
 			throw new NotSupportedException($"Unsupported property expression: {update.PropertyExpression}");
 		}
 
-		string propertyName = memberExpr.Member.Name;
-		if (!columnMappings.TryGetValue(propertyName, out string? columnName))
-		{
-			throw new InvalidOperationException($"Property '{propertyName}' is not mapped to a column.");
-		}
-
-		string quotedColumn = QuoteIdentifier(columnName);
+		IReadOnlyDictionary<ParameterExpression, TableBinding> propBindings = BuildParameterBindings(update.PropertyExpression, bindings);
+		string quotedColumn = ResolveMemberColumn(memberExpr, propBindings);
 
 		if (update.IsConstant)
 		{
@@ -882,11 +883,14 @@ public abstract class DataSqlBuilderBase : IDataSqlBuilder
 			Expression valueExpr = update.ValueExpression;
 			if (valueExpr is LambdaExpression lambda)
 			{
-				valueExpr = lambda.Body;
+				IReadOnlyDictionary<ParameterExpression, TableBinding> valueBindings = BuildParameterBindings(lambda, bindings);
+				string translatedValue = TranslateExpression(lambda.Body, valueBindings, parameters);
+				return $"{quotedColumn} = {translatedValue}";
 			}
 
-			string translatedValue = TranslateExpression(valueExpr, columnMappings, parameters);
-			return $"{quotedColumn} = {translatedValue}";
+			// Non-lambda expressions (e.g. constant expression wrapped directly)
+			string translatedExpr = TranslateExpression(valueExpr, propBindings, parameters);
+			return $"{quotedColumn} = {translatedExpr}";
 		}
 	}
 
@@ -1165,162 +1169,6 @@ public abstract class DataSqlBuilderBase : IDataSqlBuilder
 	}
 
 	/// <summary>
-	/// Translates a LINQ expression to SQL.
-	/// </summary>
-	protected virtual string TranslateExpression(
-		Expression expression,
-		IReadOnlyDictionary<string, string> columnMappings,
-		List<SqlParameter> parameters)
-	{
-		return expression switch
-		{
-			BinaryExpression binary => TranslateBinaryExpression(binary, columnMappings, parameters),
-			UnaryExpression unary => TranslateUnaryExpression(unary, columnMappings, parameters),
-			MemberExpression member => TranslateMemberExpression(member, columnMappings, parameters),
-			ConstantExpression constant => TranslateConstantExpression(constant, parameters),
-			ConditionalExpression conditional => TranslateConditionalExpression(conditional, columnMappings, parameters),
-			MethodCallExpression methodCall => TranslateMethodCallExpression(methodCall, columnMappings, parameters),
-			ParameterExpression => throw new NotSupportedException("Parameter expressions must be accessed through member expressions."),
-			_ => throw new NotSupportedException($"Expression type '{expression.NodeType}' is not supported.")
-		};
-	}
-
-	/// <summary>
-	/// Translates a binary expression (e.g., ==, !=, &amp;&amp;, ||).
-	/// </summary>
-	protected virtual string TranslateBinaryExpression(
-		BinaryExpression binary,
-		IReadOnlyDictionary<string, string> columnMappings,
-		List<SqlParameter> parameters)
-	{
-		if (binary.NodeType == ExpressionType.Coalesce)
-		{
-			string coalesceLeft = TranslateExpression(binary.Left, columnMappings, parameters);
-			string coalesceRight = TranslateExpression(binary.Right, columnMappings, parameters);
-			return $"COALESCE({coalesceLeft}, {coalesceRight})";
-		}
-
-		string left = TranslateExpression(binary.Left, columnMappings, parameters);
-		string right = TranslateExpression(binary.Right, columnMappings, parameters);
-
-		string op = binary.NodeType switch
-		{
-			ExpressionType.Equal => "=",
-			ExpressionType.NotEqual => "<>",
-			ExpressionType.GreaterThan => ">",
-			ExpressionType.GreaterThanOrEqual => ">=",
-			ExpressionType.LessThan => "<",
-			ExpressionType.LessThanOrEqual => "<=",
-			ExpressionType.AndAlso => "AND",
-			ExpressionType.OrElse => "OR",
-			ExpressionType.Add => "+",
-			ExpressionType.Subtract => "-",
-			ExpressionType.Multiply => "*",
-			ExpressionType.Divide => "/",
-			ExpressionType.Modulo => "%",
-			_ => throw new NotSupportedException($"Binary operator '{binary.NodeType}' is not supported.")
-		};
-
-		// Handle NULL comparisons
-		if (right == "NULL" && op == "=")
-		{
-			return $"({left} IS NULL)";
-		}
-
-		if (right == "NULL" && op == "<>")
-		{
-			return $"({left} IS NOT NULL)";
-		}
-
-		return $"({left} {op} {right})";
-	}
-
-	/// <summary>
-	/// Translates a unary expression (e.g., !).
-	/// </summary>
-	protected virtual string TranslateUnaryExpression(
-		UnaryExpression unary,
-		IReadOnlyDictionary<string, string> columnMappings,
-		List<SqlParameter> parameters)
-	{
-		// Handle !Nullable.HasValue ? column IS NULL
-		if (unary.NodeType == ExpressionType.Not
-			&& unary.Operand is MemberExpression { Member.Name: "HasValue" } hasValueMember
-			&& hasValueMember.Expression is MemberExpression nullableInner
-			&& Nullable.GetUnderlyingType(nullableInner.Type) != null)
-		{
-			string column = TranslateExpression(nullableInner, columnMappings, parameters);
-			return $"({column} IS NULL)";
-		}
-
-		// Handle !p.BoolProperty ? column = 0
-		if (unary.NodeType == ExpressionType.Not
-			&& unary.Operand is MemberExpression { Expression: ParameterExpression } boolMember
-			&& boolMember.Type == typeof(bool))
-		{
-			string propertyName = boolMember.Member.Name;
-			if (columnMappings.TryGetValue(propertyName, out string? columnName))
-			{
-				return $"({QuoteIdentifier(columnName)} = 0)";
-			}
-		}
-
-		string operand = TranslateExpression(unary.Operand, columnMappings, parameters);
-
-		return unary.NodeType switch
-		{
-			ExpressionType.Not => $"(NOT {operand})",
-			ExpressionType.Convert => operand, // Ignore type conversions
-			ExpressionType.Quote => operand,   // Ignore quotes
-			_ => throw new NotSupportedException($"Unary operator '{unary.NodeType}' is not supported.")
-		};
-	}
-
-	/// <summary>
-	/// Translates a member expression (property access).
-	/// </summary>
-	protected virtual string TranslateMemberExpression(
-		MemberExpression member,
-		IReadOnlyDictionary<string, string> columnMappings,
-		List<SqlParameter> parameters)
-	{
-		// Handle Nullable<T>.HasValue ? column IS NOT NULL
-		if (member.Member.Name == "HasValue"
-			&& member.Expression is MemberExpression nullableMember
-			&& Nullable.GetUnderlyingType(nullableMember.Type) != null)
-		{
-			string column = TranslateExpression(nullableMember, columnMappings, parameters);
-			return $"({column} IS NOT NULL)";
-		}
-
-		// Handle Nullable<T>.Value ? unwrap to column
-		if (member.Member.Name == "Value"
-			&& member.Expression is MemberExpression nullableValueMember
-			&& Nullable.GetUnderlyingType(nullableValueMember.Type) != null)
-		{
-			return TranslateExpression(nullableValueMember, columnMappings, parameters);
-		}
-
-		// Check if this is accessing a property on the entity parameter
-		if (member.Expression is ParameterExpression)
-		{
-			string propertyName = member.Member.Name;
-			if (columnMappings.TryGetValue(propertyName, out string? columnName))
-			{
-				return QuoteIdentifier(columnName);
-			}
-
-			throw new InvalidOperationException($"Property '{propertyName}' is not mapped to a column.");
-		}
-
-		// Handle nested member access (e.g., closure variable)
-		object? value = ExtractValueFromMemberExpression(member);
-		string paramName = NextParameterName();
-		parameters.Add(new SqlParameter(paramName, value));
-		return $"{ParameterPrefix}{paramName}";
-	}
-
-	/// <summary>
 	/// Translates a constant expression.
 	/// </summary>
 	protected virtual string TranslateConstantExpression(
@@ -1343,89 +1191,6 @@ public abstract class DataSqlBuilderBase : IDataSqlBuilder
 		string paramName = NextParameterName();
 		parameters.Add(new SqlParameter(paramName, value));
 		return $"{ParameterPrefix}{paramName}";
-	}
-
-	/// <summary>
-	/// Translates a method call expression (e.g., string.Contains).
-	/// </summary>
-	protected virtual string TranslateMethodCallExpression(
-		MethodCallExpression methodCall,
-		IReadOnlyDictionary<string, string> columnMappings,
-		List<SqlParameter> parameters)
-	{
-		string methodName = methodCall.Method.Name;
-
-		if (methodName == "Contains" && methodCall.Method.DeclaringType != typeof(string))
-		{
-			return TranslateCollectionContains(methodCall, columnMappings, parameters);
-		}
-
-		// String methods
-		if (methodCall.Method.DeclaringType == typeof(string))
-		{
-			return methodName switch
-			{
-				"Contains" => TranslateStringContains(methodCall, columnMappings, parameters),
-				"StartsWith" => TranslateStringStartsWith(methodCall, columnMappings, parameters),
-				"EndsWith" => TranslateStringEndsWith(methodCall, columnMappings, parameters),
-				"ToLower" => TranslateStringToLower(methodCall, columnMappings, parameters),
-				"ToUpper" => TranslateStringToUpper(methodCall, columnMappings, parameters),
-				"IsNullOrEmpty" => TranslateStringIsNullOrEmpty(methodCall, columnMappings, parameters),
-				"IsNullOrWhiteSpace" => TranslateStringIsNullOrWhiteSpace(methodCall, columnMappings, parameters),
-				_ => throw new NotSupportedException($"String method '{methodName}' is not supported.")
-			};
-		}
-
-		// Handle Nullable<T>.GetValueOrDefault()
-		if (methodName == "GetValueOrDefault"
-			&& methodCall.Object is MemberExpression nullableMember
-			&& Nullable.GetUnderlyingType(nullableMember.Type) != null)
-		{
-			string column = TranslateExpression(nullableMember, columnMappings, parameters);
-			if (methodCall.Arguments.Count == 1)
-			{
-				string defaultValue = TranslateExpression(methodCall.Arguments[0], columnMappings, parameters);
-				return $"COALESCE({column}, {defaultValue})";
-			}
-			return column;
-		}
-
-		throw new NotSupportedException($"Method '{methodCall.Method.DeclaringType?.Name}.{methodName}' is not supported.");
-	}
-
-	/// <summary>
-	/// Translates collection Contains to SQL IN clause.
-	/// </summary>
-	protected virtual string TranslateCollectionContains(
-		MethodCallExpression methodCall,
-		IReadOnlyDictionary<string, string> columnMappings,
-		List<SqlParameter> parameters)
-	{
-		(Expression? collectionExpr, Expression? itemExpr) = GetCollectionContainsOperands(methodCall);
-		Expression unwrappedItem = UnwrapConversion(itemExpr);
-
-		if (!IsEntityMemberExpression(unwrappedItem))
-		{
-			throw new NotSupportedException("Collection Contains expects an entity member as the item expression.");
-		}
-
-		string column = TranslateExpression(unwrappedItem, columnMappings, parameters);
-		IReadOnlyList<object?> values = ExtractCollectionValues(collectionExpr);
-
-		if (values.Count == 0)
-		{
-			return "(1 = 0)";
-		}
-
-		var placeholders = new List<string>(values.Count);
-		foreach (object? value in values)
-		{
-			string paramName = NextParameterName();
-			parameters.Add(new SqlParameter(paramName, value));
-			placeholders.Add($"{ParameterPrefix}{paramName}");
-		}
-
-		return $"({column} IN ({string.Join(", ", placeholders)}))";
 	}
 
 	private static (Expression Collection, Expression Item) GetCollectionContainsOperands(MethodCallExpression methodCall)
@@ -1466,54 +1231,6 @@ public abstract class DataSqlBuilderBase : IDataSqlBuilder
 		}
 
 		return (objectExpr, argumentExpr);
-	}
-
-	/// <summary>
-	/// Translates string.Contains to LIKE '%value%'.
-	/// </summary>
-	protected virtual string TranslateStringContains(
-		MethodCallExpression methodCall,
-		IReadOnlyDictionary<string, string> columnMappings,
-		List<SqlParameter> parameters)
-	{
-		(Expression? columnExpr, Expression? valueExpr) = GetStringMethodOperands(methodCall);
-		string column = TranslateExpression(columnExpr, columnMappings, parameters);
-		object? value = ExtractConstantValue(valueExpr);
-		string paramName = NextParameterName();
-		parameters.Add(new SqlParameter(paramName, $"%{value}%"));
-		return $"({column} LIKE {ParameterPrefix}{paramName})";
-	}
-
-	/// <summary>
-	/// Translates string.StartsWith to LIKE 'value%'.
-	/// </summary>
-	protected virtual string TranslateStringStartsWith(
-		MethodCallExpression methodCall,
-		IReadOnlyDictionary<string, string> columnMappings,
-		List<SqlParameter> parameters)
-	{
-		(Expression? columnExpr, Expression? valueExpr) = GetStringMethodOperands(methodCall);
-		string column = TranslateExpression(columnExpr, columnMappings, parameters);
-		object? value = ExtractConstantValue(valueExpr);
-		string paramName = NextParameterName();
-		parameters.Add(new SqlParameter(paramName, $"{value}%"));
-		return $"({column} LIKE {ParameterPrefix}{paramName})";
-	}
-
-	/// <summary>
-	/// Translates string.EndsWith to LIKE '%value'.
-	/// </summary>
-	protected virtual string TranslateStringEndsWith(
-		MethodCallExpression methodCall,
-		IReadOnlyDictionary<string, string> columnMappings,
-		List<SqlParameter> parameters)
-	{
-		(Expression? columnExpr, Expression? valueExpr) = GetStringMethodOperands(methodCall);
-		string column = TranslateExpression(columnExpr, columnMappings, parameters);
-		object? value = ExtractConstantValue(valueExpr);
-		string paramName = NextParameterName();
-		parameters.Add(new SqlParameter(paramName, $"%{value}"));
-		return $"({column} LIKE {ParameterPrefix}{paramName})";
 	}
 
 	/// <summary>
@@ -1618,20 +1335,6 @@ public abstract class DataSqlBuilderBase : IDataSqlBuilder
 	}
 
 	/// <summary>
-	/// Translates a conditional expression to SQL CASE WHEN using column mappings.
-	/// </summary>
-	protected virtual string TranslateConditionalExpression(
-		ConditionalExpression conditional,
-		IReadOnlyDictionary<string, string> columnMappings,
-		List<SqlParameter> parameters)
-	{
-		string test = TranslateExpression(conditional.Test, columnMappings, parameters);
-		string ifTrue = TranslateExpression(conditional.IfTrue, columnMappings, parameters);
-		string ifFalse = TranslateExpression(conditional.IfFalse, columnMappings, parameters);
-		return $"(CASE WHEN {test} THEN {ifTrue} ELSE {ifFalse} END)";
-	}
-
-	/// <summary>
 	/// Translates string.IsNullOrEmpty to SQL using table bindings.
 	/// </summary>
 	protected virtual string TranslateStringIsNullOrEmpty(
@@ -1644,18 +1347,6 @@ public abstract class DataSqlBuilderBase : IDataSqlBuilder
 	}
 
 	/// <summary>
-	/// Translates string.IsNullOrEmpty to SQL using column mappings.
-	/// </summary>
-	protected virtual string TranslateStringIsNullOrEmpty(
-		MethodCallExpression methodCall,
-		IReadOnlyDictionary<string, string> columnMappings,
-		List<SqlParameter> parameters)
-	{
-		string column = TranslateExpression(methodCall.Arguments[0], columnMappings, parameters);
-		return $"({column} IS NULL OR {column} = '')";
-	}
-
-	/// <summary>
 	/// Translates string.IsNullOrWhiteSpace to SQL using table bindings.
 	/// </summary>
 	protected virtual string TranslateStringIsNullOrWhiteSpace(
@@ -1664,18 +1355,6 @@ public abstract class DataSqlBuilderBase : IDataSqlBuilder
 		List<SqlParameter> parameters)
 	{
 		string column = TranslateExpression(methodCall.Arguments[0], bindings, parameters);
-		return $"({column} IS NULL OR LTRIM(RTRIM({column})) = '')";
-	}
-
-	/// <summary>
-	/// Translates string.IsNullOrWhiteSpace to SQL using column mappings.
-	/// </summary>
-	protected virtual string TranslateStringIsNullOrWhiteSpace(
-		MethodCallExpression methodCall,
-		IReadOnlyDictionary<string, string> columnMappings,
-		List<SqlParameter> parameters)
-	{
-		string column = TranslateExpression(methodCall.Arguments[0], columnMappings, parameters);
 		return $"({column} IS NULL OR LTRIM(RTRIM({column})) = '')";
 	}
 
@@ -1745,30 +1424,6 @@ public abstract class DataSqlBuilderBase : IDataSqlBuilder
 	}
 
 	/// <summary>
-	/// Translates string.ToLower to LOWER(column).
-	/// </summary>
-	protected virtual string TranslateStringToLower(
-		MethodCallExpression methodCall,
-		IReadOnlyDictionary<string, string> columnMappings,
-		List<SqlParameter> parameters)
-	{
-		string column = TranslateExpression(methodCall.Object!, columnMappings, parameters);
-		return $"LOWER({column})";
-	}
-
-	/// <summary>
-	/// Translates string.ToUpper to UPPER(column).
-	/// </summary>
-	protected virtual string TranslateStringToUpper(
-		MethodCallExpression methodCall,
-		IReadOnlyDictionary<string, string> columnMappings,
-		List<SqlParameter> parameters)
-	{
-		string column = TranslateExpression(methodCall.Object!, columnMappings, parameters);
-		return $"UPPER({column})";
-	}
-
-	/// <summary>
 	/// Extracts a constant value from an expression.
 	/// </summary>
 	protected virtual object? ExtractConstantValue(Expression expression)
@@ -1791,6 +1446,11 @@ public abstract class DataSqlBuilderBase : IDataSqlBuilder
 		if (member.Expression is ConstantExpression constant)
 		{
 			object? container = constant.Value;
+			if (container is null)
+			{
+				return null;
+			}
+
 			return member.Member switch
 			{
 				FieldInfo field => field.GetValue(container),
@@ -1802,6 +1462,11 @@ public abstract class DataSqlBuilderBase : IDataSqlBuilder
 		if (member.Expression is MemberExpression innerMember)
 		{
 			object? container = ExtractValueFromMemberExpression(innerMember);
+			if (container is null)
+			{
+				return null;
+			}
+
 			return member.Member switch
 			{
 				FieldInfo field => field.GetValue(container),

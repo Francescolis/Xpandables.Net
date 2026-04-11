@@ -1,4 +1,4 @@
-/*******************************************************************************
+﻿/*******************************************************************************
  * Copyright (C) 2025-2026 Kamersoft
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
@@ -57,27 +57,21 @@ public readonly record struct SqlQueryResult(string Sql, IReadOnlyList<SqlParame
 public readonly record struct SqlParameter(string Name, object? Value);
 
 /// <summary>
-/// Defines a contract for building SQL queries from specifications and entity operations.
+/// Defines a contract for accessing SQL dialect metadata such as table names,
+/// column mappings, identifier quoting, and parameter formatting.
 /// </summary>
 /// <remarks>
 /// <para>
-/// Implementations of this interface translate <see cref="IDataSpecification{TEntity, TResult}"/>
-/// and entity operations into provider-specific SQL statements with parameterized queries.
-/// </para>
-/// <para>
-/// The builder handles:
-/// <list type="bullet">
-/// <item>SELECT queries with filtering, ordering, and paging</item>
-/// <item>INSERT statements for single and batch operations</item>
-/// <item>UPDATE statements with SET clauses</item>
-/// <item>DELETE statements with WHERE clauses</item>
-/// </list>
+/// This interface provides the schema-level information needed to map CLR types
+/// to database objects without generating full SQL statements.
+/// It is intended for components that need metadata only (e.g., result mappers),
+/// without depending on the full query-building surface.
 /// </para>
 /// </remarks>
-public interface IDataSqlBuilder
+public interface IDataSqlMetadata
 {
 	/// <summary>
-	/// Gets the SQL dialect this builder generates.
+	/// Gets the SQL dialect this metadata describes.
 	/// </summary>
 	SqlDialect Dialect { get; }
 
@@ -108,6 +102,32 @@ public interface IDataSqlBuilder
 	/// <returns>A dictionary mapping property names to column names.</returns>
 	IReadOnlyDictionary<string, string> GetColumnMappings<[DynamicallyAccessedMembers(DynamicallyAccessedMemberTypes.PublicProperties)] TEntity>()
 		where TEntity : class;
+}
+
+/// <summary>
+/// Defines a contract for building SQL queries from specifications and entity operations.
+/// </summary>
+/// <remarks>
+/// <para>
+/// Implementations of this interface translate <see cref="IDataSpecification{TEntity, TResult}"/>
+/// and entity operations into provider-specific SQL statements with parameterized queries.
+/// </para>
+/// <para>
+/// The builder handles:
+/// <list type="bullet">
+/// <item>SELECT queries with filtering, ordering, and paging</item>
+/// <item>INSERT statements for single and batch operations</item>
+/// <item>UPDATE statements with SET clauses</item>
+/// <item>DELETE statements with WHERE clauses</item>
+/// </list>
+/// </para>
+/// <para>
+/// This interface extends <see cref="IDataSqlMetadata"/> to also provide
+/// schema-level metadata (table names, column mappings, quoting).
+/// </para>
+/// </remarks>
+public interface IDataSqlBuilder : IDataSqlMetadata
+{
 
 	/// <summary>
 	/// Builds a SELECT query from a query specification.

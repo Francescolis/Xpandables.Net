@@ -82,20 +82,6 @@ public sealed class PostgreDataSqlBuilder : DataSqlBuilderBase
 	/// </remarks>
 	protected override string TranslateStringContains(
 		Linq.Expressions.MethodCallExpression methodCall,
-		IReadOnlyDictionary<string, string> columnMappings,
-		List<SqlParameter> parameters)
-	{
-		string column = TranslateExpression(methodCall.Object!, columnMappings, parameters);
-		object? value = ExtractConstantValue(methodCall.Arguments[0]);
-		string escapedValue = EscapeLikePattern(value?.ToString() ?? string.Empty);
-		string paramName = NextParameterName();
-		parameters.Add(new SqlParameter(paramName, $"%{escapedValue}%"));
-		return $"({column} LIKE {ParameterPrefix}{paramName})";
-	}
-
-	/// <inheritdoc />
-	protected override string TranslateStringContains(
-		Linq.Expressions.MethodCallExpression methodCall,
 		IReadOnlyDictionary<Linq.Expressions.ParameterExpression, TableBinding> bindings,
 		List<SqlParameter> parameters)
 	{
@@ -113,20 +99,6 @@ public sealed class PostgreDataSqlBuilder : DataSqlBuilderBase
 	/// </summary>
 	protected override string TranslateStringStartsWith(
 		Linq.Expressions.MethodCallExpression methodCall,
-		IReadOnlyDictionary<string, string> columnMappings,
-		List<SqlParameter> parameters)
-	{
-		string column = TranslateExpression(methodCall.Object!, columnMappings, parameters);
-		object? value = ExtractConstantValue(methodCall.Arguments[0]);
-		string escapedValue = EscapeLikePattern(value?.ToString() ?? string.Empty);
-		string paramName = NextParameterName();
-		parameters.Add(new SqlParameter(paramName, $"{escapedValue}%"));
-		return $"({column} LIKE {ParameterPrefix}{paramName})";
-	}
-
-	/// <inheritdoc />
-	protected override string TranslateStringStartsWith(
-		Linq.Expressions.MethodCallExpression methodCall,
 		IReadOnlyDictionary<Linq.Expressions.ParameterExpression, TableBinding> bindings,
 		List<SqlParameter> parameters)
 	{
@@ -142,20 +114,6 @@ public sealed class PostgreDataSqlBuilder : DataSqlBuilderBase
 	/// <summary>
 	/// Translates string.EndsWith to PostgreSQL LIKE with escape handling.
 	/// </summary>
-	protected override string TranslateStringEndsWith(
-		Linq.Expressions.MethodCallExpression methodCall,
-		IReadOnlyDictionary<string, string> columnMappings,
-		List<SqlParameter> parameters)
-	{
-		string column = TranslateExpression(methodCall.Object!, columnMappings, parameters);
-		object? value = ExtractConstantValue(methodCall.Arguments[0]);
-		string escapedValue = EscapeLikePattern(value?.ToString() ?? string.Empty);
-		string paramName = NextParameterName();
-		parameters.Add(new SqlParameter(paramName, $"%{escapedValue}"));
-		return $"({column} LIKE {ParameterPrefix}{paramName})";
-	}
-
-	/// <inheritdoc />
 	protected override string TranslateStringEndsWith(
 		Linq.Expressions.MethodCallExpression methodCall,
 		IReadOnlyDictionary<Linq.Expressions.ParameterExpression, TableBinding> bindings,

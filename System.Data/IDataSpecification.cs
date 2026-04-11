@@ -1,4 +1,4 @@
-/*******************************************************************************
+﻿/*******************************************************************************
  * Copyright (C) 2025-2026 Kamersoft
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
@@ -76,6 +76,40 @@ public interface IDataSpecification<TData, TResult>
     /// Gets a value indicating whether to apply distinct to the result.
     /// </summary>
     bool IsDistinct { get; }
+
+    /// <summary>
+    /// Gets a value indicating how the selector expression is evaluated.
+    /// </summary>
+    /// <remarks>
+    /// When <see cref="SelectorEvaluation.Server"/>, the selector is translated to SQL column projections.
+    /// When <see cref="SelectorEvaluation.Client"/>, all mapped columns are selected and the
+    /// selector is applied in memory after reading from the database.
+    /// </remarks>
+    SelectorEvaluation SelectorEvaluation { get; }
+}
+
+/// <summary>
+/// Specifies how a selector expression is evaluated during query execution.
+/// </summary>
+public enum SelectorEvaluation
+{
+    /// <summary>
+    /// The evaluation mode is determined automatically by inspecting the expression tree.
+    /// Translatable expressions are evaluated server-side; untranslatable ones client-side.
+    /// </summary>
+    Auto = 0,
+
+    /// <summary>
+    /// The selector is translated into SQL column projections and evaluated by the database server.
+    /// </summary>
+    Server = 1,
+
+    /// <summary>
+    /// All mapped columns are selected and the selector is applied client-side after data retrieval.
+    /// Use this for selectors containing method calls, extension methods, or complex transformations
+    /// that cannot be translated to SQL.
+    /// </summary>
+    Client = 2
 }
 
 /// <summary>

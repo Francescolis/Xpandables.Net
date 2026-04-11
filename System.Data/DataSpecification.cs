@@ -1,4 +1,4 @@
-/*******************************************************************************
+﻿/*******************************************************************************
  * Copyright (C) 2025-2026 Kamersoft
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
@@ -340,7 +340,8 @@ public readonly record struct DataSpecificationBuilder<TData>
 			_orderBy,
 			_skip,
 			_take,
-			_isDistinct);
+			_isDistinct,
+			SelectorTranslatabilityVisitor.Classify(selector));
 	}
 
 	/// <summary>
@@ -360,7 +361,8 @@ public readonly record struct DataSpecificationBuilder<TData>
 			_orderBy,
 			_skip,
 			_take,
-			_isDistinct);
+			_isDistinct,
+			SelectorTranslatabilityVisitor.Classify(selector));
 	}
 
 	/// <summary>
@@ -382,7 +384,8 @@ public readonly record struct DataSpecificationBuilder<TData>
 			_orderBy,
 			_skip,
 			_take,
-			_isDistinct);
+			_isDistinct,
+			SelectorTranslatabilityVisitor.Classify(selector));
 	}
 
 	/// <summary>
@@ -405,10 +408,11 @@ public readonly record struct DataSpecificationBuilder<TData>
 			_orderBy,
 			_skip,
 			_take,
-			_isDistinct);
+			_isDistinct,
+			SelectorTranslatabilityVisitor.Classify(selector));
 	}
 
-	// Cached per closed generic type � ensures ReferenceEqualityComparer hits in DataSqlMapper._compiledSelectors
+	// Cached per closed generic type — ensures ReferenceEqualityComparer hits in DataSqlMapper._compiledSelectors
 	private static readonly Expression<Func<TData, TData>> _identitySelector = static e => e;
 
 	/// <summary>
@@ -477,6 +481,9 @@ public readonly record struct DataSpecification<TData, TResult> : IDataSpecifica
 	/// <inheritdoc />
 	public bool IsDistinct { get; }
 
+	/// <inheritdoc />
+	public SelectorEvaluation SelectorEvaluation { get; }
+
 	internal DataSpecification(
 		LambdaExpression? predicate,
 		LambdaExpression selector,
@@ -486,7 +493,8 @@ public readonly record struct DataSpecification<TData, TResult> : IDataSpecifica
 		ImmutableArray<OrderSpecification> orderBy,
 		int? skip,
 		int? take,
-		bool isDistinct)
+		bool isDistinct,
+		SelectorEvaluation selectorEvaluation)
 	{
 		Predicate = predicate;
 		Selector = selector ?? throw new ArgumentNullException(nameof(selector));
@@ -497,6 +505,7 @@ public readonly record struct DataSpecification<TData, TResult> : IDataSpecifica
 		Skip = skip;
 		Take = take;
 		IsDistinct = isDistinct;
+		SelectorEvaluation = selectorEvaluation;
 	}
 }
 
@@ -512,4 +521,69 @@ internal sealed record JoinSpecification<TLeft, TRight>(
 {
 	public Type LeftType => typeof(TLeft);
 	public Type RightType => typeof(TRight);
+}
+
+/// <summary>
+/// Walks a selector expression tree to determine whether it can be fully
+/// translated to SQL column projections (Server) or must be applied
+/// client-side after data retrieval (Client).
+/// </summary>
+file sealed class SelectorTranslatabilityVisitor : ExpressionVisitor
+{
+	private bool _isTranslatable = true;
+
+	public static SelectorEvaluation Classify(LambdaExpression selector)
+	{
+		var visitor = new SelectorTranslatabilityVisitor();
+		visitor.Visit(selector.Body);
+		return visitor._isTranslatable ? SelectorEvaluation.Server : SelectorEvaluation.Client;
+	}
+
+	public override Expression? Visit(Expression? node)
+	{
+		if (!_isTranslatable)
+			return node;
+
+		return base.Visit(node);
+	}
+
+	protected override Expression VisitMethodCall(MethodCallExpression node)
+	{
+		if (!IsKnownSqlMethod(node))
+		{
+			_isTranslatable = false;
+			return node;
+		}
+
+		return base.VisitMethodCall(node);
+	}
+
+	protected override Expression VisitInvocation(InvocationExpression node)
+	{
+		_isTranslatable = false;
+		return node;
+	}
+
+	private static bool IsKnownSqlMethod(MethodCallExpression mc)
+	{
+		if (mc.Method.DeclaringType == typeof(string))
+		{
+			return mc.Method.Name is "Contains" or "StartsWith" or "EndsWith"
+				or "ToLower" or "ToUpper" or "IsNullOrEmpty" or "IsNullOrWhiteSpace";
+		}
+
+		if (mc.Method.Name == "GetValueOrDefault"
+			&& mc.Object is not null
+			&& Nullable.GetUnderlyingType(mc.Object.Type) is not null)
+		{
+			return true;
+		}
+
+		if (mc.Method.Name == "Contains" && mc.Method.DeclaringType != typeof(string))
+		{
+			return true;
+		}
+
+		return false;
+	}
 }

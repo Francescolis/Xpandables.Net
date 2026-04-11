@@ -1,4 +1,4 @@
-/*******************************************************************************
+﻿/*******************************************************************************
  * Copyright (C) 2025-2026 Kamersoft
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
@@ -15,6 +15,7 @@
  *
 ********************************************************************************/
 using System.Collections.Concurrent;
+using System.ComponentModel.DataAnnotations.Schema;
 using System.Data.Common;
 using System.Diagnostics.CodeAnalysis;
 using System.Globalization;
@@ -37,47 +38,71 @@ public sealed class DataSqlMapper : IDataSqlMapper
     private static readonly ConcurrentDictionary<PropertyInfo, Action<object, object?>> _setterCache = new();
     private static readonly ConcurrentDictionary<ConstructorInfo, Func<object?[], object>> _ctorDelegateCache = new();
 
-    /// <inheritdoc/>
-    [UnconditionalSuppressMessage("Trimming", "IL2091:Target generic argument does not have matching annotations", Justification = "Selector mapping requires dynamic access to entity members.")]
-    public TResult MapToResult<TData, [DynamicallyAccessedMembers(DynamicallyAccessedMemberTypes.PublicParameterlessConstructor | DynamicallyAccessedMemberTypes.PublicConstructors | DynamicallyAccessedMemberTypes.PublicProperties)] TResult>(
-        IDataSpecification<TData, TResult> specification,
-        DbDataReader reader)
-        where TData : class
-    {
-        ArgumentNullException.ThrowIfNull(specification);
-        ArgumentNullException.ThrowIfNull(reader);
+	/// <inheritdoc/>
+	[UnconditionalSuppressMessage("Trimming", "IL2091:Target generic argument does not have matching annotations", Justification = "Selector mapping requires dynamic access to entity members.")]
+	public TResult MapToResult<TData, [DynamicallyAccessedMembers(DynamicallyAccessedMemberTypes.PublicParameterlessConstructor | DynamicallyAccessedMemberTypes.PublicConstructors | DynamicallyAccessedMemberTypes.PublicProperties)] TResult>(
+		IDataSpecification<TData, TResult> specification,
+		DbDataReader reader)
+		where TData : class
+	{
+		ArgumentNullException.ThrowIfNull(specification);
+		ArgumentNullException.ThrowIfNull(reader);
 
-        if (specification.Selector is not Expression<Func<TData, TResult>> typedSelector)
-        {
-            if (specification.Selector.Parameters.Count != 1)
+		// Server-side evaluation: the SQL already projected the result columns
+		// with proper aliases. Map directly to TResult without creating an
+		// intermediate TData entity.
+		if (specification.SelectorEvaluation == SelectorEvaluation.Server)
+		{
+			// Scalar member projection (e.g., p => p.Name): read the column by name
+			// since the result set may contain it at any ordinal.
+			if (IsScalarType(typeof(TResult))
+				&& specification.Selector.Body is MemberExpression scalarMember)
 			{
-				throw new InvalidOperationException("Selector must have a single parameter.");
+				return MapScalarByColumnName<TResult>(reader, scalarMember.Member.Name);
+			}
+
+			return MapToResult<TResult>(reader);
+		}
+
+		// Client-side evaluation: all entity columns were selected.
+		// Materialize TData first, then apply the selector in memory.
+		// This supports extension methods, complex transformations, and
+		// any projection that cannot be translated to SQL.
+		if (specification.Selector is not Expression<Func<TData, TResult>> typedSelector)
+		{
+			if (specification.Selector.Parameters.Count != 1)
+			{
+				throw new InvalidOperationException(
+					"Client-side evaluation requires a single-parameter selector. " +
+					"Multi-parameter selectors (e.g., joins) must use server-side evaluation.");
 			}
 
 			ParameterExpression parameter = specification.Selector.Parameters[0];
-            if (!parameter.Type.IsAssignableTo(typeof(TData)))
+			if (!parameter.Type.IsAssignableTo(typeof(TData)))
 			{
 				throw new InvalidOperationException("Selector parameter type must match the data type.");
 			}
 
 			Expression body = specification.Selector.Body;
-            if (body.Type != typeof(TResult))
-            {
-                body = Expression.Convert(body, typeof(TResult));
-            }
+			if (body.Type != typeof(TResult))
+			{
+				body = Expression.Convert(body, typeof(TResult));
+			}
 
-            typedSelector = Expression.Lambda<Func<TData, TResult>>(body, parameter);
-        }
+			typedSelector = Expression.Lambda<Func<TData, TResult>>(body, parameter);
+		}
 
-        TData entity = MapToResult<TData>(reader);
-        if (typedSelector.Body is ParameterExpression && typeof(TResult) == typeof(TData))
-        {
-            return (TResult)(object)entity;
-        }
+		TData entity = MapToResult<TData>(reader);
+
+		// Identity short-circuit: no projection needed
+		if (typedSelector.Body is ParameterExpression && typeof(TResult) == typeof(TData))
+		{
+			return (TResult)(object)entity;
+		}
 
 		Func<TData, TResult> projector = CompileSelector(typedSelector);
-        return projector(entity);
-    }
+		return projector(entity);
+	}
 
     [UnconditionalSuppressMessage("Trimming", "IL2026:Members annotated with 'RequiresUnreferencedCodeAttribute' require dynamic access otherwise can break functionality when trimming application code", Justification = "<Pending>")]
     [UnconditionalSuppressMessage("AOT", "IL3050:Calling members annotated with 'RequiresDynamicCodeAttribute' may break functionality when AOT compiling.", Justification = "<Pending>")]
@@ -142,20 +167,36 @@ public sealed class DataSqlMapper : IDataSqlMapper
                || underlying == typeof(decimal);
     }
 
-    [UnconditionalSuppressMessage("Trimming", "IL2026:Members annotated with 'RequiresUnreferencedCodeAttribute' require dynamic access otherwise can break functionality when trimming application code", Justification = "<Pending>")]
-    [UnconditionalSuppressMessage("AOT", "IL3050:Calling members annotated with 'RequiresDynamicCodeAttribute' may break functionality when AOT compiling.", Justification = "<Pending>")]
-    [UnconditionalSuppressMessage("Trimming", "IL2072:Calling members annotated with 'RequiresDynamicCodeAttribute' may break functionality when AOT compiling.", Justification = "<Pending>")]
-    private static TResult MapScalar<TResult>(DbDataReader reader, [DynamicallyAccessedMembers(DynamicallyAccessedMemberTypes.PublicConstructors)] Type resultType)
-    {
+	[UnconditionalSuppressMessage("Trimming", "IL2026:Members annotated with 'RequiresUnreferencedCodeAttribute' require dynamic access otherwise can break functionality when trimming application code", Justification = "<Pending>")]
+	[UnconditionalSuppressMessage("AOT", "IL3050:Calling members annotated with 'RequiresDynamicCodeAttribute' may break functionality when AOT compiling.", Justification = "<Pending>")]
+	[UnconditionalSuppressMessage("Trimming", "IL2072:Calling members annotated with 'RequiresDynamicCodeAttribute' may break functionality when AOT compiling.", Justification = "<Pending>")]
+	private static TResult MapScalar<TResult>(DbDataReader reader, [DynamicallyAccessedMembers(DynamicallyAccessedMemberTypes.PublicConstructors)] Type resultType)
+	{
 		object value = reader.GetValue(0);
-        if (value == DBNull.Value)
+		if (value == DBNull.Value)
 		{
 			return default!;
 		}
 
 		object? converted = value.ChangeTypeNullable(resultType, CultureInfo.InvariantCulture);
-        return (TResult)converted!;
-    }
+		return (TResult)converted!;
+	}
+
+	[UnconditionalSuppressMessage("Trimming", "IL2026:Members annotated with 'RequiresUnreferencedCodeAttribute' require dynamic access otherwise can break functionality when trimming application code", Justification = "Scalar types used at this call site do not require constructor metadata.")]
+	[UnconditionalSuppressMessage("AOT", "IL3050:Calling members annotated with 'RequiresDynamicCodeAttribute' may break functionality when AOT compiling.", Justification = "Scalar types used at this call site do not require constructor metadata.")]
+	[UnconditionalSuppressMessage("Trimming", "IL2072:Calling members annotated with 'RequiresDynamicCodeAttribute' may break functionality when AOT compiling.", Justification = "Scalar types used at this call site do not require constructor metadata.")]
+	[UnconditionalSuppressMessage("Trimming", "IL2091:DynamicallyAccessedMembers", Justification = "Scalar types do not require constructor annotations.")]
+	private static TResult MapScalarByColumnName<TResult>(DbDataReader reader, string columnName)
+	{
+		int ordinal = reader.GetOrdinal(columnName);
+		object value = reader.GetValue(ordinal);
+		if (value == DBNull.Value)
+		{
+			return default!;
+		}
+
+		return value.ChangeTypeNullable<TResult>(CultureInfo.InvariantCulture)!;
+	}
 
     private static Dictionary<string, int> BuildColumnLookup(DbDataReader reader)
     {
@@ -168,38 +209,48 @@ public sealed class DataSqlMapper : IDataSqlMapper
         return columns;
     }
 
-    private static ConstructorInfo? SelectConstructor(TypeMetadata metadata, Dictionary<string, int> columns)
-    {
-        ConstructorInfo? best = null;
+	private static ConstructorInfo? SelectConstructor(TypeMetadata metadata, Dictionary<string, int> columns)
+	{
+		ConstructorInfo? best = null;
 		int bestScore = -1;
 
-        foreach (ConstructorInfo ctor in metadata.Constructors)
-        {
+		foreach (ConstructorInfo ctor in metadata.Constructors)
+		{
 			ParameterInfo[] parameters = ctor.GetParameters();
-            if (parameters.Length == 0)
+			if (parameters.Length == 0)
 			{
 				continue;
 			}
 
 			bool matches = true;
-            foreach (ParameterInfo param in parameters)
-            {
-                if (param.Name is null || !columns.ContainsKey(param.Name))
-                {
-                    matches = false;
-                    break;
-                }
-            }
+			foreach (ParameterInfo param in parameters)
+			{
+				if (param.Name is null)
+				{
+					matches = false;
+					break;
+				}
 
-            if (matches && parameters.Length > bestScore)
-            {
-                best = ctor;
-                bestScore = parameters.Length;
-            }
-        }
+				// Match by column name directly, or by property name → ColumnAttribute name.
+				if (!columns.ContainsKey(param.Name)
+					&& !(metadata.PropertyByName.TryGetValue(param.Name, out PropertyInfo? prop)
+						 && prop.GetCustomAttribute<ColumnAttribute>() is { Name: { } attrName }
+						 && columns.ContainsKey(attrName)))
+				{
+					matches = false;
+					break;
+				}
+			}
 
-        return best;
-    }
+			if (matches && parameters.Length > bestScore)
+			{
+				best = ctor;
+				bestScore = parameters.Length;
+			}
+		}
+
+		return best;
+	}
 
     [UnconditionalSuppressMessage("Trimming", "IL2026:Members annotated with 'RequiresUnreferencedCodeAttribute' require dynamic access otherwise can break functionality when trimming application code", Justification = "<Pending>")]
     [UnconditionalSuppressMessage("AOT", "IL3050:Calling members annotated with 'RequiresDynamicCodeAttribute' may break functionality when AOT compiling.", Justification = "<Pending>")]
@@ -221,20 +272,23 @@ public sealed class DataSqlMapper : IDataSqlMapper
         return factory(args);
     }
 
-    [UnconditionalSuppressMessage("Trimming", "IL2026:Members annotated with 'RequiresUnreferencedCodeAttribute' require dynamic access otherwise can break functionality when trimming application code", Justification = "<Pending>")]
-    [UnconditionalSuppressMessage("AOT", "IL3050:Calling members annotated with 'RequiresDynamicCodeAttribute' may break functionality when AOT compiling.", Justification = "<Pending>")]
-    [UnconditionalSuppressMessage("Trimming", "IL2072:Calling members annotated with 'RequiresDynamicCodeAttribute' may break functionality when AOT compiling.", Justification = "<Pending>")]
-    private static void PopulateProperties(
-        object instance,
-        TypeMetadata metadata,
-        DbDataReader reader,
-        Dictionary<string, int> columns,
-        HashSet<string>? paramNames)
-    {
-        for (int i = 0; i < reader.FieldCount; i++)
-        {
+	[UnconditionalSuppressMessage("Trimming", "IL2026:Members annotated with 'RequiresUnreferencedCodeAttribute' require dynamic access otherwise can break functionality when trimming application code", Justification = "<Pending>")]
+	[UnconditionalSuppressMessage("AOT", "IL3050:Calling members annotated with 'RequiresDynamicCodeAttribute' may break functionality when AOT compiling.", Justification = "<Pending>")]
+	[UnconditionalSuppressMessage("Trimming", "IL2072:Calling members annotated with 'RequiresDynamicCodeAttribute' may break functionality when AOT compiling.", Justification = "<Pending>")]
+	private static void PopulateProperties(
+		object instance,
+		TypeMetadata metadata,
+		DbDataReader reader,
+		Dictionary<string, int> columns,
+		HashSet<string>? paramNames)
+	{
+		for (int i = 0; i < reader.FieldCount; i++)
+		{
 			string columnName = reader.GetName(i);
-            if (!metadata.PropertyByName.TryGetValue(columnName, out PropertyInfo? property))
+
+			// Try property name first, then fall back to ColumnAttribute name.
+			if (!metadata.PropertyByName.TryGetValue(columnName, out PropertyInfo? property)
+				&& !metadata.PropertyByColumnName.TryGetValue(columnName, out property))
 			{
 				continue;
 			}
@@ -250,16 +304,16 @@ public sealed class DataSqlMapper : IDataSqlMapper
 			}
 
 			object value = reader.GetValue(i);
-            if (value == DBNull.Value)
+			if (value == DBNull.Value)
 			{
 				continue;
 			}
 
 			object? convertedValue = value.ChangeTypeNullable(property.PropertyType, CultureInfo.InvariantCulture);
 			Action<object, object?> setter = GetCompiledSetter(property);
-            setter(instance, convertedValue);
-        }
-    }
+			setter(instance, convertedValue);
+		}
+	}
 
     [UnconditionalSuppressMessage("Trimming", "IL2026:Members annotated with 'RequiresUnreferencedCodeAttribute' require dynamic access otherwise can break functionality when trimming application code", Justification = "<Pending>")]
     [UnconditionalSuppressMessage("AOT", "IL3050:Calling members annotated with 'RequiresDynamicCodeAttribute' may break functionality when AOT compiling.", Justification = "<Pending>")]
@@ -276,30 +330,37 @@ public sealed class DataSqlMapper : IDataSqlMapper
         });
     }
 
-    [UnconditionalSuppressMessage("Trimming", "IL2070:DynamicallyAccessedMembers on Type.GetProperties",
-        Justification = "Callers guarantee the type has the required annotations.")]
-    [UnconditionalSuppressMessage("Trimming", "IL2067:DynamicallyAccessedMembers",
-        Justification = "Callers guarantee the type has the required annotations.")]
-    private static TypeMetadata GetOrCreateTypeMetadata(
-        [DynamicallyAccessedMembers(DynamicallyAccessedMemberTypes.PublicProperties
-            | DynamicallyAccessedMemberTypes.PublicConstructors
-            | DynamicallyAccessedMemberTypes.PublicParameterlessConstructor)] Type type)
-    {
-        return _typeMetadataCache.GetOrAdd(type, static t =>
-        {
+	[UnconditionalSuppressMessage("Trimming", "IL2070:DynamicallyAccessedMembers on Type.GetProperties",
+		Justification = "Callers guarantee the type has the required annotations.")]
+	[UnconditionalSuppressMessage("Trimming", "IL2067:DynamicallyAccessedMembers",
+		Justification = "Callers guarantee the type has the required annotations.")]
+	private static TypeMetadata GetOrCreateTypeMetadata(
+		[DynamicallyAccessedMembers(DynamicallyAccessedMemberTypes.PublicProperties
+			| DynamicallyAccessedMemberTypes.PublicConstructors
+			| DynamicallyAccessedMemberTypes.PublicParameterlessConstructor)] Type type)
+	{
+		return _typeMetadataCache.GetOrAdd(type, static t =>
+		{
 			PropertyInfo[] properties = t.GetProperties(BindingFlags.Public | BindingFlags.Instance);
-            var propertyByName = new Dictionary<string, PropertyInfo>(properties.Length, StringComparer.OrdinalIgnoreCase);
-            foreach (PropertyInfo prop in properties)
-            {
-                propertyByName.TryAdd(prop.Name, prop);
-            }
+			var propertyByName = new Dictionary<string, PropertyInfo>(properties.Length, StringComparer.OrdinalIgnoreCase);
+			var propertyByColumnName = new Dictionary<string, PropertyInfo>(properties.Length, StringComparer.OrdinalIgnoreCase);
+			foreach (PropertyInfo prop in properties)
+			{
+				propertyByName.TryAdd(prop.Name, prop);
+
+				// Also index by ColumnAttribute.Name so that the mapper can resolve
+				// database column names that differ from the CLR property name.
+				ColumnAttribute? columnAttr = prop.GetCustomAttribute<ColumnAttribute>();
+				string columnName = columnAttr?.Name ?? prop.Name;
+				propertyByColumnName.TryAdd(columnName, prop);
+			}
 
 			ConstructorInfo[] constructors = t.GetConstructors(BindingFlags.Public | BindingFlags.Instance);
 			bool hasParameterlessCtor = t.GetConstructor(Type.EmptyTypes) is not null;
 
-            return new TypeMetadata(properties, propertyByName, constructors, hasParameterlessCtor);
-        });
-    }
+			return new TypeMetadata(properties, propertyByName, propertyByColumnName, constructors, hasParameterlessCtor);
+		});
+	}
 
     [UnconditionalSuppressMessage("Trimming", "IL2026:Members annotated with 'RequiresUnreferencedCodeAttribute' require dynamic access otherwise can break functionality when trimming application code", Justification = "<Pending>")]
     [UnconditionalSuppressMessage("AOT", "IL3050:Calling members annotated with 'RequiresDynamicCodeAttribute' may break functionality when AOT compiling.", Justification = "<Pending>")]
@@ -343,6 +404,7 @@ public sealed class DataSqlMapper : IDataSqlMapper
     private sealed record TypeMetadata(
         PropertyInfo[] Properties,
         Dictionary<string, PropertyInfo> PropertyByName,
+        Dictionary<string, PropertyInfo> PropertyByColumnName,
         ConstructorInfo[] Constructors,
         bool HasParameterlessConstructor);
 }
