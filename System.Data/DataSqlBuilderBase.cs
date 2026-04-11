@@ -788,20 +788,43 @@ public abstract class DataSqlBuilderBase : IDataSqlBuilder
 		}
 
 		if (selector.Body is MemberInitExpression memberInit)
-		{
-			var selectedColumns = new List<string>();
-			foreach (MemberAssignment bindingInfo in memberInit.Bindings.OfType<MemberAssignment>())
 			{
-				selectedColumns.Add(BuildSelectColumnExpression(bindingInfo.Expression, bindings, parameters, bindingInfo.Member.Name));
+				var selectedColumns = new List<string>();
+				foreach (MemberAssignment bindingInfo in memberInit.Bindings.OfType<MemberAssignment>())
+				{
+					selectedColumns.Add(BuildSelectColumnExpression(bindingInfo.Expression, bindings, parameters, bindingInfo.Member.Name));
+				}
+				if (selectedColumns.Count > 0)
+				{
+					return string.Join(", ", selectedColumns);
+				}
 			}
-			if (selectedColumns.Count > 0)
-			{
-				return string.Join(", ", selectedColumns);
-			}
-		}
 
-		string expressionColumn = TranslateExpression(selector.Body, bindings, parameters);
-		return expressionColumn;
+			// Handle client-side method calls on the entity parameter (e.g. u => u.ToContext()).
+			// These cannot be translated to SQL, so select all columns from the entity
+			// and let the mapper apply the projection after reading the data.
+			if (selector.Body is MethodCallExpression methodCall)
+			{
+				// Instance method on entity parameter
+				if (methodCall.Object is ParameterExpression instanceParam
+					&& bindings.TryGetValue(instanceParam, out TableBinding? instanceBinding))
+				{
+					return string.Join(", ", instanceBinding.Columns.Values.Select(column =>
+						$"{instanceBinding.Alias}.{QuoteIdentifier(column)}"));
+				}
+
+				// Static or extension method with entity parameter as the first argument
+				if (methodCall.Arguments.Count > 0
+					&& methodCall.Arguments[0] is ParameterExpression argParam
+					&& bindings.TryGetValue(argParam, out TableBinding? argBinding))
+				{
+					return string.Join(", ", argBinding.Columns.Values.Select(column =>
+						$"{argBinding.Alias}.{QuoteIdentifier(column)}"));
+				}
+			}
+
+			string expressionColumn = TranslateExpression(selector.Body, bindings, parameters);
+			return expressionColumn;
 	}
 
 	/// <summary>
