@@ -339,6 +339,96 @@ public sealed class DataEvaluationBoundaryTests
 		result.Name.Should().Be("Bolt");
 	}
 
+	// ─── Nested MemberInit / New — must classify as Client ──────────────
+
+	[Fact]
+	public void Select_NestedMemberInit_ClassifiesAsClient()
+	{
+		var spec = DataSpecification.For<UserData>()
+			.Select(u => new UserContext
+			{
+				Name = u.Name,
+				Password = new EncryptedValue
+				{
+					Value = u.PasswordValue,
+					Key = u.PasswordKey
+				}
+			});
+
+		spec.SelectorEvaluation.Should().Be(SelectorEvaluation.Client);
+	}
+
+	[Fact]
+	public void Select_NestedNewExpression_ClassifiesAsClient()
+	{
+		var spec = DataSpecification.For<UserData>()
+			.Select(u => new { u.Name, Inner = new EncryptedValue { Value = u.PasswordValue } });
+
+		spec.SelectorEvaluation.Should().Be(SelectorEvaluation.Client);
+	}
+
+	[Fact]
+	public void Select_FlatMemberInit_ClassifiesAsServer()
+	{
+		// No nested objects — all bindings are simple member access → Server
+		var spec = DataSpecification.For<UserData>()
+			.Select(u => new UserContext { Name = u.Name });
+
+		spec.SelectorEvaluation.Should().Be(SelectorEvaluation.Server);
+	}
+
+	[Fact]
+	public void BuildSelect_NestedMemberInit_SelectsAllColumns()
+	{
+		var builder = new MsDataSqlBuilder();
+		var spec = DataSpecification.For<UserData>()
+			.Select(u => new UserContext
+			{
+				Name = u.Name,
+				Password = new EncryptedValue
+				{
+					Value = u.PasswordValue,
+					Key = u.PasswordKey
+				}
+			});
+
+		// Should not throw — classified as Client, selects all columns
+		SqlQueryResult result = builder.BuildSelect(spec);
+
+		result.Sql.Should().Contain("[Name]");
+		result.Sql.Should().Contain("[PasswordValue]");
+		result.Sql.Should().Contain("[PasswordKey]");
+	}
+
+	[Fact]
+	public void MapToResult_NestedMemberInit_ClientMode_ReconstructsObject()
+	{
+		var mapper = new DataSqlMapper();
+		var spec = DataSpecification.For<UserData>()
+			.Select(u => new UserContext
+			{
+				Name = u.Name,
+				Password = new EncryptedValue
+				{
+					Value = u.PasswordValue,
+					Key = u.PasswordKey
+				}
+			});
+
+		spec.SelectorEvaluation.Should().Be(SelectorEvaluation.Client);
+
+		using DbDataReader reader = CreateReader(
+			["Id", "Name", "PasswordValue", "PasswordKey"],
+			[1, "Alice", "enc123", "key456"]);
+
+		UserContext result = mapper.MapToResult(spec, reader);
+
+		result.Name.Should().Be("Alice");
+		result.Password.Should().NotBeNull();
+		result.Password!.Value.Should().Be("enc123");
+		result.Password.Key.Should().Be("key456");
+	}
+
 	// ─── Multi-dialect tests ─────────────────────────────────────────────
 
 	[Fact]
@@ -424,5 +514,25 @@ public sealed class DataEvaluationBoundaryTests
 
 		[Column("product_name")]
 		public string Name { get; set; } = string.Empty;
+	}
+
+	private sealed class UserData
+	{
+		public int Id { get; set; }
+		public string Name { get; set; } = string.Empty;
+		public string PasswordValue { get; set; } = string.Empty;
+		public string PasswordKey { get; set; } = string.Empty;
+	}
+
+	private sealed class UserContext
+	{
+		public string Name { get; set; } = string.Empty;
+		public EncryptedValue? Password { get; set; }
+	}
+
+	private sealed class EncryptedValue
+	{
+		public string Value { get; set; } = string.Empty;
+		public string Key { get; set; } = string.Empty;
 	}
 }

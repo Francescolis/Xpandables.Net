@@ -528,6 +528,20 @@ internal sealed record JoinSpecification<TLeft, TRight>(
 /// translated to SQL column projections (Server) or must be applied
 /// client-side after data retrieval (Client).
 /// </summary>
+/// <remarks>
+/// <para>
+/// A <see cref="NewExpression"/> or <see cref="MemberInitExpression"/> at the top level
+/// of the selector body is translatable (it becomes the SELECT column list).
+/// However, the same expression types nested inside another expression are NOT
+/// translatable because SQL cannot construct objects within a SELECT column.
+/// </para>
+/// <para>
+/// To distinguish these cases, the <see cref="Classify"/> method visits only the
+/// <em>children</em> of a top-level construction. Any <c>NewExpression</c> or
+/// <c>MemberInitExpression</c> encountered during child traversal triggers
+/// <see cref="SelectorEvaluation.Client"/> classification.
+/// </para>
+/// </remarks>
 file sealed class SelectorTranslatabilityVisitor : ExpressionVisitor
 {
 	private bool _isTranslatable = true;
@@ -535,8 +549,49 @@ file sealed class SelectorTranslatabilityVisitor : ExpressionVisitor
 	public static SelectorEvaluation Classify(LambdaExpression selector)
 	{
 		var visitor = new SelectorTranslatabilityVisitor();
-		visitor.Visit(selector.Body);
+		visitor.VisitSelectorBody(selector.Body);
 		return visitor._isTranslatable ? SelectorEvaluation.Server : SelectorEvaluation.Client;
+	}
+
+	/// <summary>
+	/// Visits the selector body, treating top-level <see cref="NewExpression"/> and
+	/// <see cref="MemberInitExpression"/> as translatable SELECT scaffolding while
+	/// checking their children for untranslatable nested constructions.
+	/// </summary>
+	private void VisitSelectorBody(Expression body)
+	{
+		// Top-level NewExpression (e.g., new Dto(p.Id, p.Name) or new { p.Id }):
+		// The construction itself maps to the SELECT column list.
+		// Visit only the constructor arguments for untranslatable children.
+		if (body is NewExpression topNew)
+		{
+			foreach (Expression arg in topNew.Arguments)
+			{
+				Visit(arg);
+			}
+			return;
+		}
+
+		// Top-level MemberInitExpression (e.g., new Dto { Id = p.Id, Nested = new X { } }):
+		// Visit the constructor arguments and each binding value expression.
+		if (body is MemberInitExpression topInit)
+		{
+			foreach (Expression arg in topInit.NewExpression.Arguments)
+			{
+				Visit(arg);
+			}
+			foreach (MemberBinding binding in topInit.Bindings)
+			{
+				if (binding is MemberAssignment assignment)
+				{
+					Visit(assignment.Expression);
+				}
+			}
+			return;
+		}
+
+		// All other expression types: visit the full tree.
+		Visit(body);
 	}
 
 	public override Expression? Visit(Expression? node)
@@ -545,6 +600,20 @@ file sealed class SelectorTranslatabilityVisitor : ExpressionVisitor
 			return node;
 
 		return base.Visit(node);
+	}
+
+	protected override Expression VisitNew(NewExpression node)
+	{
+		// Nested object construction cannot be translated to SQL.
+		_isTranslatable = false;
+		return node;
+	}
+
+	protected override Expression VisitMemberInit(MemberInitExpression node)
+	{
+		// Nested object initialization cannot be translated to SQL.
+		_isTranslatable = false;
+		return node;
 	}
 
 	protected override Expression VisitMethodCall(MethodCallExpression node)
