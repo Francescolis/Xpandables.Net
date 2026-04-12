@@ -1,4 +1,4 @@
-/*******************************************************************************
+﻿/*******************************************************************************
  * Copyright (C) 2025-2026 Kamersoft
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
@@ -14,6 +14,7 @@
  * limitations under the License.
  *
 ********************************************************************************/
+using System.Collections.Concurrent;
 using System.Diagnostics.CodeAnalysis;
 using System.IO.Pipelines;
 using System.Linq.Expressions;
@@ -402,55 +403,61 @@ public static class JsonSerializerExtensions
 
     [RequiresDynamicCode("Calls System.Reflection.MethodInfo.MakeGenericMethod(params Type[])")] 
     [RequiresUnreferencedCode("Calls System.Net.Http.Json.HttpContentExtensions.GetJsonTypeInfo(Type, JsonSerializerOptions)")]
-    private static Task SerializeAsyncPagedCoreNonGenericAsync(
-        object output,
-        IAsyncPagedEnumerable paged,
-        JsonSerializerOptions? options = null,
-        CancellationToken cancellationToken = default)
-    {
-		MethodInfo method = SerializeAsyncPagedMethod.MakeGenericMethod(paged.GetArgumentType());
+	private static Task SerializeAsyncPagedCoreNonGenericAsync(
+		object output,
+		IAsyncPagedEnumerable paged,
+		JsonSerializerOptions? options = null,
+		CancellationToken cancellationToken = default)
+	{
+		MethodInfo method = GetOrCreateGenericMethod(paged.GetArgumentType());
 		JsonTypeInfo jsonTypeInfo = JsonSerializer.GetJsonTypeInfo(paged.GetArgumentType(), options);
 		object? result = method.Invoke(null, [output, paged, jsonTypeInfo, cancellationToken]);
-        return result as Task ?? throw new InvalidOperationException($"Expected Task from {method.Name}, but got null.");
-    }
+		return result as Task ?? throw new InvalidOperationException($"Expected Task from {method.Name}, but got null.");
+	}
 
     [UnconditionalSuppressMessage("AOT", "IL3050:Calling members annotated with 'RequiresDynamicCodeAttribute' may break functionality when AOT compiling.", Justification = "Non-generic dispatch requires MakeGenericMethod; callers are annotated with RequiresDynamicCode.")]
     [UnconditionalSuppressMessage("Trimming", "IL2026:Members annotated with 'RequiresUnreferencedCodeAttribute' require dynamic access", Justification = "Non-generic dispatch requires reflection; callers are annotated with RequiresUnreferencedCode.")]
     [UnconditionalSuppressMessage("Trimming", "IL2070:'this' argument does not satisfy 'DynamicallyAccessedMemberTypes.PublicMethods'", Justification = "Type arguments are preserved by the generic IAsyncPagedEnumerable<T> constraint.")]
     [UnconditionalSuppressMessage("Trimming", "IL2060:Call to 'MethodInfo.MakeGenericMethod' does not preserve method requirements", Justification = "Target method SerializeAsyncPagedCoreGenericAsync has no DynamicallyAccessedMembers constraints.")]
-    private static Task SerializeAsyncPagedCoreNonGenericAsync(
-        object output,
-        IAsyncPagedEnumerable paged,
-        JsonSerializerContext context,
-        CancellationToken cancellationToken = default)
-    {
-        Type argumentType = paged.GetArgumentType();
-		MethodInfo method = SerializeAsyncPagedMethod.MakeGenericMethod(argumentType);
+	private static Task SerializeAsyncPagedCoreNonGenericAsync(
+		object output,
+		IAsyncPagedEnumerable paged,
+		JsonSerializerContext context,
+		CancellationToken cancellationToken = default)
+	{
+		Type argumentType = paged.GetArgumentType();
+		MethodInfo method = GetOrCreateGenericMethod(argumentType);
 		JsonTypeInfo jsonTypeInfo = context.GetTypeInfo(argumentType)
-            ?? throw new InvalidOperationException($"The type '{argumentType}' is not registered in the provided JsonSerializerContext.");
+			?? throw new InvalidOperationException($"The type '{argumentType}' is not registered in the provided JsonSerializerContext.");
 		object? result = method.Invoke(null, [output, paged, jsonTypeInfo, cancellationToken]);
-        return result as Task ?? throw new InvalidOperationException($"Expected Task from {method.Name}, but got null.");
-    }
+		return result as Task ?? throw new InvalidOperationException($"Expected Task from {method.Name}, but got null.");
+	}
 
     [UnconditionalSuppressMessage("AOT", "IL3050:Calling members annotated with 'RequiresDynamicCodeAttribute' may break functionality when AOT compiling.", Justification = "Non-generic dispatch requires MakeGenericMethod; callers are annotated with RequiresDynamicCode.")]
     [UnconditionalSuppressMessage("Trimming", "IL2026:Members annotated with 'RequiresUnreferencedCodeAttribute' require dynamic access", Justification = "Non-generic dispatch requires reflection; callers are annotated with RequiresUnreferencedCode.")]
     [UnconditionalSuppressMessage("Trimming", "IL2070:'this' argument does not satisfy 'DynamicallyAccessedMemberTypes.PublicMethods'", Justification = "Type arguments are preserved by the generic IAsyncPagedEnumerable<T> constraint.")]
     [UnconditionalSuppressMessage("Trimming", "IL2060:Call to 'MethodInfo.MakeGenericMethod' does not preserve method requirements", Justification = "Target method SerializeAsyncPagedCoreGenericAsync has no DynamicallyAccessedMembers constraints.")]
-    private static Task SerializeAsyncPagedCoreNonGenericAsync(
-        object output,
-        IAsyncPagedEnumerable paged,
-        JsonTypeInfo jsonTypeInfo,
-        CancellationToken cancellationToken = default)
-    {
-		MethodInfo method = SerializeAsyncPagedMethod.MakeGenericMethod(paged.GetArgumentType());
+	private static Task SerializeAsyncPagedCoreNonGenericAsync(
+		object output,
+		IAsyncPagedEnumerable paged,
+		JsonTypeInfo jsonTypeInfo,
+		CancellationToken cancellationToken = default)
+	{
+		MethodInfo method = GetOrCreateGenericMethod(paged.GetArgumentType());
 		object? result = method.Invoke(null, [output, paged, jsonTypeInfo, cancellationToken]);
-        return result as Task ?? throw new InvalidOperationException($"Expected Task from {method.Name}, but got null.");
-    }
+		return result as Task ?? throw new InvalidOperationException($"Expected Task from {method.Name}, but got null.");
+	}
 
     private static readonly MethodInfo SerializeAsyncPagedMethod =
         ((MethodCallExpression)((Expression<Func<Task>>)(() =>
             SerializeAsyncPagedCoreGenericAsync<int>(null!, paged: null!, jsonTypeInfo: null!, cancellationToken: default))).Body)
         .Method.GetGenericMethodDefinition();
+
+    private static readonly ConcurrentDictionary<Type, MethodInfo> _genericMethodCache = new();
+
+    [MethodImpl(MethodImplOptions.AggressiveInlining)]
+    private static MethodInfo GetOrCreateGenericMethod(Type argumentType) =>
+        _genericMethodCache.GetOrAdd(argumentType, static type => SerializeAsyncPagedMethod.MakeGenericMethod(type));
 
     /// <summary>
     /// Provides adaptive flushing strategy based on dataset size and memory pressure.

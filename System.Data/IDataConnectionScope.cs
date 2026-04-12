@@ -96,6 +96,25 @@ public interface IDataConnectionScope : IDisposable, IAsyncDisposable
 	IDataTransaction BeginTransaction(IsolationLevel isolationLevel = IsolationLevel.ReadCommitted);
 
 	/// <summary>
+	/// Ensures the database connection is open, opening it asynchronously if needed.
+	/// </summary>
+	/// <remarks>
+	/// This method is idempotent — calling it on an already-open connection is a no-op.
+	/// Implementations should be thread-safe for concurrent callers.
+	/// </remarks>
+	/// <param name="cancellationToken">A token to cancel the operation.</param>
+	/// <returns>A value task that completes when the connection is open.</returns>
+	ValueTask EnsureOpenAsync(CancellationToken cancellationToken = default)
+	{
+		if (Connection.State == ConnectionState.Open)
+		{
+			return ValueTask.CompletedTask;
+		}
+
+		return new ValueTask(Connection.OpenAsync(cancellationToken));
+	}
+
+	/// <summary>
 	/// Creates a database command associated with this scope's connection and transaction.
 	/// </summary>
 	/// <returns>A new <see cref="DbCommand"/> configured with the connection and current transaction.</returns>
