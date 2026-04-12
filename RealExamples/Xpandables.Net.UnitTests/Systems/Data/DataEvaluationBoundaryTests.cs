@@ -429,6 +429,91 @@ public sealed class DataEvaluationBoundaryTests
 		result.Password.Key.Should().Be("key456");
 	}
 
+	// ─── Bug fixes: null parameters, UPDATE/DELETE alias, left-side NULL ─
+
+	[Fact]
+	public void BuildWhere_NullClosureVariable_EmitsNullLiteral()
+	{
+		// Reproduces: 42P18 could not determine data type of parameter $1
+		// When a closure variable is null, it should emit NULL literal, not a parameter.
+		var builder = new MsDataSqlBuilder();
+		string? phone = null;
+		DataSpecification<Product, Product> spec = DataSpecification.For<Product>()
+			.Where(p => phone == null || p.Name == phone)
+			.Build();
+
+		SqlQueryResult result = builder.BuildSelect(spec);
+
+		// Should contain NULL literal, not a parameter for the null value
+		result.Sql.Should().Contain("NULL IS NULL");
+		result.Sql.Should().NotContain("@p0 IS NULL");
+	}
+
+	[Fact]
+	public void BuildWhere_NonNullClosureVariable_CreatesParameter()
+	{
+		var builder = new MsDataSqlBuilder();
+		string? phone = "555-1234";
+		DataSpecification<Product, Product> spec = DataSpecification.For<Product>()
+			.Where(p => phone == null || p.Name == phone)
+			.Build();
+
+		SqlQueryResult result = builder.BuildSelect(spec);
+
+		// Non-null closure → creates parameter (PostgreSQL can infer type from value)
+		result.Sql.Should().Contain("@p0 IS NULL");
+		result.Parameters.Should().Contain(p => p.Value != null && p.Value.Equals("555-1234"));
+	}
+
+	[Fact]
+	public void BuildUpdate_NoTableAliasPrefix_InSetClause()
+	{
+		// Reproduces: 42P01 missing FROM-clause entry for table "t0"
+		var builder = new PostgreDataSqlBuilder();
+		DataSpecification<Product, Product> spec = DataSpecification.For<Product>()
+			.Where(p => p.Id == 1)
+			.Build();
+
+		var updater = DataUpdater.For<Product>()
+			.SetProperty(p => p.Name, "Updated");
+
+		SqlQueryResult result = builder.BuildUpdate(spec, updater);
+
+		// SET clause must NOT have alias prefix
+		result.Sql.Should().NotContain("t0.");
+		result.Sql.Should().Contain("\"Name\"");
+		result.Sql.Should().Contain("WHERE");
+	}
+
+	[Fact]
+	public void BuildDelete_NoTableAliasPrefix_InWhereClause()
+	{
+		var builder = new PostgreDataSqlBuilder();
+		DataSpecification<Product, Product> spec = DataSpecification.For<Product>()
+			.Where(p => p.Id == 1)
+			.Build();
+
+		SqlQueryResult result = builder.BuildDelete(spec);
+
+		// WHERE clause must NOT have alias prefix
+		result.Sql.Should().NotContain("t0.");
+		result.Sql.Should().Contain("\"Id\"");
+	}
+
+	[Fact]
+	public void BuildSelect_StillUsesTableAlias()
+	{
+		// SELECT must still use t0. prefix (it's defined after FROM)
+		var builder = new PostgreDataSqlBuilder();
+		DataSpecification<Product, Product> spec = DataSpecification.For<Product>()
+			.Where(p => p.Id == 1)
+			.Build();
+
+		SqlQueryResult result = builder.BuildSelect(spec);
+
+		result.Sql.Should().Contain("t0.");
+	}
+
 	// ─── Multi-dialect tests ─────────────────────────────────────────────
 
 	[Fact]

@@ -432,7 +432,7 @@ public abstract class DataSqlBuilderBase : IDataSqlBuilder
 
 		string tableName = GetTableName<TEntity>();
 		IReadOnlyDictionary<string, string> columnMappings = GetColumnMappings<TEntity>();
-		var bindings = new List<TableBinding> { new(typeof(TEntity), "t0", columnMappings) };
+		var bindings = new List<TableBinding> { new(typeof(TEntity), "", columnMappings) };
 
 		sql.Append("UPDATE ");
 		sql.Append(tableName);
@@ -470,7 +470,7 @@ public abstract class DataSqlBuilderBase : IDataSqlBuilder
 
 		string tableName = GetTableName<TEntity>();
 		IReadOnlyDictionary<string, string> columnMappings = GetColumnMappings<TEntity>();
-		var bindings = new List<TableBinding> { new(typeof(TEntity), "t0", columnMappings) };
+		var bindings = new List<TableBinding> { new(typeof(TEntity), "", columnMappings) };
 
 		sql.Append("DELETE FROM ");
 		sql.Append(tableName);
@@ -670,7 +670,9 @@ public abstract class DataSqlBuilderBase : IDataSqlBuilder
 			throw new InvalidOperationException($"Property '{propertyName}' is not mapped to a column.");
 		}
 
-		return $"{binding.Alias}.{QuoteIdentifier(columnName)}";
+		return string.IsNullOrEmpty(binding.Alias)
+			? QuoteIdentifier(columnName)
+			: $"{binding.Alias}.{QuoteIdentifier(columnName)}";
 	}
 
 	/// <summary>
@@ -961,6 +963,16 @@ public abstract class DataSqlBuilderBase : IDataSqlBuilder
 			return $"({left} IS NOT NULL)";
 		}
 
+		if (left == "NULL" && op == "=")
+		{
+			return $"({right} IS NULL)";
+		}
+
+		if (left == "NULL" && op == "<>")
+		{
+			return $"({right} IS NOT NULL)";
+		}
+
 		return $"({left} {op} {right})";
 	}
 
@@ -1033,6 +1045,11 @@ public abstract class DataSqlBuilderBase : IDataSqlBuilder
 		}
 
 		object? value = ExtractValueFromMemberExpression(member);
+		if (value is null)
+		{
+			return "NULL";
+		}
+
 		string paramName = NextParameterName();
 		parameters.Add(new SqlParameter(paramName, value));
 		return $"{ParameterPrefix}{paramName}";
@@ -1180,16 +1197,8 @@ public abstract class DataSqlBuilderBase : IDataSqlBuilder
 			return "NULL";
 		}
 
-		object value = constant.Value;
-
-		// Convert enum values to their underlying type for ADO.NET compatibility
-		if (value.GetType().IsEnum)
-		{
-			value = Convert.ChangeType(value, Enum.GetUnderlyingType(value.GetType()), Globalization.CultureInfo.InvariantCulture);
-		}
-
 		string paramName = NextParameterName();
-		parameters.Add(new SqlParameter(paramName, value));
+		parameters.Add(new SqlParameter(paramName, constant.Value));
 		return $"{ParameterPrefix}{paramName}";
 	}
 

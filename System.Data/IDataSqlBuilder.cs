@@ -14,8 +14,11 @@
  * limitations under the License.
  *
 ********************************************************************************/
+using System.Collections.Concurrent;
 using System.Data.Common;
 using System.Diagnostics.CodeAnalysis;
+using System.Globalization;
+using System.Reflection;
 
 namespace System.Data;
 
@@ -43,10 +46,76 @@ public readonly record struct SqlQueryResult(string Sql, IReadOnlyList<SqlParame
 		{
 			DbParameter dbParam = command.CreateParameter();
 			dbParam.ParameterName = param.Name;
-			dbParam.Value = param.Value ?? DBNull.Value;
+			dbParam.Value = UnwrapParameterValue(param.Value) ?? DBNull.Value;
 			command.Parameters.Add(dbParam);
 		}
 	}
+
+	/// <summary>
+	/// Unwraps a parameter value to an ADO.NET-compatible type.
+	/// Handles enums (to underlying integer) and custom wrapper types
+	/// such as strongly-typed IDs that implement <c>IPrimitive</c>.
+	/// </summary>
+	private static object? UnwrapParameterValue(object? value)
+	{
+		if (value is null or DBNull)
+		{
+			return value;
+		}
+
+		Type type = value.GetType();
+
+		if (IsAdoNetCompatible(type))
+		{
+			return value;
+		}
+
+		Func<object, object>? unwrapper = UnwrapperCache.GetOrAdd(type, static t => BuildUnwrapper(t));
+
+		return unwrapper?.Invoke(value) ?? value;
+	}
+
+	[UnconditionalSuppressMessage("Trimming", "IL2070:DynamicallyAccessedMembers on Type.GetMethods",
+		Justification = "Parameter wrapper types are expected to have public implicit conversion operators.")]
+	private static Func<object, object>? BuildUnwrapper(Type t)
+	{
+		// Enum → underlying integer type
+		if (t.IsEnum)
+		{
+			Type underlyingType = Enum.GetUnderlyingType(t);
+			return v => Convert.ChangeType(v, underlyingType, CultureInfo.InvariantCulture);
+		}
+
+		// Implicit conversion to a known ADO.NET type (covers IPrimitive<T> types)
+		foreach (MethodInfo method in t.GetMethods(BindingFlags.Public | BindingFlags.Static))
+		{
+			if (method.Name == "op_Implicit"
+				&& method.GetParameters() is [{ ParameterType: var paramType }]
+				&& paramType == t
+				&& IsAdoNetCompatible(method.ReturnType))
+			{
+				return v => method.Invoke(null, [v])!;
+			}
+		}
+
+		// No unwrapping found
+		return null;
+	}
+
+	private static bool IsAdoNetCompatible(Type type)
+	{
+		Type t = Nullable.GetUnderlyingType(type) ?? type;
+		return t.IsPrimitive
+			|| t == typeof(string)
+			|| t == typeof(decimal)
+			|| t == typeof(Guid)
+			|| t == typeof(DateTime)
+			|| t == typeof(DateTimeOffset)
+			|| t == typeof(TimeSpan)
+			|| t == typeof(byte[]);
+	}
+
+	private static readonly ConcurrentDictionary<Type, Func<object, object>?> UnwrapperCache = new();
 }
 
 /// <summary>
