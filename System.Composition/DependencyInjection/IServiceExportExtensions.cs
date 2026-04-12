@@ -37,12 +37,14 @@ namespace Microsoft.Extensions.DependencyInjection;
 public static class IServiceExportExtensions
 {
 	/// <summary>
-	/// Adds services exports to the service collection using the specified configuration.
+	/// Adds X service exports to the specified service collection using the provided configuration.
 	/// </summary>
-	/// <param name="services">The <see cref="IServiceCollection"/> to add the services to.</param>
-	/// <param name="configuration">The configuration settings used to configure the X service exports. Cannot be null.</param>
-	/// <returns>The service collection with X service exports registered. This enables further chaining of service
-	/// registration calls.</returns>
+	/// <remarks>This method uses Managed Extensibility Framework (MEF) composition, which relies on reflection and
+	/// runtime code generation. It is not compatible with trimming or ahead-of-time compilation scenarios.</remarks>
+	/// <param name="services">The service collection to which the X service exports will be added. Cannot be null.</param>
+	/// <param name="configuration">The configuration used to configure the X service exports. Cannot be null.</param>
+	/// <returns>The service collection with the X service exports registered. This enables further chaining of service
+	/// configuration methods.</returns>
 	[RequiresAssemblyFiles]
 	[RequiresUnreferencedCode("AddXServiceExports uses MEF composition which relies on reflection.")]
 	[RequiresDynamicCode("AddXServiceExports uses MEF composition which relies on runtime code generation.")]
@@ -55,12 +57,16 @@ public static class IServiceExportExtensions
 	}
 
 	/// <summary>
-	/// Adds services to the service collection using the specified configuration and export options.
+	/// Adds MEF-based service exports to the specified service collection using the provided configuration and export
+	/// options.
 	/// </summary>
-	/// <param name="services">The <see cref="IServiceCollection"/> to add the services to.</param>
-	/// <param name="configuration">The configuration source used to initialize the exported services. Cannot be null.</param>
-	/// <param name="configureOptions">A delegate that configures the export options. Cannot be null.</param>
-	/// <returns>The current <see cref="IServiceCollection"/> instance with the X service exports registered.</returns>
+	/// <remarks>This method relies on MEF composition, which uses reflection and runtime code generation. It is not
+	/// compatible with trimming or AOT scenarios. The method configures and registers services exported via MEF according
+	/// to the specified options and configuration.</remarks>
+	/// <param name="services">The service collection to which the MEF exports will be added. Cannot be null.</param>
+	/// <param name="configuration">The configuration source used to configure the exported services. Cannot be null.</param>
+	/// <param name="configureOptions">An action to configure export options for MEF composition. Cannot be null.</param>
+	/// <returns>The same service collection instance with the MEF exports registered.</returns>
 	[RequiresAssemblyFiles]
 	[RequiresUnreferencedCode("AddXServiceExports uses MEF composition which relies on reflection.")]
 	[RequiresDynamicCode("AddXServiceExports uses MEF composition which relies on runtime code generation.")]
@@ -86,7 +92,7 @@ public static class IServiceExportExtensions
 	}
 
 	/// <summary>
-	/// Adds all services implementing the IAddService interface from the specified assemblies to the service
+	/// Adds all services implementing the <see cref="IAddService"/> interface from the specified assemblies to the service
 	/// collection using the provided configuration.
 	/// </summary>
 	/// <remarks>This method scans the provided assemblies for non-abstract, non-generic types that
@@ -99,7 +105,7 @@ public static class IServiceExportExtensions
 	/// <returns>The IServiceCollection instance with the discovered service exports added.</returns>
 	[RequiresUnreferencedCode("AddXServiceExports scans assemblies via reflection which is not compatible with trimming.")]
 	[RequiresDynamicCode("AddXServiceExports uses Activator.CreateInstance which requires runtime code generation.")]
-	public static IServiceCollection AddXServiceExports(this IServiceCollection services, IConfiguration configuration, params IEnumerable<Assembly> assemblies)
+	public static IServiceCollection AddXServices(this IServiceCollection services, IConfiguration configuration, params IEnumerable<Assembly> assemblies)
 	{
 		ArgumentNullException.ThrowIfNull(services);
 		ArgumentNullException.ThrowIfNull(configuration);
@@ -114,7 +120,8 @@ public static class IServiceExportExtensions
 			{
 				IsAbstract: false,
 				IsInterface: false,
-				IsGenericType: false
+				IsGenericType: false,
+				IsSealed: true
 			}
 			&& Array.Exists(type.GetInterfaces(),
 				t => !t.IsGenericType
@@ -166,6 +173,57 @@ public static class IServiceExportExtensions
 				.OfType<TServiceExport>();
 
 			onServiceExport(exportServices);
+		}
+		catch (Exception exception)
+			  when (exception is NotSupportedException
+							or DirectoryNotFoundException
+							or UnauthorizedAccessException
+							or ArgumentException
+							or PathTooLongException
+							or ReflectionTypeLoadException)
+		{
+			throw new InvalidOperationException(
+				"Adding or using exports failed." +
+				" See inner exception.", exception);
+		}
+	}
+
+	[RequiresAssemblyFiles]
+	[RequiresUnreferencedCode("ApplyServiceExportsAsync uses MEF composition which relies on reflection to discover and instantiate exports.")]
+	[RequiresDynamicCode("ApplyServiceExportsAsync uses MEF composition which relies on runtime code generation.")]
+	internal static async Task ApplyServiceExportsAsync<TServiceExport>(
+		ExportOptions options,
+		Func<IEnumerable<TServiceExport>, Task> onServiceExportAsync,
+		CancellationToken cancellationToken = default)
+		where TServiceExport : class
+	{
+		ArgumentNullException.ThrowIfNull(options);
+		ArgumentNullException.ThrowIfNull(onServiceExportAsync);
+
+		try
+		{
+			using ComposablePartCatalog directoryCatalog = options
+				 .SearchSubDirectories
+				 ? new RecursiveDirectoryCatalog(
+					 options.Path, options.SearchPattern)
+				 : new DirectoryCatalog(
+					 options.Path, options.SearchPattern);
+
+			ImportDefinition importDefinition =
+					 ApplyImportDefinition<TServiceExport>();
+
+			using AggregateCatalog aggregateCatalog = new();
+			aggregateCatalog.Catalogs.Add(directoryCatalog);
+
+			using CompositionContainer compositionContainer =
+				new(aggregateCatalog);
+
+			IEnumerable<TServiceExport> exportServices = compositionContainer
+				.GetExports(importDefinition)
+				.Select(def => def.Value)
+				.OfType<TServiceExport>();
+
+			await onServiceExportAsync(exportServices).ConfigureAwait(false);
 		}
 		catch (Exception exception)
 			  when (exception is NotSupportedException

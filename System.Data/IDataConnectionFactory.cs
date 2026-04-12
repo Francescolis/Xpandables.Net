@@ -57,6 +57,16 @@ public interface IDataConnectionFactory
 	DbConnection CreateConnection();
 
 	/// <summary>
+	/// Asynchronously creates and opens a new database connection.
+	/// </summary>
+	/// <remarks>The caller is responsible for disposing the returned <see cref="DbConnection"/> when it is no
+	/// longer needed. The connection is returned is not opened. The caller must open the connection before use.</remarks>
+	/// <param name="cancellationToken">A cancellation token that can be used to cancel the asynchronous operation.</param>
+	/// <returns>A task that represents the asynchronous operation. The task result contains an open <see cref="DbConnection"/>
+	/// instance.</returns>
+	Task<DbConnection> CreateConnectionAsync(CancellationToken cancellationToken = default) => Task.FromResult(CreateConnection());
+
+	/// <summary>
 	/// Creates a new database connection and opens it asynchronously.
 	/// </summary>
 	/// <param name="cancellationToken">A token to cancel the operation.</param>

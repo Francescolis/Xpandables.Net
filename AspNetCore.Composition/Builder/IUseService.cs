@@ -16,16 +16,32 @@
 ********************************************************************************/
 namespace Microsoft.AspNetCore.Builder;
 
-/// <summary>  
-/// Defines a contract for a service that configures middleware for a 
-/// <see cref="WebApplication"/>.  
-/// </summary>  
+/// <summary>
+/// Defines a contract for configuring and initializing services and middleware within a web application, supporting
+/// both synchronous and asynchronous operations.
+/// </summary>
+/// <remarks>Implementations of this interface can be used to modularize service and middleware configuration in
+/// ASP.NET Core applications. The interface allows specifying the order in which services are applied, which can be
+/// important when multiple service modules are used together.</remarks>
 public interface IUseService
 {
+	/// <summary>
+	/// Gets the order or priority of the item within a collection or sequence.
+	/// </summary>
+	int Order { get; }
+
 	/// <summary>  
 	/// Configures the middleware for the specified <see cref="WebApplication"/>.  
 	/// </summary>  
 	/// <param name="application">The <see cref="WebApplication"/> 
 	/// to configure.</param>  
 	void UseServices(WebApplication application);
+
+	/// <summary>
+	/// Configures and initializes application services asynchronously for the specified web application.
+	/// </summary>
+	/// <param name="application">The web application instance to configure and initialize services for. Cannot be null.</param>
+	/// <param name="cancellationToken">A cancellation token that can be used to cancel the asynchronous operation.</param>
+	/// <returns>A task that represents the asynchronous operation.</returns>
+	Task UseServicesAsync(WebApplication application, CancellationToken cancellationToken = default);
 }

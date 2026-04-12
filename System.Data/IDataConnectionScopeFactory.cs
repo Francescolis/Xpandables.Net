@@ -26,15 +26,35 @@ namespace System.Data;
 public interface IDataConnectionScopeFactory
 {
 	/// <summary>
-	/// Creates a new connection scope asynchronously with an open connection.
+	/// Creates a new connection scope asynchronously with a closed connection.
 	/// </summary>
 	/// <param name="cancellationToken">A token to cancel the operation.</param>
 	/// <returns>A task representing the asynchronous operation, containing the connection scope.</returns>
 	Task<IDataConnectionScope> CreateScopeAsync(CancellationToken cancellationToken = default);
 
 	/// <summary>
-	/// Creates a new connection scope synchronously with an open connection.
+	/// Asynchronously creates and opens a new data connection scope.
 	/// </summary>
-	/// <returns>The connection scope with an open connection.</returns>
+	/// <remarks>The returned scope manages the lifetime of the underlying data connection. Disposing the scope will
+	/// close the connection and release associated resources.</remarks>
+	/// <param name="cancellationToken">A cancellation token that can be used to cancel the asynchronous operation.</param>
+	/// <returns>A task that represents the asynchronous operation. The task result contains an open data connection scope that must
+	/// be disposed when no longer needed.</returns>
+	Task<IDataConnectionScope> CreateOpenScopeAsync(CancellationToken cancellationToken = default);
+
+	/// <summary>
+	/// Creates a new connection scope synchronously with a closed connection.
+	/// </summary>
+	/// <returns>The connection scope with a closed connection.</returns>
 	IDataConnectionScope CreateScope();
+
+	/// <summary>
+	/// Creates and opens a new data connection scope for performing operations within a managed context.
+	/// </summary>
+	/// <remarks>The returned scope manages the lifetime of the underlying data connection. Disposing the scope will
+	/// close the connection and release associated resources. This method is typically used to ensure that data operations
+	/// are executed within a well-defined transactional or resource boundary.</remarks>
+	/// <returns>An object that represents the opened data connection scope. The caller is responsible for disposing the returned
+	/// scope when operations are complete.</returns>
+	IDataConnectionScope CreateOpenScope();
 }

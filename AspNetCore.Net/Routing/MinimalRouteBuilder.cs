@@ -1,4 +1,4 @@
-/*******************************************************************************
+﻿/*******************************************************************************
  * Copyright (C) 2025-2026 Kamersoft
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
@@ -28,101 +28,101 @@ namespace Microsoft.AspNetCore.Routing;
 /// most scenarios, use the standard routing APIs provided by ASP.NET Core.</remarks>
 public sealed class MinimalRouteBuilder : IEndpointRouteBuilder
 {
-    internal const string MapEndpointUnreferencedCodeWarning =
-        "This API may perform reflection on the supplied delegate and its parameters. " +
-        "These types may be trimmed if not directly referenced.";
-    internal const string MapEndpointDynamicCodeWarning =
-        "This API may perform reflection on the supplied delegate and its parameters. " +
-        "These types may require generated code and aren't compatible with native AOT applications.";
+	internal const string s_mapEndpointUnreferencedCodeWarning =
+		"This API may perform reflection on the supplied delegate and its parameters. " +
+		"These types may be trimmed if not directly referenced.";
+	internal const string s_mapEndpointDynamicCodeWarning =
+		"This API may perform reflection on the supplied delegate and its parameters. " +
+		"These types may require generated code and aren't compatible with native AOT applications.";
 
-    private readonly IEndpointRouteBuilder _inner;
-    internal readonly RouteGroupBuilder _rootGroup;
-    private readonly MinimalSupportOptions _options;
+	private readonly IEndpointRouteBuilder _inner;
+	internal readonly RouteGroupBuilder _rootGroup;
+	private readonly MinimalSupportOptions _options;
 
-    internal MinimalRouteBuilder(IEndpointRouteBuilder inner, MinimalSupportOptions options)
-    {
-        _inner = inner ?? throw new ArgumentNullException(nameof(inner));
-        _options = options ?? throw new ArgumentNullException(nameof(options));
+	internal MinimalRouteBuilder(IEndpointRouteBuilder inner, MinimalSupportOptions options)
+	{
+		_inner = inner ?? throw new ArgumentNullException(nameof(inner));
+		_options = options ?? throw new ArgumentNullException(nameof(options));
 
-        // Create a root group with empty prefix - all endpoints go through this
-        _rootGroup = EndpointRouteBuilderExtensions.MapGroup(inner, string.Empty);
-    }
+		// Create a root group with empty prefix - all endpoints go through this
+		_rootGroup = EndpointRouteBuilderExtensions.MapGroup(inner, string.Empty);
+	}
 
-    /// <inheritdoc/>
-    public IServiceProvider ServiceProvider => _inner.ServiceProvider;
+	/// <inheritdoc/>
+	public IServiceProvider ServiceProvider => _inner.ServiceProvider;
 
-    /// <inheritdoc/>
-    public ICollection<EndpointDataSource> DataSources => _inner.DataSources;
+	/// <inheritdoc/>
+	public ICollection<EndpointDataSource> DataSources => _inner.DataSources;
 
-    /// <inheritdoc/>
-    public IApplicationBuilder CreateApplicationBuilder() => _inner.CreateApplicationBuilder();
+	/// <inheritdoc/>
+	public IApplicationBuilder CreateApplicationBuilder() => _inner.CreateApplicationBuilder();
 
-    private bool RequiresPerEndpointConfiguration =>
-        _options.EndpointPredicate is not null || _options.ConfigureEndpoint is not null;
+	private bool RequiresPerEndpointConfiguration =>
+		_options.EndpointPredicate is not null || _options.ConfigureEndpoint is not null;
 
-    internal RouteHandlerBuilder ApplyFilters(RouteHandlerBuilder builder)
-    {
-        if (!RequiresPerEndpointConfiguration)
-        {
-            // Filters already applied at root group level
-            return builder;
-        }
+	internal RouteHandlerBuilder ApplyFilters(RouteHandlerBuilder builder)
+	{
+		if (!RequiresPerEndpointConfiguration)
+		{
+			// Filters already applied at root group level
+			return builder;
+		}
 
-        // When predicate exists, wrap filters to evaluate at runtime
-        if (_options.EndpointPredicate is not null)
-        {
-            if (_options.ConfigureEndpoint is not null)
+		// When predicate exists, wrap filters to evaluate at runtime
+		if (_options.EndpointPredicate is not null)
+		{
+			if (_options.ConfigureEndpoint is not null)
 			{
 				builder.AddEndpointFilter(CreateConditionalFilter(
-                    _options.EndpointPredicate, _options.ConfigureEndpoint, builder));
+					_options.EndpointPredicate, _options.ConfigureEndpoint, builder));
 			}
 		}
-        else
-        {
-            if (_options.ConfigureEndpoint is not null)
+		else
+		{
+			if (_options.ConfigureEndpoint is not null)
 			{
 				_options.ConfigureEndpoint(builder);
 			}
 		}
 
-        return builder;
-    }
+		return builder;
+	}
 
-    internal IEndpointConventionBuilder ApplyFilters(IEndpointConventionBuilder builder)
-    {
-        if (!RequiresPerEndpointConfiguration)
-        {
-            // Filters already applied at root group level
-            return builder;
-        }
+	internal IEndpointConventionBuilder ApplyFilters(IEndpointConventionBuilder builder)
+	{
+		if (!RequiresPerEndpointConfiguration)
+		{
+			// Filters already applied at root group level
+			return builder;
+		}
 
-        // For RequestDelegate handlers, we can only apply custom configuration
-        // Endpoint filters are not supported on IEndpointConventionBuilder
-        if (_options.ConfigureEndpoint is not null)
-        {
-            _options.ConfigureEndpoint(builder);
-        }
+		// For RequestDelegate handlers, we can only apply custom configuration
+		// Endpoint filters are not supported on IEndpointConventionBuilder
+		if (_options.ConfigureEndpoint is not null)
+		{
+			_options.ConfigureEndpoint(builder);
+		}
 
-        return builder;
-    }
+		return builder;
+	}
 
-    private static Func<EndpointFilterInvocationContext, EndpointFilterDelegate, ValueTask<object?>> CreateConditionalFilter(
-        Func<RouteEndpoint, bool> predicate,
-        Action<IEndpointConventionBuilder> configure,
-        RouteHandlerBuilder builder)
-    {
-        return async (context, next) =>
-        {
-            // Evaluate predicate at runtime using the current endpoint
-            if (context.HttpContext.GetEndpoint() is RouteEndpoint routeEndpoint
-                && predicate(routeEndpoint))
-            {
-                // Apply configuration to the builder
-                configure(builder);
-                return await next(context).ConfigureAwait(false);
-            }
-            // Skip configuration if predicate doesn't match
-            return await next(context).ConfigureAwait(false);
-        };
-    }
+	private static Func<EndpointFilterInvocationContext, EndpointFilterDelegate, ValueTask<object?>> CreateConditionalFilter(
+		Func<RouteEndpoint, bool> predicate,
+		Action<IEndpointConventionBuilder> configure,
+		RouteHandlerBuilder builder)
+	{
+		return async (context, next) =>
+		{
+			// Evaluate predicate at runtime using the current endpoint
+			if (context.HttpContext.GetEndpoint() is RouteEndpoint routeEndpoint
+				&& predicate(routeEndpoint))
+			{
+				// Apply configuration to the builder
+				configure(builder);
+				return await next(context).ConfigureAwait(false);
+			}
+			// Skip configuration if predicate doesn't match
+			return await next(context).ConfigureAwait(false);
+		};
+	}
 }

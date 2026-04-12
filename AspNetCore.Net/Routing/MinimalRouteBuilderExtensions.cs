@@ -51,8 +51,8 @@ public static class MinimalRouteBuilderExtensions
 	/// Maps a GET endpoint with a <see cref="Delegate"/> handler.
 	/// Filters are automatically applied.
 	/// </summary>
-	[RequiresUnreferencedCode(MinimalRouteBuilder.MapEndpointUnreferencedCodeWarning)]
-	[RequiresDynamicCode(MinimalRouteBuilder.MapEndpointDynamicCodeWarning)]
+	[RequiresUnreferencedCode(MinimalRouteBuilder.s_mapEndpointUnreferencedCodeWarning)]
+	[RequiresDynamicCode(MinimalRouteBuilder.s_mapEndpointDynamicCodeWarning)]
 	public static RouteHandlerBuilder MapGet(this MinimalRouteBuilder builder, [StringSyntax("Route")] string pattern, Delegate handler)
 	{
 		ArgumentNullException.ThrowIfNull(builder);
@@ -77,8 +77,8 @@ public static class MinimalRouteBuilderExtensions
 	/// Maps a POST endpoint with a <see cref="Delegate"/> handler.
 	/// Filters are automatically applied.
 	/// </summary>
-	[RequiresUnreferencedCode(MinimalRouteBuilder.MapEndpointUnreferencedCodeWarning)]
-	[RequiresDynamicCode(MinimalRouteBuilder.MapEndpointDynamicCodeWarning)]
+	[RequiresUnreferencedCode(MinimalRouteBuilder.s_mapEndpointUnreferencedCodeWarning)]
+	[RequiresDynamicCode(MinimalRouteBuilder.s_mapEndpointDynamicCodeWarning)]
 	public static RouteHandlerBuilder MapPost(this MinimalRouteBuilder builder, [StringSyntax("Route")] string pattern, Delegate handler)
 	{
 		ArgumentNullException.ThrowIfNull(builder);
@@ -103,8 +103,8 @@ public static class MinimalRouteBuilderExtensions
 	/// Maps a PUT endpoint with a <see cref="Delegate"/> handler.
 	/// Filters are automatically applied.
 	/// </summary>
-	[RequiresUnreferencedCode(MinimalRouteBuilder.MapEndpointUnreferencedCodeWarning)]
-	[RequiresDynamicCode(MinimalRouteBuilder.MapEndpointDynamicCodeWarning)]
+	[RequiresUnreferencedCode(MinimalRouteBuilder.s_mapEndpointUnreferencedCodeWarning)]
+	[RequiresDynamicCode(MinimalRouteBuilder.s_mapEndpointDynamicCodeWarning)]
 	public static RouteHandlerBuilder MapPut(this MinimalRouteBuilder builder, [StringSyntax("Route")] string pattern, Delegate handler)
 	{
 		ArgumentNullException.ThrowIfNull(builder);
@@ -129,8 +129,8 @@ public static class MinimalRouteBuilderExtensions
 	/// Maps a DELETE endpoint with a <see cref="Delegate"/> handler.
 	/// Filters are automatically applied.
 	/// </summary>
-	[RequiresUnreferencedCode(MinimalRouteBuilder.MapEndpointUnreferencedCodeWarning)]
-	[RequiresDynamicCode(MinimalRouteBuilder.MapEndpointDynamicCodeWarning)]
+	[RequiresUnreferencedCode(MinimalRouteBuilder.s_mapEndpointUnreferencedCodeWarning)]
+	[RequiresDynamicCode(MinimalRouteBuilder.s_mapEndpointDynamicCodeWarning)]
 	public static RouteHandlerBuilder MapDelete(this MinimalRouteBuilder builder, [StringSyntax("Route")] string pattern, Delegate handler)
 	{
 		ArgumentNullException.ThrowIfNull(builder);
@@ -155,8 +155,8 @@ public static class MinimalRouteBuilderExtensions
 	/// Maps a PATCH endpoint with a <see cref="Delegate"/> handler.
 	/// Filters are automatically applied.
 	/// </summary>
-	[RequiresUnreferencedCode(MinimalRouteBuilder.MapEndpointUnreferencedCodeWarning)]
-	[RequiresDynamicCode(MinimalRouteBuilder.MapEndpointDynamicCodeWarning)]
+	[RequiresUnreferencedCode(MinimalRouteBuilder.s_mapEndpointUnreferencedCodeWarning)]
+	[RequiresDynamicCode(MinimalRouteBuilder.s_mapEndpointDynamicCodeWarning)]
 	public static RouteHandlerBuilder MapPatch(this MinimalRouteBuilder builder, [StringSyntax("Route")] string pattern, Delegate handler)
 	{
 		ArgumentNullException.ThrowIfNull(builder);
@@ -181,8 +181,8 @@ public static class MinimalRouteBuilderExtensions
 	/// Maps endpoints for the specified HTTP methods with a <see cref="Delegate"/> handler.
 	/// Filters are automatically applied.
 	/// </summary>
-	[RequiresUnreferencedCode(MinimalRouteBuilder.MapEndpointUnreferencedCodeWarning)]
-	[RequiresDynamicCode(MinimalRouteBuilder.MapEndpointDynamicCodeWarning)]
+	[RequiresUnreferencedCode(MinimalRouteBuilder.s_mapEndpointUnreferencedCodeWarning)]
+	[RequiresDynamicCode(MinimalRouteBuilder.s_mapEndpointDynamicCodeWarning)]
 	public static RouteHandlerBuilder MapMethods(this MinimalRouteBuilder builder,
 		[StringSyntax("Route")] string pattern,
 		IEnumerable<string> httpMethods,

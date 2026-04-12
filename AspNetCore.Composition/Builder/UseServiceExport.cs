@@ -22,8 +22,4 @@ namespace Microsoft.AspNetCore.Builder;
 /// <remarks>Derived classes must implement the Use method to define how the service export is utilized within the
 /// provided WebApplication instance. This class is intended for use in scenarios where service exports need to be
 /// integrated into a web application pipeline.</remarks>
-public abstract class UseServiceExport : UseService, IUseServiceExport
-{
-	/// <inheritdoc/>
-	public abstract void Use(WebApplication application);
-}
+public abstract class UseServiceExport : UseService, IUseServiceExport;

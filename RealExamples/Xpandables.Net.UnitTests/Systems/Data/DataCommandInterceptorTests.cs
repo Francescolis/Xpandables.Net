@@ -372,6 +372,8 @@ public sealed class DataCommandInterceptorTests : IDisposable
 
 	private sealed class TestScopeFactory(IDataConnectionScope scope) : IDataConnectionScopeFactory
 	{
+		public IDataConnectionScope CreateOpenScope() => scope;
+		public Task<IDataConnectionScope> CreateOpenScopeAsync(CancellationToken cancellationToken = default) => Task.FromResult(scope);
 		public IDataConnectionScope CreateScope() => scope;
 
 		public Task<IDataConnectionScope> CreateScopeAsync(CancellationToken cancellationToken = default)

@@ -26,6 +26,7 @@ public abstract class AddService : IAddService
 {
 	/// <inheritdoc/>
 	public virtual void AddServices(IServiceCollection services) { }
+
 	/// <inheritdoc/>
 	public virtual void AddServices(IServiceCollection services, IConfiguration configuration) =>
 		AddServices(services);

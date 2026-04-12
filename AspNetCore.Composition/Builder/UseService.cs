@@ -23,5 +23,15 @@ namespace Microsoft.AspNetCore.Builder;
 public abstract class UseService : IUseService
 {
 	/// <inheritdoc/>
-	public abstract void UseServices(WebApplication application);
+	public virtual int Order => 0;
+
+	/// <inheritdoc/>
+	public virtual void UseServices(WebApplication application) { }
+
+	/// <inheritdoc/>
+	public virtual Task UseServicesAsync(WebApplication application, CancellationToken cancellationToken = default)
+	{
+		UseServices(application);
+		return Task.CompletedTask;
+	}
 }

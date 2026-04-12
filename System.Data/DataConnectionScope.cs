@@ -58,18 +58,59 @@ public sealed class DataConnectionScope(DbConnection connection) : IDataConnecti
 	{
 		ObjectDisposedException.ThrowIf(_isDisposed, this);
 
-		if (_connection.State == ConnectionState.Open)
+		if (_connection.State is ConnectionState.Open
+			or ConnectionState.Connecting
+			or ConnectionState.Executing
+			or ConnectionState.Fetching)
 		{
 			return;
 		}
 
 		await _openLock.WaitAsync(cancellationToken).ConfigureAwait(false);
+
 		try
 		{
-			if (_connection.State != ConnectionState.Open)
+			if (_connection.State is ConnectionState.Broken)
 			{
-				await _connection.OpenAsync(cancellationToken).ConfigureAwait(false);
+				await _connection.CloseAsync().ConfigureAwait(false);
 			}
+
+			await _connection.OpenAsync(cancellationToken).ConfigureAwait(false);
+		}
+		finally
+		{
+			_openLock.Release();
+		}
+	}
+
+	/// <inheritdoc/>
+	/// <remarks>
+	/// This implementation uses a <see cref="SemaphoreSlim"/> to ensure only one
+	/// concurrent caller opens the connection, making it safe for use from
+	/// multiple async code paths.
+	/// </remarks>/// 
+	public void EnsureOpen()
+	{
+		ObjectDisposedException.ThrowIf(_isDisposed, this);
+
+		if (_connection.State is ConnectionState.Open
+			or ConnectionState.Connecting
+			or ConnectionState.Executing
+			or ConnectionState.Fetching)
+		{
+			return;
+		}
+
+		_openLock.Wait();
+
+		try
+		{
+			if (_connection.State is ConnectionState.Broken)
+			{
+				_connection.Close();
+			}
+
+			_connection.Open();
 		}
 		finally
 		{
@@ -203,47 +244,5 @@ public sealed class DataConnectionScope(DbConnection connection) : IDataConnecti
 		// Clear the current transaction reference when it's completed
 		// This allows starting a new transaction in the same scope
 		_currentTransaction = null;
-	}
-}
-
-/// <summary>
-/// Provides a default implementation of <see cref="IDataConnectionScopeFactory"/> that creates 
-/// <see cref="DataConnectionScope"/> instances using an <see cref="IDataConnectionFactory"/>.
-/// </summary>
-/// <remarks>
-/// <para>
-/// <see cref="CreateScopeAsync"/> opens the connection eagerly for backward compatibility.
-/// <see cref="CreateScope"/> creates a scope with a <strong>closed</strong> connection that
-/// opens lazily on first use via <see cref="IDataConnectionScope.EnsureOpenAsync"/>,
-/// avoiding synchronous thread-pool blocking during connection establishment.
-/// </para>
-/// </remarks>
-/// <param name="connectionFactory">The factory used to create database connections.</param>
-/// <exception cref="ArgumentNullException">Thrown when <paramref name="connectionFactory"/> is null.</exception>
-public sealed class DataConnectionScopeFactory(IDataConnectionFactory connectionFactory) : IDataConnectionScopeFactory
-{
-	private readonly IDataConnectionFactory _connectionFactory = connectionFactory
-		?? throw new ArgumentNullException(nameof(connectionFactory));
-
-	/// <inheritdoc />
-	public async Task<IDataConnectionScope> CreateScopeAsync(CancellationToken cancellationToken = default)
-	{
-		DbConnection connection = await _connectionFactory
-			.CreateOpenConnectionAsync(cancellationToken)
-			.ConfigureAwait(false);
-
-		return new DataConnectionScope(connection);
-	}
-
-	/// <inheritdoc />
-	/// <remarks>
-	/// Creates a scope with a closed connection. The connection will be opened
-	/// asynchronously on first use via <see cref="IDataConnectionScope.EnsureOpenAsync"/>.
-	/// This avoids blocking a thread-pool thread during connection establishment.
-	/// </remarks>
-	public IDataConnectionScope CreateScope()
-	{
-		DbConnection connection = _connectionFactory.CreateConnection();
-		return new DataConnectionScope(connection);
 	}
 }

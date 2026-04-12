@@ -28,7 +28,7 @@ DbProviderFactories.RegisterFactory(
 
 builder.Services
 	.AddXJsonSerializerOptions()
-	.AddXServiceExports(builder.Configuration, [typeof(AccountDataContext).Assembly])
+	.AddXServices(builder.Configuration, [typeof(AccountDataContext).Assembly])
 	.AddXScheduler()
 	.AddXHostedScheduler()
 	.AddXEventContextAccessor()

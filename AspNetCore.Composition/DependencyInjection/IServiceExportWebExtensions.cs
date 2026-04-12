@@ -35,10 +35,12 @@ namespace Microsoft.Extensions.DependencyInjection;
 public static class IServiceExportWebExtensions
 {
 	/// <summary>
-	/// Uses the service exports with default options.
+	/// Adds XService MEF exports to the application's request pipeline.
 	/// </summary>
-	/// <param name="application">The <see cref="WebApplication"/> to configure.</param>
-	/// <returns>The web application with applied service exports.</returns>
+	/// <remarks>This method enables MEF-based composition for XService exports. It relies on reflection and runtime
+	/// code generation, which may have implications for trimming and AOT scenarios.</remarks>
+	/// <param name="application">The web application to configure. Cannot be null.</param>
+	/// <returns>The configured <see cref="WebApplication"/> instance.</returns>
 	[RequiresAssemblyFiles]
 	[RequiresUnreferencedCode("UseXServiceExports uses MEF composition which relies on reflection.")]
 	[RequiresDynamicCode("UseXServiceExports uses MEF composition which relies on runtime code generation.")]
@@ -49,12 +51,33 @@ public static class IServiceExportWebExtensions
 	}
 
 	/// <summary>
-	/// Uses the service exports with specified options.
+	/// Configures the application to use XService MEF exports asynchronously.
 	/// </summary>
-	/// <param name="application">The <see cref="WebApplication"/> to configure.</param>
-	/// <param name="configureOptions">The action to configure export options.</param>
-	/// <returns>The web application with applied service exports.</returns>
-	// ReSharper disable once MemberCanBePrivate.Global
+	/// <remarks>This method enables MEF-based composition for XService exports in the application. It requires
+	/// support for reflection, dynamic code generation, and access to referenced assemblies at runtime. Use this method at
+	/// application startup to ensure all MEF exports are available before handling requests.</remarks>
+	/// <param name="application">The WebApplication instance to configure with XService MEF exports.</param>
+	/// <param name="cancellationToken">A cancellation token that can be used to cancel the asynchronous operation. The default value is <see
+	/// cref="CancellationToken.None"/>.</param>
+	/// <returns>A task that represents the asynchronous operation. The task result contains the configured WebApplication instance.</returns>
+	[RequiresUnreferencedCode("UseXServiceExportsAsync uses MEF composition which relies on reflection.")]
+	[RequiresAssemblyFiles()]
+	[RequiresDynamicCode("UseXServiceExportsAsync uses MEF composition which relies on runtime code generation.")]
+	public static Task<WebApplication> UseXServiceExportsAsync(
+		this WebApplication application,
+		CancellationToken cancellationToken = default) =>
+		application.UseXServiceExportsAsync(_ => { }, cancellationToken);
+
+	/// <summary>
+	/// Configures and applies MEF-based service exports to the specified web application using the provided export
+	/// options.
+	/// </summary>
+	/// <remarks>This method uses Managed Extensibility Framework (MEF) composition, which relies on reflection and
+	/// runtime code generation. It is not compatible with trimming or ahead-of-time compilation scenarios. Use this method
+	/// during application startup to register and compose exported services.</remarks>
+	/// <param name="application">The web application to which the service exports will be applied. Cannot be null.</param>
+	/// <param name="configureOptions">A delegate that configures the export options used for MEF composition. Cannot be null.</param>
+	/// <returns>The same instance of <see cref="WebApplication"/> with the configured service exports applied.</returns>
 	[RequiresAssemblyFiles()]
 	[RequiresUnreferencedCode("UseXServiceExports uses MEF composition which relies on reflection.")]
 	[RequiresDynamicCode("UseXServiceExports uses MEF composition which relies on runtime code generation.")]
@@ -74,6 +97,42 @@ public static class IServiceExportWebExtensions
 					export.UseServices(application);
 				}
 			});
+
+		return application;
+	}
+
+	/// <summary>
+	/// Configures and applies XService MEF exports to the specified web application asynchronously.
+	/// </summary>
+	/// <remarks>This method uses Managed Extensibility Framework (MEF) composition, which relies on reflection and
+	/// runtime code generation. It is not compatible with trimming or ahead-of-time compilation scenarios. All registered
+	/// service exports implementing IUseServiceExport will be invoked to configure the application.</remarks>
+	/// <param name="application">The web application to which XService exports will be applied. Cannot be null.</param>
+	/// <param name="configureOptions">A delegate to configure export options before applying service exports. Cannot be null.</param>
+	/// <param name="cancellationToken">A cancellation token that can be used to cancel the asynchronous operation. Optional.</param>
+	/// <returns>A task that represents the asynchronous operation. The task result contains the configured web application
+	/// instance.</returns>
+	[RequiresUnreferencedCode("UseXServiceExportsAsync uses MEF composition which relies on reflection.")]
+	[RequiresAssemblyFiles()]
+	[RequiresDynamicCode("UseXServiceExportsAsync uses MEF composition which relies on runtime code generation.")]
+	public static async Task<WebApplication> UseXServiceExportsAsync(
+		this WebApplication application,
+		Action<ExportOptions> configureOptions,
+		CancellationToken cancellationToken = default)
+	{
+		ArgumentNullException.ThrowIfNull(application);
+		ArgumentNullException.ThrowIfNull(configureOptions);
+		ExportOptions options = new();
+		configureOptions(options);
+
+		await IServiceExportExtensions.ApplyServiceExportsAsync<IUseServiceExport>(
+			options, async exports =>
+			{
+				foreach (IUseServiceExport export in exports)
+				{
+					await export.UseServicesAsync(application, cancellationToken).ConfigureAwait(false);
+				}
+			}, cancellationToken).ConfigureAwait(false);
 
 		return application;
 	}

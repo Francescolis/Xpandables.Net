@@ -104,14 +104,46 @@ public interface IDataConnectionScope : IDisposable, IAsyncDisposable
 	/// </remarks>
 	/// <param name="cancellationToken">A token to cancel the operation.</param>
 	/// <returns>A value task that completes when the connection is open.</returns>
-	ValueTask EnsureOpenAsync(CancellationToken cancellationToken = default)
+	async ValueTask EnsureOpenAsync(CancellationToken cancellationToken = default)
 	{
-		if (Connection.State == ConnectionState.Open)
+		if (Connection.State is ConnectionState.Open
+			or ConnectionState.Connecting
+			or ConnectionState.Executing
+			or ConnectionState.Fetching)
 		{
-			return ValueTask.CompletedTask;
+			return;
 		}
 
-		return new ValueTask(Connection.OpenAsync(cancellationToken));
+		if (Connection.State is ConnectionState.Broken)
+		{
+			await Connection.CloseAsync().ConfigureAwait(false);
+		}
+
+		await Connection.OpenAsync(cancellationToken).ConfigureAwait(false);
+	}
+
+	/// <summary>
+	/// Ensures that the underlying database connection is open, opening it if necessary.
+	/// </summary>
+	/// <remarks>This method checks the current state of the connection and opens it only if it is not already open.
+	/// Calling this method multiple times is safe and will not result in multiple open operations if the connection is
+	/// already open.</remarks>
+	void EnsureOpen()
+	{
+		if (Connection.State is ConnectionState.Open
+			or ConnectionState.Connecting
+			or ConnectionState.Executing
+			or ConnectionState.Fetching)
+		{
+			return;
+		}
+
+		if (Connection.State is ConnectionState.Broken)
+		{
+			Connection.Close();
+		}
+
+		Connection.Open();
 	}
 
 	/// <summary>
