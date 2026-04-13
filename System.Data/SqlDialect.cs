@@ -1,4 +1,4 @@
-/*******************************************************************************
+﻿/*******************************************************************************
  * Copyright (C) 2025-2026 Kamersoft
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
@@ -34,5 +34,10 @@ public enum SqlDialect
     /// <summary>
     /// MySQL dialect.
     /// </summary>
-    MySql
+    MySql,
+
+    /// <summary>
+    /// SQLite dialect.
+    /// </summary>
+    SQLite
 }

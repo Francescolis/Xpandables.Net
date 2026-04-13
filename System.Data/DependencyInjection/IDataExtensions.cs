@@ -195,6 +195,26 @@ public static class IDataExtensions
 	}
 
 	/// <summary>
+	/// Registers a SQLite database connection factory with the specified connection string for dependency injection.
+	/// </summary>
+	/// <remarks>This method throws an <see cref="ArgumentNullException"/> if the service collection
+	/// is null, and an <see cref="ArgumentException"/> if the connection string is null or consists only of
+	/// white-space characters. Use this method to configure SQLite database connectivity in applications that
+	/// utilize dependency injection.</remarks>
+	/// <param name="services">The <see cref="IServiceCollection"/> to add the services to.</param>
+	/// <param name="connectionString">The connection string used to establish connections to the SQLite database. This value cannot be null or
+	/// whitespace.</param>
+	/// <returns>The updated <see cref="IServiceCollection"/> instance, enabling method chaining.</returns>
+	public static IServiceCollection AddXDataConnectionSQLite(this IServiceCollection services, string connectionString)
+	{
+		ArgumentNullException.ThrowIfNull(services);
+		ArgumentException.ThrowIfNullOrWhiteSpace(connectionString);
+		services.TryAddSingleton<IDataConnectionFactory>(
+			_ => new DataConnectionFactory(DbProviders.SQLite.InvariantName, connectionString));
+		return services;
+	}
+
+	/// <summary>
 	/// Registers a default database connection factory using provider invariant name and connection string.
 	/// </summary>
 	/// <param name="services">The <see cref="IServiceCollection"/> to add the services to.</param>
@@ -348,6 +368,20 @@ public static class IDataExtensions
 	{
 		ArgumentNullException.ThrowIfNull(services);
 		return services.AddSingleton<IDataSqlBuilder, MyDataSqlBuilder>();
+	}
+
+	/// <summary>
+	/// Registers the SQLite implementation of the ISqlBuilder interface in the service collection.
+	/// </summary>
+	/// <remarks>This method adds a singleton instance of LiteDataSqlBuilder, which provides SQL
+	/// query building functionality specific to SQLite. The services collection must not be null when
+	/// calling this method.</remarks>
+	/// <param name="services">The <see cref="IServiceCollection"/> to add the services to.</param>
+	/// <returns>The IServiceCollection instance that can be used to configure additional services.</returns>
+	public static IServiceCollection AddXDataLiteSqlBuilder(this IServiceCollection services)
+	{
+		ArgumentNullException.ThrowIfNull(services);
+		return services.AddSingleton<IDataSqlBuilder, LiteDataSqlBuilder>();
 	}
 
 	/// <summary>

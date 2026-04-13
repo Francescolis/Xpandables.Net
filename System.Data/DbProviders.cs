@@ -1,4 +1,4 @@
-/*******************************************************************************
+﻿/*******************************************************************************
  * Copyright (C) 2025-2026 Kamersoft
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
@@ -78,6 +78,23 @@ public static class DbProviders
         /// The display name for MySQL.
         /// </summary>
         public const string DisplayName = "MySQL";
+    }
+
+    /// <summary>
+    /// SQLite provider information.
+    /// </summary>
+    public static class SQLite
+    {
+        /// <summary>
+        /// The invariant name for SQLite provider.
+        /// </summary>
+        /// <remarks>Uses Microsoft.Data.Sqlite package.</remarks>
+        public const string InvariantName = "Microsoft.Data.Sqlite";
+
+        /// <summary>
+        /// The display name for SQLite.
+        /// </summary>
+        public const string DisplayName = "SQLite";
     }
 
     /// <summary>
