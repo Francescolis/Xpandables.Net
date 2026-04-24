@@ -1,4 +1,4 @@
-/*******************************************************************************
+﻿/*******************************************************************************
  * Copyright (C) 2025-2026 Kamersoft
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
@@ -38,133 +38,133 @@ namespace System.Rests;
 /// <param name="requestInterceptors">An optional enumerable collection of request interceptors that can inspect or modify the request context before the
 /// request is built. Interceptors are executed in order of their specified priority.</param>
 public sealed partial class RestRequestBuilder(
-    IEnumerable<IRestRequestComposer> composers,
-    ILogger<RestRequestBuilder>? logger = null,
-    IEnumerable<IRestRequestInterceptor>? requestInterceptors = null) : IRestRequestBuilder
+	IEnumerable<IRestRequestComposer> composers,
+	ILogger<RestRequestBuilder>? logger = null,
+	IEnumerable<IRestRequestInterceptor>? requestInterceptors = null) : IRestRequestBuilder
 {
-    private readonly IRestRequestInterceptor[] _requestInterceptors = [.. (requestInterceptors ?? []).OrderBy(i => i.Order)];
-    private readonly ILogger<RestRequestBuilder> _logger = logger ?? NullLogger<RestRequestBuilder>.Instance;
+	private readonly IRestRequestInterceptor[] _requestInterceptors = [.. (requestInterceptors ?? []).OrderBy(i => i.Order)];
+	private readonly ILogger<RestRequestBuilder> _logger = logger ?? NullLogger<RestRequestBuilder>.Instance;
 
-    /// <inheritdoc />
-    [SuppressMessage("Reliability", "CA2000:Dispose objects before losing scope", Justification = "<Pending>")]
-    public async ValueTask<RestRequest> BuildRequestAsync(
-        RestRequestContext context,
-        CancellationToken cancellationToken = default)
-    {
-        ArgumentNullException.ThrowIfNull(context);
+	/// <inheritdoc />
+	[SuppressMessage("Reliability", "CA2000:Dispose objects before losing scope", Justification = "<Pending>")]
+	public async ValueTask<RestRequest> BuildRequestAsync(
+		RestRequestContext context,
+		CancellationToken cancellationToken = default)
+	{
+		ArgumentNullException.ThrowIfNull(context);
 
-        await ExecuteRequestInterceptorsAsync(context, cancellationToken).ConfigureAwait(false);
-        if (context.IsAborted)
-        {
-            return RestRequest.Empty;
-        }
+		await ExecuteRequestInterceptorsAsync(context, cancellationToken).ConfigureAwait(false);
+		if (context.IsAborted)
+		{
+			return RestRequest.Empty;
+		}
 
-        List<IRestRequestComposer> requestComposers = [.. composers.Where(c => c.CanCompose(context))];
+		List<IRestRequestComposer> requestComposers = [.. composers.Where(c => c.CanCompose(context))];
 
-        if (requestComposers.Count == 0)
-        {
-            throw new InvalidOperationException(
-                $"No request builder found for the request type {context.Request.GetType()}.");
-        }
+		if (requestComposers.Count == 0)
+		{
+			throw new InvalidOperationException(
+				$"No request builder found for the request type {context.Request.GetType()}.");
+		}
 
-        HttpRequestMessage message = InitializeHttpRequestMessage(context.Attribute);
-        cancellationToken.ThrowIfCancellationRequested();
+		context.Message = InitializeHttpRequestMessage(context.Attribute);
+		cancellationToken.ThrowIfCancellationRequested();
 
-        foreach (IRestRequestComposer composer in requestComposers)
-        {
-            await composer.ComposeAsync(context, cancellationToken).ConfigureAwait(false);
-        }
+		foreach (IRestRequestComposer composer in requestComposers)
+		{
+			await composer.ComposeAsync(context, cancellationToken).ConfigureAwait(false);
+		}
 
-        cancellationToken.ThrowIfCancellationRequested();
+		cancellationToken.ThrowIfCancellationRequested();
 
-        message = FinalizeHttpRequestMessage(context);
+		HttpRequestMessage message = FinalizeHttpRequestMessage(context);
 
-        return new RestRequest { HttpRequestMessage = message };
-    }
+		return new RestRequest { HttpRequestMessage = message };
+	}
 
-    private static HttpRequestMessage InitializeHttpRequestMessage(RestAttribute attribute)
-    {
-        ArgumentNullException.ThrowIfNull(attribute);
+	private static HttpRequestMessage InitializeHttpRequestMessage(RestAttribute attribute)
+	{
+		ArgumentNullException.ThrowIfNull(attribute);
 
-        string path = string.IsNullOrWhiteSpace(attribute.Path) ? "/" : attribute.Path;
+		string path = string.IsNullOrWhiteSpace(attribute.Path) ? "/" : attribute.Path;
 
-        if (!Uri.TryCreate(path, UriKind.RelativeOrAbsolute, out Uri? requestUri))
-        {
-            throw new InvalidOperationException($"The REST path '{path}' is not a valid URI.");
-        }
+		if (!Uri.TryCreate(path, UriKind.RelativeOrAbsolute, out Uri? requestUri))
+		{
+			throw new InvalidOperationException($"The REST path '{path}' is not a valid URI.");
+		}
 
-        HttpRequestMessage message = new()
-        {
-            Method = ResolveHttpMethod(attribute.Method),
-            RequestUri = requestUri
-        };
+		HttpRequestMessage message = new()
+		{
+			Method = ResolveHttpMethod(attribute.Method),
+			RequestUri = requestUri
+		};
 
-        message.Headers.Accept.Add(new MediaTypeWithQualityHeaderValue(attribute.Accept));
+		message.Headers.Accept.Add(new MediaTypeWithQualityHeaderValue(attribute.Accept));
 
-        string cultureName = CultureInfo.CurrentCulture.Name;
-        if (!string.IsNullOrWhiteSpace(cultureName))
-        {
-            message.Headers.AcceptLanguage.Add(new StringWithQualityHeaderValue(cultureName));
-        }
+		string cultureName = CultureInfo.CurrentCulture.Name;
+		if (!string.IsNullOrWhiteSpace(cultureName))
+		{
+			message.Headers.AcceptLanguage.Add(new StringWithQualityHeaderValue(cultureName));
+		}
 
-        return message;
-    }
+		return message;
+	}
 
-    private static HttpRequestMessage FinalizeHttpRequestMessage(RestRequestContext context)
-    {
-        if (context.Message.Content is not null && context.Message.Content.Headers.ContentType is null)
-        {
-            context.Message.Content.Headers.ContentType
-                = new MediaTypeHeaderValue(context.Attribute.ContentType);
-        }
+	private static HttpRequestMessage FinalizeHttpRequestMessage(RestRequestContext context)
+	{
+		if (context.Message.Content is not null && context.Message.Content.Headers.ContentType is null)
+		{
+			context.Message.Content.Headers.ContentType
+				= new MediaTypeHeaderValue(context.Attribute.ContentType);
+		}
 
-        if (!context.Attribute.IsSecured)
-        {
-            return context.Message;
-        }
+		if (!context.Attribute.IsSecured)
+		{
+			return context.Message;
+		}
 
-        context.Message.Options
-            .Set(new HttpRequestOptionsKey<bool>(nameof(RestAttribute.IsSecured)), context.Attribute.IsSecured);
+		context.Message.Options
+			.Set(new HttpRequestOptionsKey<bool>(nameof(RestAttribute.IsSecured)), context.Attribute.IsSecured);
 
-        context.Message.Headers.Authorization ??= new AuthenticationHeaderValue(context.Attribute.Scheme);
+		context.Message.Headers.Authorization ??= new AuthenticationHeaderValue(context.Attribute.Scheme);
 
-        return context.Message;
-    }
+		return context.Message;
+	}
 
-    private static HttpMethod ResolveHttpMethod(RestSettings.Method method) =>
-        method switch
-        {
-            RestSettings.Method.GET => HttpMethod.Get,
-            RestSettings.Method.POST => HttpMethod.Post,
-            RestSettings.Method.PUT => HttpMethod.Put,
-            RestSettings.Method.DELETE => HttpMethod.Delete,
-            RestSettings.Method.HEAD => HttpMethod.Head,
-            RestSettings.Method.PATCH => HttpMethod.Patch,
-            RestSettings.Method.OPTIONS => HttpMethod.Options,
-            RestSettings.Method.TRACE => HttpMethod.Trace,
-            RestSettings.Method.CONNECT => new HttpMethod(nameof(RestSettings.Method.CONNECT)),
-            _ => throw new ArgumentOutOfRangeException(nameof(method), method, "Unsupported HTTP method.")
-        };
+	private static HttpMethod ResolveHttpMethod(RestSettings.Method method) =>
+		method switch
+		{
+			RestSettings.Method.GET => HttpMethod.Get,
+			RestSettings.Method.POST => HttpMethod.Post,
+			RestSettings.Method.PUT => HttpMethod.Put,
+			RestSettings.Method.DELETE => HttpMethod.Delete,
+			RestSettings.Method.HEAD => HttpMethod.Head,
+			RestSettings.Method.PATCH => HttpMethod.Patch,
+			RestSettings.Method.OPTIONS => HttpMethod.Options,
+			RestSettings.Method.TRACE => HttpMethod.Trace,
+			RestSettings.Method.CONNECT => new HttpMethod(nameof(RestSettings.Method.CONNECT)),
+			_ => throw new ArgumentOutOfRangeException(nameof(method), method, "Unsupported HTTP method.")
+		};
 
-    private async ValueTask ExecuteRequestInterceptorsAsync(
-         RestRequestContext context,
-         CancellationToken cancellationToken)
-    {
-        foreach (IRestRequestInterceptor interceptor in _requestInterceptors)
-        {
-            cancellationToken.ThrowIfCancellationRequested();
+	private async ValueTask ExecuteRequestInterceptorsAsync(
+		 RestRequestContext context,
+		 CancellationToken cancellationToken)
+	{
+		foreach (IRestRequestInterceptor interceptor in _requestInterceptors)
+		{
+			cancellationToken.ThrowIfCancellationRequested();
 
-            await interceptor
-                .InterceptAsync(context, cancellationToken)
-                .ConfigureAwait(false);
+			await interceptor
+				.InterceptAsync(context, cancellationToken)
+				.ConfigureAwait(false);
 
-            if (context.IsAborted)
-            {
-                LogInterceptorShortCircuit(_logger, context.Request.Name, interceptor.GetType().Name);
-            }
-        }
-    }
+			if (context.IsAborted)
+			{
+				LogInterceptorShortCircuit(_logger, context.Request.Name, interceptor.GetType().Name);
+			}
+		}
+	}
 
-    [LoggerMessage(EventId = 6, Level = LogLevel.Debug, Message = "Request {RequestName} short-circuited by interceptor {InterceptorType}")]
-    private static partial void LogInterceptorShortCircuit(ILogger logger, string requestName, string interceptorType);
+	[LoggerMessage(EventId = 6, Level = LogLevel.Debug, Message = "Request {RequestName} short-circuited by interceptor {InterceptorType}")]
+	private static partial void LogInterceptorShortCircuit(ILogger logger, string requestName, string interceptorType);
 }

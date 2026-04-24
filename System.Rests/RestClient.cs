@@ -37,7 +37,7 @@ namespace System.Rests;
 /// <param name="attributeProvider">The provider that supplies REST attributes for the request, influencing how the request is constructed.</param>
 /// <param name="options">Optional settings for configuring the RestClient's behavior, such as request timeouts.</param>
 /// <param name="logger">An optional logger for logging information, warnings, and errors during request processing.</param>
-public sealed partial class RestClient(
+public partial class RestClient(
 	IRestRequestBuilder requestBuilder,
 	IRestResponseBuilder responseBuilder,
 	HttpClient httpClient,

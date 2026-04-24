@@ -1,4 +1,4 @@
-/*******************************************************************************
+﻿/*******************************************************************************
  * Copyright (C) 2025-2026 Kamersoft
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
@@ -24,34 +24,34 @@ namespace System.Rests.Abstractions;
 /// </summary>
 public sealed class RestRequestContext
 {
-    /// <summary>
-    /// Represents a required attribute of type RestAttribute. 
-    /// It is initialized at the time of object creation.
-    /// </summary>
-    public required RestAttribute Attribute { get; init; }
+	/// <summary>
+	/// Represents a required attribute of type RestAttribute. 
+	/// It is initialized at the time of object creation.
+	/// </summary>
+	public required RestAttribute Attribute { get; init; }
 
-    /// <summary>
-    /// Represents a required HTTP request of type TRestRequest. 
-    /// It is initialized at the time of object creation.
-    /// </summary>
-    public required IRestRequest Request { get; init; }
+	/// <summary>
+	/// Represents a required HTTP request of type TRestRequest. 
+	/// It is initialized at the time of object creation.
+	/// </summary>
+	public required IRestRequest Request { get; init; }
 
-    /// <summary>
-    /// Represents an HTTP request message. It is a required property that must be initialized.
-    /// </summary>
-    public required HttpRequestMessage Message { get; init; }
+	/// <summary>
+	/// Represents an HTTP request message. It is a required property that must be initialized.
+	/// </summary>
+	public required HttpRequestMessage Message { get; set; }
 
-    /// <summary>
-    /// Specifies the options for JSON serialization. 
-    /// It is a required property that must be initialized.
-    /// </summary>
-    public required JsonSerializerOptions SerializerOptions { get; init; }
+	/// <summary>
+	/// Specifies the options for JSON serialization. 
+	/// It is a required property that must be initialized.
+	/// </summary>
+	public required JsonSerializerOptions SerializerOptions { get; init; }
 
-    /// <summary>
-    /// Gets or sets a value indicating whether the operation has been aborted.
-    /// </summary>
-    /// <remarks>If set to <see langword="true"/>, the operation was terminated before completion. This
-    /// property can be used to check the current state of the operation and may affect subsequent processing or state
-    /// management.</remarks>
-    public required bool IsAborted { get; set; }
+	/// <summary>
+	/// Gets or sets a value indicating whether the operation has been aborted.
+	/// </summary>
+	/// <remarks>If set to <see langword="true"/>, the operation was terminated before completion. This
+	/// property can be used to check the current state of the operation and may affect subsequent processing or state
+	/// management.</remarks>
+	public required bool IsAborted { get; set; }
 }

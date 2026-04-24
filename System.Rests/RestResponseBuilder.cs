@@ -1,4 +1,4 @@
-/*******************************************************************************
+﻿/*******************************************************************************
  * Copyright (C) 2025-2026 Kamersoft
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
@@ -36,73 +36,73 @@ namespace System.Rests;
 /// is returned.</param>
 /// <param name="logger">An optional logger instance used to record informational messages and errors during the response building process.</param>
 public sealed partial class RestResponseBuilder(
-    IEnumerable<IRestResponseComposer> composers,
-    IEnumerable<IRestResponseInterceptor>? responseInterceptors = null,
-    ILogger<RestResponseBuilder>? logger = null) : IRestResponseBuilder
+	IEnumerable<IRestResponseComposer> composers,
+	IEnumerable<IRestResponseInterceptor>? responseInterceptors = null,
+	ILogger<RestResponseBuilder>? logger = null) : IRestResponseBuilder
 {
-    private readonly ILogger<RestResponseBuilder> _logger = logger ?? NullLogger<RestResponseBuilder>.Instance;
-    private readonly IRestResponseInterceptor[] _responseInterceptors = [.. (responseInterceptors ?? []).OrderBy(i => i.Order)];
+	private readonly ILogger<RestResponseBuilder> _logger = logger ?? NullLogger<RestResponseBuilder>.Instance;
+	private readonly IRestResponseInterceptor[] _responseInterceptors = [.. (responseInterceptors ?? []).OrderBy(i => i.Order)];
 
-    /// <inheritdoc />
-    public async ValueTask<RestResponse> BuildResponseAsync(
-        RestResponseContext context,
-        CancellationToken cancellationToken = default)
-    {
-        ArgumentNullException.ThrowIfNull(context);
+	/// <inheritdoc />
+	public async ValueTask<RestResponse> BuildResponseAsync(
+		RestResponseContext context,
+		CancellationToken cancellationToken = default)
+	{
+		ArgumentNullException.ThrowIfNull(context);
 
-        if (context.IsAborted)
-        {
-            return RestResponse.Empty;
-        }
+		if (context.IsAborted)
+		{
+			return RestResponse.Empty;
+		}
 
-        IRestResponseComposer composer =
-            composers.FirstOrDefault(c => c.CanCompose(context))
-            ?? throw new InvalidOperationException(
-                $"{nameof(BuildResponseAsync)}: No composer found for the provided context.");
+		IRestResponseComposer composer =
+			composers.FirstOrDefault(c => c.CanCompose(context))
+			?? throw new InvalidOperationException(
+				$"{nameof(BuildResponseAsync)}: No composer found for the provided context.");
 
-        try
-        {
+		try
+		{
 			RestResponse response = await composer
-                .ComposeAsync(context, cancellationToken)
-                .ConfigureAwait(false);
+				.ComposeAsync(context, cancellationToken)
+				.ConfigureAwait(false);
 
-            return await ExecuteResponseInterceptorsAsync(context, response, cancellationToken)
-                .ConfigureAwait(false);
-        }
-        catch (Exception exception)
-            when (exception is not ArgumentNullException
-                      and not OperationCanceledException
-                      and not InvalidOperationException)
-        {
-            throw new InvalidOperationException(
-                "The response builder failed to build the response.",
-                exception);
-        }
-    }
+			return await ExecuteResponseInterceptorsAsync(context, response, cancellationToken)
+				.ConfigureAwait(false);
+		}
+		catch (Exception exception)
+			when (exception is not ArgumentNullException
+					  and not OperationCanceledException
+					  and not InvalidOperationException)
+		{
+			throw new InvalidOperationException(
+				"The response builder failed to build the response.",
+				exception);
+		}
+	}
 
-    private async ValueTask<RestResponse> ExecuteResponseInterceptorsAsync(
-        RestResponseContext context,
-        RestResponse response,
-        CancellationToken cancellationToken)
-    {
-        RestResponse currentResponse = response;
-        foreach (IRestResponseInterceptor interceptor in _responseInterceptors)
-        {
-            cancellationToken.ThrowIfCancellationRequested();
+	private async ValueTask<RestResponse> ExecuteResponseInterceptorsAsync(
+		RestResponseContext context,
+		RestResponse response,
+		CancellationToken cancellationToken)
+	{
+		RestResponse currentResponse = response;
+		foreach (IRestResponseInterceptor interceptor in _responseInterceptors)
+		{
+			cancellationToken.ThrowIfCancellationRequested();
 
-            currentResponse = await interceptor
-                .InterceptAsync(context, currentResponse, cancellationToken)
-                .ConfigureAwait(false);
+			currentResponse = await interceptor
+				.InterceptAsync(context, currentResponse, cancellationToken)
+				.ConfigureAwait(false);
 
-            if (context.IsAborted)
-            {
-                LogShortCircuitedResponse(_logger, context.Request.Name, currentResponse.StatusCode);
-            }
-        }
+			if (context.IsAborted)
+			{
+				LogShortCircuitedResponse(_logger, context.Request.Name, currentResponse.StatusCode);
+			}
+		}
 
-        return currentResponse;
-    }
+		return currentResponse;
+	}
 
-    [LoggerMessage(EventId = 3, Level = LogLevel.Information, Message = "Request {RequestName} short-circuited with status {StatusCode}")]
-    private static partial void LogShortCircuitedResponse(ILogger logger, string requestName, HttpStatusCode statusCode);
+	[LoggerMessage(EventId = 3, Level = LogLevel.Information, Message = "Request {RequestName} short-circuited with status {StatusCode}")]
+	private static partial void LogShortCircuitedResponse(ILogger logger, string requestName, HttpStatusCode statusCode);
 }
