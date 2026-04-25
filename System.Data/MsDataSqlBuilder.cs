@@ -37,51 +37,51 @@ namespace System.Data;
 [RequiresDynamicCode("Expression compilation requires dynamic code generation.")]
 public sealed class MsDataSqlBuilder : DataSqlBuilderBase
 {
-    /// <inheritdoc />
-    public override SqlDialect Dialect => SqlDialect.SqlServer;
+	/// <inheritdoc />
+	public override SqlDialect Dialect => SqlDialect.SqlServer;
 
-    /// <inheritdoc />
-    public override string ParameterPrefix => "@";
+	/// <inheritdoc />
+	public override string ParameterPrefix => "@";
 
-    /// <inheritdoc />
-    protected override string LimitKeyword => "TOP";
+	/// <inheritdoc />
+	protected override string LimitKeyword => "TOP";
 
-    /// <inheritdoc />
-    protected override bool LimitBeforeColumns => true;
+	/// <inheritdoc />
+	protected override bool LimitBeforeColumns => true;
 
-    /// <inheritdoc />
-    public override string QuoteIdentifier(string identifier)
-    {
-        ArgumentException.ThrowIfNullOrWhiteSpace(identifier);
+	/// <inheritdoc />
+	public override string QuoteIdentifier(string identifier)
+	{
+		ArgumentException.ThrowIfNullOrWhiteSpace(identifier);
 
-        // Remove any existing brackets and re-wrap
-        identifier = identifier.Trim('[', ']');
-        return $"[{identifier}]";
-    }
+		// Remove any existing brackets and re-wrap
+		identifier = identifier.Trim('[', ']');
+		return $"[{identifier}]";
+	}
 
-    /// <inheritdoc />
-    protected override void AppendPaging(StringBuilder sql, int? skip, int? take)
-    {
-        // SQL Server uses OFFSET/FETCH (requires ORDER BY)
-        // For TOP without offset, it's already handled in BuildSelect
+	/// <inheritdoc />
+	protected override void AppendPaging(StringBuilder sql, int? skip, int? take)
+	{
+		// SQL Server uses OFFSET/FETCH (requires ORDER BY)
+		// For TOP without offset, it's already handled in BuildSelect
 
-        if (skip.HasValue || (take.HasValue && skip.HasValue))
-        {
-            // OFFSET/FETCH requires an ORDER BY clause
-            // If no ORDER BY was specified, we need to add a default one
-            if (!sql.ToString().Contains("ORDER BY", StringComparison.OrdinalIgnoreCase))
-            {
-                sql.Append(" ORDER BY (SELECT NULL)");
-            }
+		if (skip.HasValue || (take.HasValue && skip.HasValue))
+		{
+			// OFFSET/FETCH requires an ORDER BY clause
+			// If no ORDER BY was specified, we need to add a default one
+			if (!sql.ToString().Contains("ORDER BY", StringComparison.OrdinalIgnoreCase))
+			{
+				sql.Append(" ORDER BY (SELECT NULL)");
+			}
 
-            sql.Append(CultureInfo.InvariantCulture, $" OFFSET {skip ?? 0} ROWS");
+			sql.Append(CultureInfo.InvariantCulture, $" OFFSET {skip ?? 0} ROWS");
 
-            if (take.HasValue)
-            {
-                sql.Append(CultureInfo.InvariantCulture, $" FETCH NEXT {take.Value} ROWS ONLY");
-            }
-        }
-    }
+			if (take.HasValue)
+			{
+				sql.Append(CultureInfo.InvariantCulture, $" FETCH NEXT {take.Value} ROWS ONLY");
+			}
+		}
+	}
 
 	/// <summary>
 	/// Translates string.Contains to SQL Server LIKE with escape handling.
@@ -95,9 +95,14 @@ public sealed class MsDataSqlBuilder : DataSqlBuilderBase
 		string column = TranslateExpression(columnExpr, bindings, parameters);
 		object? value = ExtractConstantValue(valueExpr);
 		string escapedValue = EscapeLikePattern(value?.ToString() ?? string.Empty);
+		bool caseInsensitive = IsCaseInsensitive(ExtractStringComparisonArgument(methodCall));
 		string paramName = NextParameterName();
 		parameters.Add(new SqlParameter(paramName, $"%{escapedValue}%"));
-		return $"({column} LIKE {ParameterPrefix}{paramName})";
+		string paramRef = $"{ParameterPrefix}{paramName}";
+
+		return caseInsensitive
+			? $"(LOWER({column}) LIKE LOWER({paramRef}))"
+			: $"({column} LIKE {paramRef})";
 	}
 
 	/// <summary>
@@ -112,9 +117,14 @@ public sealed class MsDataSqlBuilder : DataSqlBuilderBase
 		string column = TranslateExpression(columnExpr, bindings, parameters);
 		object? value = ExtractConstantValue(valueExpr);
 		string escapedValue = EscapeLikePattern(value?.ToString() ?? string.Empty);
+		bool caseInsensitive = IsCaseInsensitive(ExtractStringComparisonArgument(methodCall));
 		string paramName = NextParameterName();
 		parameters.Add(new SqlParameter(paramName, $"{escapedValue}%"));
-		return $"({column} LIKE {ParameterPrefix}{paramName})";
+		string paramRef = $"{ParameterPrefix}{paramName}";
+
+		return caseInsensitive
+			? $"(LOWER({column}) LIKE LOWER({paramRef}))"
+			: $"({column} LIKE {paramRef})";
 	}
 
 	/// <summary>
@@ -129,19 +139,24 @@ public sealed class MsDataSqlBuilder : DataSqlBuilderBase
 		string column = TranslateExpression(columnExpr, bindings, parameters);
 		object? value = ExtractConstantValue(valueExpr);
 		string escapedValue = EscapeLikePattern(value?.ToString() ?? string.Empty);
+		bool caseInsensitive = IsCaseInsensitive(ExtractStringComparisonArgument(methodCall));
 		string paramName = NextParameterName();
 		parameters.Add(new SqlParameter(paramName, $"%{escapedValue}"));
-		return $"({column} LIKE {ParameterPrefix}{paramName})";
+		string paramRef = $"{ParameterPrefix}{paramName}";
+
+		return caseInsensitive
+			? $"(LOWER({column}) LIKE LOWER({paramRef}))"
+			: $"({column} LIKE {paramRef})";
 	}
 
-    /// <summary>
-    /// Escapes special characters in a LIKE pattern for SQL Server.
-    /// </summary>
-    private static string EscapeLikePattern(string value)
-    {
-        return value
-            .Replace("[", "[[]", StringComparison.Ordinal)
-            .Replace("%", "[%]", StringComparison.Ordinal)
-            .Replace("_", "[_]", StringComparison.Ordinal);
-    }
+	/// <summary>
+	/// Escapes special characters in a LIKE pattern for SQL Server.
+	/// </summary>
+	private static string EscapeLikePattern(string value)
+	{
+		return value
+			.Replace("[", "[[]", StringComparison.Ordinal)
+			.Replace("%", "[%]", StringComparison.Ordinal)
+			.Replace("_", "[_]", StringComparison.Ordinal);
+	}
 }

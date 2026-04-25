@@ -1,4 +1,4 @@
-/*******************************************************************************
+﻿/*******************************************************************************
  * Copyright (C) 2025-2026 Kamersoft
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
@@ -134,6 +134,52 @@ public interface IDataRepository<[DynamicallyAccessedMembers(DynamicallyAccessed
 	IAsyncEnumerable<TResult> QueryRawAsync<TResult>(string sql, IEnumerable<SqlParameter>? parameters = null, CancellationToken cancellationToken = default);
 
 	/// <summary>
+	/// Executes a raw SQL query and maps each row using a custom mapper function.
+	/// </summary>
+	/// <remarks>
+	/// <para>
+	/// Use this overload when the default property-name-based mapping is insufficient,
+	/// such as when working with constructor-based DTOs, computed columns, or complex projections.
+	/// </para>
+	/// <para>
+	/// The <paramref name="mapper"/> delegate receives the <see cref="Common.DbDataReader"/> positioned
+	/// on the current row and must return a fully constructed <typeparamref name="TResult"/> instance.
+	/// The reader is only valid during the delegate invocation and must not be stored or used asynchronously.
+	/// </para>
+	/// </remarks>
+	/// <typeparam name="TResult">The type of the result projected by the mapper.</typeparam>
+	/// <param name="sql">The SQL query to execute.</param>
+	/// <param name="mapper">A function that maps each <see cref="Common.DbDataReader"/> row to a <typeparamref name="TResult"/> instance.</param>
+	/// <param name="parameters">Optional parameters for the query.</param>
+	/// <param name="cancellationToken">A token to cancel the operation.</param>
+	/// <returns>An async enumerable of mapped results.</returns>
+	IAsyncEnumerable<TResult> QueryRawAsync<TResult>(string sql, Func<Common.DbDataReader, TResult> mapper, IEnumerable<SqlParameter>? parameters = null, CancellationToken cancellationToken = default);
+
+	/// <summary>
+	/// Executes a raw SQL query and maps each row using an expression selector,
+	/// reusing the same mapping pipeline as <see cref="DataSpecification"/>-based queries.
+	/// </summary>
+	/// <remarks>
+	/// <para>
+	/// The raw SQL must select all columns required by the <typeparamref name="TData"/> entity type.
+	/// The <paramref name="selector"/> expression is then applied client-side to project each
+	/// materialized entity into <typeparamref name="TResult"/>.
+	/// </para>
+	/// <para>
+	/// This overload is useful when you need the full expression-based mapping (including
+	/// constructor binding and <see cref="System.ComponentModel.DataAnnotations.Schema.ColumnAttribute"/> resolution)
+	/// but with hand-written SQL.
+	/// </para>
+	/// </remarks>
+	/// <typeparam name="TResult">The type of the result projected by the selector.</typeparam>
+	/// <param name="sql">The SQL query to execute. Must select all columns for the <typeparamref name="TData"/> entity.</param>
+	/// <param name="selector">An expression that projects each <typeparamref name="TData"/> entity to a <typeparamref name="TResult"/> instance.</param>
+	/// <param name="parameters">Optional parameters for the query.</param>
+	/// <param name="cancellationToken">A token to cancel the operation.</param>
+	/// <returns>An async enumerable of projected results.</returns>
+	IAsyncEnumerable<TResult> QueryRawAsync<TResult>(string sql, Linq.Expressions.Expression<Func<TData, TResult>> selector, IEnumerable<SqlParameter>? parameters = null, CancellationToken cancellationToken = default);
+
+	/// <summary>
 	/// Executes a raw SQL command (INSERT, UPDATE, DELETE).
 	/// </summary>
 	/// <param name="sql">The SQL command to execute.</param>
@@ -159,17 +205,16 @@ public interface IDataRepository<[DynamicallyAccessedMembers(DynamicallyAccessed
 	Task<int> InsertAsync(IEnumerable<TData> data, CancellationToken cancellationToken = default);
 
 	/// <summary>
-	/// Inserts the specified data asynchronously and returns the identity value of the newly created entity.
+	/// Asynchronously inserts the specified data into the data store and returns its generated identity value.
 	/// </summary>
-	/// <remarks>This method is intended for use in asynchronous programming models. Await the returned task to
-	/// ensure the operation completes before proceeding.</remarks>
-	/// <typeparam name="TIdentity">Specifies the type of the identity value returned by the insert operation. Must be a value type.</typeparam>
-	/// <param name="data">The data to be inserted. This parameter cannot be null and must contain valid information for the insert operation.</param>
-	/// <param name="cancellationToken">A cancellation token that can be used to cancel the asynchronous operation. The default value is <see
-	/// cref="CancellationToken.None"/>.</param>
-	/// <returns>A task that represents the asynchronous operation. The task result contains the identity value of the newly created
-	/// entity.</returns>
-	Task<TIdentity> InsertAsync<TIdentity>(TData data, CancellationToken cancellationToken = default)
+	/// <typeparam name="TIdentity">The type of the identity value returned after insertion, such as an integer or GUID.</typeparam>
+	/// <param name="data">The data to insert into the data store. Cannot be null.</param>
+	/// <param name="cancellationToken">A cancellation token that can be used to cancel the asynchronous operation.</param>
+	/// <returns>A task that represents the asynchronous insert operation. The task result contains the identity value generated
+	/// for the inserted data.</returns>
+	Task<TIdentity> InsertAsync<TIdentity>(
+		TData data,
+		CancellationToken cancellationToken = default)
 		where TIdentity : struct;
 
 	/// <summary>

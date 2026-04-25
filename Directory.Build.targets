@@ -39,10 +39,10 @@
     <IsAotCompatible>true</IsAotCompatible>
 
     <!-- Versioning — single source of truth -->
-    <Version>10.0.5</Version>
-    <AssemblyVersion>10.0.5.0</AssemblyVersion>
-    <FileVersion>10.0.5.0</FileVersion>
-    <PackageVersion>10.0.5</PackageVersion>
+    <Version>10.0.6</Version>
+    <AssemblyVersion>10.0.6.0</AssemblyVersion>
+    <FileVersion>10.0.6.0</FileVersion>
+    <PackageVersion>10.0.6</PackageVersion>
   </PropertyGroup>
 
   <!-- Shared packaging items for library projects -->

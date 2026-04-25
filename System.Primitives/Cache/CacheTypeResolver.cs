@@ -94,7 +94,7 @@ public sealed class CacheTypeResolver : Disposable, ICacheTypeResolver
 
 		foreach (Assembly assembly in _assemblies)
 		{
-			foreach (Type type in assembly.GetTypes())
+			foreach (Type type in assembly.ExportedTypes)
 			{
 				if (predicate(type))
 				{

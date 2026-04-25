@@ -1,4 +1,4 @@
-/*******************************************************************************
+﻿/*******************************************************************************
  * Copyright (C) 2025-2026 Kamersoft
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
@@ -14,6 +14,7 @@
  * limitations under the License.
  *
 ********************************************************************************/
+
 using System.Data;
 using System.Linq.Expressions;
 
@@ -21,189 +22,213 @@ using FluentAssertions;
 
 namespace Xpandables.Net.UnitTests.Systems.Data;
 
+#pragma warning disable CS1591 // Missing XML comment for publicly visible type or member
 public sealed class DataSpecificationTests
+#pragma warning restore CS1591 // Missing XML comment for publicly visible type or member
 {
-    [Fact]
-    public void Where_WithPredicate_BuildsPredicate()
-    {
+	[Fact]
+#pragma warning disable CS1591 // Missing XML comment for publicly visible type or member
+	public void Where_WithPredicate_BuildsPredicate()
+#pragma warning restore CS1591 // Missing XML comment for publicly visible type or member
+	{
 		// Arrange
 		DataSpecification<Person, Person> specification = DataSpecification.For<Person>()
-            .Where(person => person.IsActive)
-            .Build();
+			.Where(person => person.IsActive)
+			.Build();
 
-        // Act
-        var predicate = (Expression<Func<Person, bool>>)specification.Predicate!;
+		// Act
+		var predicate = (Expression<Func<Person, bool>>)specification.Predicate!;
 
-        // Assert
-        predicate.Compile()(new Person { IsActive = true }).Should().BeTrue();
-    }
+		// Assert
+		predicate.Compile()(new Person { IsActive = true }).Should().BeTrue();
+	}
 
-    [Fact]
-    public void InnerJoin_WithJoin_BuildsInnerJoin()
-    {
+	[Fact]
+#pragma warning disable CS1591 // Missing XML comment for publicly visible type or member
+	public void InnerJoin_WithJoin_BuildsInnerJoin()
+#pragma warning restore CS1591 // Missing XML comment for publicly visible type or member
+	{
 		// Arrange
 		DataSpecification<Person, Person> specification = DataSpecification.For<Person>()
-            .InnerJoin<Address>((person, address) => person.AddressId == address.Id)
-            .Build();
+			.InnerJoin<Address>((person, address) => person.AddressId == address.Id)
+			.Build();
 
 		// Act
 		IJoinSpecification join = specification.Joins.Single();
 
-        // Assert
-        join.JoinType.Should().Be(SqlJoinType.Inner);
-    }
+		// Assert
+		join.JoinType.Should().Be(SqlJoinType.Inner);
+	}
 
-    [Fact]
-    public void LeftJoin_WithJoin_BuildsLeftJoin()
-    {
+	[Fact]
+#pragma warning disable CS1591 // Missing XML comment for publicly visible type or member
+	public void LeftJoin_WithJoin_BuildsLeftJoin()
+#pragma warning restore CS1591 // Missing XML comment for publicly visible type or member
+	{
 		// Arrange
 		DataSpecification<Person, Person> specification = DataSpecification.For<Person>()
-            .LeftJoin<Address>((person, address) => person.AddressId == address.Id)
-            .Build();
+			.LeftJoin<Address>((person, address) => person.AddressId == address.Id)
+			.Build();
 
 		// Act
 		IJoinSpecification join = specification.Joins.Single();
 
-        // Assert
-        join.JoinType.Should().Be(SqlJoinType.Left);
-    }
+		// Assert
+		join.JoinType.Should().Be(SqlJoinType.Left);
+	}
 
-    [Fact]
-    public void RightJoin_WithJoin_BuildsRightJoin()
-    {
+	[Fact]
+#pragma warning disable CS1591 // Missing XML comment for publicly visible type or member
+	public void RightJoin_WithJoin_BuildsRightJoin()
+#pragma warning restore CS1591 // Missing XML comment for publicly visible type or member
+	{
 		// Arrange
 		DataSpecification<Person, Person> specification = DataSpecification.For<Person>()
-            .RightJoin<Address>((person, address) => person.AddressId == address.Id)
-            .Build();
+			.RightJoin<Address>((person, address) => person.AddressId == address.Id)
+			.Build();
 
 		// Act
 		IJoinSpecification join = specification.Joins.Single();
 
-        // Assert
-        join.JoinType.Should().Be(SqlJoinType.Right);
-    }
+		// Assert
+		join.JoinType.Should().Be(SqlJoinType.Right);
+	}
 
-    [Fact]
-    public void FullJoin_WithJoin_BuildsFullJoin()
-    {
+	[Fact]
+#pragma warning disable CS1591 // Missing XML comment for publicly visible type or member
+	public void FullJoin_WithJoin_BuildsFullJoin()
+#pragma warning restore CS1591 // Missing XML comment for publicly visible type or member
+	{
 		// Arrange
 		DataSpecification<Person, Person> specification = DataSpecification.For<Person>()
-            .FullJoin<Address>((person, address) => person.AddressId == address.Id)
-            .Build();
+			.FullJoin<Address>((person, address) => person.AddressId == address.Id)
+			.Build();
 
 		// Act
 		IJoinSpecification join = specification.Joins.Single();
 
-        // Assert
-        join.JoinType.Should().Be(SqlJoinType.Full);
-    }
+		// Assert
+		join.JoinType.Should().Be(SqlJoinType.Full);
+	}
 
-    [Fact]
-    public void CrossJoin_WithJoin_BuildsCrossJoin()
-    {
+	[Fact]
+#pragma warning disable CS1591 // Missing XML comment for publicly visible type or member
+	public void CrossJoin_WithJoin_BuildsCrossJoin()
+#pragma warning restore CS1591 // Missing XML comment for publicly visible type or member
+	{
 		// Arrange
 		DataSpecification<Person, Person> specification = DataSpecification.For<Person>()
-            .CrossJoin<Address>()
-            .Build();
+			.CrossJoin<Address>()
+			.Build();
 
 		// Act
 		IJoinSpecification join = specification.Joins.Single();
 
-        // Assert
-        join.JoinType.Should().Be(SqlJoinType.Cross);
-    }
+		// Assert
+		join.JoinType.Should().Be(SqlJoinType.Cross);
+	}
 
-    [Fact]
-    public void GroupBy_WithKeySelector_BuildsGroupBy()
-    {
+	[Fact]
+#pragma warning disable CS1591 // Missing XML comment for publicly visible type or member
+	public void GroupBy_WithKeySelector_BuildsGroupBy()
+#pragma warning restore CS1591 // Missing XML comment for publicly visible type or member
+	{
 		// Arrange
 		DataSpecification<Person, Person> specification = DataSpecification.For<Person>()
-            .GroupBy(person => person.AddressId)
-            .Build();
+			.GroupBy(person => person.AddressId)
+			.Build();
 
 		// Act
 		LambdaExpression groupBy = specification.GroupBy.Single();
 
-        // Assert
-        groupBy.Should().NotBeNull();
-    }
+		// Assert
+		groupBy.Should().NotBeNull();
+	}
 
-    [Fact]
-    public void Having_WithPredicate_BuildsHaving()
-    {
+	[Fact]
+#pragma warning disable CS1591 // Missing XML comment for publicly visible type or member
+	public void Having_WithPredicate_BuildsHaving()
+#pragma warning restore CS1591 // Missing XML comment for publicly visible type or member
+	{
 		// Arrange
 		DataSpecification<Person, Person> specification = DataSpecification.For<Person>()
-            .GroupBy(person => person.AddressId)
-            .Having(person => person.IsActive)
-            .Build();
+			.GroupBy(person => person.AddressId)
+			.Having(person => person.IsActive)
+			.Build();
 
 		// Act
 		LambdaExpression? having = specification.Having;
 
-        // Assert
-        having.Should().NotBeNull();
-    }
+		// Assert
+		having.Should().NotBeNull();
+	}
 
-    [Fact]
-    public void OrderBy_WithSelector_BuildsOrdering()
-    {
+	[Fact]
+#pragma warning disable CS1591 // Missing XML comment for publicly visible type or member
+	public void OrderBy_WithSelector_BuildsOrdering()
+#pragma warning restore CS1591 // Missing XML comment for publicly visible type or member
+	{
 		// Arrange
 		DataSpecification<Person, Person> specification = DataSpecification.For<Person>()
-            .OrderBy(person => person.Name)
-            .Build();
+			.OrderBy(person => person.Name)
+			.Build();
 
 		// Act
 		OrderSpecification order = specification.OrderBy.Single();
 
-        // Assert
-        order.Descending.Should().BeFalse();
-    }
+		// Assert
+		order.Descending.Should().BeFalse();
+	}
 
-    [Fact]
-    public void OrderByDescending_WithSelector_BuildsDescendingOrdering()
-    {
+	[Fact]
+#pragma warning disable CS1591 // Missing XML comment for publicly visible type or member
+	public void OrderByDescending_WithSelector_BuildsDescendingOrdering()
+#pragma warning restore CS1591 // Missing XML comment for publicly visible type or member
+	{
 		// Arrange
 		DataSpecification<Person, Person> specification = DataSpecification.For<Person>()
-            .OrderByDescending(person => person.Name)
-            .Build();
+			.OrderByDescending(person => person.Name)
+			.Build();
 
 		// Act
 		OrderSpecification order = specification.OrderBy.Single();
 
-        // Assert
-        order.Descending.Should().BeTrue();
-    }
+		// Assert
+		order.Descending.Should().BeTrue();
+	}
 
-    [Fact]
-    public void Select_WithJoinSelector_BuildsSelector()
-    {
+	[Fact]
+#pragma warning disable CS1591 // Missing XML comment for publicly visible type or member
+	public void Select_WithJoinSelector_BuildsSelector()
+#pragma warning restore CS1591 // Missing XML comment for publicly visible type or member
+	{
 		// Arrange
 		DataSpecification<Person, string> specification = DataSpecification.For<Person>()
-            .InnerJoin<Address>((person, address) => person.AddressId == address.Id)
-            .Select<Address, string>((person, address) => $"{person.Name}:{address.City}");
+			.InnerJoin<Address>((person, address) => person.AddressId == address.Id)
+			.Select<Address, string>((person, address) => $"{person.Name}:{address.City}");
 
 		// Act
 		LambdaExpression selector = specification.Selector;
 
-        // Assert
-        selector.Should().NotBeNull();
-    }
+		// Assert
+		selector.Should().NotBeNull();
+	}
 
-    private sealed class Person
-    {
-        public int Id { get; set; }
+	private sealed class Person
+	{
+		public int Id { get; set; }
 
-        public int AddressId { get; set; }
+		public int AddressId { get; set; }
 
-        public string Name { get; set; } = string.Empty;
+		public string Name { get; set; } = string.Empty;
 
-        public bool IsActive { get; set; }
-    }
+		public bool IsActive { get; set; }
+	}
 
-    private sealed class Address
-    {
-        public int Id { get; set; }
+	private sealed class Address
+	{
+		public int Id { get; set; }
 
-        public string City { get; set; } = string.Empty;
-    }
+		public string City { get; set; } = string.Empty;
+	}
 }

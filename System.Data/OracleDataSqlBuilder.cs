@@ -22,30 +22,30 @@ using System.Text;
 namespace System.Data;
 
 /// <summary>
-/// Provides a SQLite implementation of <see cref="IDataSqlBuilder"/>.
+/// Provides an Oracle Database implementation of <see cref="IDataSqlBuilder"/>.
 /// </summary>
 /// <remarks>
 /// <para>
-/// This implementation generates SQLite compatible queries with:
+/// This implementation generates Oracle SQL compatible queries with:
 /// <list type="bullet">
-/// <item>Double-quote identifier quoting ("TableName")</item>
-/// <item>@ parameter prefix</item>
-/// <item>LIMIT/OFFSET for pagination</item>
-/// <item>RETURNING clause for identity retrieval (SQLite 3.35+)</item>
+/// <item>Double quote identifier quoting ("TableName")</item>
+/// <item>: parameter prefix (for ODP.NET / Oracle.ManagedDataAccess)</item>
+/// <item>OFFSET/FETCH for pagination (Oracle 12c+)</item>
+/// <item>RETURNING INTO for identity retrieval</item>
 /// </list>
 /// </para>
 /// </remarks>
 [RequiresDynamicCode("Expression compilation requires dynamic code generation.")]
-public sealed class LiteDataSqlBuilder : DataSqlBuilderBase
+public sealed class OracleDataSqlBuilder : DataSqlBuilderBase
 {
 	/// <inheritdoc />
-	public override SqlDialect Dialect => SqlDialect.SQLite;
+	public override SqlDialect Dialect => SqlDialect.Oracle;
 
 	/// <inheritdoc />
-	public override string ParameterPrefix => "@";
+	public override string ParameterPrefix => ":";
 
 	/// <inheritdoc />
-	protected override string LimitKeyword => "LIMIT";
+	protected override string LimitKeyword => "FETCH FIRST";
 
 	/// <inheritdoc />
 	protected override bool LimitBeforeColumns => false;
@@ -55,6 +55,7 @@ public sealed class LiteDataSqlBuilder : DataSqlBuilderBase
 	{
 		ArgumentException.ThrowIfNullOrWhiteSpace(identifier);
 
+		// Remove any existing double quotes and re-wrap
 		identifier = identifier.Trim('"');
 		return $"\"{identifier}\"";
 	}
@@ -62,44 +63,29 @@ public sealed class LiteDataSqlBuilder : DataSqlBuilderBase
 	/// <inheritdoc />
 	protected override void AppendPaging(StringBuilder sql, int? skip, int? take)
 	{
-		if (take.HasValue)
+		// Oracle 12c+ uses OFFSET/FETCH NEXT (requires ORDER BY)
+		if (skip.HasValue || take.HasValue)
 		{
-			sql.Append(CultureInfo.InvariantCulture, $" LIMIT {take.Value}");
-
-			if (skip.HasValue)
+			// OFFSET/FETCH requires an ORDER BY clause in Oracle
+			if (!sql.ToString().Contains("ORDER BY", StringComparison.OrdinalIgnoreCase))
 			{
-				sql.Append(CultureInfo.InvariantCulture, $" OFFSET {skip.Value}");
+				sql.Append(" ORDER BY NULL");
+			}
+
+			if (skip.HasValue && skip.Value > 0)
+			{
+				sql.Append(CultureInfo.InvariantCulture, $" OFFSET {skip.Value} ROWS");
+			}
+			else if (take.HasValue)
+			{
+				sql.Append(" OFFSET 0 ROWS");
+			}
+
+			if (take.HasValue)
+			{
+				sql.Append(CultureInfo.InvariantCulture, $" FETCH NEXT {take.Value} ROWS ONLY");
 			}
 		}
-		else if (skip.HasValue)
-		{
-			// SQLite requires LIMIT before OFFSET; -1 means no limit
-			sql.Append(CultureInfo.InvariantCulture, $" LIMIT -1 OFFSET {skip.Value}");
-		}
-	}
-
-	/// <inheritdoc />
-	/// <exception cref="NotSupportedException">
-	/// Thrown when a join uses <see cref="SqlJoinType.Right"/> or <see cref="SqlJoinType.Full"/>,
-	/// which are not supported by SQLite.
-	/// </exception>
-	protected override void AppendJoins(
-		StringBuilder sql,
-		IReadOnlyList<IJoinSpecification> joins,
-		IReadOnlyList<TableBinding> bindings,
-		List<SqlParameter> parameters)
-	{
-		for (int i = 0; i < joins.Count; i++)
-		{
-			SqlJoinType joinType = joins[i].JoinType;
-			if (joinType is SqlJoinType.Right or SqlJoinType.Full)
-			{
-				throw new NotSupportedException(
-					$"SQLite does not support '{joinType}' joins. Use INNER JOIN, LEFT JOIN, or CROSS JOIN instead.");
-			}
-		}
-
-		base.AppendJoins(sql, joins, bindings, parameters);
 	}
 
 	/// <inheritdoc />
@@ -111,38 +97,42 @@ public sealed class LiteDataSqlBuilder : DataSqlBuilderBase
 		var parameters = new List<SqlParameter>();
 		var sql = new StringBuilder();
 
-		string tableName = GetTableName<TData>();
-		IReadOnlyDictionary<string, string> columnMappings = GetColumnMappings<TData>();
-
-		PropertyInfo identityProperty = typeof(TData)
-			.GetProperties(BindingFlags.Public | BindingFlags.Instance)
+		var tableName = GetTableName<TData>();
+		var columnMappings = GetColumnMappings<TData>();
+		PropertyInfo identityProperty = typeof(TData).GetProperties(BindingFlags.Public | BindingFlags.Instance)
 			.FirstOrDefault(IsDatabaseGeneratedIdentity)
 			?? throw new InvalidOperationException("No identity property found on data.");
 
-		string identityColumnName = columnMappings.TryGetValue(identityProperty.Name, out string? mapped)
-			? mapped
+		string columnKey = columnMappings.TryGetValue(identityProperty.Name, out string? mappedColumn)
+			? mappedColumn
 			: identityProperty.Name;
 
-		Type type = typeof(TData);
+		var type = typeof(TData);
 		var columns = new List<string>();
 		var values = new List<string>();
 
-		foreach ((string? propertyName, string? columnName) in columnMappings)
+		foreach (var (propertyName, columnName) in columnMappings)
 		{
-			PropertyInfo? property = type.GetProperty(propertyName);
+			var property = type.GetProperty(propertyName);
 			if (property == null || !property.CanRead)
+			{
 				continue;
+			}
 
 			if (IsDatabaseGeneratedIdentity(property))
+			{
 				continue;
+			}
 
-			object? value = property.GetValue(data);
-			string paramName = NextParameterName();
+			var value = property.GetValue(data);
+			var paramName = NextParameterName();
 
 			columns.Add(QuoteIdentifier(columnName));
 			values.Add($"{ParameterPrefix}{paramName}");
 			parameters.Add(new SqlParameter(paramName, value));
 		}
+
+		string returnParamName = NextParameterName();
 
 		sql.Append("INSERT INTO ");
 		sql.Append(tableName);
@@ -150,13 +140,15 @@ public sealed class LiteDataSqlBuilder : DataSqlBuilderBase
 		sql.Append(string.Join(", ", columns));
 		sql.Append(") VALUES (");
 		sql.Append(string.Join(", ", values));
-		sql.Append(CultureInfo.InvariantCulture, $") RETURNING {QuoteIdentifier(identityColumnName)}; ");
+		sql.Append(CultureInfo.InvariantCulture, $") RETURNING {QuoteIdentifier(columnKey)} INTO {ParameterPrefix}{returnParamName}");
+
+		parameters.Add(new SqlParameter(returnParamName, null));
 
 		return new SqlQueryResult(sql.ToString(), parameters);
 	}
 
 	/// <summary>
-	/// Translates string.Contains to SQLite LIKE with escape handling.
+	/// Translates string.Contains to Oracle LIKE with escape handling.
 	/// </summary>
 	protected override string TranslateStringContains(
 		Linq.Expressions.MethodCallExpression methodCall,
@@ -173,7 +165,7 @@ public sealed class LiteDataSqlBuilder : DataSqlBuilderBase
 	}
 
 	/// <summary>
-	/// Translates string.StartsWith to SQLite LIKE with escape handling.
+	/// Translates string.StartsWith to Oracle LIKE with escape handling.
 	/// </summary>
 	protected override string TranslateStringStartsWith(
 		Linq.Expressions.MethodCallExpression methodCall,
@@ -190,7 +182,7 @@ public sealed class LiteDataSqlBuilder : DataSqlBuilderBase
 	}
 
 	/// <summary>
-	/// Translates string.EndsWith to SQLite LIKE with escape handling.
+	/// Translates string.EndsWith to Oracle LIKE with escape handling.
 	/// </summary>
 	protected override string TranslateStringEndsWith(
 		Linq.Expressions.MethodCallExpression methodCall,
@@ -207,7 +199,20 @@ public sealed class LiteDataSqlBuilder : DataSqlBuilderBase
 	}
 
 	/// <summary>
-	/// Escapes special characters in a LIKE pattern for SQLite.
+	/// Translates string.IsNullOrWhiteSpace to Oracle SQL using table bindings.
+	/// </summary>
+	/// <remarks>Oracle uses TRIM instead of LTRIM(RTRIM(...)).</remarks>
+	protected override string TranslateStringIsNullOrWhiteSpace(
+		Linq.Expressions.MethodCallExpression methodCall,
+		IReadOnlyDictionary<Linq.Expressions.ParameterExpression, TableBinding> bindings,
+		List<SqlParameter> parameters)
+	{
+		string column = TranslateExpression(methodCall.Arguments[0], bindings, parameters);
+		return $"({column} IS NULL OR TRIM({column}) = '')";
+	}
+
+	/// <summary>
+	/// Escapes special characters in a LIKE pattern for Oracle.
 	/// </summary>
 	private static string EscapeLikePattern(string value)
 	{

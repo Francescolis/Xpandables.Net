@@ -17,20 +17,22 @@
 namespace System.Data;
 
 /// <summary>
-/// Factory for creating <see cref="IDataUnitOfWork"/> instances.
+/// Provides factory methods for creating SQL builders for specific dialects.
 /// </summary>
-public interface IDataUnitOfWorkFactory
+public interface IDataSqlBuilderFactory
 {
 	/// <summary>
-	/// Creates a new unit of work asynchronously with an open connection.
+	/// Creates a SQL builder for the specified dialect.
 	/// </summary>
-	/// <param name="cancellationToken">A token to cancel the operation.</param>
-	/// <returns>A new unit of work instance.</returns>
-	Task<IDataUnitOfWork> CreateAsync(CancellationToken cancellationToken = default);
+	/// <param name="dialect">The SQL dialect.</param>
+	/// <returns>A SQL builder for the specified dialect.</returns>
+	IDataSqlBuilder Create(SqlDialect dialect);
 
 	/// <summary>
-	/// Creates a new unit of work synchronously with an open connection.
+	/// Creates a SQL builder for the specified provider invariant name.
 	/// </summary>
-	/// <returns>A new unit of work instance.</returns>
-	IDataUnitOfWork Create();
+	/// <param name="providerInvariantName">The provider invariant name 
+	/// (e.g., <see cref="DbProviders.MsSqlServer.InvariantName"/>).</param>
+	/// <returns>A SQL builder for the provider's dialect.</returns>
+	IDataSqlBuilder Create(string providerInvariantName);
 }

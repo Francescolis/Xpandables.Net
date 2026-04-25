@@ -50,10 +50,11 @@ public static class IDataExtensions
 	///     }
 	/// </code>
 	/// </summary>
+	/// <param name="services">The service collection to register services into.</param>
 	/// <remarks>This method is typically used in the startup configuration of an application to set
 	/// up database connection management services.</remarks>
-	/// <param name="services">The <see cref="IServiceCollection"/> to add the services to.</param>
 	/// <returns>The updated IServiceCollection instance, allowing for method chaining.</returns>
+	/// <exception cref="ArgumentNullException">Thrown when <paramref name="services"/> is null.</exception>
 	public static IServiceCollection AddXDataConnectionFactoryProviders(this IServiceCollection services)
 	{
 		ArgumentNullException.ThrowIfNull(services);
@@ -66,12 +67,13 @@ public static class IDataExtensions
 	/// <summary>
 	/// Adds a database connection factory provider to the service collection for dependency injection.
 	/// </summary>
+	/// <param name="services">The service collection to register services into.</param>
 	/// <remarks>Call this method during application startup to register the
 	/// DataConnectionFactoryProvider implementation. This allows application components to resolve and use
 	/// database connection factories via dependency injection.</remarks>
-	/// <param name="services">The <see cref="IServiceCollection"/> to add the services to.</param>
 	/// <returns>The service collection instance with the database connection factory provider registered. This enables
 	/// further configuration of additional services.</returns>
+	/// <exception cref="ArgumentNullException">Thrown when <paramref name="services"/> is null.</exception>
 	public static IServiceCollection AddXDataConnectionFactoryProvider(this IServiceCollection services)
 	{
 		ArgumentNullException.ThrowIfNull(services);
@@ -81,11 +83,12 @@ public static class IDataExtensions
 	/// <summary>
 	/// Adds a provider for managing database connection scopes using the Data framework.
 	/// </summary>
+	/// <param name="services">The service collection to register services into.</param>
 	/// <remarks>This method is intended to be called during the service configuration phase,
 	/// typically in the Startup class. It registers the DataConnectionScopeFactoryProvider as the implementation
 	/// for managing database connection scopes.</remarks>
-	/// <param name="services">The <see cref="IServiceCollection"/> to add the services to.</param>
 	/// <returns>An instance of IServiceCollection that can be used to configure additional services.</returns>
+	/// <exception cref="ArgumentNullException">Thrown when <paramref name="services"/> is null.</exception>
 	public static IServiceCollection AddXDataConnectionScopeFactoryProvider(this IServiceCollection services)
 	{
 		ArgumentNullException.ThrowIfNull(services);
@@ -93,19 +96,19 @@ public static class IDataExtensions
 	}
 
 	/// <summary>
-	/// Registers the specified implementation of IDataDbConnectionFactoryProvider as a singleton service in the
+	/// Registers the specified implementation of IDataConnectionFactoryProvider as a singleton service in the
 	/// dependency injection container.
 	/// </summary>
+	/// <param name="services">The service collection to register services into.</param>
 	/// <remarks>Use this method to make a custom IDataConnectionFactoryProvider implementation
 	/// available for dependency injection throughout the application. The provider will be registered as a
 	/// singleton, ensuring a single shared instance is used.</remarks>
 	/// <typeparam name="TProvider">The type of the connection factory provider to register. Must be a class that implements
-	/// IDataDbConnectionFactoryProvider and has a public constructor.</typeparam>
-	/// <param name="services">The <see cref="IServiceCollection"/> to add the services to.</param>
+	/// IDataConnectionFactoryProvider and has a public constructor.</typeparam>
 	/// <returns>The IServiceCollection instance with the provider registered, to support method chaining.</returns>
+	/// <exception cref="ArgumentNullException">Thrown when <paramref name="services"/> is null.</exception>
 	public static IServiceCollection AddXDataConnectionFactoryProvider
-		<[DynamicallyAccessedMembers(DynamicallyAccessedMemberTypes.PublicConstructors)] TProvider>(
-		this IServiceCollection services)
+		<[DynamicallyAccessedMembers(DynamicallyAccessedMemberTypes.PublicConstructors)] TProvider>(this IServiceCollection services)
 		where TProvider : class, IDataConnectionFactoryProvider
 	{
 		ArgumentNullException.ThrowIfNull(services);
@@ -117,15 +120,15 @@ public static class IDataExtensions
 	/// Registers a singleton implementation of the specified database connection scope factory provider with the
 	/// service collection.
 	/// </summary>
+	/// <param name="services">The service collection to register services into.</param>
 	/// <remarks>This method is intended for use when configuring dependency injection for database
 	/// connection scope management. It throws an ArgumentNullException if the service collection is null.</remarks>
 	/// <typeparam name="TProvider">The type of the database connection scope factory provider to register. Must be a class that implements
 	/// IDataConnectionScopeFactoryProvider and has a public constructor.</typeparam>
-	/// <param name="services">The <see cref="IServiceCollection"/> to add the services to.</param>
 	/// <returns>The IServiceCollection instance, to allow for method chaining.</returns>
+	/// <exception cref="ArgumentNullException">Thrown when <paramref name="services"/> is null.</exception>
 	public static IServiceCollection AddXDataConnectionScopeFactoryProvider
-		<[DynamicallyAccessedMembers(DynamicallyAccessedMemberTypes.PublicConstructors)] TProvider>(
-		this IServiceCollection services)
+		<[DynamicallyAccessedMembers(DynamicallyAccessedMemberTypes.PublicConstructors)] TProvider>(this IServiceCollection services)
 		where TProvider : class, IDataConnectionScopeFactoryProvider
 	{
 		ArgumentNullException.ThrowIfNull(services);
@@ -137,13 +140,15 @@ public static class IDataExtensions
 	/// Registers a SQL Server database connection factory with the specified connection string in the service
 	/// collection.
 	/// </summary>
+	/// <param name="services">The service collection to register services into.</param>
 	/// <remarks>This method adds a singleton implementation of IDbConnectionFactory configured for
 	/// SQL Server to the service collection. Ensure that the provided connection string is valid to avoid runtime
 	/// errors when creating database connections.</remarks>
-	/// <param name="services">The <see cref="IServiceCollection"/> to add the services to.</param>
 	/// <param name="connectionString">The connection string used to establish connections to the SQL Server database. This value must not be null,
 	/// empty, or consist only of white-space characters.</param>
 	/// <returns>The updated IServiceCollection instance, enabling method chaining.</returns>
+	/// <exception cref="ArgumentNullException">Thrown when <paramref name="services"/> is null.</exception>
+	/// <exception cref="ArgumentException">Thrown when <paramref name="connectionString"/> is null or whitespace.</exception>
 	public static IServiceCollection AddXDataConnectionMsSqlServer(this IServiceCollection services, string connectionString)
 	{
 		ArgumentNullException.ThrowIfNull(services);
@@ -157,14 +162,16 @@ public static class IDataExtensions
 	/// Registers a PostgreSQL database connection factory with the specified connection string for dependency
 	/// injection.
 	/// </summary>
+	/// <param name="services">The service collection to register services into.</param>
 	/// <remarks>Throws an ArgumentNullException if the services collection is null, or an
 	/// ArgumentException if the connection string is null or consists only of white-space characters. Use this
 	/// method during application startup to configure PostgreSQL database connectivity for services that depend on
-	/// <see cref="IDataConnectionFactory"/>>.</remarks>
-	/// <param name="services">The <see cref="IServiceCollection"/> to add the services to.</param>
+	/// IDbConnectionFactory.</remarks>
 	/// <param name="connectionString">The connection string used to establish connections to the PostgreSQL database. This value cannot be null or
 	/// whitespace.</param>
 	/// <returns>The updated IServiceCollection instance, enabling method chaining.</returns>
+	/// <exception cref="ArgumentNullException">Thrown when <paramref name="services"/> is null.</exception>
+	/// <exception cref="ArgumentException">Thrown when <paramref name="connectionString"/> is null or whitespace.</exception>
 	public static IServiceCollection AddXDataConnectionPostgreSql(this IServiceCollection services, string connectionString)
 	{
 		ArgumentNullException.ThrowIfNull(services);
@@ -177,14 +184,16 @@ public static class IDataExtensions
 	/// <summary>
 	/// Registers a MySQL database connection factory with the specified connection string for dependency injection.
 	/// </summary>
+	/// <param name="services">The service collection to register services into.</param>
 	/// <remarks>This method throws an <see cref="ArgumentNullException"/> if the service collection
 	/// is null, and an <see cref="ArgumentException"/> if the connection string is null or consists only of
 	/// white-space characters. Use this method to configure MySQL database connectivity in applications that
 	/// utilize dependency injection.</remarks>
-	/// <param name="services">The <see cref="IServiceCollection"/> to add the services to.</param>
 	/// <param name="connectionString">The connection string used to establish connections to the MySQL database. This value cannot be null or
 	/// whitespace.</param>
 	/// <returns>The updated <see cref="IServiceCollection"/> instance, enabling method chaining.</returns>
+	/// <exception cref="ArgumentNullException">Thrown when <paramref name="services"/> is null.</exception>
+	/// <exception cref="ArgumentException">Thrown when <paramref name="connectionString"/> is null or whitespace.</exception>
 	public static IServiceCollection AddXDataConnectionMySql(this IServiceCollection services, string connectionString)
 	{
 		ArgumentNullException.ThrowIfNull(services);
@@ -217,14 +226,13 @@ public static class IDataExtensions
 	/// <summary>
 	/// Registers a default database connection factory using provider invariant name and connection string.
 	/// </summary>
-	/// <param name="services">The <see cref="IServiceCollection"/> to add the services to.</param>
+	/// <param name="services">The service collection to register services into.</param>
 	/// <param name="providerInvariantName">The provider invariant name.</param>
 	/// <param name="connectionString">The connection string.</param>
 	/// <returns>The <see cref="IServiceCollection"/> instance for chaining.</returns>
-	public static IServiceCollection AddXDataConnectionFactory(
-		this IServiceCollection services,
-		string providerInvariantName,
-		string connectionString)
+	/// <exception cref="ArgumentNullException">Thrown when <paramref name="services"/> is null.</exception>
+	/// <exception cref="ArgumentException">Thrown when <paramref name="providerInvariantName"/> or <paramref name="connectionString"/> is null or whitespace.</exception>
+	public static IServiceCollection AddXDataConnectionFactory(this IServiceCollection services, string providerInvariantName, string connectionString)
 	{
 		ArgumentNullException.ThrowIfNull(services);
 		ArgumentException.ThrowIfNullOrWhiteSpace(providerInvariantName);
@@ -239,11 +247,11 @@ public static class IDataExtensions
 	/// <summary>
 	/// Registers a custom database connection factory implementation.
 	/// </summary>
+	/// <param name="services">The service collection to register services into.</param>
 	/// <typeparam name="TFactory">The connection factory type.</typeparam>
-	/// <param name="services">The <see cref="IServiceCollection"/> to add the services to.</param>
 	/// <returns>The <see cref="IServiceCollection"/> instance for chaining.</returns>
-	public static IServiceCollection AddXDataConnectionFactory<[DynamicallyAccessedMembers(DynamicallyAccessedMemberTypes.PublicConstructors)] TFactory>(
-		this IServiceCollection services)
+	/// <exception cref="ArgumentNullException">Thrown when <paramref name="services"/> is null.</exception>
+	public static IServiceCollection AddXDataConnectionFactory<[DynamicallyAccessedMembers(DynamicallyAccessedMemberTypes.PublicConstructors)] TFactory>(this IServiceCollection services)
 		where TFactory : class, IDataConnectionFactory
 	{
 		ArgumentNullException.ThrowIfNull(services);
@@ -253,8 +261,9 @@ public static class IDataExtensions
 	/// <summary>
 	/// Registers the default connection scope factory.
 	/// </summary>
-	/// <param name="services">The <see cref="IServiceCollection"/> to add the services to.</param>
+	/// <param name="services">The service collection to register services into.</param>
 	/// <returns>The <see cref="IServiceCollection"/> instance for chaining.</returns>
+	/// <exception cref="ArgumentNullException">Thrown when <paramref name="services"/> is null.</exception>
 	public static IServiceCollection AddXDataConnectionScopeFactory(this IServiceCollection services)
 	{
 		ArgumentNullException.ThrowIfNull(services);
@@ -265,11 +274,12 @@ public static class IDataExtensions
 	/// Adds a scoped database connection provider to the service collection, enabling dependency injection of
 	/// database connection scopes for data operations.
 	/// </summary>
+	/// <param name="services">The service collection to register services into.</param>
 	/// <remarks>This method requires that the service collection has been initialized and that an
-	/// implementation of IDataDbConnectionScopeFactory is registered. It configures the service collection to
+	/// implementation of IDataConnectionScopeFactory is registered. It configures the service collection to
 	/// provide a scoped database connection for each request or operation scope.</remarks>
-	/// <param name="services">The <see cref="IServiceCollection"/> to add the services to.</param>
 	/// <returns>The same IServiceCollection instance so that additional calls can be chained.</returns>
+	/// <exception cref="ArgumentNullException">Thrown when <paramref name="services"/> is null.</exception>
 	public static IServiceCollection AddXDataConnectionScope(this IServiceCollection services)
 	{
 		ArgumentNullException.ThrowIfNull(services);
@@ -280,15 +290,14 @@ public static class IDataExtensions
 	/// <summary>
 	/// Registers a factory for creating instances of IDataConnectionScope with a scoped service lifetime.
 	/// </summary>
+	/// <param name="services">The service collection to register services into.</param>
 	/// <remarks>A new instance of IDataConnectionScope is created for each scope, which is
 	/// typically per web request in ASP.NET Core applications. This approach is recommended for managing database
 	/// connections in a scoped manner.</remarks>
-	/// <param name="services">The <see cref="IServiceCollection"/> to add the services to.</param>
 	/// <param name="factory">A factory function that creates an instance of IDataConnectionScope. This parameter cannot be null.</param>
 	/// <returns>The IServiceCollection instance to allow for method chaining.</returns>
-	public static IServiceCollection AddXDataConnectionScope(
-		this IServiceCollection services,
-		Func<IServiceProvider, IDataConnectionScope> factory)
+	/// <exception cref="ArgumentNullException">Thrown when <paramref name="services"/> or <paramref name="factory"/> is null.</exception>
+	public static IServiceCollection AddXDataConnectionScope(this IServiceCollection services, Func<IServiceProvider, IDataConnectionScope> factory)
 	{
 		ArgumentNullException.ThrowIfNull(services);
 		ArgumentNullException.ThrowIfNull(factory);
@@ -298,16 +307,16 @@ public static class IDataExtensions
 	/// <summary>
 	/// Registers the specified SQL mapper type as a singleton service in the dependency injection container.
 	/// </summary>
+	/// <param name="services">The service collection to register services into.</param>
 	/// <remarks>This method ensures that the provided SQL mapper type is registered as a singleton,
 	/// meaning a single instance will be used throughout the application's lifetime. It is important that the type
 	/// parameter TSqlMapper has a public constructor to be instantiated by the dependency injection
 	/// framework.</remarks>
 	/// <typeparam name="TSqlMapper">The type of the SQL mapper to register. Must implement the ISqlMapper interface and have a public
 	/// constructor.</typeparam>
-	/// <param name="services">The <see cref="IServiceCollection"/> to add the services to.</param>
 	/// <returns>The IServiceCollection instance with the SQL mapper registration added, enabling method chaining.</returns>
-	public static IServiceCollection AddXDataSqlMapper<[DynamicallyAccessedMembers(DynamicallyAccessedMemberTypes.PublicConstructors)] TSqlMapper>(
-		this IServiceCollection services)
+	/// <exception cref="ArgumentNullException">Thrown when <paramref name="services"/> is null.</exception>
+	public static IServiceCollection AddXDataSqlMapper<[DynamicallyAccessedMembers(DynamicallyAccessedMemberTypes.PublicConstructors)] TSqlMapper>(this IServiceCollection services)
 		where TSqlMapper : class, IDataSqlMapper
 	{
 		ArgumentNullException.ThrowIfNull(services);
@@ -317,12 +326,13 @@ public static class IDataExtensions
 	/// <summary>
 	/// Adds the SqlMapper services to the current IServiceCollection for dependency injection.
 	/// </summary>
+	/// <param name="services">The service collection to register services into.</param>
 	/// <remarks>This method requires that the IServiceCollection instance is not null. It configures
 	/// the SqlMapper for use within the application, allowing database mapping functionality to be injected where
 	/// needed.</remarks>
-	/// <param name="services">The <see cref="IServiceCollection"/> to add the services to.</param>
 	/// <returns>The IServiceCollection instance with the SqlMapper services registered. This enables method chaining for
 	/// further service configuration.</returns>
+	/// <exception cref="ArgumentNullException">Thrown when <paramref name="services"/> is null.</exception>
 	public static IServiceCollection AddXDataSqlMapper(this IServiceCollection services)
 	{
 		ArgumentNullException.ThrowIfNull(services);
@@ -332,11 +342,12 @@ public static class IDataExtensions
 	/// <summary>
 	/// Registers the SQL Server implementation of the ISqlBuilder interface in the service collection.
 	/// </summary>
+	/// <param name="services">The service collection to register services into.</param>
 	/// <remarks>This method adds a singleton instance of SqlServerSqlBuilder, which provides SQL
 	/// query building functionality specific to Microsoft SQL Server. The services collection must not be null when
 	/// calling this method.</remarks>
-	/// <param name="services">The <see cref="IServiceCollection"/> to add the services to.</param>
 	/// <returns>The IServiceCollection instance that can be used to configure additional services.</returns>
+	/// <exception cref="ArgumentNullException">Thrown when <paramref name="services"/> is null.</exception>
 	public static IServiceCollection AddXDataMsSqlBuilder(this IServiceCollection services)
 	{
 		ArgumentNullException.ThrowIfNull(services);
@@ -346,10 +357,11 @@ public static class IDataExtensions
 	/// <summary>
 	/// Registers the PostgreSQL implementation of the ISqlBuilder interface in the service collection.
 	/// </summary>
+	/// <param name="services">The service collection to register services into.</param>
 	/// <remarks>This method adds a singleton instance of PostgreSqlBuilder to the service collection.
 	/// Ensure that the service collection is not null before calling this method.</remarks>
-	/// <param name="services">The <see cref="IServiceCollection"/> to add the services to.</param>
 	/// <returns>The IServiceCollection instance that can be used to configure additional services.</returns>
+	/// <exception cref="ArgumentNullException">Thrown when <paramref name="services"/> is null.</exception>
 	public static IServiceCollection AddXDataPostgreSqlBuilder(this IServiceCollection services)
 	{
 		ArgumentNullException.ThrowIfNull(services);
@@ -359,11 +371,12 @@ public static class IDataExtensions
 	/// <summary>
 	/// Registers the MySQL implementation of the ISqlBuilder interface in the service collection.
 	/// </summary>
+	/// <param name="services">The service collection to register services into.</param>
 	/// <remarks>This method adds a singleton service of type ISqlBuilder with a MySqlBuilder
 	/// implementation to the service collection. The method throws an ArgumentNullException if the service
 	/// collection is null.</remarks>
-	/// <param name="services">The <see cref="IServiceCollection"/> to add the services to.</param>
 	/// <returns>The IServiceCollection instance that can be used to configure additional services.</returns>
+	/// <exception cref="ArgumentNullException">Thrown when <paramref name="services"/> is null.</exception>
 	public static IServiceCollection AddXDataMySqlBuilder(this IServiceCollection services)
 	{
 		ArgumentNullException.ThrowIfNull(services);
@@ -371,27 +384,13 @@ public static class IDataExtensions
 	}
 
 	/// <summary>
-	/// Registers the SQLite implementation of the ISqlBuilder interface in the service collection.
-	/// </summary>
-	/// <remarks>This method adds a singleton instance of LiteDataSqlBuilder, which provides SQL
-	/// query building functionality specific to SQLite. The services collection must not be null when
-	/// calling this method.</remarks>
-	/// <param name="services">The <see cref="IServiceCollection"/> to add the services to.</param>
-	/// <returns>The IServiceCollection instance that can be used to configure additional services.</returns>
-	public static IServiceCollection AddXDataLiteSqlBuilder(this IServiceCollection services)
-	{
-		ArgumentNullException.ThrowIfNull(services);
-		return services.AddSingleton<IDataSqlBuilder, LiteDataSqlBuilder>();
-	}
-
-	/// <summary>
 	/// Registers a SQL builder implementation.
 	/// </summary>
+	/// <param name="services">The service collection to register services into.</param>
 	/// <typeparam name="TBuilder">The SQL builder type.</typeparam>
-	/// <param name="services">The <see cref="IServiceCollection"/> to add the services to.</param>
 	/// <returns>The <see cref="IServiceCollection"/> instance for chaining.</returns>
-	public static IServiceCollection AddXDataSqlBuilder<[DynamicallyAccessedMembers(DynamicallyAccessedMemberTypes.PublicConstructors)] TBuilder>(
-		this IServiceCollection services)
+	/// <exception cref="ArgumentNullException">Thrown when <paramref name="services"/> is null.</exception>
+	public static IServiceCollection AddXDataSqlBuilder<[DynamicallyAccessedMembers(DynamicallyAccessedMemberTypes.PublicConstructors)] TBuilder>(this IServiceCollection services)
 		where TBuilder : class, IDataSqlBuilder
 	{
 		ArgumentNullException.ThrowIfNull(services);
@@ -402,10 +401,11 @@ public static class IDataExtensions
 	/// Registers the default <see cref="DataLoggingCommandInterceptor"/> as a singleton
 	/// with optional configuration of <see cref="DataCommandInterceptorOptions"/>.
 	/// </summary>
+	/// <param name="services">The service collection to register services into.</param>
 	/// <remarks>
 	/// <para>
 	/// Uses <c>TryAdd</c>, so a previously registered custom interceptor will not be overwritten.
-	/// This method is called automatically by <see cref="AddXDataUnitOfWork(IServiceCollection)"/>.
+	/// This method is called automatically by <see cref="AddXDataUnitOfWork"/>.
 	/// </para>
 	/// <para>
 	/// The <paramref name="configure"/> action is applied via the standard
@@ -413,12 +413,10 @@ public static class IDataExtensions
 	/// to this method are additive — all configuration actions are applied in order.
 	/// </para>
 	/// </remarks>
-	/// <param name="services">The <see cref="IServiceCollection"/> to add the services to.</param>
 	/// <param name="configure">An optional action to configure <see cref="DataCommandInterceptorOptions"/>.</param>
 	/// <returns>The <see cref="IServiceCollection"/> instance for chaining.</returns>
-	public static IServiceCollection AddXDataCommandInterceptor(
-		this IServiceCollection services,
-		Action<DataCommandInterceptorOptions>? configure = null)
+	/// <exception cref="ArgumentNullException">Thrown when <paramref name="services"/> is null.</exception>
+	public static IServiceCollection AddXDataCommandInterceptor(this IServiceCollection services, Action<DataCommandInterceptorOptions>? configure = null)
 	{
 		ArgumentNullException.ThrowIfNull(services);
 		services.Configure(configure ?? (_ => { }));
@@ -430,11 +428,11 @@ public static class IDataExtensions
 	/// Registers a custom <see cref="IDataCommandInterceptor"/> implementation, replacing any
 	/// previously registered interceptor (including the default).
 	/// </summary>
+	/// <param name="services">The service collection to register services into.</param>
 	/// <typeparam name="TInterceptor">The interceptor type. Must implement <see cref="IDataCommandInterceptor"/>.</typeparam>
-	/// <param name="services">The <see cref="IServiceCollection"/> to add the services to.</param>
 	/// <returns>The <see cref="IServiceCollection"/> instance for chaining.</returns>
-	public static IServiceCollection AddXDataCommandInterceptor<[DynamicallyAccessedMembers(DynamicallyAccessedMemberTypes.PublicConstructors)] TInterceptor>(
-		this IServiceCollection services)
+	/// <exception cref="ArgumentNullException">Thrown when <paramref name="services"/> is null.</exception>
+	public static IServiceCollection AddXDataCommandInterceptor<[DynamicallyAccessedMembers(DynamicallyAccessedMemberTypes.PublicConstructors)] TInterceptor>(this IServiceCollection services)
 		where TInterceptor : class, IDataCommandInterceptor
 	{
 		ArgumentNullException.ThrowIfNull(services);
@@ -445,12 +443,13 @@ public static class IDataExtensions
 	/// <summary>
 	/// Adds the Data unit of work implementation to the service collection for dependency injection.
 	/// </summary>
+	/// <param name="services">The service collection to register services into.</param>
 	/// <remarks>This method registers the <c>DataUnitOfWork</c> as the implementation for the unit of
 	/// work pattern. The services parameter must not be null.
 	/// Also registers the default <see cref="DataLoggingCommandInterceptor"/> if no interceptor has been
 	/// registered yet.</remarks>
-	/// <param name="services">The <see cref="IServiceCollection"/> to add the services to.</param>
 	/// <returns>The <see cref="IServiceCollection"/> instance with the XData unit of work service registered.</returns>
+	/// <exception cref="ArgumentNullException">Thrown when <paramref name="services"/> is null.</exception>
 	public static IServiceCollection AddXDataUnitOfWork(this IServiceCollection services)
 	{
 		ArgumentNullException.ThrowIfNull(services);
@@ -462,35 +461,33 @@ public static class IDataExtensions
 	/// Registers the specified unit of work implementation as a scoped service in the dependency injection
 	/// container.
 	/// </summary>
+	/// <param name="services">The service collection to register services into.</param>
 	/// <remarks>Use this method to configure the unit of work pattern for data access in
 	/// applications. The registered unit of work will have a scoped lifetime, ensuring a single instance is used
 	/// within each request scope.</remarks>
 	/// <typeparam name="TUnitOfWork">The type of the unit of work to register. Must be a class that implements the IDataUnitOfWork interface and
 	/// has a public constructor.</typeparam>
-	/// <param name="services">The <see cref="IServiceCollection"/> to add the services to.</param>
 	/// <returns>The IServiceCollection instance to allow for method chaining.</returns>
-	public static IServiceCollection AddXDataUnitOfWork<[DynamicallyAccessedMembers(DynamicallyAccessedMemberTypes.PublicConstructors)] TUnitOfWork>(
-		this IServiceCollection services)
+	/// <exception cref="ArgumentNullException">Thrown when <paramref name="services"/> is null.</exception>
+	public static IServiceCollection AddXDataUnitOfWork<[DynamicallyAccessedMembers(DynamicallyAccessedMemberTypes.PublicConstructors)] TUnitOfWork>(this IServiceCollection services)
 		where TUnitOfWork : class, IDataUnitOfWork =>
 		services.AddScoped<IDataUnitOfWork, TUnitOfWork>();
 
 	/// <summary>
 	/// Registers a keyed, scoped unit of work service of the specified type for dependency injection.
 	/// </summary>
+	/// <param name="services">The service collection to register services into.</param>
 	/// <remarks>Use this method when multiple IDataUnitOfWork implementations are required and need
 	/// to be resolved by a unique key. This enables scenarios where different units of work are selected at runtime
 	/// based on the provided key.</remarks>
 	/// <typeparam name="TUnitOfWork">The type of the unit of work to register. Must implement the IDataUnitOfWork interface and have a public
 	/// constructor.</typeparam>
-	/// <param name="services">The <see cref="IServiceCollection"/> to add the services to.</param>
 	/// <param name="key">The unique key that identifies the registered unit of work service. Cannot be null.</param>
 	/// <returns>The IServiceCollection instance that can be used to further configure the service collection.</returns>
-	public static IServiceCollection AddXDataUnitOfWorkKeyed<[DynamicallyAccessedMembers(DynamicallyAccessedMemberTypes.PublicConstructors)] TUnitOfWork>(
-		this IServiceCollection services,
-		string key)
+	/// <exception cref="ArgumentNullException">Thrown when <paramref name="services"/> or <paramref name="key"/> is null.</exception>
+	public static IServiceCollection AddXDataUnitOfWorkKeyed<[DynamicallyAccessedMembers(DynamicallyAccessedMemberTypes.PublicConstructors)] TUnitOfWork>(this IServiceCollection services, string key)
 		where TUnitOfWork : class, IDataUnitOfWork
 	{
-		ArgumentNullException.ThrowIfNull(services);
 		ArgumentNullException.ThrowIfNull(key);
 		return services.AddKeyedScoped<IDataUnitOfWork, TUnitOfWork>(key);
 	}
@@ -499,15 +496,14 @@ public static class IDataExtensions
 	/// Registers a scoped service for the specified unit of work interface and its implementation in the dependency
 	/// injection container.
 	/// </summary>
+	/// <param name="services">The service collection to register services into.</param>
 	/// <remarks>Use this method to configure dependency injection for unit of work patterns, ensuring
 	/// that requests for the specified interface resolve to the provided implementation within the scope of a
 	/// request.</remarks>
 	/// <typeparam name="TInterface">The interface type that represents a unit of work and must implement IDataUnitOfWork.</typeparam>
 	/// <typeparam name="TImplementation">The concrete type that implements the specified interface and must have a public constructor.</typeparam>
-	/// <param name="services">The <see cref="IServiceCollection"/> to add the services to.</param>
 	/// <returns>The IServiceCollection instance that this method was called on, to support method chaining.</returns>
-	public static IServiceCollection AddXDataUnitOfWork<TInterface, [DynamicallyAccessedMembers(DynamicallyAccessedMemberTypes.PublicConstructors)] TImplementation>(
-		this IServiceCollection services)
+	public static IServiceCollection AddXDataUnitOfWork<TInterface, [DynamicallyAccessedMembers(DynamicallyAccessedMemberTypes.PublicConstructors)] TImplementation>(this IServiceCollection services)
 		where TInterface : class, IDataUnitOfWork
 		where TImplementation : class, TInterface =>
 		services.AddScoped<TInterface, TImplementation>();
@@ -516,36 +512,148 @@ public static class IDataExtensions
 	/// Registers a keyed, scoped service for a specified data unit of work interface and its implementation in the
 	/// service collection.
 	/// </summary>
+	/// <param name="services">The service collection to register services into.</param>
 	/// <remarks>Use this method to register multiple implementations of the same data unit of work
 	/// interface, each associated with a unique key. This enables resolving specific implementations by key at
 	/// runtime, which is useful in scenarios where different data contexts or strategies are required.</remarks>
 	/// <typeparam name="TInterface">The interface type that extends IDataUnitOfWork to be registered as a service.</typeparam>
 	/// <typeparam name="TImplementation">The concrete implementation type that must derive from TInterface and provide a public constructor.</typeparam>
-	/// <param name="services">The <see cref="IServiceCollection"/> to add the services to.</param>
 	/// <param name="key">The unique non-null key used to identify the service registration for keyed resolution.</param>
 	/// <returns>The IServiceCollection instance that this method was called on, to support method chaining.</returns>
-	public static IServiceCollection AddXDataUnitOfWorkKeyed<TInterface, [DynamicallyAccessedMembers(DynamicallyAccessedMemberTypes.PublicConstructors)] TImplementation>(
-		this IServiceCollection services,
-		string key)
+	/// <exception cref="ArgumentNullException">Thrown when <paramref name="services"/> or <paramref name="key"/> is null.</exception>
+	public static IServiceCollection AddXDataUnitOfWorkKeyed<TInterface, [DynamicallyAccessedMembers(DynamicallyAccessedMemberTypes.PublicConstructors)] TImplementation>(this IServiceCollection services, string key)
 		where TInterface : class, IDataUnitOfWork
 		where TImplementation : class, TInterface
 	{
-		ArgumentNullException.ThrowIfNull(services);
 		ArgumentNullException.ThrowIfNull(key);
 		return services.AddKeyedScoped<TInterface, TImplementation>(key);
 	}
 
 	/// <summary>
+	/// Adds a singleton implementation of the specified factory type for SQL data service accessors to the service
+	/// collection.
+	/// </summary>
+	/// <remarks>This method registers the specified factory type as a singleton service for
+	/// IDataSqlServiceAccessorFactory. Subsequent requests for IDataSqlServiceAccessorFactory will resolve to the same
+	/// instance of TFactory.</remarks>
+	/// <typeparam name="TFactory">The type of the factory to register. Must implement IDataSqlServiceAccessorFactory and have a public
+	/// constructor.</typeparam>
+	/// <param name="services">The service collection to which the factory implementation will be added. Cannot be null.</param>
+	/// <returns>The same IServiceCollection instance so that additional calls can be chained.</returns>
+	public static IServiceCollection AddXDataSqlServiceAccessorFactory<[DynamicallyAccessedMembers(DynamicallyAccessedMemberTypes.PublicConstructors)] TFactory>(
+		this IServiceCollection services)
+		where TFactory : class, IDataSqlServiceAccessorFactory
+	{
+		ArgumentNullException.ThrowIfNull(services);
+		return services.AddSingleton<IDataSqlServiceAccessorFactory, TFactory>();
+	}
+
+	/// <summary>
+	/// Adds the default implementation of the XData SQL service accessor factory to the specified service collection.
+	/// </summary>
+	/// <remarks>This method registers the default <see cref="DataSqlServiceAccessorFactory"/> as a singleton
+	/// in the dependency injection container. Call this method during application startup to enable XData SQL service
+	/// accessor support.</remarks>
+	/// <param name="services">The service collection to which the XData SQL service accessor factory will be added. Cannot be null.</param>
+	/// <returns>The same instance of <see cref="IServiceCollection"/> that was provided, to support method chaining.</returns>
+	public static IServiceCollection AddXDataSqlServiceAccessorFactory(this IServiceCollection services)
+	{
+		ArgumentNullException.ThrowIfNull(services);
+		return services.AddXDataSqlServiceAccessorFactory<DataSqlServiceAccessorFactory>();
+	}
+
+	/// <summary>
+	/// Adds the required services for SQL data access using the specified builder and mapper types to the dependency
+	/// injection container.
+	/// </summary>
+	/// <remarks>This method registers the specified SQL builder and mapper types as well as the
+	/// IDataSqlServiceAccessor as singletons. Call this method during application startup to enable SQL data access
+	/// features.</remarks>
+	/// <typeparam name="TSqlBuilder">The type that implements the SQL builder logic. Must be a class implementing IDataSqlBuilder and have a public
+	/// constructor.</typeparam>
+	/// <typeparam name="TSqlMapper">The type that implements the SQL mapping logic. Must be a class implementing IDataSqlMapper and have a public
+	/// constructor.</typeparam>
+	/// <param name="services">The IServiceCollection to which the SQL data access services will be added. Cannot be null.</param>
+	/// <returns>The IServiceCollection instance with the SQL data access services registered.</returns>
+	public static IServiceCollection AddXDataSqlServiceAccessor<[DynamicallyAccessedMembers(DynamicallyAccessedMemberTypes.PublicConstructors)] TSqlBuilder, [DynamicallyAccessedMembers(DynamicallyAccessedMemberTypes.PublicConstructors)] TSqlMapper>(this IServiceCollection services)
+		where TSqlBuilder : class, IDataSqlBuilder
+		where TSqlMapper : class, IDataSqlMapper
+	{
+		ArgumentNullException.ThrowIfNull(services);
+		services.AddXDataSqlBuilder<TSqlBuilder>();
+		services.AddXDataSqlMapper<TSqlMapper>();
+		return services.AddSingleton<IDataSqlServiceAccessor, DataSqlServiceAccessor>();
+	}
+
+	/// <summary>
+	/// Adds the required services for SQL-based data access using the specified SQL builder to the dependency injection
+	/// container.
+	/// </summary>
+	/// <remarks>This method registers the specified SQL builder, a SQL mapper, and a singleton accessor for
+	/// SQL data services. Call this method during application startup to enable SQL data access features.</remarks>
+	/// <typeparam name="TSqlBuilder">The type of the SQL builder to use for constructing SQL queries. Must implement the IDataSqlBuilder interface
+	/// and have a public constructor.</typeparam>
+	/// <param name="services">The service collection to which the SQL data access services will be added. Cannot be null.</param>
+	/// <returns>The same IServiceCollection instance so that additional calls can be chained.</returns>
+	public static IServiceCollection AddXDataSqlServiceAccessor<[DynamicallyAccessedMembers(DynamicallyAccessedMemberTypes.PublicConstructors)] TSqlBuilder>(this IServiceCollection services)
+		where TSqlBuilder : class, IDataSqlBuilder
+	{
+		ArgumentNullException.ThrowIfNull(services);
+		services.AddXDataSqlBuilder<TSqlBuilder>();
+		services.AddXDataSqlMapper();
+		return services.AddSingleton<IDataSqlServiceAccessor, DataSqlServiceAccessor>();
+	}
+
+	/// <summary>
+	/// Registers an Data SQL service accessor for the specified SQL dialect in the dependency injection container.
+	/// </summary>
+	/// <remarks>This method configures the dependency injection container to use the appropriate SQL builder
+	/// implementation for the given SQL dialect. Supported dialects include SQL Server, PostgreSQL, MySQL, Oracle, and
+	/// SQLite.</remarks>
+	/// <param name="services">The service collection to which the XData SQL service accessor will be added. Cannot be null.</param>
+	/// <param name="sqlDialect">The SQL dialect for which to register the service accessor. Must be a supported value of the SqlDialect
+	/// enumeration.</param>
+	/// <returns>The same IServiceCollection instance so that additional calls can be chained.</returns>
+	/// <exception cref="ArgumentException">Thrown if the specified sqlDialect is not supported.</exception>
+	public static IServiceCollection AddXDataSqlServiceAccessorFor(this IServiceCollection services, SqlDialect sqlDialect)
+	{
+		ArgumentNullException.ThrowIfNull(services);
+
+		switch (sqlDialect)
+		{
+			case SqlDialect.SqlServer:
+				services.AddXDataSqlServiceAccessor<MsDataSqlBuilder>();
+				break;
+			case SqlDialect.PostgreSql:
+				services.AddXDataSqlServiceAccessor<PostgreDataSqlBuilder>();
+				break;
+			case SqlDialect.MySql:
+				services.AddXDataSqlServiceAccessor<MyDataSqlBuilder>();
+				break;
+			case SqlDialect.Oracle:
+				services.AddXDataSqlServiceAccessor<OracleDataSqlBuilder>();
+				break;
+			case SqlDialect.SQLite:
+				services.AddXDataSqlServiceAccessor<LiteDataSqlBuilder>();
+				break;
+			default:
+				throw new ArgumentException($"Unsupported SQL dialect: {sqlDialect}", nameof(sqlDialect));
+		}
+
+		return services;
+	}
+
+	/// <summary>
 	/// Registers a scoped data repository for the specified data type in the service collection.
 	/// </summary>
+	/// <param name="services">The service collection to register services into.</param>
 	/// <remarks>This method throws an ArgumentNullException if the service collection is null. It is intended for
 	/// use in dependency injection scenarios where a data repository is needed for the specified data type.</remarks>
 	/// <typeparam name="TData">The type of data that the repository will manage. This type must be a class and should have public properties
 	/// accessible at runtime.</typeparam>
-	/// <param name="services">The <see cref="IServiceCollection"/> to add the services to.</param>
 	/// <returns>The updated IServiceCollection instance, allowing for method chaining.</returns>
-	public static IServiceCollection AddXDataRepository<[DynamicallyAccessedMembers(DynamicallyAccessedMemberTypes.PublicProperties)] TData>(
-		this IServiceCollection services)
+	/// <exception cref="ArgumentNullException">Thrown when <paramref name="services"/> is null.</exception>
+	public static IServiceCollection AddXDataRepository<[DynamicallyAccessedMembers(DynamicallyAccessedMemberTypes.PublicProperties)] TData>(this IServiceCollection services)
 		where TData : class
 	{
 		ArgumentNullException.ThrowIfNull(services);
@@ -556,13 +664,14 @@ public static class IDataExtensions
 	/// Registers a scoped data repository for the specified data type, enabling dependency injection of a repository that
 	/// manages database connections within a scoped lifetime.
 	/// </summary>
+	/// <param name="services">The service collection to register services into.</param>
 	/// <remarks>Use this method when configuring services to ensure that each <see cref="IDataRepository{TData}"/> instance
 	/// receives a new database connection scope per request. This approach supports proper resource management and
 	/// isolation of database operations within each dependency injection scope.</remarks>
 	/// <typeparam name="TData">Specifies the type of data managed by the repository. This type must be a class with public properties.</typeparam>
-	/// <param name="services">The <see cref="IServiceCollection"/> to add the services to.</param>
-	/// <param name="factory">A factory function that provides an instance of IDataDbConnectionScope for each repository scope. Cannot be null.</param>
+	/// <param name="factory">A factory function that provides an instance of IDataConnectionScope for each repository scope. Cannot be null.</param>
 	/// <returns>The IServiceCollection instance, allowing for method chaining during service configuration.</returns>
+	/// <exception cref="ArgumentNullException">Thrown when <paramref name="services"/> or <paramref name="factory"/> is null.</exception>
 	public static IServiceCollection AddXDataRepository<[DynamicallyAccessedMembers(DynamicallyAccessedMemberTypes.PublicProperties)] TData>(
 		this IServiceCollection services,
 		Func<IServiceProvider, IDataConnectionScope> factory)
@@ -587,16 +696,15 @@ public static class IDataExtensions
 	/// Registers a keyed scoped data repository service for the specified data type in the dependency injection
 	/// container.
 	/// </summary>
+	/// <param name="services">The service collection to register services into.</param>
 	/// <remarks>Use this method when you need to register multiple <see cref="IDataRepository{TData}"/> implementations
 	/// distinguished by a key. This is useful in scenarios where different repository instances are required for
 	/// different contexts or configurations.</remarks>
 	/// <typeparam name="TData">Specifies the type of data that the repository will manage. This type must be a class with public properties.</typeparam>
-	/// <param name="services">The <see cref="IServiceCollection"/> to add the services to.</param>
 	/// <param name="key">The unique key used to identify the repository service within the service collection. Cannot be null.</param>
 	/// <returns>The updated IServiceCollection instance, enabling method chaining.</returns>
-	public static IServiceCollection AddXDataRepositoryKeyed<[DynamicallyAccessedMembers(DynamicallyAccessedMemberTypes.PublicProperties)] TData>(
-		this IServiceCollection services,
-		string key)
+	/// <exception cref="ArgumentNullException">Thrown when <paramref name="services"/> or <paramref name="key"/> is null.</exception>
+	public static IServiceCollection AddXDataRepositoryKeyed<[DynamicallyAccessedMembers(DynamicallyAccessedMemberTypes.PublicProperties)] TData>(this IServiceCollection services, string key)
 		where TData : class
 	{
 		ArgumentNullException.ThrowIfNull(services);
@@ -608,15 +716,16 @@ public static class IDataExtensions
 	/// Registers a keyed data repository service for the specified data type, enabling dependency injection of a scoped
 	/// data connection within the service collection.
 	/// </summary>
+	/// <param name="services">The service collection to register services into.</param>
 	/// <remarks>This method is intended for use in configuring services in a dependency injection container. It
 	/// ensures that the data repository is scoped to the lifetime of the request and allows multiple repositories to be
 	/// registered with distinct keys.</remarks>
 	/// <typeparam name="TData">The type of data managed by the repository. Must be a class with public properties accessible at runtime.</typeparam>
-	/// <param name="services">The <see cref="IServiceCollection"/> to add the services to.</param>
 	/// <param name="key">The unique key used to identify the data repository service within the service collection. Cannot be null.</param>
-	/// <param name="factory">A factory function that creates an instance of IDataDbConnectionScope for managing database connections. Cannot be
+	/// <param name="factory">A factory function that creates an instance of IDataConnectionScope for managing database connections. Cannot be
 	/// null.</param>
 	/// <returns>The updated IServiceCollection instance, allowing for method chaining.</returns>
+	/// <exception cref="ArgumentNullException">Thrown when <paramref name="services"/>, <paramref name="key"/>, or <paramref name="factory"/> is null.</exception>
 	public static IServiceCollection AddXDataRepositoryKeyed<[DynamicallyAccessedMembers(DynamicallyAccessedMemberTypes.PublicProperties)] TData>(
 		this IServiceCollection services,
 		string key,
@@ -643,15 +752,15 @@ public static class IDataExtensions
 	/// Registers a data repository implementation of the specified interface with the scoped service lifetime in the
 	/// dependency injection container.
 	/// </summary>
+	/// <param name="services">The service collection to register services into.</param>
 	/// <remarks>Use this method to enable dependency injection of a custom data repository throughout
 	/// the application. If the repository type is already registered, this method will not overwrite the existing
 	/// registration.</remarks>
 	/// <typeparam name="TRepository">The type of the data repository interface to register. Must implement IDataRepository.</typeparam>
 	/// <typeparam name="TImplementation">The concrete implementation type that fulfills the TRepository interface. Must have a public constructor.</typeparam>
-	/// <param name="services">The <see cref="IServiceCollection"/> to add the services to.</param>
 	/// <returns>The IServiceCollection instance with the repository registration added.</returns>
-	public static IServiceCollection AddXDataRepository<TRepository, [DynamicallyAccessedMembers(DynamicallyAccessedMemberTypes.PublicConstructors)] TImplementation>(
-		this IServiceCollection services)
+	/// <exception cref="ArgumentNullException">Thrown when <paramref name="services"/> is null.</exception>
+	public static IServiceCollection AddXDataRepository<TRepository, [DynamicallyAccessedMembers(DynamicallyAccessedMemberTypes.PublicConstructors)] TImplementation>(this IServiceCollection services)
 		where TRepository : class, IDataRepository
 		where TImplementation : class, TRepository
 	{
@@ -665,14 +774,15 @@ public static class IDataExtensions
 	/// <summary>
 	/// Registers a keyed data repository implementation with the scoped service lifetime.
 	/// </summary>
+	/// <param name="services">The service collection to register services into.</param>
 	/// <remarks>This method enables registration of a data repository with a specific key, allowing retrieval by
 	/// that key later. Ensure that the key is unique within the service collection to avoid conflicts.</remarks>
 	/// <typeparam name="TRepository">Specifies the type of the data repository interface to be registered. Must implement IDataRepository.</typeparam>
 	/// <typeparam name="TImplementation">Specifies the concrete implementation type for the data repository interface. Must provide public constructors and
 	/// implement TRepository.</typeparam>
-	/// <param name="services">The <see cref="IServiceCollection"/> to add the services to.</param>
 	/// <param name="key">The unique key used to identify the repository registration. Cannot be null.</param>
 	/// <returns>The updated IServiceCollection instance for further configuration.</returns>
+	/// <exception cref="ArgumentNullException">Thrown when <paramref name="services"/> or <paramref name="key"/> is null.</exception>
 	public static IServiceCollection AddXDataRepositoryKeyed<TRepository, [DynamicallyAccessedMembers(DynamicallyAccessedMemberTypes.PublicConstructors)] TImplementation>(
 		this IServiceCollection services,
 		string key)
@@ -691,15 +801,16 @@ public static class IDataExtensions
 	/// Registers a scoped data repository service with the specified implementation and a factory for creating database
 	/// connection scopes.
 	/// </summary>
+	/// <param name="services">The service collection to register services into.</param>
 	/// <remarks>This method is typically used in dependency injection setups to ensure that the repository is
 	/// created with the appropriate database connection scope. It is important that the factory function does not return
 	/// null.</remarks>
 	/// <typeparam name="TRepository">The type of the data repository interface that the implementation will adhere to.</typeparam>
 	/// <typeparam name="TImplementation">The concrete implementation type of the data repository that will be instantiated.</typeparam>
-	/// <param name="services">The <see cref="IServiceCollection"/> to add the services to.</param>
-	/// <param name="factory">A factory function that provides an instance of IDataDbConnectionScope, which is used to manage database
+	/// <param name="factory">A factory function that provides an instance of IDataConnectionScope, which is used to manage database
 	/// connections for the repository.</param>
 	/// <returns>The IServiceCollection instance to allow for method chaining.</returns>
+	/// <exception cref="ArgumentNullException">Thrown when <paramref name="services"/> or <paramref name="factory"/> is null.</exception>
 	public static IServiceCollection AddXDataRepository<TRepository, [DynamicallyAccessedMembers(DynamicallyAccessedMemberTypes.PublicConstructors)] TImplementation>(
 		this IServiceCollection services,
 		Func<IServiceProvider, IDataConnectionScope> factory)
@@ -725,17 +836,18 @@ public static class IDataExtensions
 	/// Registers a keyed scoped service for a data repository implementation, allowing multiple repository types to be
 	/// distinguished by a unique key within the service collection.
 	/// </summary>
+	/// <param name="services">The service collection to register services into.</param>
 	/// <remarks>Use this method to register multiple implementations of the same repository interface, each
 	/// distinguished by a unique key. Ensure that each key is unique within the service collection to prevent conflicts.
 	/// The factory parameter allows for custom creation of database connection scopes for each repository
 	/// instance.</remarks>
 	/// <typeparam name="TRepository">The type of the data repository interface to register. Must implement IDataRepository.</typeparam>
 	/// <typeparam name="TImplementation">The concrete implementation type of the repository. Must be a class and derive from TRepository.</typeparam>
-	/// <param name="services">The <see cref="IServiceCollection"/> to add the services to.</param>
 	/// <param name="key">The unique key used to identify the registered repository service. Must not be null.</param>
-	/// <param name="factory">A factory function that creates an IDataDbConnectionScope instance for managing database connections. Must not be
+	/// <param name="factory">A factory function that creates an IDataConnectionScope instance for managing database connections. Must not be
 	/// null.</param>
 	/// <returns>The IServiceCollection instance with the keyed repository registration added, enabling method chaining.</returns>
+	/// <exception cref="ArgumentNullException">Thrown when <paramref name="services"/>, <paramref name="key"/>, or <paramref name="factory"/> is null.</exception>
 	public static IServiceCollection AddXDataRepositoryKeyed<TRepository, [DynamicallyAccessedMembers(DynamicallyAccessedMemberTypes.PublicConstructors)] TImplementation>(
 		this IServiceCollection services,
 		string key,
@@ -763,10 +875,10 @@ public static class IDataExtensions
 	/// Registers multiple data repository interfaces and their corresponding implementations with the specified
 	/// service lifetime in the dependency injection container.
 	/// </summary>
+	/// <param name="services">The service collection to register services into.</param>
 	/// <remarks>This method allows for registering multiple data repositories in a single call,
 	/// ensuring that each interface and implementation pair is valid. It is useful for configuring repository
 	/// dependencies in a modular and maintainable way.</remarks>
-	/// <param name="services">The <see cref="IServiceCollection"/> to add the services to.</param>
 	/// <param name="lifetime">The lifetime with which to register each data repository service. Determines how long the service instance
 	/// is retained by the container.</param>
 	/// <param name="repositoryRegistrations">An array of tuples, each containing a data repository interface type and its corresponding implementation
@@ -774,6 +886,8 @@ public static class IDataExtensions
 	/// implement its associated interface.</param>
 	/// <returns>The IServiceCollection instance with the specified data repository registrations added. This enables method
 	/// chaining.</returns>
+	/// <exception cref="ArgumentNullException">Thrown when <paramref name="services"/> or <paramref name="repositoryRegistrations"/> is null.</exception>
+	/// <exception cref="ArgumentOutOfRangeException">Thrown when <paramref name="repositoryRegistrations"/> is empty.</exception>
 	/// <exception cref="ArgumentException">Thrown if any interface type does not implement IDataRepository, or if any implementation type does not
 	/// implement its corresponding interface type.</exception>
 	public static IServiceCollection AddXDataRepositories(
@@ -807,16 +921,17 @@ public static class IDataExtensions
 	/// Registers all data repository implementations found in the specified assemblies with the provided service
 	/// lifetime.
 	/// </summary>
+	/// <param name="services">The service collection to register services into.</param>
 	/// <remarks>This method scans each provided assembly for non-abstract, sealed classes that
 	/// implement IDataRepository and registers them, along with their interfaces, in the service collection. Ensure
 	/// that the assemblies contain the desired repository implementations. If no assemblies are provided, the
 	/// calling assembly is scanned.</remarks>
-	/// <param name="services">The <see cref="IServiceCollection"/> to add the services to.</param>
 	/// <param name="lifetime">The lifetime with which to register the discovered repository services. Determines how instances are managed
 	/// by the dependency injection container.</param>
 	/// <param name="assemblies">An array of assemblies to scan for classes implementing the IDataRepository interface. If no assemblies are
 	/// specified, the calling assembly is used by default.</param>
 	/// <returns>The IServiceCollection instance with the repository services registered, enabling method chaining.</returns>
+	/// <exception cref="ArgumentNullException">Thrown when <paramref name="services"/> or <paramref name="assemblies"/> is null.</exception>
 	[RequiresUnreferencedCode("Requires unreferenced code.")]
 	public static IServiceCollection AddXDataRepositories(
 		this IServiceCollection services,

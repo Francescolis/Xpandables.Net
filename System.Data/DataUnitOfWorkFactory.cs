@@ -32,8 +32,7 @@ namespace System.Data;
 public class DataUnitOfWorkFactory : IDataUnitOfWorkFactory
 {
 	private readonly IDataConnectionScopeFactory _connectionScopeFactory;
-	private readonly IDataSqlBuilderFactory _sqlBuilderFactory;
-	private readonly IDataSqlMapper _sqlMapper;
+	private readonly IDataSqlServiceAccessorFactory _sqlServiceAccessorFactory;
 	private readonly IDataCommandInterceptor _interceptor;
 	private readonly string _providerInvariantName;
 
@@ -41,23 +40,20 @@ public class DataUnitOfWorkFactory : IDataUnitOfWorkFactory
 	/// Initializes a new instance of the <see cref="DataUnitOfWorkFactory"/> class.
 	/// </summary>
 	/// <param name="connectionScopeFactory">The connection scope factory.</param>
-	/// <param name="sqlBuilderFactory">The SQL builder factory.</param>
-	/// <param name="sqlMapper">The SQL mapper.</param>
+	/// <param name="sqlServiceAccessorFactory">The SQL service accessor factory.</param>
 	/// <param name="providerInvariantName">The provider invariant name for determining SQL dialect.</param>
 	/// <param name="interceptor">The optional command interceptor for logging and telemetry.
 	/// When <see langword="null"/>, <see cref="DataCommandInterceptor.Default"/> is used.</param>
 	public DataUnitOfWorkFactory(
 		IDataConnectionScopeFactory connectionScopeFactory,
-		IDataSqlBuilderFactory sqlBuilderFactory,
-		IDataSqlMapper sqlMapper,
+		IDataSqlServiceAccessorFactory sqlServiceAccessorFactory,
 		string providerInvariantName,
 		IDataCommandInterceptor? interceptor = null)
 	{
 		_connectionScopeFactory = connectionScopeFactory ?? throw new ArgumentNullException(nameof(connectionScopeFactory));
-		_sqlBuilderFactory = sqlBuilderFactory ?? throw new ArgumentNullException(nameof(sqlBuilderFactory));
+		_sqlServiceAccessorFactory = sqlServiceAccessorFactory ?? throw new ArgumentNullException(nameof(sqlServiceAccessorFactory));
 		ArgumentException.ThrowIfNullOrWhiteSpace(providerInvariantName);
 		_providerInvariantName = providerInvariantName;
-		_sqlMapper = sqlMapper ?? throw new ArgumentNullException(nameof(sqlMapper));
 		_interceptor = interceptor ?? DataCommandInterceptor.Default;
 	}
 
@@ -72,8 +68,8 @@ public class DataUnitOfWorkFactory : IDataUnitOfWorkFactory
 	/// <inheritdoc />
 	public IDataUnitOfWork Create()
 	{
-		IDataSqlBuilder sqlBuilder = _sqlBuilderFactory.Create(_providerInvariantName);
+		IDataSqlServiceAccessor sqlServiceAccessor = _sqlServiceAccessorFactory.Create(_providerInvariantName);
 
-		return new DataUnitOfWork(_connectionScopeFactory, sqlBuilder, _sqlMapper, _interceptor);
+		return new DataUnitOfWork(_connectionScopeFactory, sqlServiceAccessor, _interceptor);
 	}
 }

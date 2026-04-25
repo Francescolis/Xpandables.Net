@@ -17,20 +17,22 @@
 namespace System.Data;
 
 /// <summary>
-/// Factory for creating <see cref="IDataUnitOfWork"/> instances.
+/// Defines a contract for accessing SQL data services, providing builders and mappers for constructing and mapping SQL
+/// queries.
 /// </summary>
-public interface IDataUnitOfWorkFactory
+/// <remarks>Implementations of this interface typically provide access to components that facilitate the creation
+/// and mapping of SQL statements within a data access layer. This interface is intended to abstract the underlying
+/// details of SQL query construction and result mapping, enabling flexible integration with various data sources or
+/// ORMs.</remarks>
+public interface IDataSqlServiceAccessor
 {
 	/// <summary>
-	/// Creates a new unit of work asynchronously with an open connection.
+	/// Gets the SQL builder used to construct data queries for the underlying data source.
 	/// </summary>
-	/// <param name="cancellationToken">A token to cancel the operation.</param>
-	/// <returns>A new unit of work instance.</returns>
-	Task<IDataUnitOfWork> CreateAsync(CancellationToken cancellationToken = default);
+	IDataSqlBuilder DataSqlBuilder { get; }
 
 	/// <summary>
-	/// Creates a new unit of work synchronously with an open connection.
+	/// Gets the SQL data mapper used for mapping between database records and application objects.
 	/// </summary>
-	/// <returns>A new unit of work instance.</returns>
-	IDataUnitOfWork Create();
+	IDataSqlMapper DataSqlMapper { get; }
 }

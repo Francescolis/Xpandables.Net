@@ -108,6 +108,29 @@ public static class PrimitivesExtensions
 	}
 
 	/// <summary>
+	/// Adds the default implementation of the ICacheTypeResolver service to the service collection.
+	/// </summary>
+	/// <param name="services"></param>
+	/// <param name="memoryAwareCache">An optional memory-aware cache instance to use for type resolution. If null, a default cache will be used.</param>
+	/// <remarks>This method registers CacheTypeResolver as a singleton service for the
+	/// ICacheTypeResolver interface if it has not already been registered. Call this method during application
+	/// startup to enable type resolution for caching scenarios.</remarks>
+	/// <returns>The IServiceCollection instance with the ICacheTypeResolver service registered.</returns>
+	public static IServiceCollection AddXCacheTypeResolver(
+		this IServiceCollection services,
+		MemoryAwareCache<string, Type>? memoryAwareCache = null)
+	{
+		ArgumentNullException.ThrowIfNull(services);
+
+		if (memoryAwareCache == null)
+			services.TryAddSingleton<ICacheTypeResolver, CacheTypeResolver>();
+		else
+			services.TryAddSingleton<ICacheTypeResolver>(_ => new CacheTypeResolver(memoryAwareCache));
+
+		return services;
+	}
+
+	/// <summary>
 	/// Adds the default cache type resolver to the service collection.
 	/// </summary>
 	/// <param name="services"></param>
@@ -122,6 +145,31 @@ public static class PrimitivesExtensions
 	{
 		ArgumentNullException.ThrowIfNull(services);
 		services.AddXCacheTypeResolver();
+		CacheTypeResolver.RegisterAssemblies(assemblies);
+		return services;
+	}
+
+	/// <summary>
+	/// Adds the default cache type resolver to the service collection.
+	/// </summary>
+	/// <param name="services"></param>
+	/// <param name="memoryAwareCache">A memory-aware cache instance to use for type resolution. Cannot be null.</param>
+	/// <param name="assemblies">An optional array of assemblies to register for type resolution. If no assemblies are provided, all non-legacy
+	/// assemblies will be registered.</param>
+	/// <remarks>This method registers the CacheTypeResolver as the implementation for
+	/// cache type resolution. Call this method during application startup to enable cache type resolution
+	/// services.</remarks>
+	/// <returns>The same IServiceCollection instance, allowing for method chaining.</returns>
+	[RequiresUnreferencedCode("Uses reflection to load types from assemblies.")]
+	public static IServiceCollection AddXCacheTypeResolver(
+		this IServiceCollection services,
+		MemoryAwareCache<string, Type> memoryAwareCache,
+		params IEnumerable<Assembly> assemblies)
+	{
+		ArgumentNullException.ThrowIfNull(services);
+		ArgumentNullException.ThrowIfNull(memoryAwareCache);
+
+		services.AddXCacheTypeResolver(memoryAwareCache);
 		CacheTypeResolver.RegisterAssemblies(assemblies);
 		return services;
 	}
@@ -143,6 +191,33 @@ public static class PrimitivesExtensions
 		ArgumentNullException.ThrowIfNull(services);
 
 		services.AddXCacheTypeResolver();
+		CacheTypeResolver.RegisterAssemblies(predicate, assemblies);
+		return services;
+	}
+
+	/// <summary>
+	/// Registers a type resolver for Cache that scans the specified assemblies and filters types using the provided
+	/// predicate.
+	/// </summary>
+	/// <remarks>This method uses reflection to load types from assemblies, which may impact trimming and linking
+	/// scenarios. The resolver will only include types that satisfy the specified predicate.</remarks>
+	/// <param name="services"></param>
+	/// <param name="predicate">A delegate that determines whether a given type should be included by the resolver. Cannot be null.</param>
+	/// <param name="memoryAwareCache">A memory-aware cache instance to use for type resolution. Cannot be null.</param>
+	/// <param name="assemblies">The assemblies to scan for types. At least one assembly must be provided.</param>
+	/// <returns>The service collection with the Cache type resolver registered. This enables further chaining of service
+	/// configuration.</returns>
+	[RequiresUnreferencedCode("Uses reflection to load types from assemblies.")]
+	public static IServiceCollection AddXCacheTypeResolver(
+		this IServiceCollection services,
+		Predicate<Type> predicate,
+		MemoryAwareCache<string, Type> memoryAwareCache,
+		params IEnumerable<Assembly> assemblies)
+	{
+		ArgumentNullException.ThrowIfNull(predicate);
+		ArgumentNullException.ThrowIfNull(services);
+
+		services.AddXCacheTypeResolver(memoryAwareCache);
 		CacheTypeResolver.RegisterAssemblies(predicate, assemblies);
 		return services;
 	}

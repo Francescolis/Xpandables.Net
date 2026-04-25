@@ -1,4 +1,4 @@
-/*******************************************************************************
+﻿/*******************************************************************************
  * Copyright (C) 2025-2026 Kamersoft
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
@@ -14,7 +14,7 @@
  * limitations under the License.
  *
 ********************************************************************************/
-using System.Net.Http.Headers;
+
 using System.Rests;
 using System.Rests.Abstractions;
 using System.Text.Json;
@@ -26,189 +26,198 @@ using Microsoft.Extensions.DependencyInjection;
 
 namespace Xpandables.Net.UnitTests.Systems.Rests;
 
+#pragma warning disable CS1591 // Missing XML comment for publicly visible type or member
+[Collection("RestSettingsSerializer")]
 public sealed class RestRequestBuilderTests
+#pragma warning restore CS1591 // Missing XML comment for publicly visible type or member
 {
-    [Fact]
-    public async Task BuildRequestAsync_WithContext_ExecutesComposers()
-    {
-        using IDisposable serializerScope = UseDefaultSerializerOptions();
+	[Fact]
+#pragma warning disable CS1591 // Missing XML comment for publicly visible type or member
+	public async Task BuildRequestAsync_WithContext_ExecutesComposers()
+#pragma warning restore CS1591 // Missing XML comment for publicly visible type or member
+	{
+		using IDisposable serializerScope = UseDefaultSerializerOptions();
 
-        // Arrange
-        var fakeComposer = new FakeRequestComposer();
+		// Arrange
+		var fakeComposer = new FakeRequestComposer();
 
-        RestRequestBuilder builder = new([fakeComposer]);
+		RestRequestBuilder builder = new([fakeComposer]);
 
-        SimpleRequest request = new();
-        RestAttribute attribute = request.Build(null!);
+		SimpleRequest request = new();
+		RestAttribute attribute = request.Build(null!);
 
-        HttpRequestMessage httpMessage = new()
-        {
-            Method = HttpMethod.Get,
-            RequestUri = new Uri("/test", UriKind.Relative)
-        };
+		HttpRequestMessage httpMessage = new()
+		{
+			Method = HttpMethod.Get,
+			RequestUri = new Uri("/test", UriKind.Relative)
+		};
 
-        RestRequestContext context = new()
-        {
-            Attribute = attribute,
-            Request = request,
-            Message = httpMessage,
-            SerializerOptions = RestSettings.SerializerOptions,
-            IsAborted = false
-        };
+		RestRequestContext context = new()
+		{
+			Attribute = attribute,
+			Request = request,
+			Message = httpMessage,
+			SerializerOptions = RestSettings.SerializerOptions,
+			IsAborted = false
+		};
 
-        // Act
-        RestRequest restRequest = await builder.BuildRequestAsync(context);
+		// Act
+		RestRequest restRequest = await builder.BuildRequestAsync(context);
 
-        // Assert
-        using (restRequest)
-        {
-            fakeComposer.WasInvoked.Should().BeTrue();
-        }
-    }
+		// Assert
+		using (restRequest)
+		{
+			fakeComposer.WasInvoked.Should().BeTrue();
+		}
+	}
 
-    [Fact]
-    public async Task BuildRequestAsync_WhenInterceptorAborts_ReturnsEmptyRequest()
-    {
-        using IDisposable serializerScope = UseDefaultSerializerOptions();
+	[Fact]
+#pragma warning disable CS1591 // Missing XML comment for publicly visible type or member
+	public async Task BuildRequestAsync_WhenInterceptorAborts_ReturnsEmptyRequest()
+#pragma warning restore CS1591 // Missing XML comment for publicly visible type or member
+	{
+		using IDisposable serializerScope = UseDefaultSerializerOptions();
 
-        // Arrange
-        var interceptor = new AbortingRequestInterceptor();
+		// Arrange
+		var interceptor = new AbortingRequestInterceptor();
 
-        IServiceProvider services = new ServiceCollection()
-            .AddXRestRequestComposers()
-            .AddSingleton<IRestRequestInterceptor>(interceptor)
-            .BuildServiceProvider();
+		IServiceProvider services = new ServiceCollection()
+			.AddXRestRequestComposers()
+			.AddSingleton<IRestRequestInterceptor>(interceptor)
+			.BuildServiceProvider();
 
-        RestRequestBuilder builder = new(
-            services.GetServices<IRestRequestComposer>(),
-            requestInterceptors: services.GetServices<IRestRequestInterceptor>());
+		RestRequestBuilder builder = new(
+			services.GetServices<IRestRequestComposer>(),
+			requestInterceptors: services.GetServices<IRestRequestInterceptor>());
 
-        SimpleRequest request = new();
-        RestAttribute attribute = request.Build(services);
+		SimpleRequest request = new();
+		RestAttribute attribute = request.Build(services);
 
-        HttpRequestMessage httpMessage = new()
-        {
-            Method = HttpMethod.Get,
-            RequestUri = new Uri("/test", UriKind.Relative)
-        };
+		HttpRequestMessage httpMessage = new()
+		{
+			Method = HttpMethod.Get,
+			RequestUri = new Uri("/test", UriKind.Relative)
+		};
 
-        RestRequestContext context = new()
-        {
-            Attribute = attribute,
-            Request = request,
-            Message = httpMessage,
-            SerializerOptions = RestSettings.SerializerOptions,
-            IsAborted = false
-        };
+		RestRequestContext context = new()
+		{
+			Attribute = attribute,
+			Request = request,
+			Message = httpMessage,
+			SerializerOptions = RestSettings.SerializerOptions,
+			IsAborted = false
+		};
 
-        // Act
-        RestRequest restRequest = await builder.BuildRequestAsync(context);
+		// Act
+		RestRequest restRequest = await builder.BuildRequestAsync(context);
 
-        // Assert
-        interceptor.WasInvoked.Should().BeTrue();
-        context.IsAborted.Should().BeTrue();
-    }
+		// Assert
+		interceptor.WasInvoked.Should().BeTrue();
+		context.IsAborted.Should().BeTrue();
+	}
 
-    [Fact]
-    public async Task BuildRequestAsync_NoComposerFound_Throws()
-    {
-        using IDisposable serializerScope = UseDefaultSerializerOptions();
+	[Fact]
+#pragma warning disable CS1591 // Missing XML comment for publicly visible type or member
+	public async Task BuildRequestAsync_NoComposerFound_Throws()
+#pragma warning restore CS1591 // Missing XML comment for publicly visible type or member
+	{
+		using IDisposable serializerScope = UseDefaultSerializerOptions();
 
-        // Arrange - no composers registered
-        IServiceProvider services = new ServiceCollection()
-            .BuildServiceProvider();
+		// Arrange - no composers registered
+		IServiceProvider services = new ServiceCollection()
+			.BuildServiceProvider();
 
-        RestRequestBuilder builder = new(services.GetServices<IRestRequestComposer>());
+		RestRequestBuilder builder = new(services.GetServices<IRestRequestComposer>());
 
-        SimpleRequest request = new();
-        RestAttribute attribute = request.Build(services);
+		SimpleRequest request = new();
+		RestAttribute attribute = request.Build(services);
 
-        HttpRequestMessage httpMessage = new()
-        {
-            Method = HttpMethod.Get,
-            RequestUri = new Uri("/test", UriKind.Relative)
-        };
+		HttpRequestMessage httpMessage = new()
+		{
+			Method = HttpMethod.Get,
+			RequestUri = new Uri("/test", UriKind.Relative)
+		};
 
-        RestRequestContext context = new()
-        {
-            Attribute = attribute,
-            Request = request,
-            Message = httpMessage,
-            SerializerOptions = RestSettings.SerializerOptions,
-            IsAborted = false
-        };
+		RestRequestContext context = new()
+		{
+			Attribute = attribute,
+			Request = request,
+			Message = httpMessage,
+			SerializerOptions = RestSettings.SerializerOptions,
+			IsAborted = false
+		};
 
-        // Act
-        Func<Task> act = async () => await builder.BuildRequestAsync(context);
+		// Act
+		Func<Task> act = async () => await builder.BuildRequestAsync(context);
 
-        // Assert
-        await act.Should()
-            .ThrowAsync<InvalidOperationException>()
-            .WithMessage("*No request builder found*");
-    }
+		// Assert
+		await act.Should()
+			.ThrowAsync<InvalidOperationException>()
+			.WithMessage("*No request builder found*");
+	}
 
-    private static IDisposable UseDefaultSerializerOptions()
-    {
-        JsonSerializerOptions previous = RestSettings.SerializerOptions;
-        RestSettings.SerializerOptions = new JsonSerializerOptions(JsonSerializerDefaults.Web)
-        {
-            TypeInfoResolver = new DefaultJsonTypeInfoResolver()
-        };
+	private static IDisposable UseDefaultSerializerOptions()
+	{
+		JsonSerializerOptions previous = RestSettings.SerializerOptions;
+		RestSettings.SerializerOptions = new JsonSerializerOptions(JsonSerializerDefaults.Web)
+		{
+			TypeInfoResolver = new DefaultJsonTypeInfoResolver()
+		};
 
-        return new DelegateDisposable(() => RestSettings.SerializerOptions = previous);
-    }
+		return new DelegateDisposable(() => RestSettings.SerializerOptions = previous);
+	}
 
-    private sealed class DelegateDisposable(Action dispose) : IDisposable
-    {
-        private readonly Action _dispose = dispose;
-        public void Dispose() => _dispose();
-    }
+	private sealed class DelegateDisposable(Action dispose) : IDisposable
+	{
+		private readonly Action _dispose = dispose;
+		public void Dispose() => _dispose();
+	}
 
-    private sealed record SimpleRequest : IRestRequest, IRestAttributeBuilder
-    {
-        public RestAttribute Build(IServiceProvider serviceProvider) =>
-            new RestGetAttribute("/test");
-    }
+	private sealed record SimpleRequest : IRestRequest, IRestAttributeBuilder
+	{
+		public RestAttribute Build(IServiceProvider serviceProvider) =>
+			new RestGetAttribute("/test");
+	}
 
-    private sealed record PlaceOrderRequest(string OrderId, string Product, int Quantity)
-        : IRestRequest, IRestString, IRestPathString, IRestAttributeBuilder
-    {
-        public IDictionary<string, string> GetPathString() => new Dictionary<string, string>
-        {
-            ["orderId"] = OrderId
-        };
+	private sealed record PlaceOrderRequest(string OrderId, string Product, int Quantity)
+		: IRestRequest, IRestString, IRestPathString, IRestAttributeBuilder
+	{
+		public IDictionary<string, string> GetPathString() => new Dictionary<string, string>
+		{
+			["orderId"] = OrderId
+		};
 
-        public RestAttribute Build(IServiceProvider serviceProvider) => new RestPostAttribute("/orders/{orderId}")
-        {
-            Location = RestSettings.Location.Body | RestSettings.Location.Path,
-            BodyFormat = RestSettings.BodyFormat.String,
-            ContentType = RestSettings.ContentType.Json,
-            Accept = RestSettings.ContentType.Json
-        };
-    }
+		public RestAttribute Build(IServiceProvider serviceProvider) => new RestPostAttribute("/orders/{orderId}")
+		{
+			Location = RestSettings.Location.Body | RestSettings.Location.Path,
+			BodyFormat = RestSettings.BodyFormat.String,
+			ContentType = RestSettings.ContentType.Json,
+			Accept = RestSettings.ContentType.Json
+		};
+	}
 
-        private sealed class AbortingRequestInterceptor : IRestRequestInterceptor
-        {
-            public bool WasInvoked { get; private set; }
+	private sealed class AbortingRequestInterceptor : IRestRequestInterceptor
+	{
+		public bool WasInvoked { get; private set; }
 
-            public ValueTask InterceptAsync(RestRequestContext context, CancellationToken cancellationToken = default)
-            {
-                WasInvoked = true;
-                context.IsAborted = true;
-                return ValueTask.CompletedTask;
-            }
-        }
+		public ValueTask InterceptAsync(RestRequestContext context, CancellationToken cancellationToken = default)
+		{
+			WasInvoked = true;
+			context.IsAborted = true;
+			return ValueTask.CompletedTask;
+		}
+	}
 
-        private sealed class FakeRequestComposer : IRestRequestComposer
-        {
-            public bool WasInvoked { get; private set; }
+	private sealed class FakeRequestComposer : IRestRequestComposer
+	{
+		public bool WasInvoked { get; private set; }
 
-            public bool CanCompose(RestRequestContext context) => true;
+		public bool CanCompose(RestRequestContext context) => true;
 
-            public ValueTask ComposeAsync(RestRequestContext context, CancellationToken cancellationToken = default)
-            {
-                WasInvoked = true;
-                return ValueTask.CompletedTask;
-            }
-        }
-    }
+		public ValueTask ComposeAsync(RestRequestContext context, CancellationToken cancellationToken = default)
+		{
+			WasInvoked = true;
+			return ValueTask.CompletedTask;
+		}
+	}
+}

@@ -32,7 +32,7 @@
   <PropertyGroup Condition="'$(Configuration)' == 'Debug' Or '$(Configuration)' == 'Release'">
     <CheckForOverflowUnderflow>true</CheckForOverflowUnderflow>
     <TreatWarningsAsErrors>true</TreatWarningsAsErrors>
-    <NoWarn>1701;1702;CA1034</NoWarn>
+    <NoWarn>1701;1702;CA1034;CA1812;</NoWarn>
   </PropertyGroup>
 
 </Project>

@@ -21,23 +21,28 @@ namespace System.Data;
 /// </summary>
 public enum SqlDialect
 {
-    /// <summary>
-    /// Microsoft SQL Server dialect (T-SQL).
-    /// </summary>
-    SqlServer,
+	/// <summary>
+	/// Microsoft SQL Server dialect (T-SQL).
+	/// </summary>
+	SqlServer,
 
-    /// <summary>
-    /// PostgreSQL dialect.
-    /// </summary>
-    PostgreSql,
+	/// <summary>
+	/// PostgreSQL dialect.
+	/// </summary>
+	PostgreSql,
 
-    /// <summary>
-    /// MySQL dialect.
-    /// </summary>
-    MySql,
+	/// <summary>
+	/// MySQL dialect.
+	/// </summary>
+	MySql,
 
-    /// <summary>
-    /// SQLite dialect.
-    /// </summary>
-    SQLite
+	/// <summary>
+	/// Oracle Database dialect (PL/SQL).
+	/// </summary>
+	Oracle,
+
+	/// <summary>
+	/// SQLite dialect.
+	/// </summary>
+	SQLite
 }

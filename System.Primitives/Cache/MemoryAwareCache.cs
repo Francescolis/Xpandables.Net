@@ -1,4 +1,4 @@
-
+﻿
 /*******************************************************************************
  * Copyright (C) 2024 Francis-Black EWANE
  *
@@ -50,14 +50,12 @@ public sealed class MemoryAwareCache<TKey, TValue> : IDisposable
 	/// <para>Set <paramref name="cleanupInterval"/> to <see cref="TimeSpan.Zero"/> to disable automatic cleanup. In this case,
 	/// <paramref name="maxAge"/> is ignored and items are never removed from the cache.</para>
 	/// </remarks>
-	/// <param name="cleanupInterval">The interval at which the cache performs cleanup operations to remove expired items.  If not specified, the
-	/// default value is 5 minutes. </param>
-	/// <param name="maxAge">The maximum age an item can remain in the cache before it is considered expired and eligible for removal.  If
-	/// not specified, the default value is 1 hour.</param>
+	/// <param name="cleanupInterval">The interval at which the cache performs cleanup operations to remove expired items.</param>
+	/// <param name="maxAge">The maximum age an item can remain in the cache before it is considered expired and eligible for removal.</param>
 	public MemoryAwareCache(TimeSpan cleanupInterval = default, TimeSpan maxAge = default)
 	{
-		_cleanupInterval = cleanupInterval == default ? TimeSpan.FromMinutes(5) : cleanupInterval;
-		_maxAge = maxAge == default ? TimeSpan.FromHours(1) : maxAge;
+		_cleanupInterval = cleanupInterval;
+		_maxAge = maxAge;
 
 		_cleanupTimer = new Timer(Cleanup, null, _cleanupInterval, _cleanupInterval);
 	}

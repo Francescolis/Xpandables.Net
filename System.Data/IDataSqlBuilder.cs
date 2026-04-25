@@ -274,24 +274,3 @@ public interface IDataSqlBuilder : IDataSqlMetadata
 		IDataSpecification<TEntity, TEntity> specification)
 		where TEntity : class;
 }
-
-/// <summary>
-/// Provides factory methods for creating SQL builders for specific dialects.
-/// </summary>
-public interface IDataSqlBuilderFactory
-{
-	/// <summary>
-	/// Creates a SQL builder for the specified dialect.
-	/// </summary>
-	/// <param name="dialect">The SQL dialect.</param>
-	/// <returns>A SQL builder for the specified dialect.</returns>
-	IDataSqlBuilder Create(SqlDialect dialect);
-
-	/// <summary>
-	/// Creates a SQL builder for the specified provider invariant name.
-	/// </summary>
-	/// <param name="providerInvariantName">The provider invariant name 
-	/// (e.g., <see cref="DbProviders.MsSqlServer.InvariantName"/>).</param>
-	/// <returns>A SQL builder for the provider's dialect.</returns>
-	IDataSqlBuilder Create(string providerInvariantName);
-}

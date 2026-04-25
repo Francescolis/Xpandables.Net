@@ -16,21 +16,18 @@
 ********************************************************************************/
 namespace System.Data;
 
-/// <summary>
-/// Factory for creating <see cref="IDataUnitOfWork"/> instances.
-/// </summary>
-public interface IDataUnitOfWorkFactory
+internal sealed class DataSqlServiceAccessorFactory(IDataSqlMapper sqlMapper, IDataSqlBuilderFactory sqlBuilderFactory) : IDataSqlServiceAccessorFactory
 {
-	/// <summary>
-	/// Creates a new unit of work asynchronously with an open connection.
-	/// </summary>
-	/// <param name="cancellationToken">A token to cancel the operation.</param>
-	/// <returns>A new unit of work instance.</returns>
-	Task<IDataUnitOfWork> CreateAsync(CancellationToken cancellationToken = default);
+	public IDataSqlServiceAccessor Create(string providerInvariantName)
+	{
+		ArgumentNullException.ThrowIfNull(providerInvariantName);
+		IDataSqlBuilder sqlBuilder = sqlBuilderFactory.Create(providerInvariantName);
+		return new DataSqlServiceAccessor(sqlBuilder, sqlMapper);
+	}
 
-	/// <summary>
-	/// Creates a new unit of work synchronously with an open connection.
-	/// </summary>
-	/// <returns>A new unit of work instance.</returns>
-	IDataUnitOfWork Create();
+	public IDataSqlServiceAccessor Create(SqlDialect sqlDialect)
+	{
+		IDataSqlBuilder sqlBuilder = sqlBuilderFactory.Create(sqlDialect);
+		return new DataSqlServiceAccessor(sqlBuilder, sqlMapper);
+	}
 }

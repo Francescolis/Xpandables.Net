@@ -138,9 +138,7 @@ public abstract class DataSqlBuilderBase : IDataSqlBuilder
 
 		sql.Append(columns);
 		sql.Append(" FROM ");
-		sql.Append(tableName);
-		sql.Append(' ');
-		sql.Append(bindings[0].Alias);
+		AppendFromSource(sql, specification.Source, tableName, bindings[0].Alias);
 
 		AppendJoins(sql, specification.Joins, bindings, parameters);
 
@@ -149,17 +147,17 @@ public abstract class DataSqlBuilderBase : IDataSqlBuilder
 		{
 			sql.Append(" WHERE ");
 			IReadOnlyDictionary<ParameterExpression, TableBinding> predicateBindings = BuildParameterBindings(specification.Predicate, bindings);
-			string whereClause = TranslateExpression(specification.Predicate.Body, predicateBindings, parameters);
+			string whereClause = TranslateBooleanOperand(specification.Predicate.Body, predicateBindings, parameters);
 			sql.Append(whereClause);
 		}
 
 		if (specification.GroupBy.Count > 0)
 		{
 			sql.Append(" GROUP BY ");
-			IEnumerable<string> groupClauses = specification.GroupBy.Select(group =>
+			IEnumerable<string> groupClauses = specification.GroupBy.SelectMany(group =>
 			{
 				IReadOnlyDictionary<ParameterExpression, TableBinding> groupBindings = BuildParameterBindings(group, bindings);
-				return TranslateExpression(group.Body, groupBindings, parameters);
+				return ExpandExpressionColumns(group.Body, groupBindings, parameters);
 			});
 			sql.Append(string.Join(", ", groupClauses));
 		}
@@ -168,7 +166,7 @@ public abstract class DataSqlBuilderBase : IDataSqlBuilder
 		{
 			sql.Append(" HAVING ");
 			IReadOnlyDictionary<ParameterExpression, TableBinding> havingBindings = BuildParameterBindings(specification.Having, bindings);
-			string havingClause = TranslateExpression(specification.Having.Body, havingBindings, parameters);
+			string havingClause = TranslateBooleanOperand(specification.Having.Body, havingBindings, parameters);
 			sql.Append(havingClause);
 		}
 
@@ -211,26 +209,24 @@ public abstract class DataSqlBuilderBase : IDataSqlBuilder
 		sql.Append("SELECT ");
 		sql.Append(requiresSubquery ? "1" : "COUNT(*)");
 		sql.Append(" FROM ");
-		sql.Append(tableName);
-		sql.Append(' ');
-		sql.Append(bindings[0].Alias);
+		AppendFromSource(sql, specification.Source, tableName, bindings[0].Alias);
 		AppendJoins(sql, specification.Joins, bindings, parameters);
 
 		if (specification.Predicate != null)
 		{
 			sql.Append(" WHERE ");
 			IReadOnlyDictionary<ParameterExpression, TableBinding> predicateBindings = BuildParameterBindings(specification.Predicate, bindings);
-			string whereClause = TranslateExpression(specification.Predicate.Body, predicateBindings, parameters);
+			string whereClause = TranslateBooleanOperand(specification.Predicate.Body, predicateBindings, parameters);
 			sql.Append(whereClause);
 		}
 
 		if (specification.GroupBy.Count > 0)
 		{
 			sql.Append(" GROUP BY ");
-			IEnumerable<string> groupClauses = specification.GroupBy.Select(group =>
+			IEnumerable<string> groupClauses = specification.GroupBy.SelectMany(group =>
 			{
 				IReadOnlyDictionary<ParameterExpression, TableBinding> groupBindings = BuildParameterBindings(group, bindings);
-				return TranslateExpression(group.Body, groupBindings, parameters);
+				return ExpandExpressionColumns(group.Body, groupBindings, parameters);
 			});
 			sql.Append(string.Join(", ", groupClauses));
 		}
@@ -239,7 +235,7 @@ public abstract class DataSqlBuilderBase : IDataSqlBuilder
 		{
 			sql.Append(" HAVING ");
 			IReadOnlyDictionary<ParameterExpression, TableBinding> havingBindings = BuildParameterBindings(specification.Having, bindings);
-			string havingClause = TranslateExpression(specification.Having.Body, havingBindings, parameters);
+			string havingClause = TranslateBooleanOperand(specification.Having.Body, havingBindings, parameters);
 			sql.Append(havingClause);
 		}
 
@@ -421,6 +417,11 @@ public abstract class DataSqlBuilderBase : IDataSqlBuilder
 		ArgumentNullException.ThrowIfNull(specification);
 		ArgumentNullException.ThrowIfNull(updater);
 
+		if (!string.IsNullOrEmpty(specification.Source))
+		{
+			throw new InvalidOperationException("UPDATE operations are not supported when a custom source is specified. Use the default table name instead.");
+		}
+
 		if (updater.Updates.Count == 0)
 		{
 			throw new InvalidOperationException("The updater must contain at least one property update.");
@@ -450,7 +451,7 @@ public abstract class DataSqlBuilderBase : IDataSqlBuilder
 		{
 			sql.Append(" WHERE ");
 			IReadOnlyDictionary<ParameterExpression, TableBinding> predicateBindings = BuildParameterBindings(specification.Predicate, bindings);
-			string whereClause = TranslateExpression(specification.Predicate.Body, predicateBindings, parameters);
+			string whereClause = TranslateBooleanOperand(specification.Predicate.Body, predicateBindings, parameters);
 			sql.Append(whereClause);
 		}
 
@@ -463,6 +464,11 @@ public abstract class DataSqlBuilderBase : IDataSqlBuilder
 		where TEntity : class
 	{
 		ArgumentNullException.ThrowIfNull(specification);
+
+		if (!string.IsNullOrEmpty(specification.Source))
+		{
+			throw new InvalidOperationException("DELETE operations are not supported when a custom source is specified. Use the default table name instead.");
+		}
 
 		ResetParameterIndex();
 		var parameters = new List<SqlParameter>();
@@ -479,7 +485,7 @@ public abstract class DataSqlBuilderBase : IDataSqlBuilder
 		{
 			sql.Append(" WHERE ");
 			IReadOnlyDictionary<ParameterExpression, TableBinding> predicateBindings = BuildParameterBindings(specification.Predicate, bindings);
-			string whereClause = TranslateExpression(specification.Predicate.Body, predicateBindings, parameters);
+			string whereClause = TranslateBooleanOperand(specification.Predicate.Body, predicateBindings, parameters);
 			sql.Append(whereClause);
 		}
 
@@ -510,6 +516,34 @@ public abstract class DataSqlBuilderBase : IDataSqlBuilder
 	/// <param name="skip">The number of rows to skip.</param>
 	/// <param name="take">The number of rows to take.</param>
 	protected abstract void AppendPaging(StringBuilder sql, int? skip, int? take);
+
+	/// <summary>
+	/// Appends the FROM source clause to the SQL, using either a custom source or the default table name.
+	/// </summary>
+	private void AppendFromSource(StringBuilder sql, string? source, string tableName, string alias)
+	{
+		if (!string.IsNullOrEmpty(source))
+		{
+			if (source.Contains("SELECT", StringComparison.OrdinalIgnoreCase))
+			{
+				sql.Append('(');
+				sql.Append(source);
+				sql.Append(") ");
+			}
+			else
+			{
+				sql.Append(QuoteIdentifier(source));
+				sql.Append(' ');
+			}
+		}
+		else
+		{
+			sql.Append(tableName);
+			sql.Append(' ');
+		}
+
+		sql.Append(alias);
+	}
 
 	/// <summary>
 	/// Represents a binding between a CLR type and a SQL table alias.
@@ -596,7 +630,28 @@ public abstract class DataSqlBuilderBase : IDataSqlBuilder
 
 		for (int i = 0; i < expression.Parameters.Count; i++)
 		{
-			map[expression.Parameters[i]] = bindings[i];
+			ParameterExpression param = expression.Parameters[i];
+			Type paramType = param.Type;
+
+			// First parameter is always the base entity (bindings[0])
+			if (i == 0)
+			{
+				map[param] = bindings[0];
+				continue;
+			}
+
+			// For subsequent parameters, resolve by type
+			TableBinding[] candidates = bindings.Where(b => b.EntityType == paramType).ToArray();
+
+			map[param] = candidates.Length switch
+			{
+				1 => candidates[0],
+				0 => throw new InvalidOperationException(
+					$"No table binding found for parameter '{param.Name}' of type '{paramType.Name}'."),
+				_ => throw new InvalidOperationException(
+					$"Ambiguous table binding for parameter '{param.Name}' of type '{paramType.Name}'. " +
+					$"Multiple joins reference the same entity type. Self-join GROUP BY/ORDER BY with multiple parameters is not supported.")
+			};
 		}
 
 		return map;
@@ -781,7 +836,7 @@ public abstract class DataSqlBuilderBase : IDataSqlBuilder
 				$"{binding.Alias}.{QuoteIdentifier(column)}"));
 		}
 
-		if (selector.Body is MemberExpression memberExpr)
+		if (selector.Body is MemberExpression memberExpr && memberExpr.Expression is ParameterExpression)
 		{
 			return ResolveMemberColumn(memberExpr, bindings);
 		}
@@ -804,9 +859,30 @@ public abstract class DataSqlBuilderBase : IDataSqlBuilder
 		if (selector.Body is MemberInitExpression memberInit)
 		{
 			var selectedColumns = new List<string>();
+
+			// Include constructor argument columns (e.g., new Dto(o.Id) { Name = o.Name })
+			for (int i = 0; i < memberInit.NewExpression.Arguments.Count; i++)
+			{
+				Expression arg = memberInit.NewExpression.Arguments[i];
+				string? alias = memberInit.NewExpression.Members?[i].Name
+					?? memberInit.NewExpression.Constructor?.GetParameters()[i].Name;
+				selectedColumns.Add(BuildSelectColumnExpression(arg, bindings, parameters, alias));
+			}
+
 			foreach (MemberAssignment bindingInfo in memberInit.Bindings.OfType<MemberAssignment>())
 			{
-				selectedColumns.Add(BuildSelectColumnExpression(bindingInfo.Expression, bindings, parameters, bindingInfo.Member.Name));
+				if (bindingInfo.Expression is ParameterExpression param && bindings.TryGetValue(param, out TableBinding? tb))
+				{
+					// Expand all columns for this entity parameter
+					foreach (var col in tb.Columns.Values)
+					{
+						selectedColumns.Add($"{tb.Alias}.{QuoteIdentifier(col)}");
+					}
+				}
+				else
+				{
+					selectedColumns.Add(BuildSelectColumnExpression(bindingInfo.Expression, bindings, parameters, bindingInfo.Member.Name));
+				}
 			}
 			if (selectedColumns.Count > 0)
 			{
@@ -836,6 +912,33 @@ public abstract class DataSqlBuilderBase : IDataSqlBuilder
 	}
 
 	/// <summary>
+	/// Expands an expression into one or more SQL column references.
+	/// A <see cref="NewExpression"/> (e.g. anonymous type) is flattened to its individual arguments;
+	/// all other expressions are translated as a single column.
+	/// </summary>
+	private IEnumerable<string> ExpandExpressionColumns(
+		Expression expression,
+		IReadOnlyDictionary<ParameterExpression, TableBinding> bindings,
+		List<SqlParameter> parameters)
+	{
+		if (expression is NewExpression newExpr)
+		{
+			foreach (Expression arg in newExpr.Arguments)
+			{
+				yield return TranslateExpression(arg, bindings, parameters);
+			}
+		}
+		else if (expression is MemberExpression { Expression: ParameterExpression } member)
+		{
+			yield return ResolveMemberColumn(member, bindings);
+		}
+		else
+		{
+			yield return TranslateExpression(expression, bindings, parameters);
+		}
+	}
+
+	/// <summary>
 	/// Builds an ORDER BY clause from an order specification.
 	/// </summary>
 	protected virtual string BuildOrderClause(
@@ -845,12 +948,10 @@ public abstract class DataSqlBuilderBase : IDataSqlBuilder
 	{
 		IReadOnlyDictionary<ParameterExpression, TableBinding> bindingMap = BuildParameterBindings(orderSpec.KeySelector, bindings);
 		Expression orderExpression = orderSpec.KeySelector.Body;
-		string column = orderExpression is MemberExpression member
-			? ResolveMemberColumn(member, bindingMap)
-			: TranslateExpression(orderExpression, bindingMap, parameters);
-
 		string direction = orderSpec.Descending ? "DESC" : "ASC";
-		return $"{column} {direction}";
+
+		IEnumerable<string> columns = ExpandExpressionColumns(orderExpression, bindingMap, parameters);
+		return string.Join(", ", columns.Select(c => $"{c} {direction}"));
 	}
 
 	/// <summary>
@@ -932,6 +1033,15 @@ public abstract class DataSqlBuilderBase : IDataSqlBuilder
 			return $"COALESCE({coalesceLeft}, {coalesceRight})";
 		}
 
+		// For logical operators, ensure bare boolean members are wrapped as SQL conditions
+		if (binary.NodeType is ExpressionType.AndAlso or ExpressionType.OrElse)
+		{
+			string logicalLeft = TranslateBooleanOperand(binary.Left, bindings, parameters);
+			string logicalRight = TranslateBooleanOperand(binary.Right, bindings, parameters);
+			string logicalOp = binary.NodeType == ExpressionType.AndAlso ? "AND" : "OR";
+			return $"({logicalLeft} {logicalOp} {logicalRight})";
+		}
+
 		string left = TranslateExpression(binary.Left, bindings, parameters);
 		string right = TranslateExpression(binary.Right, bindings, parameters);
 
@@ -974,6 +1084,65 @@ public abstract class DataSqlBuilderBase : IDataSqlBuilder
 		}
 
 		return $"({left} {op} {right})";
+	}
+
+	/// <summary>
+	/// Translates a <see cref="SqlFunctions"/> aggregate marker method call to the corresponding SQL aggregate function.
+	/// </summary>
+	protected virtual string TranslateSqlAggregate(
+		MethodCallExpression methodCall,
+		IReadOnlyDictionary<ParameterExpression, TableBinding> bindings,
+		List<SqlParameter> parameters)
+	{
+		string methodName = methodCall.Method.Name;
+
+		if (methodName == "Count" && methodCall.Arguments.Count == 0)
+		{
+			return "COUNT(*)";
+		}
+
+		if (methodCall.Arguments.Count != 1)
+		{
+			throw new NotSupportedException($"Sql.{methodName} requires exactly one column argument.");
+		}
+
+		string column = TranslateExpression(methodCall.Arguments[0], bindings, parameters);
+
+		return methodName switch
+		{
+			"Count" => $"COUNT({column})",
+			"CountDistinct" => $"COUNT(DISTINCT {column})",
+			"Sum" => $"SUM({column})",
+			"Avg" => $"AVG({column})",
+			"Min" => $"MIN({column})",
+			"Max" => $"MAX({column})",
+			_ => throw new NotSupportedException($"Sql aggregate function '{methodName}' is not supported.")
+		};
+	}
+
+	/// <summary>
+	/// Translates an expression that must produce a SQL boolean condition.
+	/// Wraps bare boolean member references with = 1 for SQL Server compatibility.
+	/// </summary>
+	private string TranslateBooleanOperand(
+		Expression expression,
+		IReadOnlyDictionary<ParameterExpression, TableBinding> bindings,
+		List<SqlParameter> parameters)
+	{
+		Expression unwrapped = expression;
+		while (unwrapped is UnaryExpression { NodeType: ExpressionType.Convert } conv)
+		{
+			unwrapped = conv.Operand;
+		}
+
+		if (unwrapped is MemberExpression { Expression: ParameterExpression } member
+			&& member.Type == typeof(bool))
+		{
+			string column = ResolveMemberColumn(member, bindings);
+			return $"({column} = 1)";
+		}
+
+		return TranslateExpression(expression, bindings, parameters);
 	}
 
 	/// <summary>
@@ -1039,6 +1208,13 @@ public abstract class DataSqlBuilderBase : IDataSqlBuilder
 			return TranslateExpression(nullableValueMember, bindings, parameters);
 		}
 
+		// Handle string.Length → LEN(column)
+		if (member.Member.Name == "Length" && member.Expression?.Type == typeof(string))
+		{
+			string column = TranslateExpression(member.Expression, bindings, parameters);
+			return $"LEN({column})";
+		}
+
 		if (member.Expression is ParameterExpression)
 		{
 			return ResolveMemberColumn(member, bindings);
@@ -1077,12 +1253,28 @@ public abstract class DataSqlBuilderBase : IDataSqlBuilder
 				"Contains" => TranslateStringContains(methodCall, bindings, parameters),
 				"StartsWith" => TranslateStringStartsWith(methodCall, bindings, parameters),
 				"EndsWith" => TranslateStringEndsWith(methodCall, bindings, parameters),
-				"ToLower" => TranslateStringToLower(methodCall, bindings, parameters),
-				"ToUpper" => TranslateStringToUpper(methodCall, bindings, parameters),
+				"Equals" => TranslateStringEquals(methodCall, bindings, parameters),
+				"ToLower" or "ToLowerInvariant" => TranslateStringToLower(methodCall, bindings, parameters),
+				"ToUpper" or "ToUpperInvariant" => TranslateStringToUpper(methodCall, bindings, parameters),
+				"Trim" => TranslateStringTrim(methodCall, bindings, parameters),
+				"TrimStart" => TranslateStringTrimStart(methodCall, bindings, parameters),
+				"TrimEnd" => TranslateStringTrimEnd(methodCall, bindings, parameters),
+				"Substring" => TranslateStringSubstring(methodCall, bindings, parameters),
+				"Replace" => TranslateStringReplace(methodCall, bindings, parameters),
+				"IndexOf" => TranslateStringIndexOf(methodCall, bindings, parameters),
+				"Concat" => TranslateStringConcat(methodCall, bindings, parameters),
 				"IsNullOrEmpty" => TranslateStringIsNullOrEmpty(methodCall, bindings, parameters),
 				"IsNullOrWhiteSpace" => TranslateStringIsNullOrWhiteSpace(methodCall, bindings, parameters),
 				_ => throw new NotSupportedException($"String method '{methodName}' is not supported.")
 			};
+		}
+
+		// Handle Equals on non-string types (e.g., object.Equals, Guid.Equals)
+		if (methodName == "Equals" && methodCall.Object != null && methodCall.Arguments.Count == 1)
+		{
+			string equalsLeft = TranslateExpression(methodCall.Object, bindings, parameters);
+			string equalsRight = TranslateExpression(methodCall.Arguments[0], bindings, parameters);
+			return $"({equalsLeft} = {equalsRight})";
 		}
 
 		// Handle Nullable<T>.GetValueOrDefault()
@@ -1097,6 +1289,12 @@ public abstract class DataSqlBuilderBase : IDataSqlBuilder
 				return $"COALESCE({column}, {defaultValue})";
 			}
 			return column;
+		}
+
+		// Handle Sql aggregate functions (Count, Sum, Avg, Min, Max)
+		if (methodCall.Method.DeclaringType == typeof(SqlFunctions))
+		{
+			return TranslateSqlAggregate(methodCall, bindings, parameters);
 		}
 
 		throw new NotSupportedException($"Method '{methodCall.Method.DeclaringType?.Name}.{methodName}' is not supported.");
@@ -1139,6 +1337,7 @@ public abstract class DataSqlBuilderBase : IDataSqlBuilder
 
 	/// <summary>
 	/// Translates string.Contains using table bindings.
+	/// Supports optional <see cref="StringComparison"/> for case-insensitive matching.
 	/// </summary>
 	protected virtual string TranslateStringContains(
 		MethodCallExpression methodCall,
@@ -1148,13 +1347,19 @@ public abstract class DataSqlBuilderBase : IDataSqlBuilder
 		(Expression? columnExpr, Expression? valueExpr) = GetStringMethodOperands(methodCall);
 		string column = TranslateExpression(columnExpr, bindings, parameters);
 		object? value = ExtractConstantValue(valueExpr);
+		bool caseInsensitive = IsCaseInsensitive(ExtractStringComparisonArgument(methodCall));
 		string paramName = NextParameterName();
 		parameters.Add(new SqlParameter(paramName, $"%{value}%"));
-		return $"({column} LIKE {ParameterPrefix}{paramName})";
+		string paramRef = $"{ParameterPrefix}{paramName}";
+
+		return caseInsensitive
+			? $"(LOWER({column}) LIKE LOWER({paramRef}))"
+			: $"({column} LIKE {paramRef})";
 	}
 
 	/// <summary>
 	/// Translates string.StartsWith using table bindings.
+	/// Supports optional <see cref="StringComparison"/> for case-insensitive matching.
 	/// </summary>
 	protected virtual string TranslateStringStartsWith(
 		MethodCallExpression methodCall,
@@ -1164,13 +1369,19 @@ public abstract class DataSqlBuilderBase : IDataSqlBuilder
 		(Expression? columnExpr, Expression? valueExpr) = GetStringMethodOperands(methodCall);
 		string column = TranslateExpression(columnExpr, bindings, parameters);
 		object? value = ExtractConstantValue(valueExpr);
+		bool caseInsensitive = IsCaseInsensitive(ExtractStringComparisonArgument(methodCall));
 		string paramName = NextParameterName();
 		parameters.Add(new SqlParameter(paramName, $"{value}%"));
-		return $"({column} LIKE {ParameterPrefix}{paramName})";
+		string paramRef = $"{ParameterPrefix}{paramName}";
+
+		return caseInsensitive
+			? $"(LOWER({column}) LIKE LOWER({paramRef}))"
+			: $"({column} LIKE {paramRef})";
 	}
 
 	/// <summary>
 	/// Translates string.EndsWith using table bindings.
+	/// Supports optional <see cref="StringComparison"/> for case-insensitive matching.
 	/// </summary>
 	protected virtual string TranslateStringEndsWith(
 		MethodCallExpression methodCall,
@@ -1180,9 +1391,172 @@ public abstract class DataSqlBuilderBase : IDataSqlBuilder
 		(Expression? columnExpr, Expression? valueExpr) = GetStringMethodOperands(methodCall);
 		string column = TranslateExpression(columnExpr, bindings, parameters);
 		object? value = ExtractConstantValue(valueExpr);
+		bool caseInsensitive = IsCaseInsensitive(ExtractStringComparisonArgument(methodCall));
 		string paramName = NextParameterName();
 		parameters.Add(new SqlParameter(paramName, $"%{value}"));
-		return $"({column} LIKE {ParameterPrefix}{paramName})";
+		string paramRef = $"{ParameterPrefix}{paramName}";
+
+		return caseInsensitive
+			? $"(LOWER({column}) LIKE LOWER({paramRef}))"
+			: $"({column} LIKE {paramRef})";
+	}
+
+	/// <summary>
+	/// Translates string.Equals using table bindings.
+	/// Supports both instance and static overloads with optional <see cref="StringComparison"/>.
+	/// </summary>
+	protected virtual string TranslateStringEquals(
+		MethodCallExpression methodCall,
+		IReadOnlyDictionary<ParameterExpression, TableBinding> bindings,
+		List<SqlParameter> parameters)
+	{
+		bool caseInsensitive = IsCaseInsensitive(ExtractStringComparisonArgument(methodCall));
+
+		Expression leftExpr;
+		Expression rightExpr;
+
+		if (methodCall.Object != null)
+		{
+			leftExpr = methodCall.Object;
+			rightExpr = methodCall.Arguments[0];
+		}
+		else
+		{
+			leftExpr = methodCall.Arguments[0];
+			rightExpr = methodCall.Arguments[1];
+		}
+
+		string left = TranslateExpression(leftExpr, bindings, parameters);
+		string right = TranslateExpression(rightExpr, bindings, parameters);
+
+		if (right == "NULL")
+		{
+			return $"({left} IS NULL)";
+		}
+
+		if (left == "NULL")
+		{
+			return $"({right} IS NULL)";
+		}
+
+		return caseInsensitive
+			? $"(LOWER({left}) = LOWER({right}))"
+			: $"({left} = {right})";
+	}
+
+	/// <summary>
+	/// Translates string.Trim to LTRIM(RTRIM(column)).
+	/// </summary>
+	protected virtual string TranslateStringTrim(
+		MethodCallExpression methodCall,
+		IReadOnlyDictionary<ParameterExpression, TableBinding> bindings,
+		List<SqlParameter> parameters)
+	{
+		string column = TranslateExpression(methodCall.Object!, bindings, parameters);
+		return $"LTRIM(RTRIM({column}))";
+	}
+
+	/// <summary>
+	/// Translates string.TrimStart to LTRIM(column).
+	/// </summary>
+	protected virtual string TranslateStringTrimStart(
+		MethodCallExpression methodCall,
+		IReadOnlyDictionary<ParameterExpression, TableBinding> bindings,
+		List<SqlParameter> parameters)
+	{
+		string column = TranslateExpression(methodCall.Object!, bindings, parameters);
+		return $"LTRIM({column})";
+	}
+
+	/// <summary>
+	/// Translates string.TrimEnd to RTRIM(column).
+	/// </summary>
+	protected virtual string TranslateStringTrimEnd(
+		MethodCallExpression methodCall,
+		IReadOnlyDictionary<ParameterExpression, TableBinding> bindings,
+		List<SqlParameter> parameters)
+	{
+		string column = TranslateExpression(methodCall.Object!, bindings, parameters);
+		return $"RTRIM({column})";
+	}
+
+	/// <summary>
+	/// Translates string.Substring to SUBSTRING(column, start + 1, length).
+	/// Adjusts from 0-based C# indexing to 1-based SQL indexing.
+	/// </summary>
+	protected virtual string TranslateStringSubstring(
+		MethodCallExpression methodCall,
+		IReadOnlyDictionary<ParameterExpression, TableBinding> bindings,
+		List<SqlParameter> parameters)
+	{
+		string column = TranslateExpression(methodCall.Object!, bindings, parameters);
+		string startIndex = TranslateExpression(methodCall.Arguments[0], bindings, parameters);
+
+		if (methodCall.Arguments.Count == 2)
+		{
+			string length = TranslateExpression(methodCall.Arguments[1], bindings, parameters);
+			return $"SUBSTRING({column}, {startIndex} + 1, {length})";
+		}
+
+		return $"SUBSTRING({column}, {startIndex} + 1, LEN({column}))";
+	}
+
+	/// <summary>
+	/// Translates string.Replace to REPLACE(column, oldValue, newValue).
+	/// </summary>
+	protected virtual string TranslateStringReplace(
+		MethodCallExpression methodCall,
+		IReadOnlyDictionary<ParameterExpression, TableBinding> bindings,
+		List<SqlParameter> parameters)
+	{
+		string column = TranslateExpression(methodCall.Object!, bindings, parameters);
+		string oldValue = TranslateExpression(methodCall.Arguments[0], bindings, parameters);
+		string newValue = TranslateExpression(methodCall.Arguments[1], bindings, parameters);
+		return $"REPLACE({column}, {oldValue}, {newValue})";
+	}
+
+	/// <summary>
+	/// Translates string.IndexOf to (CHARINDEX(value, column) - 1).
+	/// Adjusts from 1-based SQL result to 0-based C# convention.
+	/// </summary>
+	protected virtual string TranslateStringIndexOf(
+		MethodCallExpression methodCall,
+		IReadOnlyDictionary<ParameterExpression, TableBinding> bindings,
+		List<SqlParameter> parameters)
+	{
+		string column = TranslateExpression(methodCall.Object!, bindings, parameters);
+		string searchValue = TranslateExpression(methodCall.Arguments[0], bindings, parameters);
+		bool caseInsensitive = IsCaseInsensitive(ExtractStringComparisonArgument(methodCall));
+
+		return caseInsensitive
+			? $"(CHARINDEX(LOWER({searchValue}), LOWER({column})) - 1)"
+			: $"(CHARINDEX({searchValue}, {column}) - 1)";
+	}
+
+	/// <summary>
+	/// Translates string.Concat to CONCAT(a, b, ...).
+	/// </summary>
+	protected virtual string TranslateStringConcat(
+		MethodCallExpression methodCall,
+		IReadOnlyDictionary<ParameterExpression, TableBinding> bindings,
+		List<SqlParameter> parameters)
+	{
+		var parts = new List<string>();
+		foreach (Expression arg in methodCall.Arguments)
+		{
+			if (arg is NewArrayExpression newArray)
+			{
+				foreach (Expression element in newArray.Expressions)
+				{
+					parts.Add(TranslateExpression(element, bindings, parameters));
+				}
+			}
+			else
+			{
+				parts.Add(TranslateExpression(arg, bindings, parameters));
+			}
+		}
+		return $"CONCAT({string.Join(", ", parts)})";
 	}
 
 	/// <summary>
@@ -1247,19 +1621,7 @@ public abstract class DataSqlBuilderBase : IDataSqlBuilder
 	/// </summary>
 	protected virtual IReadOnlyList<object?> ExtractCollectionValues(Expression expression)
 	{
-		IReadOnlyList<object?> values = ExtractCollectionValuesInternal(UnwrapConversion(expression));
-
-		if (values.Count == 0)
-		{
-			return values;
-		}
-
-		if (values.Count == 1 && values[0] is string)
-		{
-			throw new NotSupportedException("String values are not supported for collection Contains translation.");
-		}
-
-		return values;
+		return ExtractCollectionValuesInternal(UnwrapConversion(expression));
 	}
 
 	private IReadOnlyList<object?> ExtractCollectionValuesInternal(Expression expression)
@@ -1337,7 +1699,7 @@ public abstract class DataSqlBuilderBase : IDataSqlBuilder
 		IReadOnlyDictionary<ParameterExpression, TableBinding> bindings,
 		List<SqlParameter> parameters)
 	{
-		string test = TranslateExpression(conditional.Test, bindings, parameters);
+		string test = TranslateBooleanOperand(conditional.Test, bindings, parameters);
 		string ifTrue = TranslateExpression(conditional.IfTrue, bindings, parameters);
 		string ifFalse = TranslateExpression(conditional.IfFalse, bindings, parameters);
 		return $"(CASE WHEN {test} THEN {ifTrue} ELSE {ifFalse} END)";
@@ -1377,7 +1739,7 @@ public abstract class DataSqlBuilderBase : IDataSqlBuilder
 
 		if (value is string)
 		{
-			return [value];
+			throw new NotSupportedException("A string value cannot be used as a collection for Contains translation. Use a List<string> or string[] instead.");
 		}
 
 		if (value is Collections.IEnumerable enumerable)
@@ -1497,6 +1859,40 @@ public abstract class DataSqlBuilderBase : IDataSqlBuilder
 
 		throw new NotSupportedException($"Cannot extract value from member expression: {member}");
 	}
+
+	/// <summary>
+	/// Extracts a <see cref="StringComparison"/> argument from a method call, if present.
+	/// </summary>
+	protected static StringComparison? ExtractStringComparisonArgument(MethodCallExpression methodCall)
+	{
+		foreach (Expression argument in methodCall.Arguments)
+		{
+			if (argument.Type == typeof(StringComparison))
+			{
+				// Enum values in expression trees may be represented as Convert(Constant(int), EnumType).
+				// ExtractConstantValue strips the Convert, returning the raw int, so we cast explicitly.
+				Expression unwrapped = argument;
+				while (unwrapped is UnaryExpression { NodeType: ExpressionType.Convert } conv)
+				{
+					unwrapped = conv.Operand;
+				}
+
+				if (unwrapped is ConstantExpression constant && constant.Value != null)
+				{
+					return (StringComparison)(int)Convert.ChangeType(constant.Value, typeof(int), Globalization.CultureInfo.InvariantCulture);
+				}
+			}
+		}
+		return null;
+	}
+
+	/// <summary>
+	/// Determines whether the specified <see cref="StringComparison"/> represents a case-insensitive comparison.
+	/// </summary>
+	protected static bool IsCaseInsensitive(StringComparison? comparison) =>
+		comparison is StringComparison.OrdinalIgnoreCase
+			or StringComparison.CurrentCultureIgnoreCase
+			or StringComparison.InvariantCultureIgnoreCase;
 
 	/// <summary>
 	/// Resets the parameter index for a new query.

@@ -29,160 +29,177 @@ namespace System.Data;
 /// </remarks>
 public static class DbProviders
 {
-    /// <summary>
-    /// Microsoft SQL Server provider information.
-    /// </summary>
-    public static class MsSqlServer
-    {
-        /// <summary>
-        /// The invariant name for Microsoft SQL Server provider.
-        /// </summary>
-        /// <remarks>Uses Microsoft.Data.SqlClient package.</remarks>
-        public const string InvariantName = "Microsoft.Data.SqlClient";
+	/// <summary>
+	/// Microsoft SQL Server provider information.
+	/// </summary>
+	public static class MsSqlServer
+	{
+		/// <summary>
+		/// The invariant name for Microsoft SQL Server provider.
+		/// </summary>
+		/// <remarks>Uses Microsoft.Data.SqlClient package.</remarks>
+		public const string InvariantName = "Microsoft.Data.SqlClient";
 
-        /// <summary>
-        /// The display name for SQL Server.
-        /// </summary>
-        public const string DisplayName = "Microsoft SQL Server";
-    }
+		/// <summary>
+		/// The display name for SQL Server.
+		/// </summary>
+		public const string DisplayName = "Microsoft SQL Server";
+	}
 
-    /// <summary>
-    /// PostgreSQL provider information.
-    /// </summary>
-    public static class PostgreSql
-    {
-        /// <summary>
-        /// The invariant name for PostgreSQL provider.
-        /// </summary>
-        /// <remarks>Uses Npgsql package.</remarks>
-        public const string InvariantName = "Npgsql";
+	/// <summary>
+	/// PostgreSQL provider information.
+	/// </summary>
+	public static class PostgreSql
+	{
+		/// <summary>
+		/// The invariant name for PostgreSQL provider.
+		/// </summary>
+		/// <remarks>Uses Npgsql package.</remarks>
+		public const string InvariantName = "Npgsql";
 
-        /// <summary>
-        /// The display name for PostgreSQL.
-        /// </summary>
-        public const string DisplayName = "PostgreSQL";
-    }
+		/// <summary>
+		/// The display name for PostgreSQL.
+		/// </summary>
+		public const string DisplayName = "PostgreSQL";
+	}
 
-    /// <summary>
-    /// MySQL provider information.
-    /// </summary>
-    public static class MySql
-    {
-        /// <summary>
-        /// The invariant name for MySQL provider.
-        /// </summary>
-        /// <remarks>Uses MySqlConnector package (recommended over MySql.Data).</remarks>
-        public const string InvariantName = "MySqlConnector";
+	/// <summary>
+	/// MySQL provider information.
+	/// </summary>
+	public static class MySql
+	{
+		/// <summary>
+		/// The invariant name for MySQL provider.
+		/// </summary>
+		/// <remarks>Uses MySqlConnector package (recommended over MySql.Data).</remarks>
+		public const string InvariantName = "MySqlConnector";
 
-        /// <summary>
-        /// The display name for MySQL.
-        /// </summary>
-        public const string DisplayName = "MySQL";
-    }
+		/// <summary>
+		/// The display name for MySQL.
+		/// </summary>
+		public const string DisplayName = "MySQL";
+	}
 
-    /// <summary>
-    /// SQLite provider information.
-    /// </summary>
-    public static class SQLite
-    {
-        /// <summary>
-        /// The invariant name for SQLite provider.
-        /// </summary>
-        /// <remarks>Uses Microsoft.Data.Sqlite package.</remarks>
-        public const string InvariantName = "Microsoft.Data.Sqlite";
+	/// <summary>
+	/// Oracle Database provider information.
+	/// </summary>
+	public static class Oracle
+	{
+		/// <summary>
+		/// The invariant name for Oracle provider.
+		/// </summary>
+		/// <remarks>Uses Oracle.ManagedDataAccess.Core package.</remarks>
+		public const string InvariantName = "Oracle.ManagedDataAccess.Client";
 
-        /// <summary>
-        /// The display name for SQLite.
-        /// </summary>
-        public const string DisplayName = "SQLite";
-    }
+		/// <summary>
+		/// The display name for Oracle Database.
+		/// </summary>
+		public const string DisplayName = "Oracle Database";
+	}
 
-    /// <summary>
-    /// Gets the <see cref="DbProviderFactory"/> for the specified provider invariant name.
-    /// </summary>
-    /// <param name="providerInvariantName">The invariant name of the provider 
-    /// (e.g., <see cref="MsSqlServer.InvariantName"/>).</param>
-    /// <returns>The <see cref="DbProviderFactory"/> instance for the specified provider.</returns>
-    /// <exception cref="ArgumentException">
-    /// Thrown when the provider is not registered or the invariant name is invalid.
-    /// </exception>
-    /// <example>
-    /// <code>
-    /// // Ensure the provider is registered first
-    /// DbProviderFactories.RegisterFactory(
-    ///     DbProviders.MsSqlServer.InvariantName, 
-    ///     Microsoft.Data.SqlClient.SqlClientFactory.Instance);
-    /// 
-    /// // Then get the factory
-    /// var factory = DbProviders.GetFactory(DbProviders.SqlServer.InvariantName);
-    /// using var connection = factory.CreateConnection();
-    /// </code>
-    /// </example>
-    public static DbProviderFactory GetFactory(string providerInvariantName)
-    {
-        ArgumentException.ThrowIfNullOrWhiteSpace(providerInvariantName);
+	/// <summary>
+	/// SQLite provider information.
+	/// </summary>
+	public static class SQLite
+	{
+		/// <summary>
+		/// The invariant name for SQLite provider.
+		/// </summary>
+		/// <remarks>Uses Microsoft.Data.Sqlite package.</remarks>
+		public const string InvariantName = "Microsoft.Data.Sqlite";
 
-        if (!DbProviderFactories.TryGetFactory(providerInvariantName, out DbProviderFactory? factory))
-        {
-            throw new ArgumentException(
-                $"Database provider '{providerInvariantName}' is not registered. " +
-                $"Call DbProviderFactories.RegisterFactory() to register the provider first.",
-                nameof(providerInvariantName));
-        }
+		/// <summary>
+		/// The display name for SQLite.
+		/// </summary>
+		public const string DisplayName = "SQLite";
+	}
 
-        return factory;
-    }
+	/// <summary>
+	/// Gets the <see cref="DbProviderFactory"/> for the specified provider invariant name.
+	/// </summary>
+	/// <param name="providerInvariantName">The invariant name of the provider 
+	/// (e.g., <see cref="MsSqlServer.InvariantName"/>).</param>
+	/// <returns>The <see cref="DbProviderFactory"/> instance for the specified provider.</returns>
+	/// <exception cref="ArgumentException">
+	/// Thrown when the provider is not registered or the invariant name is invalid.
+	/// </exception>
+	/// <example>
+	/// <code>
+	/// // Ensure the provider is registered first
+	/// DbProviderFactories.RegisterFactory(
+	///     DbProviders.MsSqlServer.InvariantName, 
+	///     Microsoft.Data.SqlClient.SqlClientFactory.Instance);
+	/// 
+	/// // Then get the factory
+	/// var factory = DbProviders.GetFactory(DbProviders.SqlServer.InvariantName);
+	/// using var connection = factory.CreateConnection();
+	/// </code>
+	/// </example>
+	public static DbProviderFactory GetFactory(string providerInvariantName)
+	{
+		ArgumentException.ThrowIfNullOrWhiteSpace(providerInvariantName);
 
-    /// <summary>
-    /// Attempts to get the <see cref="DbProviderFactory"/> for the specified provider invariant name.
-    /// </summary>
-    /// <param name="providerInvariantName">The invariant name of the provider.</param>
-    /// <param name="factory">When this method returns, contains the factory if found; otherwise, null.</param>
-    /// <returns><see langword="true"/> if the factory was found; otherwise, <see langword="false"/>.</returns>
-    public static bool TryGetFactory(string providerInvariantName, out DbProviderFactory? factory)
-    {
-        if (string.IsNullOrWhiteSpace(providerInvariantName))
-        {
-            factory = null;
-            return false;
-        }
+		if (!DbProviderFactories.TryGetFactory(providerInvariantName, out DbProviderFactory? factory))
+		{
+			throw new ArgumentException(
+				$"Database provider '{providerInvariantName}' is not registered. " +
+				$"Call DbProviderFactories.RegisterFactory() to register the provider first.",
+				nameof(providerInvariantName));
+		}
 
-        return DbProviderFactories.TryGetFactory(providerInvariantName, out factory);
-    }
+		return factory;
+	}
 
-    /// <summary>
-    /// Checks whether a provider with the specified invariant name is registered.
-    /// </summary>
-    /// <param name="providerInvariantName">The invariant name of the provider.</param>
-    /// <returns><see langword="true"/> if the provider is registered; otherwise, <see langword="false"/>.</returns>
-    public static bool IsRegistered(string providerInvariantName)
-    {
-        if (string.IsNullOrWhiteSpace(providerInvariantName))
+	/// <summary>
+	/// Attempts to get the <see cref="DbProviderFactory"/> for the specified provider invariant name.
+	/// </summary>
+	/// <param name="providerInvariantName">The invariant name of the provider.</param>
+	/// <param name="factory">When this method returns, contains the factory if found; otherwise, null.</param>
+	/// <returns><see langword="true"/> if the factory was found; otherwise, <see langword="false"/>.</returns>
+	public static bool TryGetFactory(string providerInvariantName, out DbProviderFactory? factory)
+	{
+		if (string.IsNullOrWhiteSpace(providerInvariantName))
+		{
+			factory = null;
+			return false;
+		}
+
+		return DbProviderFactories.TryGetFactory(providerInvariantName, out factory);
+	}
+
+	/// <summary>
+	/// Checks whether a provider with the specified invariant name is registered.
+	/// </summary>
+	/// <param name="providerInvariantName">The invariant name of the provider.</param>
+	/// <returns><see langword="true"/> if the provider is registered; otherwise, <see langword="false"/>.</returns>
+	public static bool IsRegistered(string providerInvariantName)
+	{
+		if (string.IsNullOrWhiteSpace(providerInvariantName))
 		{
 			return false;
 		}
 
 		return DbProviderFactories.TryGetFactory(providerInvariantName, out _);
-    }
+	}
 
-    /// <summary>
-    /// Registers a database provider factory if it is not already registered.
-    /// </summary>
-    /// <param name="providerInvariantName">The invariant name for the provider.</param>
-    /// <param name="factory">The <see cref="DbProviderFactory"/> instance to register.</param>
-    /// <returns><see langword="true"/> if the factory was registered; 
-    /// <see langword="false"/> if it was already registered.</returns>
-    public static bool RegisterIfNotExists(string providerInvariantName, DbProviderFactory factory)
-    {
-        ArgumentException.ThrowIfNullOrWhiteSpace(providerInvariantName);
-        ArgumentNullException.ThrowIfNull(factory);
+	/// <summary>
+	/// Registers a database provider factory if it is not already registered.
+	/// </summary>
+	/// <param name="providerInvariantName">The invariant name for the provider.</param>
+	/// <param name="factory">The <see cref="DbProviderFactory"/> instance to register.</param>
+	/// <returns><see langword="true"/> if the factory was registered; 
+	/// <see langword="false"/> if it was already registered.</returns>
+	public static bool RegisterIfNotExists(string providerInvariantName, DbProviderFactory factory)
+	{
+		ArgumentException.ThrowIfNullOrWhiteSpace(providerInvariantName);
+		ArgumentNullException.ThrowIfNull(factory);
 
-        if (IsRegistered(providerInvariantName))
+		if (IsRegistered(providerInvariantName))
 		{
 			return false;
 		}
 
 		DbProviderFactories.RegisterFactory(providerInvariantName, factory);
-        return true;
-    }
+		return true;
+	}
 }

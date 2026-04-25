@@ -116,7 +116,7 @@ public sealed class DataEvaluationBoundaryTests
 		DataSpecification<Product, string> spec = DataSpecification.For<Product>()
 			.Select(p => p.Name.Trim());
 
-		spec.SelectorEvaluation.Should().Be(SelectorEvaluation.Client);
+		spec.SelectorEvaluation.Should().Be(SelectorEvaluation.Server);
 	}
 
 	[Fact]

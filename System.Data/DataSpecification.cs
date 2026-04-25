@@ -46,6 +46,7 @@ public static class DataSpecification
 	public static DataSpecificationBuilder<TData> For<TData>()
 		where TData : class
 		=> new(
+			source: null,
 			predicate: null,
 			joins: [],
 			groupBy: [],
@@ -54,6 +55,40 @@ public static class DataSpecification
 			skip: null,
 			take: null,
 			isDistinct: false);
+
+	/// <summary>
+	/// Creates a new query specification builder for the specified entity type,
+	/// using the given source as the FROM clause instead of the default table name.
+	/// </summary>
+	/// <typeparam name="TData">The type of data to query.</typeparam>
+	/// <param name="source">
+	/// The table name, view name, or raw SQL subquery to use in the FROM clause.
+	/// <para>
+	/// <strong>SQL Injection Warning:</strong> This value is inserted into the generated SQL
+	/// without parameterization. Callers must ensure the value is safe and does not originate from
+	/// untrusted user input.
+	/// </para>
+	/// <para>
+	/// <strong>Column Alignment:</strong> When using a raw SQL subquery, the subquery must select
+	/// all columns required by the <typeparamref name="TData"/> entity type.
+	/// </para>
+	/// </param>
+	/// <returns>A new specification builder instance.</returns>
+	public static DataSpecificationBuilder<TData> For<TData>(string source)
+		where TData : class
+	{
+		ArgumentException.ThrowIfNullOrWhiteSpace(source);
+		return new(
+			source: source,
+			predicate: null,
+			joins: [],
+			groupBy: [],
+			having: null,
+			orderBy: [],
+			skip: null,
+			take: null,
+			isDistinct: false);
+	}
 }
 
 /// <summary>
@@ -63,6 +98,7 @@ public static class DataSpecification
 public readonly record struct DataSpecificationBuilder<TData>
 	where TData : class
 {
+	private readonly string? _source;
 	private readonly LambdaExpression? _predicate;
 	private readonly ImmutableArray<IJoinSpecification> _joins;
 	private readonly ImmutableArray<LambdaExpression> _groupBy;
@@ -73,6 +109,7 @@ public readonly record struct DataSpecificationBuilder<TData>
 	private readonly bool _isDistinct;
 
 	internal DataSpecificationBuilder(
+		string? source,
 		LambdaExpression? predicate,
 		ImmutableArray<IJoinSpecification> joins,
 		ImmutableArray<LambdaExpression> groupBy,
@@ -82,6 +119,7 @@ public readonly record struct DataSpecificationBuilder<TData>
 		int? take,
 		bool isDistinct)
 	{
+		_source = source;
 		_predicate = predicate;
 		_joins = joins;
 		_groupBy = groupBy;
@@ -105,7 +143,7 @@ public readonly record struct DataSpecificationBuilder<TData>
 			? predicate
 			: CombinePredicates((Expression<Func<TData, bool>>)_predicate, predicate);
 
-		return new(combined, _joins, _groupBy, _having, _orderBy, _skip, _take, _isDistinct);
+		return new(_source, combined, _joins, _groupBy, _having, _orderBy, _skip, _take, _isDistinct);
 	}
 
 	/// <summary>
@@ -118,7 +156,7 @@ public readonly record struct DataSpecificationBuilder<TData>
 	{
 		ArgumentNullException.ThrowIfNull(onExpression);
 		var join = new JoinSpecification<TData, TJoin>(SqlJoinType.Inner, onExpression, tableAlias);
-		return new(_predicate, _joins.Add(join), _groupBy, _having, _orderBy, _skip, _take, _isDistinct);
+		return new(_source, _predicate, _joins.Add(join), _groupBy, _having, _orderBy, _skip, _take, _isDistinct);
 	}
 
 	/// <summary>
@@ -131,7 +169,7 @@ public readonly record struct DataSpecificationBuilder<TData>
 	{
 		ArgumentNullException.ThrowIfNull(onExpression);
 		var join = new JoinSpecification<TData, TJoin>(SqlJoinType.Left, onExpression, tableAlias);
-		return new(_predicate, _joins.Add(join), _groupBy, _having, _orderBy, _skip, _take, _isDistinct);
+		return new(_source, _predicate, _joins.Add(join), _groupBy, _having, _orderBy, _skip, _take, _isDistinct);
 	}
 
 	/// <summary>
@@ -144,7 +182,7 @@ public readonly record struct DataSpecificationBuilder<TData>
 	{
 		ArgumentNullException.ThrowIfNull(onExpression);
 		var join = new JoinSpecification<TData, TJoin>(SqlJoinType.Right, onExpression, tableAlias);
-		return new(_predicate, _joins.Add(join), _groupBy, _having, _orderBy, _skip, _take, _isDistinct);
+		return new(_source, _predicate, _joins.Add(join), _groupBy, _having, _orderBy, _skip, _take, _isDistinct);
 	}
 
 	/// <summary>
@@ -157,7 +195,7 @@ public readonly record struct DataSpecificationBuilder<TData>
 	{
 		ArgumentNullException.ThrowIfNull(onExpression);
 		var join = new JoinSpecification<TData, TJoin>(SqlJoinType.Full, onExpression, tableAlias);
-		return new(_predicate, _joins.Add(join), _groupBy, _having, _orderBy, _skip, _take, _isDistinct);
+		return new(_source, _predicate, _joins.Add(join), _groupBy, _having, _orderBy, _skip, _take, _isDistinct);
 	}
 
 	/// <summary>
@@ -167,7 +205,7 @@ public readonly record struct DataSpecificationBuilder<TData>
 		where TJoin : class
 	{
 		var join = new JoinSpecification<TData, TJoin>(SqlJoinType.Cross, null, tableAlias);
-		return new(_predicate, _joins.Add(join), _groupBy, _having, _orderBy, _skip, _take, _isDistinct);
+		return new(_source, _predicate, _joins.Add(join), _groupBy, _having, _orderBy, _skip, _take, _isDistinct);
 	}
 
 	/// <summary>
@@ -181,7 +219,7 @@ public readonly record struct DataSpecificationBuilder<TData>
 		ArgumentNullException.ThrowIfNull(keySelector);
 
 		var order = new OrderSpecification(keySelector, Descending: false);
-		return new(_predicate, _joins, _groupBy, _having, _orderBy.Add(order), _skip, _take, _isDistinct);
+		return new(_source, _predicate, _joins, _groupBy, _having, _orderBy.Add(order), _skip, _take, _isDistinct);
 	}
 
 	/// <summary>
@@ -193,7 +231,7 @@ public readonly record struct DataSpecificationBuilder<TData>
 		ArgumentNullException.ThrowIfNull(keySelector);
 
 		var order = new OrderSpecification(keySelector, Descending: false);
-		return new(_predicate, _joins, _groupBy, _having, _orderBy.Add(order), _skip, _take, _isDistinct);
+		return new(_source, _predicate, _joins, _groupBy, _having, _orderBy.Add(order), _skip, _take, _isDistinct);
 	}
 
 	/// <summary>
@@ -207,7 +245,7 @@ public readonly record struct DataSpecificationBuilder<TData>
 		ArgumentNullException.ThrowIfNull(keySelector);
 
 		var order = new OrderSpecification(keySelector, Descending: true);
-		return new(_predicate, _joins, _groupBy, _having, _orderBy.Add(order), _skip, _take, _isDistinct);
+		return new(_source, _predicate, _joins, _groupBy, _having, _orderBy.Add(order), _skip, _take, _isDistinct);
 	}
 
 	/// <summary>
@@ -219,7 +257,7 @@ public readonly record struct DataSpecificationBuilder<TData>
 		ArgumentNullException.ThrowIfNull(keySelector);
 
 		var order = new OrderSpecification(keySelector, Descending: true);
-		return new(_predicate, _joins, _groupBy, _having, _orderBy.Add(order), _skip, _take, _isDistinct);
+		return new(_source, _predicate, _joins, _groupBy, _having, _orderBy.Add(order), _skip, _take, _isDistinct);
 	}
 
 	/// <summary>
@@ -248,7 +286,7 @@ public readonly record struct DataSpecificationBuilder<TData>
 	public DataSpecificationBuilder<TData> Skip(int count)
 	{
 		ArgumentOutOfRangeException.ThrowIfNegative(count);
-		return new(_predicate, _joins, _groupBy, _having, _orderBy, count, _take, _isDistinct);
+		return new(_source, _predicate, _joins, _groupBy, _having, _orderBy, count, _take, _isDistinct);
 	}
 
 	/// <summary>
@@ -259,7 +297,7 @@ public readonly record struct DataSpecificationBuilder<TData>
 	public DataSpecificationBuilder<TData> Take(int count)
 	{
 		ArgumentOutOfRangeException.ThrowIfNegative(count);
-		return new(_predicate, _joins, _groupBy, _having, _orderBy, _skip, count, _isDistinct);
+		return new(_source, _predicate, _joins, _groupBy, _having, _orderBy, _skip, count, _isDistinct);
 	}
 
 	/// <summary>
@@ -273,7 +311,7 @@ public readonly record struct DataSpecificationBuilder<TData>
 		ArgumentOutOfRangeException.ThrowIfNegative(pageIndex);
 		ArgumentOutOfRangeException.ThrowIfLessThan(pageSize, 1);
 
-		return new(_predicate, _joins, _groupBy, _having, _orderBy, pageIndex * pageSize, pageSize, _isDistinct);
+		return new(_source, _predicate, _joins, _groupBy, _having, _orderBy, pageIndex * pageSize, pageSize, _isDistinct);
 	}
 
 	/// <summary>
@@ -281,44 +319,48 @@ public readonly record struct DataSpecificationBuilder<TData>
 	/// </summary>
 	/// <returns>A new builder with distinct applied.</returns>
 	public DataSpecificationBuilder<TData> Distinct()
-		=> new(_predicate, _joins, _groupBy, _having, _orderBy, _skip, _take, isDistinct: true);
+		=> new(_source, _predicate, _joins, _groupBy, _having, _orderBy, _skip, _take, isDistinct: true);
 
 	/// <summary>
 	/// Adds a grouping expression to the query.
 	/// </summary>
+	/// <remarks>You may use the <see cref="SqlFunctions"/> class to apply aggregate functions in the grouping.</remarks>
 	public DataSpecificationBuilder<TData> GroupBy<TKey>(Expression<Func<TData, TKey>> keySelector)
 	{
 		ArgumentNullException.ThrowIfNull(keySelector);
-		return new(_predicate, _joins, _groupBy.Add(keySelector), _having, _orderBy, _skip, _take, _isDistinct);
+		return new(_source, _predicate, _joins, _groupBy.Add(keySelector), _having, _orderBy, _skip, _take, _isDistinct);
 	}
 
 	/// <summary>
 	/// Adds a grouping expression to the query with a joined entity.
 	/// </summary>
+	/// <remarks>You may use the <see cref="SqlFunctions"/> class to apply aggregate functions in the grouping.</remarks>
 	public DataSpecificationBuilder<TData> GroupBy<TJoin, TKey>(Expression<Func<TData, TJoin, TKey>> keySelector)
 		where TJoin : class
 	{
 		ArgumentNullException.ThrowIfNull(keySelector);
-		return new(_predicate, _joins, _groupBy.Add(keySelector), _having, _orderBy, _skip, _take, _isDistinct);
+		return new(_source, _predicate, _joins, _groupBy.Add(keySelector), _having, _orderBy, _skip, _take, _isDistinct);
 	}
 
 	/// <summary>
 	/// Adds a HAVING predicate applied after grouping.
 	/// </summary>
+	/// <remarks>You may use the <see cref="SqlFunctions"/> class to apply aggregate functions in the HAVING clause.</remarks>
 	public DataSpecificationBuilder<TData> Having(Expression<Func<TData, bool>> predicate)
 	{
 		ArgumentNullException.ThrowIfNull(predicate);
-		return new(_predicate, _joins, _groupBy, predicate, _orderBy, _skip, _take, _isDistinct);
+		return new(_source, _predicate, _joins, _groupBy, predicate, _orderBy, _skip, _take, _isDistinct);
 	}
 
 	/// <summary>
 	/// Adds a HAVING predicate applied after grouping with a joined entity.
 	/// </summary>
+	/// <remarks>You may use the <see cref="SqlFunctions"/> class to apply aggregate functions in the HAVING clause.</remarks>
 	public DataSpecificationBuilder<TData> Having<TJoin>(Expression<Func<TData, TJoin, bool>> predicate)
 		where TJoin : class
 	{
 		ArgumentNullException.ThrowIfNull(predicate);
-		return new(_predicate, _joins, _groupBy, predicate, _orderBy, _skip, _take, _isDistinct);
+		return new(_source, _predicate, _joins, _groupBy, predicate, _orderBy, _skip, _take, _isDistinct);
 	}
 
 	/// <summary>
@@ -332,6 +374,7 @@ public readonly record struct DataSpecificationBuilder<TData>
 		ArgumentNullException.ThrowIfNull(selector);
 
 		return new(
+			_source,
 			_predicate,
 			selector,
 			_joins,
@@ -353,6 +396,7 @@ public readonly record struct DataSpecificationBuilder<TData>
 		ArgumentNullException.ThrowIfNull(selector);
 
 		return new(
+			_source,
 			_predicate,
 			selector,
 			_joins,
@@ -376,6 +420,7 @@ public readonly record struct DataSpecificationBuilder<TData>
 		ArgumentNullException.ThrowIfNull(selector);
 
 		return new(
+			_source,
 			_predicate,
 			selector,
 			_joins,
@@ -400,6 +445,7 @@ public readonly record struct DataSpecificationBuilder<TData>
 		ArgumentNullException.ThrowIfNull(selector);
 
 		return new(
+			_source,
 			_predicate,
 			selector,
 			_joins,
@@ -412,7 +458,210 @@ public readonly record struct DataSpecificationBuilder<TData>
 			SelectorTranslatabilityVisitor.Classify(selector));
 	}
 
-	// Cached per closed generic type — ensures ReferenceEqualityComparer hits in DataSqlMapper._compiledSelectors
+	/// <summary>
+	/// Projects the entities and joined entities to the specified result type.
+	/// </summary>
+	public DataSpecification<TData, TResult> Select<TJoin1, TJoin2, TJoin3, TJoin4, TResult>(
+		Expression<Func<TData, TJoin1, TJoin2, TJoin3, TJoin4, TResult>> selector)
+		where TJoin1 : class
+		where TJoin2 : class
+		where TJoin3 : class
+		where TJoin4 : class
+	{
+		ArgumentNullException.ThrowIfNull(selector);
+
+		return new(
+			_source,
+			_predicate,
+			selector,
+			_joins,
+			_groupBy,
+			_having,
+			_orderBy,
+			_skip,
+			_take,
+			_isDistinct,
+			SelectorTranslatabilityVisitor.Classify(selector));
+	}
+
+	/// <summary>
+	/// Projects the entities and joined entities to the specified result type.
+	/// </summary>
+	public DataSpecification<TData, TResult> Select<TJoin1, TJoin2, TJoin3, TJoin4, TJoin5, TResult>(
+		Expression<Func<TData, TJoin1, TJoin2, TJoin3, TJoin4, TJoin5, TResult>> selector)
+		where TJoin1 : class
+		where TJoin2 : class
+		where TJoin3 : class
+		where TJoin4 : class
+		where TJoin5 : class
+	{
+		ArgumentNullException.ThrowIfNull(selector);
+
+		return new(
+			_source,
+			_predicate,
+			selector,
+			_joins,
+			_groupBy,
+			_having,
+			_orderBy,
+			_skip,
+			_take,
+			_isDistinct,
+			SelectorTranslatabilityVisitor.Classify(selector));
+	}
+
+	/// <summary>
+	/// Projects the entities and joined entities to the specified result type.
+	/// </summary>
+	public DataSpecification<TData, TResult> Select<TJoin1, TJoin2, TJoin3, TJoin4, TJoin5, TJoin6, TResult>(
+		Expression<Func<TData, TJoin1, TJoin2, TJoin3, TJoin4, TJoin5, TJoin6, TResult>> selector)
+		where TJoin1 : class
+		where TJoin2 : class
+		where TJoin3 : class
+		where TJoin4 : class
+		where TJoin5 : class
+		where TJoin6 : class
+	{
+		ArgumentNullException.ThrowIfNull(selector);
+
+		return new(
+			_source,
+			_predicate,
+			selector,
+			_joins,
+			_groupBy,
+			_having,
+			_orderBy,
+			_skip,
+			_take,
+			_isDistinct,
+			SelectorTranslatabilityVisitor.Classify(selector));
+	}
+
+	/// <summary>
+	/// Projects the entities and joined entities to the specified result type.
+	/// </summary>
+	public DataSpecification<TData, TResult> Select<TJoin1, TJoin2, TJoin3, TJoin4, TJoin5, TJoin6, TJoin7, TResult>(
+		Expression<Func<TData, TJoin1, TJoin2, TJoin3, TJoin4, TJoin5, TJoin6, TJoin7, TResult>> selector)
+		where TJoin1 : class
+		where TJoin2 : class
+		where TJoin3 : class
+		where TJoin4 : class
+		where TJoin5 : class
+		where TJoin6 : class
+		where TJoin7 : class
+	{
+		ArgumentNullException.ThrowIfNull(selector);
+
+		return new(
+			_source,
+			_predicate,
+			selector,
+			_joins,
+			_groupBy,
+			_having,
+			_orderBy,
+			_skip,
+			_take,
+			_isDistinct,
+			SelectorTranslatabilityVisitor.Classify(selector));
+	}
+
+	/// <summary>
+	/// Projects the entities and joined entities to the specified result type.
+	/// </summary>
+	public DataSpecification<TData, TResult> Select<TJoin1, TJoin2, TJoin3, TJoin4, TJoin5, TJoin6, TJoin7, TJoin8, TResult>(
+		Expression<Func<TData, TJoin1, TJoin2, TJoin3, TJoin4, TJoin5, TJoin6, TJoin7, TJoin8, TResult>> selector)
+		where TJoin1 : class
+		where TJoin2 : class
+		where TJoin3 : class
+		where TJoin4 : class
+		where TJoin5 : class
+		where TJoin6 : class
+		where TJoin7 : class
+		where TJoin8 : class
+	{
+		ArgumentNullException.ThrowIfNull(selector);
+
+		return new(
+			_source,
+			_predicate,
+			selector,
+			_joins,
+			_groupBy,
+			_having,
+			_orderBy,
+			_skip,
+			_take,
+			_isDistinct,
+			SelectorTranslatabilityVisitor.Classify(selector));
+	}
+
+	/// <summary>
+	/// Projects the entities and joined entities to the specified result type.
+	/// </summary>
+	public DataSpecification<TData, TResult> Select<TJoin1, TJoin2, TJoin3, TJoin4, TJoin5, TJoin6, TJoin7, TJoin8, TJoin9, TResult>(
+		Expression<Func<TData, TJoin1, TJoin2, TJoin3, TJoin4, TJoin5, TJoin6, TJoin7, TJoin8, TJoin9, TResult>> selector)
+		where TJoin1 : class
+		where TJoin2 : class
+		where TJoin3 : class
+		where TJoin4 : class
+		where TJoin5 : class
+		where TJoin6 : class
+		where TJoin7 : class
+		where TJoin8 : class
+		where TJoin9 : class
+	{
+		ArgumentNullException.ThrowIfNull(selector);
+
+		return new(
+			_source,
+			_predicate,
+			selector,
+			_joins,
+			_groupBy,
+			_having,
+			_orderBy,
+			_skip,
+			_take,
+			_isDistinct,
+			SelectorTranslatabilityVisitor.Classify(selector));
+	}
+
+	/// <summary>
+	/// Projects the entities and joined entities to the specified result type.
+	/// </summary>
+	public DataSpecification<TData, TResult> Select<TJoin1, TJoin2, TJoin3, TJoin4, TJoin5, TJoin6, TJoin7, TJoin8, TJoin9, TJoin10, TResult>(
+		Expression<Func<TData, TJoin1, TJoin2, TJoin3, TJoin4, TJoin5, TJoin6, TJoin7, TJoin8, TJoin9, TJoin10, TResult>> selector)
+		where TJoin1 : class
+		where TJoin2 : class
+		where TJoin3 : class
+		where TJoin4 : class
+		where TJoin5 : class
+		where TJoin6 : class
+		where TJoin7 : class
+		where TJoin8 : class
+		where TJoin9 : class
+		where TJoin10 : class
+	{
+		ArgumentNullException.ThrowIfNull(selector);
+
+		return new(
+			_source,
+			_predicate,
+			selector,
+			_joins,
+			_groupBy,
+			_having,
+			_orderBy,
+			_skip,
+			_take,
+			_isDistinct,
+			SelectorTranslatabilityVisitor.Classify(selector));
+	}
+
+	// Cached per closed generic type
 	private static readonly Expression<Func<TData, TData>> _identitySelector = static e => e;
 
 	/// <summary>
@@ -482,9 +731,13 @@ public readonly record struct DataSpecification<TData, TResult> : IDataSpecifica
 	public bool IsDistinct { get; }
 
 	/// <inheritdoc />
+	public string? Source { get; }
+
+	/// <inheritdoc />
 	public SelectorEvaluation SelectorEvaluation { get; }
 
 	internal DataSpecification(
+		string? source,
 		LambdaExpression? predicate,
 		LambdaExpression selector,
 		ImmutableArray<IJoinSpecification> joins,
@@ -496,6 +749,7 @@ public readonly record struct DataSpecification<TData, TResult> : IDataSpecifica
 		bool isDistinct,
 		SelectorEvaluation selectorEvaluation)
 	{
+		Source = source;
 		Predicate = predicate;
 		Selector = selector ?? throw new ArgumentNullException(nameof(selector));
 		Joins = joins;
@@ -578,12 +832,22 @@ file sealed class SelectorTranslatabilityVisitor : ExpressionVisitor
 		{
 			foreach (Expression arg in topInit.NewExpression.Arguments)
 			{
+				if (IsNonScalarParameter(arg))
+				{
+					_isTranslatable = false;
+					return;
+				}
 				Visit(arg);
 			}
 			foreach (MemberBinding binding in topInit.Bindings)
 			{
 				if (binding is MemberAssignment assignment)
 				{
+					if (IsNonScalarParameter(assignment.Expression))
+					{
+						_isTranslatable = false;
+						return;
+					}
 					Visit(assignment.Expression);
 				}
 			}
@@ -627,6 +891,25 @@ file sealed class SelectorTranslatabilityVisitor : ExpressionVisitor
 		return base.VisitMethodCall(node);
 	}
 
+	private static bool IsNonScalarParameter(Expression expression)
+	{
+		if (expression is not ParameterExpression param)
+		{
+			return false;
+		}
+
+		Type type = Nullable.GetUnderlyingType(param.Type) ?? param.Type;
+		return !type.IsPrimitive
+			   && !type.IsEnum
+			   && type != typeof(string)
+			   && type != typeof(Guid)
+			   && type != typeof(DateTime)
+			   && type != typeof(DateTimeOffset)
+			   && type != typeof(DateOnly)
+			   && type != typeof(TimeOnly)
+			   && type != typeof(decimal);
+	}
+
 	protected override Expression VisitInvocation(InvocationExpression node)
 	{
 		_isTranslatable = false;
@@ -635,10 +918,23 @@ file sealed class SelectorTranslatabilityVisitor : ExpressionVisitor
 
 	private static bool IsKnownSqlMethod(MethodCallExpression mc)
 	{
+		// Sql aggregate marker methods (Count, Sum, Avg, Min, Max, CountDistinct)
+		if (mc.Method.DeclaringType == typeof(SqlFunctions))
+		{
+			return true;
+		}
+
 		if (mc.Method.DeclaringType == typeof(string))
 		{
 			return mc.Method.Name is "Contains" or "StartsWith" or "EndsWith"
-				or "ToLower" or "ToUpper" or "IsNullOrEmpty" or "IsNullOrWhiteSpace";
+				or "Equals" or "ToLower" or "ToLowerInvariant" or "ToUpper" or "ToUpperInvariant"
+				or "Trim" or "TrimStart" or "TrimEnd" or "Substring" or "Replace" or "IndexOf"
+				or "Concat" or "IsNullOrEmpty" or "IsNullOrWhiteSpace";
+		}
+
+		if (mc.Method.Name == "Equals" && mc.Object is not null && mc.Arguments.Count == 1)
+		{
+			return true;
 		}
 
 		if (mc.Method.Name == "GetValueOrDefault"

@@ -14,6 +14,7 @@
  * limitations under the License.
  *
 ********************************************************************************/
+
 using System.Data;
 using System.Data.Common;
 
@@ -23,23 +24,32 @@ using Microsoft.Data.Sqlite;
 
 namespace Xpandables.Net.UnitTests.Systems.Data;
 
+#pragma warning disable CS1591 // Missing XML comment for publicly visible type or member
 public sealed class DataUnitOfWorkTests : IDisposable
+#pragma warning restore CS1591 // Missing XML comment for publicly visible type or member
 {
 	private readonly SqliteConnection _connection;
+	private readonly IDataSqlServiceAccessor _dataSqlService = new TestDataSqlServiceAccessor(new MsDataSqlBuilder(), new DataSqlMapper());
 
+#pragma warning disable CS1591 // Missing XML comment for publicly visible type or member
 	public DataUnitOfWorkTests()
+#pragma warning restore CS1591 // Missing XML comment for publicly visible type or member
 	{
 		_connection = new SqliteConnection("DataSource=:memory:");
 		_connection.Open();
 	}
 
+#pragma warning disable CS1591 // Missing XML comment for publicly visible type or member
 	public void Dispose() => _connection.Dispose();
+#pragma warning restore CS1591 // Missing XML comment for publicly visible type or member
 
 	[Fact]
+#pragma warning disable CS1591 // Missing XML comment for publicly visible type or member
 	public void WhenGetRepositoryThenReturnsSameInstanceForSameType()
+#pragma warning restore CS1591 // Missing XML comment for publicly visible type or member
 	{
 		using var scope = new DataConnectionScope(_connection);
-		using var uow = new DataUnitOfWork(new TestScopeFactory(scope), new MsDataSqlBuilder(), new DataSqlMapper());
+		using var uow = new DataUnitOfWork(new TestScopeFactory(scope), _dataSqlService);
 
 		IDataRepository<Person> repo1 = uow.GetRepository<Person>();
 		IDataRepository<Person> repo2 = uow.GetRepository<Person>();
@@ -48,10 +58,12 @@ public sealed class DataUnitOfWorkTests : IDisposable
 	}
 
 	[Fact]
+#pragma warning disable CS1591 // Missing XML comment for publicly visible type or member
 	public void WhenGetRepositoryForDifferentTypesThenReturnsDifferentInstances()
+#pragma warning restore CS1591 // Missing XML comment for publicly visible type or member
 	{
 		using var scope = new DataConnectionScope(_connection);
-		using var uow = new DataUnitOfWork(new TestScopeFactory(scope), new MsDataSqlBuilder(), new DataSqlMapper());
+		using var uow = new DataUnitOfWork(new TestScopeFactory(scope), _dataSqlService);
 
 		IDataRepository<Person> personRepo = uow.GetRepository<Person>();
 		IDataRepository<Address> addressRepo = uow.GetRepository<Address>();
@@ -60,10 +72,12 @@ public sealed class DataUnitOfWorkTests : IDisposable
 	}
 
 	[Fact]
+#pragma warning disable CS1591 // Missing XML comment for publicly visible type or member
 	public void WhenDisposedThenGetRepositoryThrowsObjectDisposedException()
+#pragma warning restore CS1591 // Missing XML comment for publicly visible type or member
 	{
 		var scope = new DataConnectionScope(_connection);
-		var uow = new DataUnitOfWork(new TestScopeFactory(scope), new MsDataSqlBuilder(), new DataSqlMapper());
+		var uow = new DataUnitOfWork(new TestScopeFactory(scope), _dataSqlService);
 
 		uow.Dispose();
 
@@ -72,10 +86,12 @@ public sealed class DataUnitOfWorkTests : IDisposable
 	}
 
 	[Fact]
+#pragma warning disable CS1591 // Missing XML comment for publicly visible type or member
 	public void WhenDisposedThenConnectionScopeThrowsObjectDisposedException()
+#pragma warning restore CS1591 // Missing XML comment for publicly visible type or member
 	{
 		var scope = new DataConnectionScope(_connection);
-		var uow = new DataUnitOfWork(new TestScopeFactory(scope), new MsDataSqlBuilder(), new DataSqlMapper());
+		var uow = new DataUnitOfWork(new TestScopeFactory(scope), _dataSqlService);
 
 		uow.Dispose();
 
@@ -84,10 +100,12 @@ public sealed class DataUnitOfWorkTests : IDisposable
 	}
 
 	[Fact]
+#pragma warning disable CS1591 // Missing XML comment for publicly visible type or member
 	public void WhenDisposedThenCurrentTransactionThrowsObjectDisposedException()
+#pragma warning restore CS1591 // Missing XML comment for publicly visible type or member
 	{
 		var scope = new DataConnectionScope(_connection);
-		var uow = new DataUnitOfWork(new TestScopeFactory(scope), new MsDataSqlBuilder(), new DataSqlMapper());
+		var uow = new DataUnitOfWork(new TestScopeFactory(scope), _dataSqlService);
 
 		uow.Dispose();
 
@@ -96,10 +114,12 @@ public sealed class DataUnitOfWorkTests : IDisposable
 	}
 
 	[Fact]
+#pragma warning disable CS1591 // Missing XML comment for publicly visible type or member
 	public void WhenDisposedThenHasActiveTransactionThrowsObjectDisposedException()
+#pragma warning restore CS1591 // Missing XML comment for publicly visible type or member
 	{
 		var scope = new DataConnectionScope(_connection);
-		var uow = new DataUnitOfWork(new TestScopeFactory(scope), new MsDataSqlBuilder(), new DataSqlMapper());
+		var uow = new DataUnitOfWork(new TestScopeFactory(scope), _dataSqlService);
 
 		uow.Dispose();
 
@@ -108,10 +128,12 @@ public sealed class DataUnitOfWorkTests : IDisposable
 	}
 
 	[Fact]
+#pragma warning disable CS1591 // Missing XML comment for publicly visible type or member
 	public void WhenBeginTransactionThenDelegatesToScope()
+#pragma warning restore CS1591 // Missing XML comment for publicly visible type or member
 	{
 		using var scope = new DataConnectionScope(_connection);
-		using var uow = new DataUnitOfWork(new TestScopeFactory(scope), new MsDataSqlBuilder(), new DataSqlMapper());
+		using var uow = new DataUnitOfWork(new TestScopeFactory(scope), _dataSqlService);
 
 		IDataTransaction transaction = uow.BeginTransaction();
 
@@ -121,10 +143,12 @@ public sealed class DataUnitOfWorkTests : IDisposable
 	}
 
 	[Fact]
+#pragma warning disable CS1591 // Missing XML comment for publicly visible type or member
 	public async Task WhenBeginTransactionAsyncThenDelegatesToScope()
+#pragma warning restore CS1591 // Missing XML comment for publicly visible type or member
 	{
 		using var scope = new DataConnectionScope(_connection);
-		using var uow = new DataUnitOfWork(new TestScopeFactory(scope), new MsDataSqlBuilder(), new DataSqlMapper());
+		using var uow = new DataUnitOfWork(new TestScopeFactory(scope), _dataSqlService);
 
 		IDataTransaction transaction = await uow.BeginTransactionAsync();
 
@@ -134,20 +158,24 @@ public sealed class DataUnitOfWorkTests : IDisposable
 	}
 
 	[Fact]
+#pragma warning disable CS1591 // Missing XML comment for publicly visible type or member
 	public void WhenNoTransactionThenHasActiveTransactionIsFalse()
+#pragma warning restore CS1591 // Missing XML comment for publicly visible type or member
 	{
 		using var scope = new DataConnectionScope(_connection);
-		using var uow = new DataUnitOfWork(new TestScopeFactory(scope), new MsDataSqlBuilder(), new DataSqlMapper());
+		using var uow = new DataUnitOfWork(new TestScopeFactory(scope), _dataSqlService);
 
 		uow.HasActiveTransaction.Should().BeFalse();
 		uow.CurrentTransaction.Should().BeNull();
 	}
 
 	[Fact]
+#pragma warning disable CS1591 // Missing XML comment for publicly visible type or member
 	public async Task WhenDisposeAsyncThenDisposesScope()
+#pragma warning restore CS1591 // Missing XML comment for publicly visible type or member
 	{
 		var scope = new DataConnectionScope(_connection);
-		var uow = new DataUnitOfWork(new TestScopeFactory(scope), new MsDataSqlBuilder(), new DataSqlMapper());
+		var uow = new DataUnitOfWork(new TestScopeFactory(scope), _dataSqlService);
 
 		await uow.DisposeAsync();
 
@@ -156,10 +184,12 @@ public sealed class DataUnitOfWorkTests : IDisposable
 	}
 
 	[Fact]
+#pragma warning disable CS1591 // Missing XML comment for publicly visible type or member
 	public void WhenDisposedThenBeginTransactionThrowsObjectDisposedException()
+#pragma warning restore CS1591 // Missing XML comment for publicly visible type or member
 	{
 		var scope = new DataConnectionScope(_connection);
-		var uow = new DataUnitOfWork(new TestScopeFactory(scope), new MsDataSqlBuilder(), new DataSqlMapper());
+		var uow = new DataUnitOfWork(new TestScopeFactory(scope), _dataSqlService);
 
 		uow.Dispose();
 
@@ -182,11 +212,25 @@ public sealed class DataUnitOfWorkTests : IDisposable
 
 	private sealed class TestScopeFactory(IDataConnectionScope scope) : IDataConnectionScopeFactory
 	{
-		public IDataConnectionScope CreateOpenScope() => scope;
-		public Task<IDataConnectionScope> CreateOpenScopeAsync(CancellationToken cancellationToken = default) => Task.FromResult(scope);
+		public IDataConnectionScope CreateOpenScope()
+		{
+			return scope;
+		}
+
+		public Task<IDataConnectionScope> CreateOpenScopeAsync(CancellationToken cancellationToken = default)
+		{
+			return Task.FromResult(scope);
+		}
+
 		public IDataConnectionScope CreateScope() => scope;
 
 		public Task<IDataConnectionScope> CreateScopeAsync(CancellationToken cancellationToken = default)
 			=> Task.FromResult(scope);
+	}
+
+	private sealed class TestDataSqlServiceAccessor(IDataSqlBuilder dataSqlBuilder, IDataSqlMapper dataSqlMapper) : IDataSqlServiceAccessor
+	{
+		public IDataSqlBuilder DataSqlBuilder { get; } = dataSqlBuilder;
+		public IDataSqlMapper DataSqlMapper { get; } = dataSqlMapper;
 	}
 }

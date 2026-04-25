@@ -36,51 +36,51 @@ namespace System.Data;
 [RequiresDynamicCode("Expression compilation requires dynamic code generation.")]
 public sealed class MyDataSqlBuilder : DataSqlBuilderBase
 {
-    /// <inheritdoc />
-    public override SqlDialect Dialect => SqlDialect.MySql;
+	/// <inheritdoc />
+	public override SqlDialect Dialect => SqlDialect.MySql;
 
-    /// <inheritdoc />
-    public override string ParameterPrefix => "@";
+	/// <inheritdoc />
+	public override string ParameterPrefix => "@";
 
-    /// <inheritdoc />
-    protected override string LimitKeyword => "LIMIT";
+	/// <inheritdoc />
+	protected override string LimitKeyword => "LIMIT";
 
-    /// <inheritdoc />
-    protected override bool LimitBeforeColumns => false;
+	/// <inheritdoc />
+	protected override bool LimitBeforeColumns => false;
 
-    /// <inheritdoc />
-    public override string QuoteIdentifier(string identifier)
-    {
-        ArgumentException.ThrowIfNullOrWhiteSpace(identifier);
+	/// <inheritdoc />
+	public override string QuoteIdentifier(string identifier)
+	{
+		ArgumentException.ThrowIfNullOrWhiteSpace(identifier);
 
-        // Remove any existing backticks and re-wrap
-        identifier = identifier.Trim('`');
-        return $"`{identifier}`";
-    }
+		// Remove any existing backticks and re-wrap
+		identifier = identifier.Trim('`');
+		return $"`{identifier}`";
+	}
 
-    /// <inheritdoc />
-    protected override void AppendPaging(StringBuilder sql, int? skip, int? take)
-    {
-        // MySQL uses LIMIT/OFFSET
-        // Note: MySQL requires LIMIT when using OFFSET
-        if (take.HasValue || skip.HasValue)
-        {
-            if (take.HasValue)
-            {
-                sql.Append(CultureInfo.InvariantCulture, $" LIMIT {take.Value}");
-            }
-            else if (skip.HasValue)
-            {
-                // MySQL requires LIMIT when using OFFSET, use a very large number
-                sql.Append(" LIMIT 18446744073709551615");
-            }
+	/// <inheritdoc />
+	protected override void AppendPaging(StringBuilder sql, int? skip, int? take)
+	{
+		// MySQL uses LIMIT/OFFSET
+		// Note: MySQL requires LIMIT when using OFFSET
+		if (take.HasValue || skip.HasValue)
+		{
+			if (take.HasValue)
+			{
+				sql.Append(CultureInfo.InvariantCulture, $" LIMIT {take.Value}");
+			}
+			else if (skip.HasValue)
+			{
+				// MySQL requires LIMIT when using OFFSET, use a very large number
+				sql.Append(" LIMIT 18446744073709551615");
+			}
 
-            if (skip.HasValue && skip.Value > 0)
-            {
-                sql.Append(CultureInfo.InvariantCulture, $" OFFSET {skip.Value}");
-            }
-        }
-    }
+			if (skip.HasValue && skip.Value > 0)
+			{
+				sql.Append(CultureInfo.InvariantCulture, $" OFFSET {skip.Value}");
+			}
+		}
+	}
 
 	/// <summary>
 	/// Translates string.Contains to MySQL LIKE with escape handling.
@@ -133,14 +133,14 @@ public sealed class MyDataSqlBuilder : DataSqlBuilderBase
 		return $"({column} LIKE {ParameterPrefix}{paramName})";
 	}
 
-    /// <summary>
-    /// Escapes special characters in a LIKE pattern for MySQL.
-    /// </summary>
-    private static string EscapeLikePattern(string value)
-    {
-        return value
-            .Replace("\\", "\\\\", StringComparison.Ordinal)
-            .Replace("%", "\\%", StringComparison.Ordinal)
-            .Replace("_", "\\_", StringComparison.Ordinal);
-    }
+	/// <summary>
+	/// Escapes special characters in a LIKE pattern for MySQL.
+	/// </summary>
+	private static string EscapeLikePattern(string value)
+	{
+		return value
+			.Replace("\\", "\\\\", StringComparison.Ordinal)
+			.Replace("%", "\\%", StringComparison.Ordinal)
+			.Replace("_", "\\_", StringComparison.Ordinal);
+	}
 }

@@ -1,4 +1,4 @@
-/*******************************************************************************
+﻿/*******************************************************************************
  * Copyright (C) 2025-2026 Kamersoft
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
@@ -14,6 +14,7 @@
  * limitations under the License.
  *
 ********************************************************************************/
+
 using System.Data;
 using System.Data.Common;
 
@@ -21,138 +22,152 @@ using FluentAssertions;
 
 namespace Xpandables.Net.UnitTests.Systems.Data;
 
+#pragma warning disable CS1591 // Missing XML comment for publicly visible type or member
 public sealed class DataSqlMapperTests
+#pragma warning restore CS1591 // Missing XML comment for publicly visible type or member
 {
-    [Fact]
-    public void MapToResult_WithIdentitySelector_ReturnsEntity()
-    {
-        // Arrange
-        var mapper = new DataSqlMapper();
+	[Fact]
+#pragma warning disable CS1591 // Missing XML comment for publicly visible type or member
+	public void MapToResult_WithIdentitySelector_ReturnsEntity()
+#pragma warning restore CS1591 // Missing XML comment for publicly visible type or member
+	{
+		// Arrange
+		var mapper = new DataSqlMapper();
 		DataSpecification<Person, Person> specification = DataSpecification.For<Person>().Build();
-        using DbDataReader reader = CreatePersonReader(12, "Ada");
+		using DbDataReader reader = CreatePersonReader(12, "Ada");
 
 		// Act
 		Person result = mapper.MapToResult(specification, reader);
 
-        // Assert
-        result.Should().NotBeNull();
-        result.Id.Should().Be(12);
-        result.Name.Should().Be("Ada");
-    }
+		// Assert
+		result.Should().NotBeNull();
+		result.Id.Should().Be(12);
+		result.Name.Should().Be("Ada");
+	}
 
-    [Fact]
-    public void MapToResult_WithPropertySelector_ReturnsScalar()
-    {
-        // Arrange
-        var mapper = new DataSqlMapper();
+	[Fact]
+#pragma warning disable CS1591 // Missing XML comment for publicly visible type or member
+	public void MapToResult_WithPropertySelector_ReturnsScalar()
+#pragma warning restore CS1591 // Missing XML comment for publicly visible type or member
+	{
+		// Arrange
+		var mapper = new DataSqlMapper();
 		DataSpecification<Person, string> specification = DataSpecification.For<Person>().Select(p => p.Name);
-        using DbDataReader reader = CreatePersonReader(3, "Lin");
+		using DbDataReader reader = CreatePersonReader(3, "Lin");
 
 		// Act
 		string result = mapper.MapToResult(specification, reader);
 
-        // Assert
-        result.Should().Be("Lin");
-    }
+		// Assert
+		result.Should().Be("Lin");
+	}
 
-    [Fact]
-    public void MapToResult_WithAnonymousProjection_ReturnsAnonymousType()
-    {
-        // Arrange
-        var mapper = new DataSqlMapper();
-        var specification = DataSpecification.For<Person>().Select(p => new { p.Id, p.Name });
-        using DbDataReader reader = CreatePersonReader(7, "Marie");
+	[Fact]
+#pragma warning disable CS1591 // Missing XML comment for publicly visible type or member
+	public void MapToResult_WithAnonymousProjection_ReturnsAnonymousType()
+#pragma warning restore CS1591 // Missing XML comment for publicly visible type or member
+	{
+		// Arrange
+		var mapper = new DataSqlMapper();
+		var specification = DataSpecification.For<Person>().Select(p => new { p.Id, p.Name });
+		using DbDataReader reader = CreatePersonReader(7, "Marie");
 
-        // Act
-        var result = mapper.MapToResult(specification, reader);
+		// Act
+		var result = mapper.MapToResult(specification, reader);
 
-        // Assert
-        result.Id.Should().Be(7);
-        result.Name.Should().Be("Marie");
-    }
+		// Assert
+		result.Id.Should().Be(7);
+		result.Name.Should().Be("Marie");
+	}
 
-    [Fact]
-    public void MapToResult_WithCtorProjection_ReturnsDto()
-    {
-        // Arrange
-        var mapper = new DataSqlMapper();
+	[Fact]
+#pragma warning disable CS1591 // Missing XML comment for publicly visible type or member
+	public void MapToResult_WithCtorProjection_ReturnsDto()
+#pragma warning restore CS1591 // Missing XML comment for publicly visible type or member
+	{
+		// Arrange
+		var mapper = new DataSqlMapper();
 		DataSpecification<Person, PersonDto> specification = DataSpecification.For<Person>().Select(p => new PersonDto(p.Id, p.Name));
-        using DbDataReader reader = CreatePersonReader(21, "Noor");
+		using DbDataReader reader = CreatePersonReader(21, "Noor");
 
 		// Act
 		PersonDto result = mapper.MapToResult(specification, reader);
 
-        // Assert
-        result.Id.Should().Be(21);
-        result.Name.Should().Be("Noor");
-    }
+		// Assert
+		result.Id.Should().Be(21);
+		result.Name.Should().Be("Noor");
+	}
 
-    [Fact]
-    public void MapToResult_WithMemberInitProjection_ReturnsDto()
-    {
-        // Arrange
-        var mapper = new DataSqlMapper();
+	[Fact]
+#pragma warning disable CS1591 // Missing XML comment for publicly visible type or member
+	public void MapToResult_WithMemberInitProjection_ReturnsDto()
+#pragma warning restore CS1591 // Missing XML comment for publicly visible type or member
+	{
+		// Arrange
+		var mapper = new DataSqlMapper();
 		DataSpecification<Person, PersonInitDto> specification = DataSpecification.For<Person>().Select(p => new PersonInitDto { Id = p.Id, Name = p.Name });
-        using DbDataReader reader = CreatePersonReader(42, "Zoe");
+		using DbDataReader reader = CreatePersonReader(42, "Zoe");
 
 		// Act
 		PersonInitDto result = mapper.MapToResult(specification, reader);
 
-        // Assert
-        result.Id.Should().Be(42);
-        result.Name.Should().Be("Zoe");
-    }
+		// Assert
+		result.Id.Should().Be(42);
+		result.Name.Should().Be("Zoe");
+	}
 
-    [Fact]
-    public void Map_WithScalarValue_ReturnsValue()
-    {
-        // Arrange
-        var mapper = new DataSqlMapper();
-        using DbDataReader reader = CreateScalarReader(99);
+	[Fact]
+#pragma warning disable CS1591 // Missing XML comment for publicly visible type or member
+	public void Map_WithScalarValue_ReturnsValue()
+#pragma warning restore CS1591 // Missing XML comment for publicly visible type or member
+	{
+		// Arrange
+		var mapper = new DataSqlMapper();
+		using DbDataReader reader = CreateScalarReader(99);
 
 		// Act
 		int result = mapper.MapToResult<int>(reader);
 
-        // Assert
-        result.Should().Be(99);
-    }
+		// Assert
+		result.Should().Be(99);
+	}
 
-    private static DbDataReader CreatePersonReader(int id, string name)
-    {
-        var table = new DataTable();
-        table.Columns.Add("Id", typeof(int));
-        table.Columns.Add("Name", typeof(string));
-        table.Rows.Add(id, name);
-
-		DataTableReader reader = table.CreateDataReader();
-        reader.Read();
-        return reader;
-    }
-
-    private static DbDataReader CreateScalarReader(int value)
-    {
-        var table = new DataTable();
-        table.Columns.Add("Value", typeof(int));
-        table.Rows.Add(value);
+	private static DbDataReader CreatePersonReader(int id, string name)
+	{
+		var table = new DataTable();
+		table.Columns.Add("Id", typeof(int));
+		table.Columns.Add("Name", typeof(string));
+		table.Rows.Add(id, name);
 
 		DataTableReader reader = table.CreateDataReader();
-        reader.Read();
-        return reader;
-    }
+		reader.Read();
+		return reader;
+	}
 
-    private sealed class Person
-    {
-        public int Id { get; set; }
+	private static DbDataReader CreateScalarReader(int value)
+	{
+		var table = new DataTable();
+		table.Columns.Add("Value", typeof(int));
+		table.Rows.Add(value);
 
-        public string Name { get; set; } = string.Empty;
-    }
+		DataTableReader reader = table.CreateDataReader();
+		reader.Read();
+		return reader;
+	}
 
-    private sealed record PersonDto(int Id, string Name);
+	private sealed class Person
+	{
+		public int Id { get; set; }
 
-    private sealed class PersonInitDto
-    {
-        public int Id { get; set; }
+		public string Name { get; set; } = string.Empty;
+	}
 
-        public string Name { get; set; } = string.Empty;
-    }
+	private sealed record PersonDto(int Id, string Name);
+
+	private sealed class PersonInitDto
+	{
+		public int Id { get; set; }
+
+		public string Name { get; set; } = string.Empty;
+	}
 }

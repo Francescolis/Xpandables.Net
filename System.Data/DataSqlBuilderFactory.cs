@@ -1,4 +1,4 @@
-/*******************************************************************************
+﻿/*******************************************************************************
  * Copyright (C) 2025-2026 Kamersoft
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
@@ -26,56 +26,60 @@ namespace System.Data;
 [RequiresDynamicCode("SQL builders require dynamic code generation for expression compilation.")]
 public sealed class DataSqlBuilderFactory : IDataSqlBuilderFactory
 {
-    private static readonly Lazy<MsDataSqlBuilder> _sqlServerBuilder = new(() => new MsDataSqlBuilder());
-    private static readonly Lazy<PostgreDataSqlBuilder> _postgreSqlBuilder = new(() => new PostgreDataSqlBuilder());
-    private static readonly Lazy<MyDataSqlBuilder> _mySqlBuilder = new(() => new MyDataSqlBuilder());
+	private static readonly Lazy<MsDataSqlBuilder> _sqlServerBuilder = new(() => new MsDataSqlBuilder());
+	private static readonly Lazy<PostgreDataSqlBuilder> _postgreSqlBuilder = new(() => new PostgreDataSqlBuilder());
+	private static readonly Lazy<MyDataSqlBuilder> _mySqlBuilder = new(() => new MyDataSqlBuilder());
+	private static readonly Lazy<OracleDataSqlBuilder> _oracleBuilder = new(() => new OracleDataSqlBuilder());
 
-    /// <inheritdoc />
-    public IDataSqlBuilder Create(SqlDialect dialect)
-    {
-        return dialect switch
-        {
-            SqlDialect.SqlServer => _sqlServerBuilder.Value,
-            SqlDialect.PostgreSql => _postgreSqlBuilder.Value,
-            SqlDialect.MySql => _mySqlBuilder.Value,
-            _ => throw new ArgumentOutOfRangeException(nameof(dialect), dialect, $"Unsupported SQL dialect: {dialect}")
-        };
-    }
+	/// <inheritdoc />
+	public IDataSqlBuilder Create(SqlDialect dialect)
+	{
+		return dialect switch
+		{
+			SqlDialect.SqlServer => _sqlServerBuilder.Value,
+			SqlDialect.PostgreSql => _postgreSqlBuilder.Value,
+			SqlDialect.MySql => _mySqlBuilder.Value,
+			SqlDialect.Oracle => _oracleBuilder.Value,
+			_ => throw new ArgumentOutOfRangeException(nameof(dialect), dialect, $"Unsupported SQL dialect: {dialect}")
+		};
+	}
 
-    /// <inheritdoc />
-    public IDataSqlBuilder Create(string providerInvariantName)
-    {
-        ArgumentException.ThrowIfNullOrWhiteSpace(providerInvariantName);
+	/// <inheritdoc />
+	public IDataSqlBuilder Create(string providerInvariantName)
+	{
+		ArgumentException.ThrowIfNullOrWhiteSpace(providerInvariantName);
 
 		SqlDialect dialect = GetDialectFromProvider(providerInvariantName);
-        return Create(dialect);
-    }
+		return Create(dialect);
+	}
 
-    /// <summary>
-    /// Gets the SQL dialect for a provider invariant name.
-    /// </summary>
-    /// <param name="providerInvariantName">The provider invariant name.</param>
-    /// <returns>The corresponding SQL dialect.</returns>
-    /// <exception cref="ArgumentException">Thrown when the provider is not recognized.</exception>
-    public static SqlDialect GetDialectFromProvider(string providerInvariantName)
-    {
-        ArgumentException.ThrowIfNullOrWhiteSpace(providerInvariantName);
+	/// <summary>
+	/// Gets the SQL dialect for a provider invariant name.
+	/// </summary>
+	/// <param name="providerInvariantName">The provider invariant name.</param>
+	/// <returns>The corresponding SQL dialect.</returns>
+	/// <exception cref="ArgumentException">Thrown when the provider is not recognized.</exception>
+	public static SqlDialect GetDialectFromProvider(string providerInvariantName)
+	{
+		ArgumentException.ThrowIfNullOrWhiteSpace(providerInvariantName);
 
 		// Normalize for comparison
 		string normalized = providerInvariantName.ToUpperInvariant();
 
-        return normalized switch
-        {
-            _ when normalized.Contains("SQLCLIENT", StringComparison.Ordinal) => SqlDialect.SqlServer,
-            _ when normalized.Contains("NPGSQL", StringComparison.Ordinal) => SqlDialect.PostgreSql,
-            _ when normalized.Contains("MYSQL", StringComparison.Ordinal) => SqlDialect.MySql,
-            DbProviders.MsSqlServer.InvariantName => SqlDialect.SqlServer,
-            DbProviders.PostgreSql.InvariantName => SqlDialect.PostgreSql,
-            DbProviders.MySql.InvariantName => SqlDialect.MySql,
-            _ => throw new ArgumentException(
-                $"Unknown database provider: '{providerInvariantName}'. " +
-                $"Supported providers: {DbProviders.MsSqlServer.InvariantName}, {DbProviders.PostgreSql.InvariantName}, {DbProviders.MySql.InvariantName}",
-                nameof(providerInvariantName))
-        };
-    }
+		return normalized switch
+		{
+			_ when normalized.Contains("SQLCLIENT", StringComparison.Ordinal) => SqlDialect.SqlServer,
+			_ when normalized.Contains("NPGSQL", StringComparison.Ordinal) => SqlDialect.PostgreSql,
+			_ when normalized.Contains("MYSQL", StringComparison.Ordinal) => SqlDialect.MySql,
+			_ when normalized.Contains("ORACLE", StringComparison.Ordinal) => SqlDialect.Oracle,
+			DbProviders.MsSqlServer.InvariantName => SqlDialect.SqlServer,
+			DbProviders.PostgreSql.InvariantName => SqlDialect.PostgreSql,
+			DbProviders.MySql.InvariantName => SqlDialect.MySql,
+			DbProviders.Oracle.InvariantName => SqlDialect.Oracle,
+			_ => throw new ArgumentException(
+				$"Unknown database provider: '{providerInvariantName}'. " +
+				$"Supported providers: {DbProviders.MsSqlServer.InvariantName}, {DbProviders.PostgreSql.InvariantName}, {DbProviders.MySql.InvariantName}, {DbProviders.Oracle.InvariantName}",
+				nameof(providerInvariantName))
+		};
+	}
 }

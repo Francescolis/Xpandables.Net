@@ -1,4 +1,4 @@
-/*******************************************************************************
+﻿/*******************************************************************************
  * Copyright (C) 2025-2026 Kamersoft
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
@@ -14,6 +14,7 @@
  * limitations under the License.
  *
 ********************************************************************************/
+
 using System.Net;
 using System.Rests.Abstractions;
 using System.Text;
@@ -26,240 +27,259 @@ using Microsoft.Extensions.DependencyInjection;
 
 namespace Xpandables.Net.UnitTests.Systems.Rests;
 
+#pragma warning disable CS1591 // Missing XML comment for publicly visible type or member
+[Collection("RestSettingsSerializer")]
 public sealed class RestClientOptionsTests
+#pragma warning restore CS1591 // Missing XML comment for publicly visible type or member
 {
-    [Fact]
-    public void RestClientOptions_HasSensibleDefaults()
-    {
-        // Arrange & Act
-        var options = new RestClientOptions();
+	[Fact]
+#pragma warning disable CS1591 // Missing XML comment for publicly visible type or member
+	public void RestClientOptions_HasSensibleDefaults()
+#pragma warning restore CS1591 // Missing XML comment for publicly visible type or member
+	{
+		// Arrange & Act
+		var options = new RestClientOptions();
 
-        // Assert
-        options.Timeout.Should().Be(TimeSpan.FromSeconds(30));
-        options.Retry.Should().BeNull();
-        options.CircuitBreaker.Should().BeNull();
-        options.EnableLogging.Should().BeFalse();
-        options.LogLevel.Should().Be(RestLogLevel.Information);
-        options.LogRequestBody.Should().BeFalse();
-        options.LogResponseBody.Should().BeFalse();
-    }
+		// Assert
+		options.Timeout.Should().Be(TimeSpan.FromSeconds(30));
+		options.Retry.Should().BeNull();
+		options.CircuitBreaker.Should().BeNull();
+		options.EnableLogging.Should().BeFalse();
+		options.LogLevel.Should().Be(RestLogLevel.Information);
+		options.LogRequestBody.Should().BeFalse();
+		options.LogResponseBody.Should().BeFalse();
+	}
 
-    [Fact]
-    public void RestRetryOptions_HasSensibleDefaults()
-    {
-        // Arrange & Act
-        var options = new RestRetryOptions();
+	private static readonly int[] expected = [408, 429, 500, 502, 503, 504];
 
-        // Assert
-        options.MaxRetryAttempts.Should().Be(3);
-        options.Delay.Should().Be(TimeSpan.FromSeconds(1));
-        options.MaxDelay.Should().Be(TimeSpan.FromSeconds(30));
-        options.UseExponentialBackoff.Should().BeTrue();
-        options.JitterFactor.Should().Be(0.2);
-        options.RetryableStatusCodes.Should().Contain(new[] { 408, 429, 500, 502, 503, 504 });
-    }
+	[Fact]
+#pragma warning disable CS1591 // Missing XML comment for publicly visible type or member
+	public void RestRetryOptions_HasSensibleDefaults()
+#pragma warning restore CS1591 // Missing XML comment for publicly visible type or member
+	{
+		// Arrange & Act
+		var options = new RestRetryOptions();
 
-    [Fact]
-    public void RestCircuitBreakerOptions_HasSensibleDefaults()
-    {
-        // Arrange & Act
-        var options = new RestCircuitBreakerOptions();
+		// Assert
+		options.MaxRetryAttempts.Should().Be(3);
+		options.Delay.Should().Be(TimeSpan.FromSeconds(1));
+		options.MaxDelay.Should().Be(TimeSpan.FromSeconds(30));
+		options.UseExponentialBackoff.Should().BeTrue();
+		options.JitterFactor.Should().Be(0.2);
+		options.RetryableStatusCodes.Should().Contain(expected);
+	}
 
-        // Assert
-        options.FailureThreshold.Should().Be(5);
-        options.BreakDuration.Should().Be(TimeSpan.FromSeconds(30));
-        options.SamplingDuration.Should().Be(TimeSpan.FromSeconds(30));
-        options.MinimumThroughput.Should().Be(10);
-    }
+	[Fact]
+#pragma warning disable CS1591 // Missing XML comment for publicly visible type or member
+	public void RestCircuitBreakerOptions_HasSensibleDefaults()
+#pragma warning restore CS1591 // Missing XML comment for publicly visible type or member
+	{
+		// Arrange & Act
+		var options = new RestCircuitBreakerOptions();
 
-    // Note: RestClient timeout/cancellation tests require a properly configured request with matching composers
-    // These tests are marked as skipped since they need full integration test setup
-    // For proper testing, use the RestClientIntegrationTests class instead
+		// Assert
+		options.FailureThreshold.Should().Be(5);
+		options.BreakDuration.Should().Be(TimeSpan.FromSeconds(30));
+		options.SamplingDuration.Should().Be(TimeSpan.FromSeconds(30));
+		options.MinimumThroughput.Should().Be(10);
+	}
 
-    [Fact]
-    public async Task RestClient_WhenRequestTimesOut_ReturnsTimeoutResponse()
-    {
-        using IDisposable serializerScope = UseDefaultSerializerOptions();
+	// Note: RestClient timeout/cancellation tests require a properly configured request with matching composers
+	// These tests are marked as skipped since they need full integration test setup
+	// For proper testing, use the RestClientIntegrationTests class instead
 
-        // Arrange
-        ServiceCollection services = new();
-        services.AddXRestAttributeProvider();
-        services.AddXRestRequestComposers();
-        services.AddXRestResponseComposers();
-        services.AddXRestRequestBuilder();
-        services.AddXRestResponseBuilder();
-        services.AddScoped<SlowHandler>();
-        services.ConfigureXRestClientOptions(options =>
-            options.Timeout = TimeSpan.FromMilliseconds(50));
-        services.AddXRestClient((_, client) =>
-            client.BaseAddress = new Uri("https://api.example.com"))
-            .ConfigurePrimaryHttpMessageHandler<SlowHandler>();
+	[Fact]
+#pragma warning disable CS1591 // Missing XML comment for publicly visible type or member
+	public async Task RestClient_WhenRequestTimesOut_ReturnsTimeoutResponse()
+#pragma warning restore CS1591 // Missing XML comment for publicly visible type or member
+	{
+		using IDisposable serializerScope = UseDefaultSerializerOptions();
 
-        IServiceProvider serviceProvider = services.BuildServiceProvider();
-        IRestClient client = serviceProvider.GetRequiredService<IRestClient>();
+		// Arrange
+		ServiceCollection services = new();
+		services.AddXRestAttributeProvider();
+		services.AddXRestRequestComposers();
+		services.AddXRestResponseComposers();
+		services.AddXRestRequestBuilder();
+		services.AddXRestResponseBuilder();
+		services.AddScoped<SlowHandler>();
+		services.ConfigureXRestClientOptions(options =>
+			options.Timeout = TimeSpan.FromMilliseconds(50));
+		services.AddXRestClient((_, client) =>
+			client.BaseAddress = new Uri("https://api.example.com"))
+			.ConfigurePrimaryHttpMessageHandler<SlowHandler>();
 
-        // Act
-        RestResponse response = await client.SendAsync(new SimpleRequest());
+		IServiceProvider serviceProvider = services.BuildServiceProvider();
+		IRestClient client = serviceProvider.GetRequiredService<IRestClient>();
 
-        // Assert
-        response.StatusCode.Should().Be(HttpStatusCode.RequestTimeout);
-        response.Exception.Should().NotBeNull();
-        response.Exception.Should().BeOfType<TimeoutException>();
-    }
+		// Act
+		RestResponse response = await client.SendAsync(new SimpleRequest());
 
-    [Fact]
-    public async Task RestClient_WhenCancellationRequested_ReturnsCancelledState()
-    {
-        using IDisposable serializerScope = UseDefaultSerializerOptions();
+		// Assert
+		response.StatusCode.Should().Be(HttpStatusCode.RequestTimeout);
+		response.Exception.Should().NotBeNull();
+		response.Exception.Should().BeOfType<TimeoutException>();
+	}
 
-        // Arrange
-        ServiceCollection services = new();
-        services.AddXRestAttributeProvider();
-        services.AddXRestRequestComposers();
-        services.AddXRestResponseComposers();
-        services.AddXRestRequestBuilder();
-        services.AddXRestResponseBuilder();
-        services.AddScoped<SlowHandler>();
-        services.AddXRestClient((_, client) =>
-            client.BaseAddress = new Uri("https://api.example.com"))
-            .ConfigurePrimaryHttpMessageHandler<SlowHandler>();
+	[Fact]
+#pragma warning disable CS1591 // Missing XML comment for publicly visible type or member
+	public async Task RestClient_WhenCancellationRequested_ReturnsCancelledState()
+#pragma warning restore CS1591 // Missing XML comment for publicly visible type or member
+	{
+		using IDisposable serializerScope = UseDefaultSerializerOptions();
 
-        IServiceProvider serviceProvider = services.BuildServiceProvider();
-        IRestClient client = serviceProvider.GetRequiredService<IRestClient>();
+		// Arrange
+		ServiceCollection services = new();
+		services.AddXRestAttributeProvider();
+		services.AddXRestRequestComposers();
+		services.AddXRestResponseComposers();
+		services.AddXRestRequestBuilder();
+		services.AddXRestResponseBuilder();
+		services.AddScoped<SlowHandler>();
+		services.AddXRestClient((_, client) =>
+			client.BaseAddress = new Uri("https://api.example.com"))
+			.ConfigurePrimaryHttpMessageHandler<SlowHandler>();
 
-        using CancellationTokenSource cts = new();
-        cts.Cancel(); // Cancel immediately
+		IServiceProvider serviceProvider = services.BuildServiceProvider();
+		IRestClient client = serviceProvider.GetRequiredService<IRestClient>();
+
+		using CancellationTokenSource cts = new();
+		cts.Cancel(); // Cancel immediately
 
 		// Act & Assert - the response should indicate cancellation or throw
 		// Since the SlowHandler will never be reached due to cancellation in builders
 		RestResponse response = await client.SendAsync(new SimpleRequest(), cts.Token);
-        response.Exception.Should().Match<Exception>(e =>
-                   e is OperationCanceledException);
-    }
+		response.Exception.Should().Match<Exception>(e =>
+				   e is OperationCanceledException);
+	}
 
-    [Fact]
-    public async Task RestClient_WhenHttpExceptionOccurs_ReturnsErrorResponse()
-    {
-        using IDisposable serializerScope = UseDefaultSerializerOptions();
+	[Fact]
+#pragma warning disable CS1591 // Missing XML comment for publicly visible type or member
+	public async Task RestClient_WhenHttpExceptionOccurs_ReturnsErrorResponse()
+#pragma warning restore CS1591 // Missing XML comment for publicly visible type or member
+	{
+		using IDisposable serializerScope = UseDefaultSerializerOptions();
 
-        // Arrange
-        ServiceCollection services = new();
-        services.AddXRestAttributeProvider();
-        services.AddXRestRequestComposers();
-        services.AddXRestResponseComposers();
-        services.AddXRestRequestBuilder();
-        services.AddXRestResponseBuilder();
-        services.AddScoped<FailingHandler>();
-        services.AddXRestClient((_, client) =>
-            client.BaseAddress = new Uri("https://api.example.com"))
-            .ConfigurePrimaryHttpMessageHandler<FailingHandler>();
+		// Arrange
+		ServiceCollection services = new();
+		services.AddXRestAttributeProvider();
+		services.AddXRestRequestComposers();
+		services.AddXRestResponseComposers();
+		services.AddXRestRequestBuilder();
+		services.AddXRestResponseBuilder();
+		services.AddScoped<FailingHandler>();
+		services.AddXRestClient((_, client) =>
+			client.BaseAddress = new Uri("https://api.example.com"))
+			.ConfigurePrimaryHttpMessageHandler<FailingHandler>();
 
-        IServiceProvider serviceProvider = services.BuildServiceProvider();
-        IRestClient client = serviceProvider.GetRequiredService<IRestClient>();
+		IServiceProvider serviceProvider = services.BuildServiceProvider();
+		IRestClient client = serviceProvider.GetRequiredService<IRestClient>();
 
-        // Act
-        RestResponse response = await client.SendAsync(new SimpleRequest());
+		// Act
+		RestResponse response = await client.SendAsync(new SimpleRequest());
 
-        // Assert
-        response.IsSuccess.Should().BeFalse();
-        response.Exception.Should().NotBeNull();
-        // The HttpRequestException may be wrapped in an InvalidOperationException
-        response.Exception.Should().Match<Exception>(e =>
-            e is HttpRequestException || e.InnerException is HttpRequestException || e is TimeoutException);
-    }
+		// Assert
+		response.IsSuccess.Should().BeFalse();
+		response.Exception.Should().NotBeNull();
+		// The HttpRequestException may be wrapped in an InvalidOperationException
+		response.Exception.Should().Match<Exception>(e =>
+			e is HttpRequestException || e.InnerException is HttpRequestException || e is TimeoutException);
+	}
 
-    [Fact]
-    public void RestClientOptions_ConfigureOptions_AppliesSettings()
-    {
-        // Arrange
-        ServiceCollection services = new();
-        services.ConfigureXRestClientOptions(options =>
-        {
-            options.Timeout = TimeSpan.FromMinutes(2);
-            options.EnableLogging = true;
-            options.LogLevel = RestLogLevel.Debug;
-            options.Retry = new RestRetryOptions
-            {
-                MaxRetryAttempts = 5,
-                UseExponentialBackoff = false
-            };
-            options.CircuitBreaker = new RestCircuitBreakerOptions
-            {
-                FailureThreshold = 10,
-                BreakDuration = TimeSpan.FromMinutes(1)
-            };
-        });
+	[Fact]
+#pragma warning disable CS1591 // Missing XML comment for publicly visible type or member
+	public void RestClientOptions_ConfigureOptions_AppliesSettings()
+#pragma warning restore CS1591 // Missing XML comment for publicly visible type or member
+	{
+		// Arrange
+		ServiceCollection services = new();
+		services.ConfigureXRestClientOptions(options =>
+		{
+			options.Timeout = TimeSpan.FromMinutes(2);
+			options.EnableLogging = true;
+			options.LogLevel = RestLogLevel.Debug;
+			options.Retry = new RestRetryOptions
+			{
+				MaxRetryAttempts = 5,
+				UseExponentialBackoff = false
+			};
+			options.CircuitBreaker = new RestCircuitBreakerOptions
+			{
+				FailureThreshold = 10,
+				BreakDuration = TimeSpan.FromMinutes(1)
+			};
+		});
 
 		ServiceProvider provider = services.BuildServiceProvider();
 
 		// Act
 		RestClientOptions options = provider.GetRequiredService<Microsoft.Extensions.Options.IOptions<RestClientOptions>>().Value;
 
-        // Assert
-        options.Timeout.Should().Be(TimeSpan.FromMinutes(2));
-        options.EnableLogging.Should().BeTrue();
-        options.LogLevel.Should().Be(RestLogLevel.Debug);
-        options.Retry.Should().NotBeNull();
-        options.Retry!.MaxRetryAttempts.Should().Be(5);
-        options.Retry.UseExponentialBackoff.Should().BeFalse();
-        options.CircuitBreaker.Should().NotBeNull();
-        options.CircuitBreaker!.FailureThreshold.Should().Be(10);
-        options.CircuitBreaker.BreakDuration.Should().Be(TimeSpan.FromMinutes(1));
-    }
+		// Assert
+		options.Timeout.Should().Be(TimeSpan.FromMinutes(2));
+		options.EnableLogging.Should().BeTrue();
+		options.LogLevel.Should().Be(RestLogLevel.Debug);
+		options.Retry.Should().NotBeNull();
+		options.Retry!.MaxRetryAttempts.Should().Be(5);
+		options.Retry.UseExponentialBackoff.Should().BeFalse();
+		options.CircuitBreaker.Should().NotBeNull();
+		options.CircuitBreaker!.FailureThreshold.Should().Be(10);
+		options.CircuitBreaker.BreakDuration.Should().Be(TimeSpan.FromMinutes(1));
+	}
 
-    #region Helper Methods
+	#region Helper Methods
 
-    private static IDisposable UseDefaultSerializerOptions()
-    {
-        JsonSerializerOptions previous = RestSettings.SerializerOptions;
-        RestSettings.SerializerOptions = new JsonSerializerOptions(JsonSerializerDefaults.Web)
-        {
-            TypeInfoResolver = new DefaultJsonTypeInfoResolver()
-        };
+	private static IDisposable UseDefaultSerializerOptions()
+	{
+		JsonSerializerOptions previous = RestSettings.SerializerOptions;
+		RestSettings.SerializerOptions = new JsonSerializerOptions(JsonSerializerDefaults.Web)
+		{
+			TypeInfoResolver = new DefaultJsonTypeInfoResolver()
+		};
 
-        return new DelegateDisposable(() => RestSettings.SerializerOptions = previous);
-    }
+		return new DelegateDisposable(() => RestSettings.SerializerOptions = previous);
+	}
 
-    #endregion
+	#endregion
 
-    #region Test Helpers
+	#region Test Helpers
 
-    private sealed class DelegateDisposable(Action dispose) : IDisposable
-    {
-        public void Dispose() => dispose();
-    }
+	private sealed class DelegateDisposable(Action dispose) : IDisposable
+	{
+		public void Dispose() => dispose();
+	}
 
-    private sealed record SimpleRequest : IRestAttributeBuilder, IRestQueryString
-    {
-        public RestAttribute Build(IServiceProvider serviceProvider) =>
-            new RestGetAttribute("/test");
-        IDictionary<string, string?>? IRestQueryString.GetQueryString() => new Dictionary<string, string?>();
-    }
+	private sealed record SimpleRequest : IRestAttributeBuilder, IRestQueryString
+	{
+		public RestAttribute Build(IServiceProvider serviceProvider) =>
+			new RestGetAttribute("/test");
+		IDictionary<string, string?>? IRestQueryString.GetQueryString() => new Dictionary<string, string?>();
+	}
 
-    private sealed class SlowHandler : HttpMessageHandler
-    {
-        protected override async Task<HttpResponseMessage> SendAsync(
-            HttpRequestMessage request, CancellationToken cancellationToken)
-        {
-            // Simulate a slow response
-            await Task.Delay(TimeSpan.FromSeconds(5), cancellationToken);
+	private sealed class SlowHandler : HttpMessageHandler
+	{
+		protected override async Task<HttpResponseMessage> SendAsync(
+			HttpRequestMessage request, CancellationToken cancellationToken)
+		{
+			// Simulate a slow response
+			await Task.Delay(TimeSpan.FromSeconds(5), cancellationToken);
 
-            return new HttpResponseMessage(HttpStatusCode.OK)
-            {
-                Content = new StringContent("{}", Encoding.UTF8, "application/json"),
-                Version = HttpVersion.Version20
-            };
-        }
-    }
+			return new HttpResponseMessage(HttpStatusCode.OK)
+			{
+				Content = new StringContent("{}", Encoding.UTF8, "application/json"),
+				Version = HttpVersion.Version20
+			};
+		}
+	}
 
-    private sealed class FailingHandler : HttpMessageHandler
-    {
-        protected override Task<HttpResponseMessage> SendAsync(
-            HttpRequestMessage request, CancellationToken cancellationToken)
-        {
-            throw new HttpRequestException("Simulated network failure");
-        }
-    }
+	private sealed class FailingHandler : HttpMessageHandler
+	{
+		protected override Task<HttpResponseMessage> SendAsync(
+			HttpRequestMessage request, CancellationToken cancellationToken)
+		{
+			throw new HttpRequestException("Simulated network failure");
+		}
+	}
 
-    #endregion
+	#endregion
 }

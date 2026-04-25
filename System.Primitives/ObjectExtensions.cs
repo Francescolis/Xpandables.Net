@@ -1,4 +1,4 @@
-/*******************************************************************************
+﻿/*******************************************************************************
  * Copyright (C) 2025-2026 Kamersoft
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
@@ -119,12 +119,12 @@ public static class ObjectExtensions
 				return specialResult;
 			}
 
-			if (TryConvertWithTypeConverter(obj, conversionType, out object? convertedByTarget))
+			if (TryConvertWithTypeConverter(obj, conversionType, out object? convertedByTarget, formatProvider))
 			{
 				return convertedByTarget;
 			}
 
-			if (TryConvertWithSourceConverter(obj, conversionType, out object? convertedBySource))
+			if (TryConvertWithSourceConverter(obj, conversionType, out object? convertedBySource, formatProvider))
 			{
 				return convertedBySource;
 			}
@@ -239,6 +239,10 @@ public static class ObjectExtensions
 	{
 		result = null;
 
+		// Use InvariantCulture as default for string-to-number conversions
+		// to ensure consistent parsing regardless of the current culture.
+		IFormatProvider effectiveProvider = formatProvider ?? CultureInfo.InvariantCulture;
+
 		if (targetType == typeof(Guid) && obj is string g)
 		{
 			result = Guid.Parse(g);
@@ -249,19 +253,37 @@ public static class ObjectExtensions
 		{
 			if (obj is string decString)
 			{
-				result = decimal.Parse(decString, NumberStyles.Number, formatProvider);
+				result = decimal.Parse(decString, NumberStyles.Number, effectiveProvider);
 				return true;
 			}
 
 			if (obj is double d)
 			{
-				result = Convert.ToDecimal(d, formatProvider);
+				result = Convert.ToDecimal(d, effectiveProvider);
 				return true;
 			}
 
 			if (obj is float f)
 			{
-				result = Convert.ToDecimal(f, formatProvider);
+				result = Convert.ToDecimal(f, effectiveProvider);
+				return true;
+			}
+		}
+
+		if (targetType == typeof(double))
+		{
+			if (obj is string doubleString)
+			{
+				result = double.Parse(doubleString, NumberStyles.Float | NumberStyles.AllowThousands, effectiveProvider);
+				return true;
+			}
+		}
+
+		if (targetType == typeof(float))
+		{
+			if (obj is string floatString)
+			{
+				result = float.Parse(floatString, NumberStyles.Float | NumberStyles.AllowThousands, effectiveProvider);
 				return true;
 			}
 		}
@@ -270,14 +292,20 @@ public static class ObjectExtensions
 		{
 			if (obj is string intString)
 			{
-				result = int.Parse(intString, NumberStyles.Integer, formatProvider);
+				result = int.Parse(intString, NumberStyles.Integer, effectiveProvider);
 				return true;
 			}
 		}
 
+		if (targetType == typeof(DateTime) && obj is string dtString)
+		{
+			result = DateTime.Parse(dtString, effectiveProvider);
+			return true;
+		}
+
 		if (targetType == typeof(DateTimeOffset) && obj is string dto)
 		{
-			result = DateTimeOffset.Parse(dto, formatProvider);
+			result = DateTimeOffset.Parse(dto, effectiveProvider);
 			return true;
 		}
 
@@ -285,14 +313,14 @@ public static class ObjectExtensions
 		{
 			if (obj is string longString)
 			{
-				result = long.Parse(longString, NumberStyles.Integer, formatProvider);
+				result = long.Parse(longString, NumberStyles.Integer, effectiveProvider);
 				return true;
 			}
 		}
 
 		if (targetType == typeof(TimeSpan) && obj is string ts)
 		{
-			result = TimeSpan.Parse(ts, formatProvider);
+			result = TimeSpan.Parse(ts, effectiveProvider);
 			return true;
 		}
 
@@ -315,17 +343,43 @@ public static class ObjectExtensions
 		}
 
 		// DateOnly conversion
-		if (targetType == typeof(DateOnly) && obj is string dateOnlyString)
+		// DateOnly conversion
+		if (targetType == typeof(DateOnly))
 		{
-			result = DateOnly.Parse(dateOnlyString, formatProvider);
-			return true;
+			if (obj is string dateOnlyString)
+			{
+				result = DateOnly.Parse(dateOnlyString, effectiveProvider);
+				return true;
+			}
+
+			if (obj is DateTime dateOnlyDt)
+			{
+				result = DateOnly.FromDateTime(dateOnlyDt);
+				return true;
+			}
 		}
 
 		// TimeOnly conversion
-		if (targetType == typeof(TimeOnly) && obj is string timeOnlyString)
+		// TimeOnly conversion
+		if (targetType == typeof(TimeOnly))
 		{
-			result = TimeOnly.Parse(timeOnlyString, formatProvider);
-			return true;
+			if (obj is string timeOnlyString)
+			{
+				result = TimeOnly.Parse(timeOnlyString, effectiveProvider);
+				return true;
+			}
+
+			if (obj is DateTime timeOnlyDt)
+			{
+				result = TimeOnly.FromDateTime(timeOnlyDt);
+				return true;
+			}
+
+			if (obj is TimeSpan timeOnlyTs)
+			{
+				result = TimeOnly.FromTimeSpan(timeOnlyTs);
+				return true;
+			}
 		}
 
 		// JSON conversion (string ? object)
@@ -352,7 +406,7 @@ public static class ObjectExtensions
 	}
 
 	[RequiresUnreferencedCode("Calls System.ComponentModel.TypeDescriptor.GetConverter(Type)")]
-	private static bool TryConvertWithTypeConverter(object obj, Type targetType, out object? result)
+	private static bool TryConvertWithTypeConverter(object obj, Type targetType, out object? result, IFormatProvider? formatProvider = null)
 	{
 		result = null;
 
@@ -362,12 +416,13 @@ public static class ObjectExtensions
 			return false;
 		}
 
-		result = converter.ConvertFrom(null, CultureInfo.CurrentCulture, obj);
+		CultureInfo culture = formatProvider as CultureInfo ?? CultureInfo.CurrentCulture;
+		result = converter.ConvertFrom(null, culture, obj);
 		return true;
 	}
 
 	[RequiresUnreferencedCode("Calls System.ComponentModel.TypeDescriptor.GetConverter(Type)")]
-	private static bool TryConvertWithSourceConverter(object obj, Type targetType, out object? result)
+	private static bool TryConvertWithSourceConverter(object obj, Type targetType, out object? result, IFormatProvider? formatProvider = null)
 	{
 		result = null;
 
@@ -377,7 +432,8 @@ public static class ObjectExtensions
 			return false;
 		}
 
-		result = converter.ConvertTo(null, CultureInfo.CurrentCulture, obj, targetType);
+		CultureInfo culture = formatProvider as CultureInfo ?? CultureInfo.CurrentCulture;
+		result = converter.ConvertTo(null, culture, obj, targetType);
 		return true;
 	}
 
@@ -445,7 +501,7 @@ public static class ObjectExtensions
 			return true;
 		}
 
-		// Try to convert List<T> ? target collection type
+		// Try to convert List<T> → target collection type
 		try
 		{
 			result = Convert.ChangeType(list, conversionType, formatProvider);
@@ -545,7 +601,7 @@ public static class ObjectExtensions
 
 		Type elementType = conversionType.GetGenericArguments()[0];
 
-		// Convert string ? IEnumerable<T>
+		// Convert string → IEnumerable<T>
 		if (!TryConvertEnumerable(obj, typeof(IEnumerable<>).MakeGenericType(elementType), formatProvider, out object? enumerableObj))
 		{
 			return false;
@@ -703,4 +759,5 @@ public static class ObjectExtensions
 		result = dict;
 		return true;
 	}
+
 }

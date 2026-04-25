@@ -31,14 +31,18 @@ namespace System.Data;
 /// Repositories created through this unit of work share the same connection
 /// and transaction context, ensuring consistency across operations.
 /// </para>
+/// <para>
+/// The unit of work creates and owns the <see cref="IDataConnectionScope"/> internally,
+/// ensuring single-owner disposal semantics — mirroring how EF Core's <c>DbContext</c>
+/// manages its connection. The connection scope is disposed when the unit of work is disposed.
+/// </para>
 /// </remarks>
 #pragma warning disable CA1063 // Implement IDisposable correctly - simplified for sealed-like behavior
 [RequiresDynamicCode("Expression compilation requires dynamic code generation.")]
 public class DataUnitOfWork : IDataUnitOfWork
 {
 	private readonly IDataConnectionScope _connectionScope;
-	private readonly IDataSqlBuilder _sqlBuilder;
-	private readonly IDataSqlMapper _sqlMapper;
+	private readonly IDataSqlServiceAccessor _sqlServiceAccessor;
 	private readonly IDataCommandInterceptor _interceptor;
 	private readonly ConcurrentDictionary<Type, object> _repositories = new();
 	private bool _isDisposed;
@@ -49,20 +53,17 @@ public class DataUnitOfWork : IDataUnitOfWork
 	/// making this unit of work the sole owner of the connection lifecycle.
 	/// </summary>
 	/// <param name="connectionScopeFactory">The factory used to create the connection scope. Must not be null.</param>
-	/// <param name="sqlBuilder">The SQL builder for generating queries.</param>
-	/// <param name="sqlMapper">The SQL mapper for mapping data.</param>
+	/// <param name="sqlServiceAccessor">The accessor providing SQL builder and mapper services. Must not be null.</param>
 	/// <param name="interceptor">The optional command interceptor for logging and telemetry.
 	/// When <see langword="null"/>, <see cref="DataCommandInterceptor.Default"/> is used.</param>
 	public DataUnitOfWork(
 		IDataConnectionScopeFactory connectionScopeFactory,
-		IDataSqlBuilder sqlBuilder,
-		IDataSqlMapper sqlMapper,
+		IDataSqlServiceAccessor sqlServiceAccessor,
 		IDataCommandInterceptor? interceptor = null)
 	{
 		ArgumentNullException.ThrowIfNull(connectionScopeFactory);
 		_connectionScope = connectionScopeFactory.CreateScope();
-		_sqlBuilder = sqlBuilder ?? throw new ArgumentNullException(nameof(sqlBuilder));
-		_sqlMapper = sqlMapper ?? throw new ArgumentNullException(nameof(sqlMapper));
+		_sqlServiceAccessor = sqlServiceAccessor ?? throw new ArgumentNullException(nameof(sqlServiceAccessor));
 		_interceptor = interceptor ?? DataCommandInterceptor.Default;
 	}
 
@@ -124,7 +125,7 @@ public class DataUnitOfWork : IDataUnitOfWork
 	protected virtual IDataRepository<TEntity> CreateRepository<[DynamicallyAccessedMembers(DynamicallyAccessedMemberTypes.PublicProperties)] TEntity>()
 		where TEntity : class
 	{
-		return new DataRepository<TEntity>(_connectionScope, _sqlBuilder, _sqlMapper, _interceptor);
+		return new DataRepository<TEntity>(_connectionScope, _sqlServiceAccessor, _interceptor);
 	}
 
 	/// <inheritdoc />
