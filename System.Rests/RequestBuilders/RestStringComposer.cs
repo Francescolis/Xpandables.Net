@@ -1,4 +1,4 @@
-/*******************************************************************************
+﻿/*******************************************************************************
  * Copyright (C) 2025-2026 Kamersoft
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
@@ -30,44 +30,60 @@ namespace System.Rests.RequestBuilders;
 /// </summary>
 public sealed class RestStringComposer : IRestRequestComposer
 {
-    /// <inheritdoc/>
-    public bool CanCompose(RestRequestContext context)
-    {
-        ArgumentNullException.ThrowIfNull(context);
-        return context.Request is IRestString
-            && (context.Attribute.Location & Location.Body) == Location.Body
-            && context.Attribute.BodyFormat == BodyFormat.String;
-    }
-    /// <inheritdoc/>
-    [SuppressMessage("Reliability", "CA2000:Dispose objects before losing scope", Justification = "<Pending>")]
-    public ValueTask ComposeAsync(RestRequestContext context, CancellationToken cancellationToken = default)
-    {
-        ArgumentNullException.ThrowIfNull(context);
-        cancellationToken.ThrowIfCancellationRequested();
+	/// <inheritdoc/>
+	public bool CanCompose(RestRequestContext context)
+	{
+		ArgumentNullException.ThrowIfNull(context);
+		return context.Request is IRestString
+			&& (context.Attribute.Location & Location.Body) == Location.Body
+			&& context.Attribute.BodyFormat == BodyFormat.String;
+	}
+	/// <inheritdoc/>
+	[SuppressMessage("Reliability", "CA2000:Dispose objects before losing scope", Justification = "<Pending>")]
+	[UnconditionalSuppressMessage("Trimming", "IL2026:Members annotated with 'RequiresUnreferencedCodeAttribute' require dynamic access otherwise can break functionality when trimming application code", Justification = "<Pending>")]
+	[UnconditionalSuppressMessage("AOT", "IL3050:Calling members annotated with 'RequiresDynamicCodeAttribute' may break functionality when AOT compiling.", Justification = "<Pending>")]
+	public ValueTask ComposeAsync(RestRequestContext context, CancellationToken cancellationToken = default)
+	{
+		ArgumentNullException.ThrowIfNull(context);
+		cancellationToken.ThrowIfCancellationRequested();
 
-        if (!CanCompose(context))
-        {
-            throw new InvalidOperationException("The current composer cannot compose the given request context.");
-        }
+		if (!CanCompose(context))
+		{
+			throw new InvalidOperationException("The current composer cannot compose the given request context.");
+		}
 
-        Type requestType = context.Request.GetType();
-        JsonTypeInfo? jsonTypeInfo = (JsonTypeInfo?)context.SerializerOptions.GetTypeInfo(requestType)
-            ?? throw new InvalidOperationException(
-                $"JsonTypeInfo for type '{requestType}' is not registered in the JsonSerializerOptions.");
+		object contentObject = ((IRestString)context.Request).GetStringContent();
+		Type contentType = contentObject.GetType();
+		Type requestType = context.Request.GetType();
+		string serializedContent;
 
-        StringContent content = new(
-            JsonSerializer.Serialize(((IRestString)context.Request).GetStringContent(), jsonTypeInfo),
-            Encoding.UTF8,
-            context.Attribute.ContentType);
+		if (requestType == contentType)
+		{
+			// the anonymous type is the request type, so we can serialize it directly
+			JsonTypeInfo? jsonTypeInfo = (JsonTypeInfo?)context.SerializerOptions.GetTypeInfo(requestType)
+				?? throw new InvalidOperationException(
+					$"JsonTypeInfo for type '{requestType}' is not registered in the JsonSerializerOptions.");
+			serializedContent = JsonSerializer.Serialize(contentObject, jsonTypeInfo);
+		}
+		else
+		{
+			// the anonymous type is not the request type, we serialize it as an object
+			serializedContent = JsonSerializer.Serialize(contentObject, context.SerializerOptions);
+		}
 
-        if (context.Message.Content is MultipartFormDataContent multipart)
-        {
-            multipart.Add(content);
-        }
-        else
-        {
-            context.Message.Content = content;
-        }
-        return ValueTask.CompletedTask;
-    }
+		StringContent content = new(
+			serializedContent,
+			Encoding.UTF8,
+			context.Attribute.ContentType);
+
+		if (context.Message.Content is MultipartFormDataContent multipart)
+		{
+			multipart.Add(content);
+		}
+		else
+		{
+			context.Message.Content = content;
+		}
+		return ValueTask.CompletedTask;
+	}
 }

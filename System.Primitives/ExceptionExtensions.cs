@@ -145,15 +145,7 @@ public static class ExceptionExtensions
 				return;
 			}
 
-			// Quick pre-check to avoid parsing obvious non-JSON messages
-			ReadOnlySpan<char> trimmed = message.AsSpan().Trim();
-			if (trimmed.Length == 0)
-			{
-				return;
-			}
-
-			char first = trimmed[0];
-			if (first is not '{' and not '[')
+            if (!TryGetJsonPayload(message, out string jsonPayload))
 			{
 				return;
 			}
@@ -161,7 +153,7 @@ public static class ExceptionExtensions
 #pragma warning disable CA1031 // Do not catch general exception types
 			try
 			{
-				using var doc = JsonDocument.Parse(message);
+                using var doc = JsonDocument.Parse(jsonPayload);
 				JsonElement root = doc.RootElement;
 
 				if (root.ValueKind != JsonValueKind.Object)
@@ -224,6 +216,114 @@ public static class ExceptionExtensions
 				// Ignore JSON parse errors and move on
 			}
 #pragma warning restore CA1031 // Do not catch general exception types
+		}
+
+      static bool TryGetJsonPayload(string message, out string payload)
+		{
+			ReadOnlySpan<char> trimmed = message.AsSpan().Trim();
+			if (trimmed.Length == 0)
+			{
+             payload = string.Empty;
+				return false;
+			}
+
+			char first = trimmed[0];
+			if (first is '{' or '[')
+			{
+				payload = trimmed.ToString();
+				return true;
+			}
+
+			for (int i = 0; i < message.Length; i++)
+			{
+				char current = message[i];
+				if (current is not '{' and not '[')
+				{
+					continue;
+				}
+
+				if (TryExtractBalancedJsonSegment(message, i, out payload))
+				{
+					return true;
+				}
+			}
+
+         payload = string.Empty;
+			return false;
+		}
+
+      static bool TryExtractBalancedJsonSegment(string message, int startIndex, out string payload)
+		{
+         payload = string.Empty;
+			if (startIndex < 0 || startIndex >= message.Length)
+			{
+				return false;
+			}
+
+         var delimiters = new Stack<char>();
+			bool inString = false;
+			bool isEscaped = false;
+
+			for (int i = startIndex; i < message.Length; i++)
+			{
+				char current = message[i];
+
+				if (inString)
+				{
+					if (isEscaped)
+					{
+						isEscaped = false;
+						continue;
+					}
+
+					if (current == '\\')
+					{
+						isEscaped = true;
+						continue;
+					}
+
+					if (current == '"')
+					{
+						inString = false;
+					}
+
+					continue;
+				}
+
+				if (current == '"')
+				{
+					inString = true;
+					continue;
+				}
+
+				if (current is '{' or '[')
+				{
+                    delimiters.Push(current);
+					continue;
+				}
+
+				if (current is '}' or ']')
+				{
+                   if (delimiters.Count == 0)
+					{
+						return false;
+					}
+
+                    char opening = delimiters.Pop();
+					if ((current == '}' && opening != '{') || (current == ']' && opening != '['))
+					{
+						return false;
+					}
+
+					if (delimiters.Count == 0)
+					{
+						payload = message[startIndex..(i + 1)];
+						return true;
+					}
+				}
+			}
+
+			return false;
 		}
 
 		static bool TryGetPropertyIgnoreCase(JsonElement obj, string name, out JsonElement value)

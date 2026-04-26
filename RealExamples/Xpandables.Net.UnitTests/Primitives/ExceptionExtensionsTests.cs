@@ -1,4 +1,4 @@
-/*******************************************************************************
+﻿/*******************************************************************************
  * Copyright (C) 2025-2026 Kamersoft
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
@@ -437,6 +437,45 @@ public sealed class ExceptionExtensionsTests
         entries["Email"]!.Value.Values.Count.Should().Be(2);
         entries["Password"]!.Value.Values.Count.Should().Be(1);
         entries["ConfirmPassword"]!.Value.Values.Count.Should().Be(1);
+    }
+
+    [Fact]
+    public void WhenExceptionMessageContainsTextPrefixAndJsonErrorsThenShouldExtractAllErrors()
+    {
+        // Arrange
+        string message = """
+            Response status code does not indicate success: 409 (Conflict). {
+              "type": "ValidationException",
+              "title": "Conflict",
+              "status": 409,
+              "detail": "Please refer to the errors property for additional details",
+              "instance": "POST /api/account/create/start",
+              "errors": {
+                "Phone": [
+                  "Un compte avec ce numéro ou appareil existe déjà."
+                ],
+                "Status": [
+                  "PENDING"
+                ],
+                "DeviceId": [
+                  "Un compte avec ce numéro ou appareil existe déjà."
+                ]
+              },
+              "traceId": "00-cb5b54ca45b2221ebb9101c9efc50a93-f19fb717f8ae69cd-00"
+            }
+            """;
+        var exception = new HttpRequestException(message);
+
+        // Act
+        ElementCollection entries = exception.GetElementEntries();
+
+        // Assert
+        entries.Count.Should().Be(3);
+        entries["Phone"]!.Value.Values.Should().ContainSingle()
+            .Which.Should().Be("Un compte avec ce numéro ou appareil existe déjà.");
+        entries["Status"]!.Value.Values.Should().ContainSingle().Which.Should().Be("PENDING");
+        entries["DeviceId"]!.Value.Values.Should().ContainSingle()
+            .Which.Should().Be("Un compte avec ce numéro ou appareil existe déjà.");
     }
 
     [Fact]
