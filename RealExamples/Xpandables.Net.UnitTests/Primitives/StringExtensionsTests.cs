@@ -1,4 +1,4 @@
-/*******************************************************************************
+﻿/*******************************************************************************
  * Copyright (C) 2025-2026 Kamersoft
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
@@ -15,6 +15,9 @@
  *
 ********************************************************************************/
 using System.Globalization;
+using System.Net;
+
+using System.Results;
 
 using FluentAssertions;
 
@@ -128,6 +131,82 @@ public sealed class StringExtensionsTests
 
         // Assert
         result.Should().Be("Value: 1234.57");
+    }
+
+    #endregion
+
+    #region ToResult Tests
+
+    [Fact]
+    public void WhenConvertingProblemDetailsMessageToResultThenShouldExtractFailureMetadata()
+    {
+        // Arrange
+        string message = """
+            Response status code does not indicate success: 409 (Conflict). {
+              "type": "ValidationException",
+              "title": "Conflict",
+              "status": 409,
+              "detail": "Please refer to the errors property for additional details",
+              "instance": "POST /api/account/create/start",
+              "errors": {
+                "Phone": [
+                  "Un compte avec ce numéro ou appareil existe déjà."
+                ],
+                "Status": [
+                  "PENDING"
+                ],
+                "DeviceId": [
+                  "Un compte avec ce numéro ou appareil existe déjà."
+                ]
+              },
+              "traceId": "00-cb5b54ca45b2221ebb9101c9efc50a93-f19fb717f8ae69cd-00"
+            }
+            """;
+
+        // Act
+        FailureResult result = message.ToResult();
+
+        // Assert
+        result.IsFailure.Should().BeTrue();
+        result.StatusCode.Should().Be(HttpStatusCode.Conflict);
+        result.Title.Should().Be("Conflict");
+        result.Detail.Should().Be("Please refer to the errors property for additional details");
+        result.Errors.Count.Should().Be(3);
+        result.Errors["Phone"]!.Value.Values.Should().ContainSingle()
+            .Which.Should().Be("Un compte avec ce numéro ou appareil existe déjà.");
+        result.Errors["Status"]!.Value.Values.Should().ContainSingle().Which.Should().Be("PENDING");
+        result.Errors["DeviceId"]!.Value.Values.Should().ContainSingle()
+            .Which.Should().Be("Un compte avec ce numéro ou appareil existe déjà.");
+    }
+
+    [Fact]
+    public void WhenConvertingPlainTextMessageToResultThenShouldReturnDefaultFailure()
+    {
+        // Arrange
+        const string message = "Simple error message";
+
+        // Act
+        FailureResult result = message.ToResult();
+
+        // Assert
+        result.IsFailure.Should().BeTrue();
+        result.StatusCode.Should().Be(HttpStatusCode.BadRequest);
+        result.Title.Should().Be(message);
+        result.Detail.Should().Be(HttpStatusCode.BadRequest.Detail);
+        result.Errors.IsEmpty.Should().BeTrue();
+    }
+
+    [Fact]
+    public void WhenConvertingNullMessageToResultThenShouldThrowArgumentNullException()
+    {
+        // Arrange
+        string? message = null;
+
+        // Act
+        Action act = () => _ = message!.ToResult();
+
+        // Assert
+        act.Should().Throw<ArgumentNullException>();
     }
 
     #endregion
