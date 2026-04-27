@@ -1,4 +1,4 @@
-/*******************************************************************************
+﻿/*******************************************************************************
  * Copyright (C) 2025-2026 Kamersoft
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
@@ -24,35 +24,35 @@ namespace System.Collections;
 /// tasks when working with sequences.</remarks>
 public static class EnumerableExtensions
 {
-    /// <summary>
-    /// </summary>
-    /// <typeparam name="TSource">The type of the elements of <paramref name="source"/>.</typeparam>
-    /// <param name="source">The sequence to act on.</param>
-    extension<TSource>(IEnumerable<TSource> source)
-    {
-        /// <summary>
-        /// Concatenates the elements of the collection, using the specified separator between each element.
-        /// </summary>
-        /// <param name="separator">The string to use as a separator. The separator is included in the returned string only if the collection
-        /// has more than one element. Can be null, in which case an empty string is used as the separator.</param>
-        /// <returns>A string that consists of the elements of the collection delimited by the separator string. Returns an empty
-        /// string if the collection contains no elements.</returns>
-        /// <exception cref="ArgumentNullException">Thrown when source is null.</exception>
-        /// <exception cref="InvalidOperationException">Thrown when an element in the source does not implement <see cref="IFormattable"/>.</exception>
-        /// <exception cref="FormatException">Thrown when an element in the source is not in a valid format.</exception>
-        /// <exception cref="OverflowException">Thrown when an element in the source represents a number that is out of the range of the <see cref="int"/> type.</exception>
-        public string StringJoin(string separator) => string.Join(separator, source);
+	/// <summary>
+	/// </summary>
+	/// <typeparam name="TSource">The type of the elements of <paramref name="source"/>.</typeparam>
+	/// <param name="source">The sequence to act on.</param>
+	extension<TSource>(IEnumerable<TSource> source)
+	{
+		/// <summary>
+		/// Concatenates the elements of the collection, using the specified separator between each element.
+		/// </summary>
+		/// <param name="separator">The string to use as a separator. The separator is included in the returned string only if the collection
+		/// has more than one element. Can be null, in which case an empty string is used as the separator.</param>
+		/// <returns>A string that consists of the elements of the collection delimited by the separator string. Returns an empty
+		/// string if the collection contains no elements.</returns>
+		/// <exception cref="ArgumentNullException">Thrown when source is null.</exception>
+		/// <exception cref="InvalidOperationException">Thrown when an element in the source does not implement <see cref="IFormattable"/>.</exception>
+		/// <exception cref="FormatException">Thrown when an element in the source is not in a valid format.</exception>
+		/// <exception cref="OverflowException">Thrown when an element in the source represents a number that is out of the range of the <see cref="int"/> type.</exception>
+		public string StringJoin(string separator) => string.Join(separator, source);
 
-        /// <summary>
-        /// Concatenates the elements of the source collection, using the specified separator between each element.
-        /// </summary>
-        /// <param name="separator">The character to use as a separator between each element in the resulting string.</param>
-        /// <returns>A string that consists of the elements in the source collection delimited by the specified separator.
-        /// Returns an empty string if the source collection contains no elements.</returns>
-        /// <exception cref="ArgumentNullException">Thrown when source is null.</exception>
-        /// <exception cref="InvalidOperationException">Thrown when an element in the source does not implement <see cref="IFormattable"/>.</exception>
-        /// <exception cref="FormatException">Thrown when an element in the source is not in a valid format.</exception>
-        /// <exception cref="OverflowException">Thrown when an element in the source represents a number that is out of the range of the <see cref="int"/> type.</exception>        /// 
-        public string StringJoin(char separator) => string.Join(separator, source);
-    }
+		/// <summary>
+		/// Concatenates the elements of the source collection, using the specified separator between each element.
+		/// </summary>
+		/// <param name="separator">The character to use as a separator between each element in the resulting string.</param>
+		/// <returns>A string that consists of the elements in the source collection delimited by the specified separator.
+		/// Returns an empty string if the source collection contains no elements.</returns>
+		/// <exception cref="ArgumentNullException">Thrown when source is null.</exception>
+		/// <exception cref="InvalidOperationException">Thrown when an element in the source does not implement <see cref="IFormattable"/>.</exception>
+		/// <exception cref="FormatException">Thrown when an element in the source is not in a valid format.</exception>
+		/// <exception cref="OverflowException">Thrown when an element in the source represents a number that is out of the range of the <see cref="int"/> type.</exception>        /// 
+		public string StringJoin(char separator) => string.Join(separator, source);
+	}
 }
