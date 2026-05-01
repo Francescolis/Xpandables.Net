@@ -40,6 +40,7 @@ public sealed class DomainServiceCollection : AddServiceExport
 		DbProviderFactories.RegisterFactory(
 			DbProviders.MsSqlServer.InvariantName,
 			Microsoft.Data.SqlClient.SqlClientFactory.Instance);
+		services.AddXDataSqlServiceAccessorFor(SqlDialect.SqlServer);
 
 		services.AddXRequestHandlers()
 			.AddXEventHandlers()

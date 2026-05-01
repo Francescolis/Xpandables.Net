@@ -25,6 +25,7 @@ builder.Services.AddXDataConnectionMsSqlServer(builder.Configuration.GetConnecti
 DbProviderFactories.RegisterFactory(
 	DbProviders.MsSqlServer.InvariantName,
 	Microsoft.Data.SqlClient.SqlClientFactory.Instance);
+builder.Services.AddXDataSqlServiceAccessorFor(SqlDialect.SqlServer);
 
 builder.Services
 	.AddXJsonSerializerOptions()
