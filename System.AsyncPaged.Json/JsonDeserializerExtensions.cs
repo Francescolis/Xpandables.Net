@@ -13,7 +13,8 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  *
-********************************************************************************/
+ ********************************************************************************/
+
 using System.Buffers;
 using System.Diagnostics.CodeAnalysis;
 using System.IO.Pipelines;
@@ -35,7 +36,7 @@ public static class JsonDeserializerExtensions
 {
 	/// <summary>
 	/// Extension methods for the <see cref="JsonSerializer"/> class.
-	/// </summary>  
+	/// </summary>
 	extension(JsonSerializer)
 	{
 		/// <summary>
@@ -51,8 +52,10 @@ public static class JsonDeserializerExtensions
 		/// stream. The enumerable may be empty if the stream contains no items.</returns>
 		/// <exception cref="ArgumentNullException">Thrown when <paramref name="utf8Json"/> is null.</exception>
 		/// <exception cref="OperationCanceledException">Thrown when the operation is canceled.</exception>
-		[RequiresUnreferencedCode("Calls System.Net.Http.Json.HttpContentExtensions.GetJsonTypeInfo(Type, JsonSerializerOptions)")]
-		[RequiresDynamicCode("Calls System.Net.Http.Json.HttpContentExtensions.GetJsonTypeInfo(Type, JsonSerializerOptions)")]
+		[RequiresUnreferencedCode(
+			"Calls System.Net.Http.Json.HttpContentExtensions.GetJsonTypeInfo(Type, JsonSerializerOptions)")]
+		[RequiresDynamicCode(
+			"Calls System.Net.Http.Json.HttpContentExtensions.GetJsonTypeInfo(Type, JsonSerializerOptions)")]
 		public static IAsyncPagedEnumerable<TValue?> DeserializeAsyncPagedEnumerable<TValue>(
 			Stream utf8Json,
 			JsonSerializerOptions? options = null,
@@ -61,7 +64,9 @@ public static class JsonDeserializerExtensions
 		{
 			ArgumentNullException.ThrowIfNull(utf8Json);
 
-			return DeserializeAsyncPagedEnumerable<TValue>(utf8Json, topLevelValues: false, options, strategy, cancellationToken);
+			return DeserializeAsyncPagedEnumerable<TValue>(
+				utf8Json: utf8Json, topLevelValues: false, options: options, strategy: strategy,
+				cancellationToken: cancellationToken);
 		}
 
 		/// <summary>
@@ -81,8 +86,10 @@ public static class JsonDeserializerExtensions
 		/// <param name="cancellationToken">A cancellation token that can be used to cancel the asynchronous enumeration.</param>
 		/// <returns>An asynchronous paged enumerable of deserialized values of type TValue. The enumerable yields each item as
 		/// it is read from the JSON stream.</returns>
-		[RequiresUnreferencedCode("Calls System.Net.Http.Json.HttpContentExtensions.GetJsonTypeInfo(Type, JsonSerializerOptions)")]
-		[RequiresDynamicCode("Calls System.Net.Http.Json.HttpContentExtensions.GetJsonTypeInfo(Type, JsonSerializerOptions)")]
+		[RequiresUnreferencedCode(
+			"Calls System.Net.Http.Json.HttpContentExtensions.GetJsonTypeInfo(Type, JsonSerializerOptions)")]
+		[RequiresDynamicCode(
+			"Calls System.Net.Http.Json.HttpContentExtensions.GetJsonTypeInfo(Type, JsonSerializerOptions)")]
 		public static IAsyncPagedEnumerable<TValue?> DeserializeAsyncPagedEnumerable<TValue>(
 			Stream utf8Json,
 			bool topLevelValues,
@@ -93,7 +100,8 @@ public static class JsonDeserializerExtensions
 			ArgumentNullException.ThrowIfNull(utf8Json);
 
 			var jsonTypeInfo = (JsonTypeInfo<TValue>)JsonSerializer.GetJsonTypeInfo(typeof(TValue), options);
-			return DeserializeAsyncPagedEnumerableCore(utf8Json, jsonTypeInfo, topLevelValues, strategy, cancellationToken);
+			return DeserializeAsyncPagedEnumerableCore(utf8Json, jsonTypeInfo, topLevelValues, strategy,
+				cancellationToken);
 		}
 
 		/// <summary>
@@ -117,7 +125,9 @@ public static class JsonDeserializerExtensions
 			ArgumentNullException.ThrowIfNull(utf8Json);
 			ArgumentNullException.ThrowIfNull(jsonTypeInfo);
 
-			return DeserializeAsyncPagedEnumerable(utf8Json, topLevelValues: false, jsonTypeInfo, strategy, cancellationToken);
+			return DeserializeAsyncPagedEnumerable(
+				utf8Json: utf8Json, topLevelValues: false, jsonTypeInfo: jsonTypeInfo, strategy: strategy,
+				cancellationToken: cancellationToken);
 		}
 
 		/// <summary>
@@ -147,7 +157,8 @@ public static class JsonDeserializerExtensions
 			ArgumentNullException.ThrowIfNull(utf8Json);
 			ArgumentNullException.ThrowIfNull(jsonTypeInfo);
 
-			return DeserializeAsyncPagedEnumerableCore(utf8Json, jsonTypeInfo, topLevelValues, strategy, cancellationToken);
+			return DeserializeAsyncPagedEnumerableCore(utf8Json, jsonTypeInfo, topLevelValues, strategy,
+				cancellationToken);
 		}
 
 		/// <summary>
@@ -163,8 +174,10 @@ public static class JsonDeserializerExtensions
 		/// stream. The enumerable may be empty if the stream contains no items.</returns>
 		/// <exception cref="ArgumentNullException">Thrown when <paramref name="utf8Json"/> or <paramref name="options"/> is null.</exception>
 		/// <exception cref="OperationCanceledException">Thrown when the operation is canceled.</exception>
-		[RequiresUnreferencedCode("Calls System.Net.Http.Json.HttpContentExtensions.GetJsonTypeInfo(Type, JsonSerializerOptions)")]
-		[RequiresDynamicCode("Calls System.Net.Http.Json.HttpContentExtensions.GetJsonTypeInfo(Type, JsonSerializerOptions)")]
+		[RequiresUnreferencedCode(
+			"Calls System.Net.Http.Json.HttpContentExtensions.GetJsonTypeInfo(Type, JsonSerializerOptions)")]
+		[RequiresDynamicCode(
+			"Calls System.Net.Http.Json.HttpContentExtensions.GetJsonTypeInfo(Type, JsonSerializerOptions)")]
 		public static IAsyncPagedEnumerable<TValue?> DeserializeAsyncPagedEnumerable<TValue>(
 			PipeReader utf8Json,
 			JsonSerializerOptions? options = null,
@@ -173,7 +186,9 @@ public static class JsonDeserializerExtensions
 		{
 			ArgumentNullException.ThrowIfNull(utf8Json);
 
-			return DeserializeAsyncPagedEnumerable<TValue>(utf8Json, topLevelValues: false, options, strategy, cancellationToken);
+			return DeserializeAsyncPagedEnumerable<TValue>(
+				utf8Json: utf8Json, topLevelValues: false, options: options, strategy: strategy,
+				cancellationToken: cancellationToken);
 		}
 
 		/// <summary>
@@ -193,8 +208,10 @@ public static class JsonDeserializerExtensions
 		/// <param name="cancellationToken">A cancellation token that can be used to cancel the asynchronous enumeration.</param>
 		/// <returns>An asynchronous paged enumerable of deserialized values of type TValue. The enumerable yields each item as
 		/// it is read from the JSON stream.</returns>
-		[RequiresUnreferencedCode("Calls System.Net.Http.Json.HttpContentExtensions.GetJsonTypeInfo(Type, JsonSerializerOptions)")]
-		[RequiresDynamicCode("Calls System.Net.Http.Json.HttpContentExtensions.GetJsonTypeInfo(Type, JsonSerializerOptions)")]
+		[RequiresUnreferencedCode(
+			"Calls System.Net.Http.Json.HttpContentExtensions.GetJsonTypeInfo(Type, JsonSerializerOptions)")]
+		[RequiresDynamicCode(
+			"Calls System.Net.Http.Json.HttpContentExtensions.GetJsonTypeInfo(Type, JsonSerializerOptions)")]
 		public static IAsyncPagedEnumerable<TValue?> DeserializeAsyncPagedEnumerable<TValue>(
 			PipeReader utf8Json,
 			bool topLevelValues,
@@ -205,7 +222,8 @@ public static class JsonDeserializerExtensions
 			ArgumentNullException.ThrowIfNull(utf8Json);
 
 			var jsonTypeInfo = (JsonTypeInfo<TValue>)JsonSerializer.GetJsonTypeInfo(typeof(TValue), options);
-			return DeserializeAsyncPagedEnumerableCore(utf8Json, jsonTypeInfo, topLevelValues, strategy, cancellationToken);
+			return DeserializeAsyncPagedEnumerableCore(utf8Json, jsonTypeInfo, topLevelValues, strategy,
+				cancellationToken);
 		}
 
 		/// <summary>
@@ -229,7 +247,9 @@ public static class JsonDeserializerExtensions
 			ArgumentNullException.ThrowIfNull(utf8Json);
 			ArgumentNullException.ThrowIfNull(jsonTypeInfo);
 
-			return DeserializeAsyncPagedEnumerable(utf8Json, topLevelValues: false, jsonTypeInfo, strategy, cancellationToken);
+			return DeserializeAsyncPagedEnumerable(
+				utf8Json: utf8Json, topLevelValues: false, jsonTypeInfo: jsonTypeInfo, strategy: strategy,
+				cancellationToken: cancellationToken);
 		}
 
 		/// <summary>
@@ -252,16 +272,16 @@ public static class JsonDeserializerExtensions
 		public static IAsyncPagedEnumerable<TValue?> DeserializeAsyncPagedEnumerable<TValue>(
 			PipeReader utf8Json,
 			bool topLevelValues,
-					JsonTypeInfo<TValue> jsonTypeInfo,
-					PaginationStrategy strategy = PaginationStrategy.None,
-					CancellationToken cancellationToken = default)
+			JsonTypeInfo<TValue> jsonTypeInfo,
+			PaginationStrategy strategy = PaginationStrategy.None,
+			CancellationToken cancellationToken = default)
 		{
 			ArgumentNullException.ThrowIfNull(utf8Json);
 			ArgumentNullException.ThrowIfNull(jsonTypeInfo);
 
-			return DeserializeAsyncPagedEnumerableCore(utf8Json, jsonTypeInfo, topLevelValues, strategy, cancellationToken, ownsPipeReader: false);
+			return DeserializeAsyncPagedEnumerableCore(utf8Json, jsonTypeInfo, topLevelValues, strategy,
+				cancellationToken, ownsPipeReader: false);
 		}
-
 	}
 
 	private static IAsyncPagedEnumerable<TValue?> DeserializeAsyncPagedEnumerableCore<TValue>(
@@ -283,7 +303,8 @@ public static class JsonDeserializerExtensions
 				useZeroByteReads: true,
 				leaveOpen: false));
 
-		return DeserializeAsyncPagedEnumerableCore(reader, jsonTypeInfo, topLevelValues, strategy, cancellationToken, ownsPipeReader: true);
+		return DeserializeAsyncPagedEnumerableCore(reader, jsonTypeInfo, topLevelValues, strategy, cancellationToken,
+			ownsPipeReader: true);
 	}
 
 	private static ReadOnlySpan<byte> PaginationPropertyNameUtf8 => "pagination"u8;
@@ -340,7 +361,8 @@ public static class JsonDeserializerExtensions
 										break;
 									}
 
-									if (!TryDeserializeValue(ref reader, buffer, PaginationJsonContext.Default.Pagination, out Pagination paginationValue))
+									if (!TryDeserializeValue(ref reader, buffer,
+										    PaginationJsonContext.Default.Pagination, out Pagination paginationValue))
 									{
 										needMoreData = true;
 										break;
@@ -415,7 +437,8 @@ public static class JsonDeserializerExtensions
 					{
 						if (result.IsCompleted)
 						{
-							throw new JsonException("Incomplete JSON data encountered while deserializing paged items.");
+							throw new JsonException(
+								"Incomplete JSON data encountered while deserializing paged items.");
 						}
 
 						continue;

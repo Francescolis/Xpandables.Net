@@ -278,7 +278,7 @@ public static class StringResultExtensions
 
             if (values is { Count: > 0 })
             {
-                entries.Add(new ElementEntry(property.Name, [.. values]));
+                entries.Add(new ElementEntry(property.Name, values.ToArray()));
             }
         }
 

@@ -83,10 +83,7 @@ public static class ExceptionExtensions
 		{
 			foreach (Exception? ex in agg.Flatten().InnerExceptions)
 			{
-				if (ex is not null)
-				{
-					stack.Push(ex);
-				}
+				stack.Push(ex);
 			}
 		}
 		else
@@ -96,8 +93,8 @@ public static class ExceptionExtensions
 
 		while (stack.Count > 0)
 		{
-			Exception? current = stack.Pop();
-			if (current is null || !visited.Add(current))
+			Exception current = stack.Pop();
+			if (!visited.Add(current))
 			{
 				continue;
 			}
@@ -121,12 +118,9 @@ public static class ExceptionExtensions
 			// Traverse children
 			if (current is AggregateException currentAgg)
 			{
-				foreach (Exception? inner in currentAgg.Flatten().InnerExceptions)
+				foreach (Exception inner in currentAgg.Flatten().InnerExceptions)
 				{
-					if (inner is not null)
-					{
-						stack.Push(inner);
-					}
+					stack.Push(inner);
 				}
 			}
 			else if (current.InnerException is not null)
@@ -154,7 +148,7 @@ public static class ExceptionExtensions
 			try
 			{
                 using var doc = JsonDocument.Parse(jsonPayload);
-				JsonElement root = doc.RootElement;
+                JsonElement root = doc.RootElement;
 
 				if (root.ValueKind != JsonValueKind.Object)
 				{
@@ -206,7 +200,7 @@ public static class ExceptionExtensions
 
 						if (list is { Count: > 0 })
 						{
-							sink.Add(new ElementEntry(key, [.. list]));
+							sink.Add(new ElementEntry(key, list.ToArray()));
 						}
 					}
 				}
@@ -248,7 +242,7 @@ public static class ExceptionExtensions
 				}
 			}
 
-         payload = string.Empty;
+			payload = string.Empty;
 			return false;
 		}
 

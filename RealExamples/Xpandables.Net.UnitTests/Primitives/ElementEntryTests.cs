@@ -13,489 +13,483 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  *
-********************************************************************************/
+ ********************************************************************************/
+
 using System.Collections;
 using System.Text.Json;
-
 using FluentAssertions;
-
 using Microsoft.Extensions.Primitives;
 
 namespace Xpandables.Net.UnitTests.Primitives;
 
 public sealed class ElementEntryTests
 {
-    #region Constructor Tests
+	#region Constructor Tests
 
-    [Fact]
-    public void WhenCreatingWithKeyAndValuesThenShouldSetProperties()
-    {
-        // Arrange & Act
-        var entry = new ElementEntry("name", "John", "Jane");
+	[Fact]
+	public void WhenCreatingWithKeyAndValuesThenShouldSetProperties()
+	{
+		// Arrange & Act
+		var entry = new ElementEntry("name", new[] { "John", "Jane" });
 
-        // Assert
-        entry.Key.Should().Be("name");
-        entry.Values.Count.Should().Be(2);
-        entry.Values.Should().Contain("John");
-        entry.Values.Should().Contain("Jane");
-    }
+		// Assert
+		entry.Key.Should().Be("name");
+		entry.Values.Count.Should().Be(2);
+		entry.Values.Should().Contain("John");
+		entry.Values.Should().Contain("Jane");
+	}
 
-    [Fact]
-    public void WhenCreatingWithKeyAndSingleValueThenShouldSetProperties()
-    {
-        // Arrange & Act
-        var entry = new ElementEntry("email", "test@example.com");
+	[Fact]
+	public void WhenCreatingWithKeyAndSingleValueThenShouldSetProperties()
+	{
+		// Arrange & Act
+		var entry = new ElementEntry("email", "test@example.com");
 
-        // Assert
-        entry.Key.Should().Be("email");
-        entry.Values.Count.Should().Be(1);
-        entry.Values.Should().Contain("test@example.com");
-    }
+		// Assert
+		entry.Key.Should().Be("email");
+		entry.Values.Count.Should().Be(1);
+		entry.Values.Should().Contain("test@example.com");
+	}
 
-    [Fact]
-    public void WhenCreatingWithKeyAndStringValuesThenShouldSetProperties()
-    {
-        // Arrange
-        StringValues values = new(["value1", "value2", "value3"]);
+	[Fact]
+	public void WhenCreatingWithKeyAndStringValuesThenShouldSetProperties()
+	{
+		// Arrange
+		StringValues values = new(["value1", "value2", "value3"]);
 
-        // Act
-        var entry = new ElementEntry("key", values);
+		// Act
+		var entry = new ElementEntry("key", values);
 
-        // Assert
-        entry.Key.Should().Be("key");
-        entry.Values.Count.Should().Be(3);
-    }
+		// Assert
+		entry.Key.Should().Be("key");
+		entry.Values.Count.Should().Be(3);
+	}
 
-    [Fact]
-    public void WhenCreatingWithNullKeyThenShouldThrowArgumentNullException()
-    {
+	[Fact]
+	public void WhenCreatingWithNullKeyThenShouldThrowArgumentNullException()
+	{
 		// Act
 		Func<ElementEntry> act = () => new ElementEntry(null!, "value");
 
-        // Assert
-        act.Should().Throw<ArgumentNullException>();
-    }
+		// Assert
+		act.Should().Throw<ArgumentNullException>();
+	}
 
-    [Fact]
-    public void WhenCreatingWithNullValuesThenShouldThrowArgumentException()
-    {
+	[Fact]
+	public void WhenCreatingWithNullValuesThenShouldThrowArgumentException()
+	{
 		// Act
 		Func<ElementEntry> act = () => new ElementEntry("key", (string[])null!);
 
-        // Assert
-        act.Should().Throw<ArgumentException>();
-    }
+		// Assert
+		act.Should().Throw<ArgumentException>();
+	}
 
-    [Fact]
-    public void WhenCreatingWithEmptyValueArrayThenShouldThrowArgumentException()
-    {
-        // Arrange
-        string[] emptyArray = [];
+	[Fact]
+	public void WhenCreatingWithEmptyValueArrayThenShouldThrowArgumentException()
+	{
+		// Arrange
+		string[] emptyArray = [];
 
 		// Act
 		Func<ElementEntry> act = () => new ElementEntry("key", emptyArray);
 
-        // Assert
-        act.Should().Throw<ArgumentException>()
-            .WithMessage("*cannot be empty*");
-    }
+		// Assert
+		act.Should().Throw<ArgumentException>()
+			.WithMessage("*cannot be empty*");
+	}
 
-    [Fact]
-    public void WhenCreatingWithEmptyStringValuesThenShouldThrowArgumentOutOfRangeException()
-    {
-        // Arrange
-        StringValues values = new([]);
+	[Fact]
+	public void WhenCreatingWithEmptyStringValuesThenShouldThrowArgumentOutOfRangeException()
+	{
+		// Arrange
+		StringValues values = new([]);
 
 		// Act
 		Func<ElementEntry> act = () => new ElementEntry("key", values);
 
-        // Assert
-        act.Should().Throw<ArgumentOutOfRangeException>();
-    }
+		// Assert
+		act.Should().Throw<ArgumentOutOfRangeException>();
+	}
 
-    #endregion
+	#endregion
 
-    #region Equality Tests
+	#region Equality Tests
 
-    [Fact]
-    public void WhenComparingEqualEntriesThenShouldBeEqual()
-    {
-        // Arrange
-        var entry1 = new ElementEntry("key", "value1", "value2");
-        var entry2 = new ElementEntry("key", "value1", "value2");
+	[Fact]
+	public void WhenComparingEqualEntriesThenShouldBeEqual()
+	{
+		// Arrange
+		var entry1 = new ElementEntry("key", new(["value1", "value2"]));
+		var entry2 = new ElementEntry("key", new(["value1", "value2"]));
 
-        // Assert
-        entry1.Should().Be(entry2);
-        (entry1 == entry2).Should().BeTrue();
-    }
+		// Assert
+		entry1.Should().Be(entry2);
+		(entry1 == entry2).Should().BeTrue();
+	}
 
-    [Fact]
-    public void WhenComparingEntriesWithDifferentKeysThenShouldNotBeEqual()
-    {
-        // Arrange
-        var entry1 = new ElementEntry("key1", "value");
-        var entry2 = new ElementEntry("key2", "value");
+	[Fact]
+	public void WhenComparingEntriesWithDifferentKeysThenShouldNotBeEqual()
+	{
+		// Arrange
+		var entry1 = new ElementEntry("key1", "value");
+		var entry2 = new ElementEntry("key2", "value");
 
-        // Assert
-        entry1.Should().NotBe(entry2);
-        (entry1 != entry2).Should().BeTrue();
-    }
+		// Assert
+		entry1.Should().NotBe(entry2);
+		(entry1 != entry2).Should().BeTrue();
+	}
 
-    [Fact]
-    public void WhenComparingEntriesWithDifferentValuesThenShouldNotBeEqual()
-    {
-        // Arrange
-        var entry1 = new ElementEntry("key", "value1");
-        var entry2 = new ElementEntry("key", "value2");
+	[Fact]
+	public void WhenComparingEntriesWithDifferentValuesThenShouldNotBeEqual()
+	{
+		// Arrange
+		var entry1 = new ElementEntry("key", "value1");
+		var entry2 = new ElementEntry("key", "value2");
 
-        // Assert
-        entry1.Should().NotBe(entry2);
-    }
+		// Assert
+		entry1.Should().NotBe(entry2);
+	}
 
-    [Fact]
-    public void WhenGettingHashCodeForEqualEntriesThenShouldBeEqual()
-    {
-        // Arrange
-        var entry1 = new ElementEntry("key", "value");
-        var entry2 = new ElementEntry("key", "value");
+	[Fact]
+	public void WhenGettingHashCodeForEqualEntriesThenShouldBeEqual()
+	{
+		// Arrange
+		var entry1 = new ElementEntry("key", "value");
+		var entry2 = new ElementEntry("key", "value");
 
-        // Assert
-        entry1.GetHashCode().Should().Be(entry2.GetHashCode());
-    }
+		// Assert
+		entry1.GetHashCode().Should().Be(entry2.GetHashCode());
+	}
 
-    #endregion
+	#endregion
 
-    #region ToString Tests
+	#region ToString Tests
 
-    [Fact]
-    public void WhenCallingToStringWithSingleValueThenShouldFormatCorrectly()
-    {
-        // Arrange
-        var entry = new ElementEntry("name", "John");
-
-		// Act
-		string result = entry.ToString();
-
-        // Assert
-        result.Should().Be("name: John");
-    }
-
-    [Fact]
-    public void WhenCallingToStringWithMultipleValuesThenShouldJoinWithComma()
-    {
-        // Arrange
-        var entry = new ElementEntry("colors", "red", "green", "blue");
+	[Fact]
+	public void WhenCallingToStringWithSingleValueThenShouldFormatCorrectly()
+	{
+		// Arrange
+		var entry = new ElementEntry("name", "John");
 
 		// Act
 		string result = entry.ToString();
 
-        // Assert
-        result.Should().Be("colors: red,green,blue");
-    }
+		// Assert
+		result.Should().Be("name: John");
+	}
 
-    #endregion
+	[Fact]
+	public void WhenCallingToStringWithMultipleValuesThenShouldJoinWithComma()
+	{
+		// Arrange
+		var entry = new ElementEntry("colors", "red", "green", "blue");
 
-    #region JSON Serialization Tests
+		// Act
+		string result = entry.ToString();
 
-    [Fact]
-    public void WhenSerializingElementEntryThenShouldProduceValidJson()
-    {
-        // Arrange
-        var entry = new ElementEntry("name", "John");
+		// Assert
+		result.Should().Be("colors: red,green,blue");
+	}
+
+	#endregion
+
+	#region JSON Serialization Tests
+
+	[Fact]
+	public void WhenSerializingElementEntryThenShouldProduceValidJson()
+	{
+		// Arrange
+		var entry = new ElementEntry("name", "John");
 
 		// Act
 		string json = JsonSerializer.Serialize(entry, ElementEntryContext.Default.ElementEntry);
 
-        // Assert
-        json.Should().NotBeNullOrEmpty();
-        json.Should().Contain("name");
-        json.Should().Contain("John");
-    }
+		// Assert
+		json.Should().NotBeNullOrEmpty();
+		json.Should().Contain("name");
+		json.Should().Contain("John");
+	}
 
-    [Fact]
-    public void WhenDeserializingElementEntryThenShouldRecreateEntry()
-    {
-        // Arrange
-        var original = new ElementEntry("email", "test@example.com");
+	[Fact]
+	public void WhenDeserializingElementEntryThenShouldRecreateEntry()
+	{
+		// Arrange
+		var original = new ElementEntry("email", "test@example.com");
 		string json = JsonSerializer.Serialize(original, ElementEntryContext.Default.ElementEntry);
 
 		// Act
 		ElementEntry deserialized = JsonSerializer.Deserialize(json, ElementEntryContext.Default.ElementEntry);
 
-        // Assert
-        deserialized.Key.Should().Be(original.Key);
-        deserialized.Values.Should().BeEquivalentTo(original.Values);
-    }
+		// Assert
+		deserialized.Key.Should().Be(original.Key);
+		deserialized.Values.Should().BeEquivalentTo(original.Values);
+	}
 
-    [Fact]
-    public void WhenSerializingElementEntryArrayThenShouldProduceValidJson()
-    {
+	[Fact]
+	public void WhenSerializingElementEntryArrayThenShouldProduceValidJson()
+	{
 		// Arrange
-		ElementEntry[] entries = new[]
-        {
-            new ElementEntry("name", "John"),
-            new ElementEntry("age", "30")
-        };
+		ElementEntry[] entries = new[] { new ElementEntry("name", "John"), new ElementEntry("age", "30") };
 
 		// Act
 		string json = JsonSerializer.Serialize(entries, ElementEntryContext.Default.ElementEntryArray);
 
-        // Assert
-        json.Should().NotBeNullOrEmpty();
-    }
+		// Assert
+		json.Should().NotBeNullOrEmpty();
+	}
 
-    [Fact]
-    public void WhenDeserializingElementEntryArrayThenShouldRecreateAll()
-    {
+	[Fact]
+	public void WhenDeserializingElementEntryArrayThenShouldRecreateAll()
+	{
 		// Arrange
 		ElementEntry[] original = new[]
-        {
-            new ElementEntry("field1", "value1"),
-            new ElementEntry("field2", "value2", "value3")
-        };
+		{
+			new ElementEntry("field1", "value1"), new ElementEntry("field2", "value2", "value3")
+		};
 		string json = JsonSerializer.Serialize(original, ElementEntryContext.Default.ElementEntryArray);
 
 		// Act
 		ElementEntry[]? deserialized = JsonSerializer.Deserialize(json, ElementEntryContext.Default.ElementEntryArray);
 
-        // Assert
-        deserialized.Should().HaveCount(2);
-        deserialized![0].Key.Should().Be("field1");
-        deserialized[1].Values.Count.Should().Be(2);
-    }
+		// Assert
+		deserialized.Should().HaveCount(2);
+		deserialized![0].Key.Should().Be("field1");
+		deserialized[1].Values.Count.Should().Be(2);
+	}
 
-    [Fact]
-    public void WhenRoundTrippingElementEntryWithMultipleValuesThenShouldPreserveAll()
-    {
-        // Arrange
-        var original = new ElementEntry("errors", "Error 1", "Error 2", "Error 3");
+	[Fact]
+	public void WhenRoundTrippingElementEntryWithMultipleValuesThenShouldPreserveAll()
+	{
+		// Arrange
+		var original = new ElementEntry("errors", "Error 1", "Error 2", "Error 3");
 
 		// Act
 		string json = JsonSerializer.Serialize(original, ElementEntryContext.Default.ElementEntry);
 		ElementEntry deserialized = JsonSerializer.Deserialize(json, ElementEntryContext.Default.ElementEntry);
 
-        // Assert
-        deserialized.Key.Should().Be("errors");
-        deserialized.Values.Count.Should().Be(3);
-        deserialized.Values.Should().Contain("Error 1");
-        deserialized.Values.Should().Contain("Error 2");
-        deserialized.Values.Should().Contain("Error 3");
-    }
+		// Assert
+		deserialized.Key.Should().Be("errors");
+		deserialized.Values.Count.Should().Be(3);
+		deserialized.Values.Should().Contain("Error 1");
+		deserialized.Values.Should().Contain("Error 2");
+		deserialized.Values.Should().Contain("Error 3");
+	}
 
-    #endregion
+	#endregion
 
-    #region StringValues Integration Tests
+	#region StringValues Integration Tests
 
-    [Fact]
-    public void WhenAccessingValuesAsStringValuesThenShouldWorkCorrectly()
-    {
-        // Arrange
-        var entry = new ElementEntry("tags", "tag1", "tag2", "tag3");
+	[Fact]
+	public void WhenAccessingValuesAsStringValuesThenShouldWorkCorrectly()
+	{
+		// Arrange
+		var entry = new ElementEntry("tags", "tag1", "tag2", "tag3");
 
-        // Act
-        StringValues values = entry.Values;
+		// Act
+		StringValues values = entry.Values;
 
-        // Assert
-        values.Count.Should().Be(3);
-        values[0].Should().Be("tag1");
-        values[1].Should().Be("tag2");
-        values[2].Should().Be("tag3");
-    }
+		// Assert
+		values.Count.Should().Be(3);
+		values[0].Should().Be("tag1");
+		values[1].Should().Be("tag2");
+		values[2].Should().Be("tag3");
+	}
 
-    [Fact]
-    public void WhenIteratingOverValuesThenShouldEnumerateAll()
-    {
-        // Arrange
-        var entry = new ElementEntry("items", "a", "b", "c");
-        var collected = new List<string?>();
+	[Fact]
+	public void WhenIteratingOverValuesThenShouldEnumerateAll()
+	{
+		// Arrange
+		var entry = new ElementEntry("items", "a", "b", "c");
+		var collected = new List<string?>();
 
-        // Act
-        foreach (string? value in entry.Values)
-        {
-            collected.Add(value);
-        }
+		// Act
+		foreach (string? value in entry.Values)
+		{
+			collected.Add(value);
+		}
 
-        // Assert
-        collected.Should().BeEquivalentTo(["a", "b", "c"]);
-    }
+		// Assert
+		collected.Should().BeEquivalentTo(["a", "b", "c"]);
+	}
 
-    [Fact]
-    public void WhenConvertingValuesToArrayThenShouldReturnArray()
-    {
-        // Arrange
-        var entry = new ElementEntry("numbers", "1", "2", "3");
+	[Fact]
+	public void WhenConvertingValuesToArrayThenShouldReturnArray()
+	{
+		// Arrange
+		var entry = new ElementEntry("numbers", "1", "2", "3");
 
 		// Act
 		string?[] array = entry.Values.ToArray();
 
-        // Assert
-        array.Should().BeEquivalentTo(["1", "2", "3"]);
-    }
+		// Assert
+		array.Should().BeEquivalentTo(["1", "2", "3"]);
+	}
 
-    #endregion
+	#endregion
 
-    #region Record Struct Tests
+	#region Record Struct Tests
 
-    [Fact]
-    public void WhenUsingWithExpressionThenShouldCreateNewInstance()
-    {
-        // Arrange
-        var original = new ElementEntry("key", "value1");
+	[Fact]
+	public void WhenUsingWithExpressionThenShouldCreateNewInstance()
+	{
+		// Arrange
+		var original = new ElementEntry("key", "value1");
 
 		// Act
 		ElementEntry modified = original with { Key = "newKey" };
 
-        // Assert
-        modified.Key.Should().Be("newKey");
-        modified.Values.Should().BeEquivalentTo(original.Values);
-        original.Key.Should().Be("key");
-    }
+		// Assert
+		modified.Key.Should().Be("newKey");
+		modified.Values.Should().BeEquivalentTo(original.Values);
+		original.Key.Should().Be("key");
+	}
 
-    [Fact]
-    public void WhenAccessingKeyAndValuesThenShouldReturnCorrectData()
-    {
-        // Arrange
-        var entry = new ElementEntry("name", "John");
+	[Fact]
+	public void WhenAccessingKeyAndValuesThenShouldReturnCorrectData()
+	{
+		// Arrange
+		var entry = new ElementEntry("name", "John");
 
-        // Act & Assert
-        entry.Key.Should().Be("name");
-        entry.Values.Should().Contain("John");
-    }
+		// Act & Assert
+		entry.Key.Should().Be("name");
+		entry.Values.Should().Contain("John");
+	}
 
-    #endregion
+	#endregion
 
-    #region Real World Scenario Tests
+	#region Real World Scenario Tests
 
-    [Fact]
-    public void WhenRepresentingValidationErrorsThenShouldStoreMultipleMessages()
-    {
-        // Arrange & Act
-        var entry = new ElementEntry(
-            "Password",
-            "Must be at least 8 characters",
-            "Must contain a number",
-            "Must contain a special character");
+	[Fact]
+	public void WhenRepresentingValidationErrorsThenShouldStoreMultipleMessages()
+	{
+		// Arrange & Act
+		var entry = new ElementEntry(
+			"Password",
+			"Must be at least 8 characters",
+			"Must contain a number",
+			"Must contain a special character");
 
-        // Assert
-        entry.Key.Should().Be("Password");
-        entry.Values.Count.Should().Be(3);
-    }
+		// Assert
+		entry.Key.Should().Be("Password");
+		entry.Values.Count.Should().Be(3);
+	}
 
-    [Fact]
-    public void WhenRepresentingHttpHeaderThenShouldStoreMultipleValues()
-    {
-        // Arrange & Act
-        var entry = new ElementEntry(
-            "Accept",
-            "application/json",
-            "text/plain",
-            "text/html");
+	[Fact]
+	public void WhenRepresentingHttpHeaderThenShouldStoreMultipleValues()
+	{
+		// Arrange & Act
+		var entry = new ElementEntry(
+			"Accept",
+			"application/json",
+			"text/plain",
+			"text/html");
 
-        // Assert
-        entry.Key.Should().Be("Accept");
-        entry.Values.Count.Should().Be(3);
-        entry.ToString().Should().Be("Accept: application/json,text/plain,text/html");
-    }
+		// Assert
+		entry.Key.Should().Be("Accept");
+		entry.Values.Count.Should().Be(3);
+		entry.ToString().Should().Be("Accept: application/json,text/plain,text/html");
+	}
 
-    [Fact]
-    public void WhenRepresentingFormFieldThenShouldStoreSingleValue()
-    {
-        // Arrange & Act
-        var entry = new ElementEntry("username", "john_doe");
+	[Fact]
+	public void WhenRepresentingFormFieldThenShouldStoreSingleValue()
+	{
+		// Arrange & Act
+		var entry = new ElementEntry("username", "john_doe");
 
-        // Assert
-        entry.Key.Should().Be("username");
-        entry.Values.Count.Should().Be(1);
-        ((string?)entry.Values).Should().Be("john_doe");
-    }
+		// Assert
+		entry.Key.Should().Be("username");
+		entry.Values.Count.Should().Be(1);
+		((string?)entry.Values).Should().Be("john_doe");
+	}
 
-    [Fact]
-    public void WhenRepresentingQueryParameterWithMultipleValuesThenShouldStoreAll()
-    {
-        // Arrange - Query string like ?category=electronics&category=books&category=games
-        var entry = new ElementEntry("category", "electronics", "books", "games");
+	[Fact]
+	public void WhenRepresentingQueryParameterWithMultipleValuesThenShouldStoreAll()
+	{
+		// Arrange - Query string like ?category=electronics&category=books&category=games
+		var entry = new ElementEntry("category", "electronics", "books", "games");
 
 		// Act
 		string?[] values = entry.Values.ToArray();
 		string queryPart = $"{entry.Key}={string.Join($"&{entry.Key}=", values!)}";
 
-        // Assert
-        queryPart.Should().Be("category=electronics&category=books&category=games");
-    }
+		// Assert
+		queryPart.Should().Be("category=electronics&category=books&category=games");
+	}
 
-    [Fact]
-    public void WhenBuildingErrorResponseThenShouldFormatCorrectly()
-    {
+	[Fact]
+	public void WhenBuildingErrorResponseThenShouldFormatCorrectly()
+	{
 		// Arrange
 		ElementEntry[] errors = new[]
-        {
-            new ElementEntry("Email", "Invalid email format"),
-            new ElementEntry("Password", "Too short", "Missing number"),
-            new ElementEntry("Username", "Already taken")
-        };
+		{
+			new ElementEntry("Email", "Invalid email format"),
+			new ElementEntry("Password", "Too short", "Missing number"),
+			new ElementEntry("Username", "Already taken")
+		};
 
 		// Act
 		Dictionary<string, string?[]> errorDict = errors.ToDictionary(
-            e => e.Key,
-            e => e.Values.ToArray());
+			e => e.Key,
+			e => e.Values.ToArray());
 
-        // Assert
-        errorDict.Should().ContainKey("Email");
-        errorDict.Should().ContainKey("Password");
-        errorDict.Should().ContainKey("Username");
-        errorDict["Password"].Should().HaveCount(2);
-    }
+		// Assert
+		errorDict.Should().ContainKey("Email");
+		errorDict.Should().ContainKey("Password");
+		errorDict.Should().ContainKey("Username");
+		errorDict["Password"].Should().HaveCount(2);
+	}
 
-    #endregion
+	#endregion
 
-    #region Edge Case Tests
+	#region Edge Case Tests
 
-    [Fact]
-    public void WhenValueContainsSpecialCharactersThenShouldPreserve()
-    {
-        // Arrange
-        var entry = new ElementEntry("data", "value with spaces", "value,with,commas", "value\"with\"quotes");
+	[Fact]
+	public void WhenValueContainsSpecialCharactersThenShouldPreserve()
+	{
+		// Arrange
+		var entry = new ElementEntry("data", "value with spaces", "value,with,commas", "value\"with\"quotes");
 
-        // Assert
-        entry.Values.Count.Should().Be(3);
-        entry.Values.Should().Contain("value with spaces");
-        entry.Values.Should().Contain("value,with,commas");
-        entry.Values.Should().Contain("value\"with\"quotes");
-    }
+		// Assert
+		entry.Values.Count.Should().Be(3);
+		entry.Values.Should().Contain("value with spaces");
+		entry.Values.Should().Contain("value,with,commas");
+		entry.Values.Should().Contain("value\"with\"quotes");
+	}
 
-    [Fact]
-    public void WhenKeyContainsSpecialCharactersThenShouldPreserve()
-    {
-        // Arrange
-        var entry = new ElementEntry("special-key_name.test", "value");
+	[Fact]
+	public void WhenKeyContainsSpecialCharactersThenShouldPreserve()
+	{
+		// Arrange
+		var entry = new ElementEntry("special-key_name.test", "value");
 
-        // Assert
-        entry.Key.Should().Be("special-key_name.test");
-    }
+		// Assert
+		entry.Key.Should().Be("special-key_name.test");
+	}
 
-    [Fact]
-    public void WhenValueIsEmptyStringThenShouldBeValid()
-    {
-        // Arrange & Act
-        var entry = new ElementEntry("emptyValue", "");
+	[Fact]
+	public void WhenValueIsEmptyStringThenShouldBeValid()
+	{
+		// Arrange & Act
+		var entry = new ElementEntry("emptyValue", "");
 
-        // Assert
-        entry.Values.Count.Should().Be(1);
-        ((string?)entry.Values).Should().BeEmpty();
-    }
+		// Assert
+		entry.Values.Count.Should().Be(1);
+		((string?)entry.Values).Should().BeEmpty();
+	}
 
-    [Fact]
-    public void WhenCreatingManyEntriesThenShouldAllBeIndependent()
-    {
+	[Fact]
+	public void WhenCreatingManyEntriesThenShouldAllBeIndependent()
+	{
 		// Arrange
 		ElementEntry[] entries = Enumerable.Range(1, 100)
-            .Select(i => new ElementEntry($"key{i}", $"value{i}"))
-            .ToArray();
+			.Select(i => new ElementEntry($"key{i}", $"value{i}"))
+			.ToArray();
 
-        // Assert
-        entries.Should().HaveCount(100);
-        entries.Select(e => e.Key).Should().OnlyHaveUniqueItems();
-    }
+		// Assert
+		entries.Should().HaveCount(100);
+		entries.Select(e => e.Key).Should().OnlyHaveUniqueItems();
+	}
 
-    #endregion
+	#endregion
 }

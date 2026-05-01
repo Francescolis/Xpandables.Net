@@ -24,6 +24,7 @@ using Microsoft.AspNetCore.Mvc;
 using Microsoft.AspNetCore.Mvc.ModelBinding;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Hosting;
+using Microsoft.Extensions.Primitives;
 
 namespace Microsoft.AspNetCore.Http;
 
@@ -58,7 +59,7 @@ public static class ResultExtensions
 					.Select(key =>
 						new ElementEntry(
 							key,
-							[.. modelState[key]!.Errors.Select(error => error.ErrorMessage)]))]))
+							modelState[key]!.Errors.Select(error => error.ErrorMessage).ToArray()))]))
 			.Build();
 	}
 
@@ -144,106 +145,105 @@ public static class ResultExtensions
 	}
 
 	/// <summary>
-	/// Extensions for <see cref="Result"/>.
-	/// </summary>   
-	extension(Result result)
+	/// Converts the current operation result's errors to a new ModelStateDictionary instance.
+	/// </summary>
+	/// <param name="result"></param>
+	/// <param name="isDevelopment">Indicates whether the application is running in a development environment.</param>
+	/// <remarks>Use this method to integrate operation result errors with ASP.NET Core model
+	/// validation workflows, such as displaying validation messages in views or APIs.</remarks>
+	/// <returns>A ModelStateDictionary containing all errors from the operation result. Each error is added under its
+	/// associated key. The dictionary will be empty if there are no errors.</returns>
+	public static ModelStateDictionary ToModelStateDictionary(this Result result, bool isDevelopment = false)
 	{
-		/// <summary>
-		/// Converts the current operation result's errors to a new ModelStateDictionary instance.
-		/// </summary>
-		/// <param name="isDevelopment">Indicates whether the application is running in a development environment.</param>
-		/// <remarks>Use this method to integrate operation result errors with ASP.NET Core model
-		/// validation workflows, such as displaying validation messages in views or APIs.</remarks>
-		/// <returns>A ModelStateDictionary containing all errors from the operation result. Each error is added under its
-		/// associated key. The dictionary will be empty if there are no errors.</returns>
-		public ModelStateDictionary ToModelStateDictionary(bool isDevelopment = false)
-		{
-			ModelStateDictionary modelStateDictionary = new();
+		ArgumentNullException.ThrowIfNull(result);
+		ModelStateDictionary modelStateDictionary = new();
 
-			foreach (ElementEntry entry in result.Errors)
+		foreach (ElementEntry entry in result.Errors)
+		{
+			foreach (string? value in entry.Values)
 			{
-				foreach (string? value in entry.Values)
+				if (string.IsNullOrWhiteSpace(value))
 				{
-					if (string.IsNullOrWhiteSpace(value))
-					{
-						continue;
-					}
-
-					modelStateDictionary.AddModelError(entry.Key, value);
+					continue;
 				}
-			}
 
-			if (isDevelopment && result.Exception is not null)
-			{
-				modelStateDictionary.AddModelError("exception", result.Exception.ToString());
+				modelStateDictionary.AddModelError(entry.Key, value);
 			}
-
-			return modelStateDictionary;
 		}
 
-		/// <summary>
-		/// Creates an <see cref="IActionResult"/> that represents the current operation result, including its status
-		/// code and content.
-		/// </summary>
-		/// <returns>An <see cref="ObjectResult"/> containing the operation result and its associated status code.</returns>
-		public IActionResult ToActionResult()
+		if (isDevelopment && result.Exception is not null)
 		{
-			return new ObjectResult(result)
+			modelStateDictionary.AddModelError("exception", result.Exception.ToString());
+		}
+
+		return modelStateDictionary;
+	}
+
+	/// <summary>
+	/// Creates an <see cref="IActionResult"/> that represents the current operation result, including its status
+	/// code and content.
+	/// </summary>
+	/// <returns>An <see cref="ObjectResult"/> containing the operation result and its associated status code.</returns>
+	public static IActionResult ToActionResult(this Result result)
+	{
+		ArgumentNullException.ThrowIfNull(result);
+		return new ObjectResult(result)
+		{
+			StatusCode = (int)result.StatusCode,
+		};
+	}
+
+	/// <summary>
+	/// Creates a ProblemDetails instance that represents the current operation result, using information from the
+	/// specified HTTP context.
+	/// </summary>
+	/// <remarks>In development environments, the returned ProblemDetails includes the type name for
+	/// additional context. The instance property is set to the HTTP method and request path. Additional data from
+	/// the operation result is included in the Extensions property.</remarks>
+	/// <param name="result"></param>
+	/// <param name="context">The current HTTP context from which request information is obtained. Cannot be null.</param>
+	/// <returns>A ProblemDetails object containing details about the operation result, including status, title, detail, and
+	/// request instance information. Returns a ValidationProblemDetails object if the status code indicates a
+	/// validation problem.</returns>
+	public static ProblemDetails ToProblemDetails(this Result result, HttpContext context)
+	{
+		ArgumentNullException.ThrowIfNull(result);
+		ArgumentNullException.ThrowIfNull(context);
+
+		IHttpStatusCodeExtension statusCodeExtension = context.RequestServices
+			.GetService<IHttpStatusCodeExtension>() ?? new HttpStatusCodeExtension();
+
+		bool isDevelopment = context.RequestServices
+			.GetRequiredService<IWebHostEnvironment>()
+			.IsDevelopment();
+
+		string title = result.Title ?? statusCodeExtension.GetTitle(result.StatusCode);
+		string detail = result.Detail ?? statusCodeExtension.GetDetail(result.StatusCode);
+		int status = (int)result.StatusCode;
+		string instance = $"{context.Request.Method} {context.Request.Path}{context.Request.QueryString.Value}";
+		string? type = result.StatusCode.IsValidationProblem ? nameof(ValidationException) : result.Exception?.GetType().Name ?? result.GetType().Name;
+		IDictionary<string, object?> extensions = result.Extensions.ToDictionaryObject();
+
+		ProblemDetails problemDetails = result.StatusCode.IsValidationProblem
+			? new ValidationProblemDetails(result.ToModelStateDictionary(isDevelopment))
 			{
-				StatusCode = (int)result.StatusCode,
+				Title = title,
+				Detail = detail,
+				Status = status,
+				Instance = instance,
+				Type = type,
+				Extensions = extensions
+			}
+			: new ProblemDetails()
+			{
+				Title = title,
+				Detail = detail,
+				Status = status,
+				Instance = instance,
+				Type = type,
+				Extensions = extensions
 			};
-		}
 
-		/// <summary>
-		/// Creates a ProblemDetails instance that represents the current operation result, using information from the
-		/// specified HTTP context.
-		/// </summary>
-		/// <remarks>In development environments, the returned ProblemDetails includes the type name for
-		/// additional context. The instance property is set to the HTTP method and request path. Additional data from
-		/// the operation result is included in the Extensions property.</remarks>
-		/// <param name="context">The current HTTP context from which request information is obtained. Cannot be null.</param>
-		/// <returns>A ProblemDetails object containing details about the operation result, including status, title, detail, and
-		/// request instance information. Returns a ValidationProblemDetails object if the status code indicates a
-		/// validation problem.</returns>
-		public ProblemDetails ToProblemDetails(HttpContext context)
-		{
-			ArgumentNullException.ThrowIfNull(context);
-
-			IHttpStatusCodeExtension statusCodeExtension = context.RequestServices
-				.GetService<IHttpStatusCodeExtension>() ?? new HttpStatusCodeExtension();
-
-			bool isDevelopment = context.RequestServices
-				.GetRequiredService<IWebHostEnvironment>()
-				.IsDevelopment();
-
-			string title = result.Title ?? statusCodeExtension.GetTitle(result.StatusCode);
-			string detail = result.Detail ?? statusCodeExtension.GetDetail(result.StatusCode);
-			int status = (int)result.StatusCode;
-			string instance = $"{context.Request.Method} {context.Request.Path}{context.Request.QueryString.Value}";
-			string? type = result.StatusCode.IsValidationProblem ? nameof(ValidationException) : result.Exception?.GetType().Name ?? result.GetType().Name;
-			IDictionary<string, object?> extensions = result.Extensions.ToDictionaryObject();
-
-			ProblemDetails problemDetails = result.StatusCode.IsValidationProblem
-					? new ValidationProblemDetails(result.ToModelStateDictionary(isDevelopment))
-					{
-						Title = title,
-						Detail = detail,
-						Status = status,
-						Instance = instance,
-						Type = type,
-						Extensions = extensions
-					}
-					: new ProblemDetails()
-					{
-						Title = title,
-						Detail = detail,
-						Status = status,
-						Instance = instance,
-						Type = type,
-						Extensions = extensions
-					};
-
-			return problemDetails;
-		}
+		return problemDetails;
 	}
 }

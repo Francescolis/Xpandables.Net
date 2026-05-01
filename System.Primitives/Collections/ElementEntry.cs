@@ -13,11 +13,11 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  *
-********************************************************************************/
+ ********************************************************************************/
+
 using System.Diagnostics.CodeAnalysis;
 using System.Runtime.InteropServices;
 using System.Text.Json.Serialization;
-
 using Microsoft.Extensions.Primitives;
 
 namespace System.Collections;
@@ -39,6 +39,7 @@ public readonly record struct ElementEntry
 	/// Gets the key of the entry.
 	/// </summary>
 	public readonly required string Key { get; init; }
+
 	/// <summary>
 	/// Gets the values associated with the key.
 	/// </summary>
@@ -49,25 +50,6 @@ public readonly record struct ElementEntry
 	/// </summary>
 	[JsonIgnore]
 	public readonly bool IsEmpty => string.IsNullOrEmpty(Key) && Values.Count == 0;
-
-	/// <summary>
-	/// Initializes a new instance of the <see cref="ElementEntry"/> struct.
-	/// </summary>
-	/// <param name="key">The key of the entry.</param>
-	/// <param name="values">The values associated with the key.</param>
-	/// <exception cref="ArgumentException">Thrown when values are empty or null.</exception>
-	[SetsRequiredMembers]
-	public ElementEntry(string key, params string[] values)
-	{
-		ArgumentNullException.ThrowIfNull(key);
-		if (values is null || values.Length == 0)
-		{
-			throw new ArgumentException("Values cannot be empty.", nameof(values));
-		}
-
-		Key = key;
-		Values = values;
-	}
 
 	/// <summary>
 	/// Initializes a new instance of the ElementEntry class with the specified key and associated values.
@@ -88,7 +70,7 @@ public readonly record struct ElementEntry
 	/// Returns a string representation of the <see cref="ElementEntry"/> instance.
 	/// </summary>
 	/// <returns> A string that represents the current <see cref="ElementEntry"/>.</returns>
-	public override readonly string ToString() => $"{Key}: {Values.StringJoin(",")}";
+	public override readonly string ToString() => $"{Key}: {Values}";
 }
 
 /// <summary>
@@ -98,7 +80,7 @@ public readonly record struct ElementEntry
 ///     JsonSerializerOptions.Default.TypeInfoResolver = JsonTypeInfoResolver.Combine(
 ///     ElementEntryContext.Default,
 ///     new DefaultJsonTypeInfoResolver());
-///     
+///
 /// // AspNet Core Registration
 ///     builder.Services.ConfigureHttpJsonOptions(options =>
 ///     {
@@ -107,7 +89,7 @@ public readonly record struct ElementEntry
 ///             new DefaultJsonTypeInfoResolver());
 ///         options.SerializerOptions.Converters.Add(new ElementEntryJsonConverterFactory());
 ///     });
-///     
+///
 /// // Or in Minimal API
 ///     builder.Services.Configure&lt;JsonOptions&gt;(options=>
 ///     {
@@ -119,7 +101,7 @@ public readonly record struct ElementEntry
 /// </code>
 /// </summary>
 /// <remarks>This context enables efficient, compile-time generation of serialization logic for the ElementEntry
-/// type and its associated StringValues. Use this context with System.Text.Json serialization APIs to improve 
+/// type and its associated StringValues. Use this context with System.Text.Json serialization APIs to improve
 /// performance and reduce runtime reflection when working with ElementEntry instances. This approach is preferred
 /// over custom JsonConverter implementations for better AOT compatibility and performance in .NET 10.</remarks>
 [JsonSourceGenerationOptions(
@@ -135,4 +117,4 @@ public readonly record struct ElementEntry
 [JsonSerializable(typeof(StringValues))]
 [JsonSerializable(typeof(string[]))]
 [JsonSerializable(typeof(string))]
-public partial class ElementEntryContext : JsonSerializerContext { }
+public partial class ElementEntryContext : JsonSerializerContext;
