@@ -77,7 +77,7 @@ public sealed class PipelineCachingDecorator<TRequest>(IMemoryCache cache) :
 
 		Result result = await nextHandler(cancellationToken).ConfigureAwait(false);
 
-		if (result.IsSuccess)
+		if (result is SuccessResult)
 		{
 			MemoryCacheEntryOptions options = new()
 			{

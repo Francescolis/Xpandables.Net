@@ -38,18 +38,19 @@ public static class ValidationResultExtensions
 	/// <param name="validations">The collection of validation results to be processed. Cannot be null or empty.</param>
 	/// <returns>A Result object that encapsulates the bad request status, including a title, detail message, and any associated
 	/// validation errors.</returns>
-	public static Result ToResult(this IEnumerable<ValidationResult> validations)
+	[Diagnostics.CodeAnalysis.SuppressMessage("Style", "IDE0011:Add braces", Justification = "<Pending>")]
+	public static FailureResult ToResult(this IEnumerable<ValidationResult> validations)
 	{
 		ArgumentNullException.ThrowIfNull(validations);
-		ArgumentOutOfRangeException.ThrowIfZero(validations.Count());
+		if (!validations.Any())
+			throw new ArgumentOutOfRangeException(nameof(validations), "Validations cannot be empty.");
 
 		var elements = validations.ToElementCollection();
-		return Result
-			.BadRequest()
+		return ResultWith
+			.Failure()
 			.WithTitle("one or more validation errors occurred.")
 			.WithDetail(HttpStatusCode.BadRequest.Detail)
-			.WithErrors(elements)
-			.Build();
+			.WithErrors(elements);
 	}
 
 	/// <summary>
@@ -61,7 +62,7 @@ public static class ValidationResultExtensions
 	/// <param name="exception">The ValidationException to convert. Cannot be null and must contain validation errors.</param>
 	/// <returns>A Result object representing the failure state, including the HTTP status code, a title indicating validation
 	/// errors, and a collection of validation error details.</returns>
-	public static Result ToResult(this ValidationException exception)
+	public static FailureResult ToResult(this ValidationException exception)
 	{
 		ArgumentNullException.ThrowIfNull(exception);
 		ArgumentOutOfRangeException.ThrowIfEqual(exception.ValidationResult, ValidationResult.Success);
@@ -69,12 +70,10 @@ public static class ValidationResultExtensions
 		HttpStatusCode statusCode = exception.GetHttpStatusCode();
 		var elements = exception.ValidationResult.ToElementCollection();
 
-		return Result
-			.Failure()
-			.WithStatusCode(statusCode)
+		return ResultWith
+			.Failure(statusCode)
 			.WithTitle("one or more validation errors occurred.")
 			.WithDetail(statusCode.Detail)
-			.WithErrors(elements)
-			.Build();
+			.WithErrors(elements);
 	}
 }

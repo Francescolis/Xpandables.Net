@@ -15,6 +15,8 @@
  *
 ********************************************************************************/
 using System.Collections;
+using System.Net;
+using System.Text.Json.Serialization;
 
 namespace System.Results;
 
@@ -26,31 +28,205 @@ namespace System.Results;
 /// diagnostics and user feedback. This type is not generic and always indicates a failure state.</remarks>
 public sealed record FailureResult : Result
 {
-	/// <inheritdoc/>
-	public sealed override bool IsFailure => true;
-
-	/// <inheritdoc/>
-	public sealed override bool IsSuccess => false;
-
 	/// <summary>
-	/// Represents an exception associated with the result, if any.
+	/// Represents the HTTP status code associated with the operation result.
 	/// </summary>
-	public new Exception? Exception { get => base.Exception; init => base.Exception = value; }
-
-	/// <summary>
-	/// Represents a collection of errors associated with the result.
-	/// </summary>
-	public new required ElementCollection Errors { get => base.Errors; init => base.Errors = value; }
+	public HttpStatusCode StatusCode
+	{
+		get => field;
+		init => field = value.Failure();
+	}
 
 	/// <summary>
 	/// Represents a short, human-readable summary of the problem type.
 	/// </summary>
-	public new string? Title { get => base.Title; init => base.Title = value; }
+	public string? Title { get; init; }
 
 	/// <summary>
 	/// Represents a detailed, human-readable explanation specific to this occurrence of the problem.
 	/// </summary>
-	public new string? Detail { get => base.Detail; init => base.Detail = value; }
+	public string? Detail { get; init; }
+
+	/// <summary>
+	/// Represents a collection of errors associated with the operation result.
+	/// </summary>
+	public ElementCollection Errors { get; init; } = [];
+
+	/// <summary>
+	/// Represents a collection of headers associated with the operation result.
+	/// The headers can include additional metadata relevant to the operation context.
+	/// </summary>
+	public ElementCollection Headers { get; init; } = [];
+
+	/// <summary>
+	/// Represents a collection of extensions associated with the operation result.
+	/// </summary>
+	public ElementCollection Extensions { get; init; } = [];
+
+	/// <summary>
+	/// Represents an exception associated with the operation result, if any.
+	/// </summary>
+	[JsonIgnore]
+	public Exception? Exception { get; init; }
+}
+
+/// <summary>
+/// Provides extension methods for creating and modifying instances of the FailureResult type with additional error
+/// information, headers, details, and extensions.
+/// </summary>
+/// <remarks>These extension methods enable a fluent style for updating FailureResult objects with custom titles,
+/// details, exceptions, headers, errors, and extension data. Each method returns a new FailureResult instance with the
+/// specified modifications, preserving immutability. These methods throw an ArgumentNullException if any required
+/// argument is null.</remarks>
+public static class FailureResultExtensions
+{
+	/// <summary>
+	/// Creates a new FailureResult instance with the specified title.
+	/// </summary>
+	/// <param name="this">The FailureResult instance to copy and update.</param>
+	/// <param name="title">The title to assign to the new FailureResult. Cannot be null.</param>
+	/// <returns>A new FailureResult instance with the Title property set to the specified value.</returns>
+	public static FailureResult WithTitle(this FailureResult @this, string title)
+	{
+		ArgumentNullException.ThrowIfNull(@this);
+		ArgumentNullException.ThrowIfNull(title);
+
+		return @this with { Title = title };
+	}
+
+	/// <summary>
+	/// Creates a new FailureResult instance with the specified detail message.
+	/// </summary>
+	/// <param name="this">The FailureResult instance to copy and update.</param>
+	/// <param name="detail">The detail message to associate with the new FailureResult. Cannot be null.</param>
+	/// <returns>A new FailureResult instance with the Detail property set to the specified value.</returns>
+	public static FailureResult WithDetail(this FailureResult @this, string detail)
+	{
+		ArgumentNullException.ThrowIfNull(@this);
+		ArgumentNullException.ThrowIfNull(detail);
+
+		return @this with { Detail = detail };
+	}
+
+	/// <summary>
+	/// Creates a new FailureResult instance with the specified exception attached.
+	/// </summary>
+	/// <param name="this">The FailureResult to augment with the exception. Cannot be null.</param>
+	/// <param name="exception">The exception to associate with the FailureResult. Cannot be null.</param>
+	/// <returns>A new FailureResult instance that includes the specified exception.</returns>
+	public static FailureResult WithException(this FailureResult @this, Exception exception)
+	{
+		ArgumentNullException.ThrowIfNull(@this);
+		ArgumentNullException.ThrowIfNull(exception);
+
+		return @this with { Exception = exception };
+	}
+
+	/// <summary>
+	/// Adds a header with the specified key and value to the failure result and returns a new instance with the updated
+	/// headers.
+	/// </summary>
+	/// <remarks>This method does not modify the original FailureResult instance; instead, it returns a new instance
+	/// with the additional header. If a header with the same key already exists, the behavior depends on the
+	/// implementation of the Headers collection.</remarks>
+	/// <param name="this">The failure result to which the header will be added. Cannot be null.</param>
+	/// <param name="key">The key of the header to add. Cannot be null.</param>
+	/// <param name="value">The value of the header to add. Cannot be null.</param>
+	/// <returns>A new FailureResult instance that includes the specified header.</returns>
+	public static FailureResult WithHeader(this FailureResult @this, string key, string value)
+	{
+		ArgumentNullException.ThrowIfNull(@this);
+		ArgumentNullException.ThrowIfNull(key);
+		ArgumentNullException.ThrowIfNull(value);
+
+		ElementCollection headers = @this.Headers;
+		headers.Add(key, value);
+		return @this with { Headers = headers };
+	}
+
+	/// <summary>
+	/// Returns a new FailureResult instance with the specified headers added to the existing headers.
+	/// </summary>
+	/// <param name="this">The FailureResult instance to which the headers will be added.</param>
+	/// <param name="headers">The collection of headers to add. Cannot be null.</param>
+	/// <returns>A new FailureResult instance containing the combined headers.</returns>
+	public static FailureResult WithHeaders(this FailureResult @this, ElementCollection headers)
+	{
+		ArgumentNullException.ThrowIfNull(@this);
+
+		ElementCollection newHeaders = @this.Headers;
+		headers.AddRange(headers);
+		return @this with { Headers = newHeaders };
+	}
+
+	/// <summary>
+	/// Adds an error entry with the specified key and error message to the failure result.
+	/// </summary>
+	/// <param name="this">The failure result to which the error will be added. Cannot be null.</param>
+	/// <param name="key">The key that identifies the error. Cannot be null.</param>
+	/// <param name="error">The error message to associate with the specified key. Cannot be null.</param>
+	/// <returns>A new FailureResult instance that includes the specified error entry.</returns>
+	public static FailureResult WithError(this FailureResult @this, string key, string error)
+	{
+		ArgumentNullException.ThrowIfNull(@this);
+		ArgumentNullException.ThrowIfNull(key);
+		ArgumentNullException.ThrowIfNull(error);
+
+		ElementCollection errors = @this.Errors;
+		errors.Add(key, error);
+		return @this with { Errors = errors };
+	}
+
+	/// <summary>
+	/// Adds the specified collection of errors to the current failure result and returns a new instance with the combined
+	/// errors.
+	/// </summary>
+	/// <param name="this">The failure result to which errors will be added. Cannot be null.</param>
+	/// <param name="errors">The collection of errors to add to the failure result. Cannot be null.</param>
+	/// <returns>A new FailureResult instance containing the combined errors from the original result and the specified collection.</returns>
+	public static FailureResult WithErrors(this FailureResult @this, ElementCollection errors)
+	{
+		ArgumentNullException.ThrowIfNull(@this);
+
+		ElementCollection newErrors = @this.Errors;
+		errors.AddRange(errors);
+		return @this with { Errors = newErrors };
+	}
+
+	/// <summary>
+	/// Returns a new FailureResult instance with the specified extension key and value added to its Extensions collection.
+	/// </summary>
+	/// <remarks>This method does not modify the original FailureResult instance. Instead, it returns a new instance
+	/// with the updated Extensions collection.</remarks>
+	/// <param name="this">The FailureResult instance to which the extension will be added. Cannot be null.</param>
+	/// <param name="key">The key of the extension to add. Cannot be null.</param>
+	/// <param name="value">The value of the extension to add. Cannot be null.</param>
+	/// <returns>A new FailureResult instance that includes the specified extension key and value.</returns>
+	public static FailureResult WithExtension(this FailureResult @this, string key, string value)
+	{
+		ArgumentNullException.ThrowIfNull(@this);
+		ArgumentNullException.ThrowIfNull(key);
+		ArgumentNullException.ThrowIfNull(value);
+
+		ElementCollection extensions = @this.Extensions;
+		extensions.Add(key, value);
+		return @this with { Extensions = extensions };
+	}
+
+	/// <summary>
+	/// Returns a new FailureResult instance with the specified extensions added to its existing collection.
+	/// </summary>
+	/// <param name="this">The FailureResult instance to which the extensions will be added.</param>
+	/// <param name="extensions">The collection of extensions to add. Cannot be null.</param>
+	/// <returns>A new FailureResult instance containing the combined extensions.</returns>
+	public static FailureResult WithExtensions(this FailureResult @this, ElementCollection extensions)
+	{
+		ArgumentNullException.ThrowIfNull(@this);
+
+		ElementCollection newExtensions = @this.Extensions;
+		extensions.AddRange(extensions);
+		return @this with { Headers = newExtensions };
+	}
 }
 
 /// <summary>
@@ -64,31 +240,46 @@ public sealed record FailureResult : Result
 /// <typeparam name="TValue">The type of the value associated with the result, if applicable.</typeparam>
 public sealed record FailureResult<TValue> : Result<TValue>
 {
-	/// <inheritdoc/>
-	public sealed override bool IsFailure => true;
-
-	/// <inheritdoc/>
-	public sealed override bool IsSuccess => false;
-
 	/// <summary>
-	/// Represents an exception associated with the result, if any.
+	/// Represents the HTTP status code associated with the operation result.
 	/// </summary>
-	public new Exception? Exception { get => base.Exception; init => base.Exception = value; }
-
-	/// <summary>
-	/// Represents a collection of errors associated with the result.
-	/// </summary>
-	public new required ElementCollection Errors { get => base.Errors; init => base.Errors = value; }
+	public HttpStatusCode StatusCode
+	{
+		get => field;
+		init => field = value.Failure();
+	}
 
 	/// <summary>
 	/// Represents a short, human-readable summary of the problem type.
 	/// </summary>
-	public new string? Title { get => base.Title; init => base.Title = value; }
+	public string? Title { get; init; }
 
 	/// <summary>
 	/// Represents a detailed, human-readable explanation specific to this occurrence of the problem.
 	/// </summary>
-	public new string? Detail { get => base.Detail; init => base.Detail = value; }
+	public string? Detail { get; init; }
+
+	/// <summary>
+	/// Represents a collection of errors associated with the operation result.
+	/// </summary>
+	public ElementCollection Errors { get; init; } = [];
+
+	/// <summary>
+	/// Represents a collection of headers associated with the operation result.
+	/// The headers can include additional metadata relevant to the operation context.
+	/// </summary>
+	public ElementCollection Headers { get; init; } = [];
+
+	/// <summary>
+	/// Represents a collection of extensions associated with the operation result.
+	/// </summary>
+	public ElementCollection Extensions { get; init; } = [];
+
+	/// <summary>
+	/// Represents an exception associated with the operation result, if any.
+	/// </summary>
+	[JsonIgnore]
+	public Exception? Exception { get; init; }
 
 	/// <summary>
 	/// Converts a generic failure result to a non-generic <see cref="FailureResult"/> instance, preserving all error
@@ -108,7 +299,6 @@ public sealed record FailureResult<TValue> : Result<TValue>
 			StatusCode = failure.StatusCode,
 			Title = failure.Title,
 			Detail = failure.Detail,
-			Location = failure.Location,
 			Errors = failure.Errors,
 			Headers = failure.Headers,
 			Extensions = failure.Extensions,
@@ -133,11 +323,179 @@ public sealed record FailureResult<TValue> : Result<TValue>
 			StatusCode = failure.StatusCode,
 			Title = failure.Title,
 			Detail = failure.Detail,
-			Location = failure.Location,
 			Errors = failure.Errors,
 			Headers = failure.Headers,
 			Extensions = failure.Extensions,
 			Exception = failure.Exception
 		};
 	}
+}
+
+/// <summary>
+/// Provides extension methods for building and modifying <see cref="FailureResult{TValue}"/> instances in a fluent manner.
+/// </summary>
+/// <remarks>These extension methods enable a fluent API for constructing failure results with various properties
+/// such as titles, details, exceptions, headers, errors, and extensions. Each method returns a new instance with
+/// the specified property set, following an immutable pattern.</remarks>
+public static class FailureResultOfValueExtensions
+{
+	/// <summary>
+	/// Sets the title for a failure result, providing a short, human-readable summary of the problem type.
+	/// </summary>
+	/// <typeparam name="TValue">The type of the value associated with the result.</typeparam>
+	/// <param name="this">The failure result instance to modify. Cannot be <see langword="null"/>.</param>
+	/// <param name="title">The title to set. Cannot be <see langword="null"/>.</param>
+	/// <returns>A new <see cref="FailureResult{TValue}"/> instance with the specified title.</returns>
+	/// <exception cref="ArgumentNullException">Thrown when <paramref name="this"/> or <paramref name="title"/> is <see langword="null"/>.</exception>
+	public static FailureResult<TValue> WithTitle<TValue>(this FailureResult<TValue> @this, string title)
+	{
+		ArgumentNullException.ThrowIfNull(@this);
+		ArgumentNullException.ThrowIfNull(title);
+
+		return @this with { Title = title };
+	}
+
+	/// <summary>
+	/// Sets the detail for a failure result, providing a detailed, human-readable explanation specific to this occurrence of the problem.
+	/// </summary>
+	/// <typeparam name="TValue">The type of the value associated with the result.</typeparam>
+	/// <param name="this">The failure result instance to modify. Cannot be <see langword="null"/>.</param>
+	/// <param name="detail">The detail message to set. Cannot be <see langword="null"/>.</param>
+	/// <returns>A new <see cref="FailureResult{TValue}"/> instance with the specified detail.</returns>
+	/// <exception cref="ArgumentNullException">Thrown when <paramref name="this"/> or <paramref name="detail"/> is <see langword="null"/>.</exception>
+	public static FailureResult<TValue> WithDetail<TValue>(this FailureResult<TValue> @this, string detail)
+	{
+		ArgumentNullException.ThrowIfNull(@this);
+		ArgumentNullException.ThrowIfNull(detail);
+
+		return @this with { Detail = detail };
+	}
+
+	/// <summary>
+	/// Associates an exception with a failure result, capturing the underlying error that caused the failure.
+	/// </summary>
+	/// <typeparam name="TValue">The type of the value associated with the result.</typeparam>
+	/// <param name="this">The failure result instance to modify. Cannot be <see langword="null"/>.</param>
+	/// <param name="exception">The exception to associate with the failure. Cannot be <see langword="null"/>.</param>
+	/// <returns>A new <see cref="FailureResult{TValue}"/> instance with the specified exception.</returns>
+	/// <exception cref="ArgumentNullException">Thrown when <paramref name="this"/> or <paramref name="exception"/> is <see langword="null"/>.</exception>
+	public static FailureResult<TValue> WithException<TValue>(this FailureResult<TValue> @this, Exception exception)
+	{
+		ArgumentNullException.ThrowIfNull(@this);
+		ArgumentNullException.ThrowIfNull(exception);
+
+		return @this with { Exception = exception };
+	}
+
+	/// <summary>
+	/// Adds a single header to the failure result, providing additional metadata relevant to the operation context.
+	/// </summary>
+	/// <typeparam name="TValue">The type of the value associated with the result.</typeparam>
+	/// <param name="this">The failure result instance to modify. Cannot be <see langword="null"/>.</param>
+	/// <param name="key">The header key. Cannot be <see langword="null"/>.</param>
+	/// <param name="value">The header value. Cannot be <see langword="null"/>.</param>
+	/// <returns>A new <see cref="FailureResult{TValue}"/> instance with the specified header added.</returns>
+	/// <exception cref="ArgumentNullException">Thrown when <paramref name="this"/>, <paramref name="key"/>, or <paramref name="value"/> is <see langword="null"/>.</exception>
+	public static FailureResult<TValue> WithHeader<TValue>(this FailureResult<TValue> @this, string key, string value)
+	{
+		ArgumentNullException.ThrowIfNull(@this);
+		ArgumentNullException.ThrowIfNull(key);
+		ArgumentNullException.ThrowIfNull(value);
+
+		ElementCollection headers = @this.Headers;
+		headers.Add(key, value);
+		return @this with { Headers = headers };
+	}
+
+	/// <summary>
+	/// Adds multiple headers to the failure result, providing additional metadata relevant to the operation context.
+	/// </summary>
+	/// <typeparam name="TValue">The type of the value associated with the result.</typeparam>
+	/// <param name="this">The failure result instance to modify. Cannot be <see langword="null"/>.</param>
+	/// <param name="headers">The collection of headers to add.</param>
+	/// <returns>A new <see cref="FailureResult{TValue}"/> instance with the specified headers added.</returns>
+	/// <exception cref="ArgumentNullException">Thrown when <paramref name="this"/> is <see langword="null"/>.</exception>
+	public static FailureResult<TValue> WithHeaders<TValue>(this FailureResult<TValue> @this, ElementCollection headers)
+	{
+		ArgumentNullException.ThrowIfNull(@this);
+
+		ElementCollection newHeaders = @this.Headers;
+		headers.AddRange(headers);
+		return @this with { Headers = newHeaders };
+	}
+
+	/// <summary>
+	/// Adds a single error to the failure result, capturing specific validation or business rule failures.
+	/// </summary>
+	/// <typeparam name="TValue">The type of the value associated with the result.</typeparam>
+	/// <param name="this">The failure result instance to modify. Cannot be <see langword="null"/>.</param>
+	/// <param name="key">The error key or field name. Cannot be <see langword="null"/>.</param>
+	/// <param name="error">The error message. Cannot be <see langword="null"/>.</param>
+	/// <returns>A new <see cref="FailureResult{TValue}"/> instance with the specified error added.</returns>
+	/// <exception cref="ArgumentNullException">Thrown when <paramref name="this"/>, <paramref name="key"/>, or <paramref name="error"/> is <see langword="null"/>.</exception>
+	public static FailureResult<TValue> WithError<TValue>(this FailureResult<TValue> @this, string key, string error)
+	{
+		ArgumentNullException.ThrowIfNull(@this);
+		ArgumentNullException.ThrowIfNull(key);
+		ArgumentNullException.ThrowIfNull(error);
+
+		ElementCollection errors = @this.Errors;
+		errors.Add(key, error);
+		return @this with { Errors = errors };
+	}
+
+	/// <summary>
+	/// Adds multiple errors to the failure result, capturing specific validation or business rule failures.
+	/// </summary>
+	/// <typeparam name="TValue">The type of the value associated with the result.</typeparam>
+	/// <param name="this">The failure result instance to modify. Cannot be <see langword="null"/>.</param>
+	/// <param name="errors">The collection of errors to add.</param>
+	/// <returns>A new <see cref="FailureResult{TValue}"/> instance with the specified errors added.</returns>
+	/// <exception cref="ArgumentNullException">Thrown when <paramref name="this"/> is <see langword="null"/>.</exception>
+	public static FailureResult<TValue> WithErrors<TValue>(this FailureResult<TValue> @this, ElementCollection errors)
+	{
+		ArgumentNullException.ThrowIfNull(@this);
+
+		ElementCollection newErrors = @this.Errors;
+		errors.AddRange(errors);
+		return @this with { Errors = newErrors };
+	}
+
+	/// <summary>
+	/// Adds a single extension to the failure result, providing custom metadata for specialized scenarios.
+	/// </summary>
+	/// <typeparam name="TValue">The type of the value associated with the result.</typeparam>
+	/// <param name="this">The failure result instance to modify. Cannot be <see langword="null"/>.</param>
+	/// <param name="key">The extension key. Cannot be <see langword="null"/>.</param>
+	/// <param name="value">The extension value. Cannot be <see langword="null"/>.</param>
+	/// <returns>A new <see cref="FailureResult{TValue}"/> instance with the specified extension added.</returns>
+	/// <exception cref="ArgumentNullException">Thrown when <paramref name="this"/>, <paramref name="key"/>, or <paramref name="value"/> is <see langword="null"/>.</exception>
+	public static FailureResult<TValue> WithExtension<TValue>(this FailureResult<TValue> @this, string key, string value)
+	{
+		ArgumentNullException.ThrowIfNull(@this);
+		ArgumentNullException.ThrowIfNull(key);
+		ArgumentNullException.ThrowIfNull(value);
+
+		ElementCollection extensions = @this.Extensions;
+		extensions.Add(key, value);
+		return @this with { Extensions = extensions };
+	}
+
+	/// <summary>
+	/// Adds multiple extensions to the failure result, providing custom metadata for specialized scenarios.
+	/// </summary>
+	/// <typeparam name="TValue">The type of the value associated with the result.</typeparam>
+	/// <param name="this">The failure result instance to modify. Cannot be <see langword="null"/>.</param>
+	/// <param name="extensions">The collection of extensions to add.</param>
+	/// <returns>A new <see cref="FailureResult{TValue}"/> instance with the specified extensions added.</returns>
+	/// <exception cref="ArgumentNullException">Thrown when <paramref name="this"/> is <see langword="null"/>.</exception>
+	public static FailureResult<TValue> WithExtensions<TValue>(this FailureResult<TValue> @this, ElementCollection extensions)
+	{
+		ArgumentNullException.ThrowIfNull(@this);
+
+		ElementCollection newExtensions = @this.Extensions;
+		extensions.AddRange(extensions);
+		return @this with { Headers = newExtensions };
+	}
+
 }

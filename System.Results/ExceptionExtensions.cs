@@ -54,16 +54,14 @@ public static class ExceptionExtensions
 
 		if (exception is ResultException resultException)
 		{
-			Result executionResult = resultException.Result;
-			return Result
-				.Failure()
-				.WithStatusCode(executionResult.StatusCode)
+			FailureResult executionResult = resultException.Result;
+			return ResultWith
+				.Failure(executionResult.StatusCode)
 				.WithTitle(executionResult.StatusCode.Title)
 				.WithDetail(executionResult.StatusCode.Detail)
 				.WithErrors(executionResult.Errors)
 				.WithExtensions(executionResult.Extensions)
-				.WithHeaders(executionResult.Headers)
-				.Build();
+				.WithHeaders(executionResult.Headers);
 		}
 
 		statusCode ??= exception.GetHttpStatusCode();
@@ -71,50 +69,19 @@ public static class ExceptionExtensions
 		if (exception is ValidationException validationException)
 		{
 			statusCode = validationException.GetHttpStatusCode();
-			var result = validationException.ToResult();
-			return Result
-				.Failure()
-				.WithStatusCode(statusCode.Value)
+			FailureResult result = validationException.ToResult();
+			return ResultWith
+				.Failure(statusCode.Value)
 				.WithTitle("one or more validation errors occurred.")
 				.WithDetail(statusCode.Value.Detail)
-				.WithErrors(result.Errors)
-				.Build();
+				.WithErrors(result.Errors);
 		}
 
-		return Result
-			.Failure()
-			.WithStatusCode(statusCode.Value)
+		return ResultWith
+			.Failure(statusCode.Value)
 			.WithTitle(isDevelopment ? reason ?? exception.Message : statusCode.Value.Title)
 			.WithDetail(statusCode.Value.Detail)
 			.WithException(exception)
-			.WithErrors(exception.GetElementEntries())
-			.Build();
-	}
-
-	/// <summary>
-	/// Creates a failure result representing the current exception, optionally specifying an HTTP status code and
-	/// reason.
-	/// </summary>
-	/// <remarks>If the exception is a ResultException, its embedded result is used to construct the
-	/// failure result. In development environments, additional exception details are included in the result for
-	/// debugging purposes.</remarks>
-	/// <typeparam name="TValue">The type of the value associated with the failure result.</typeparam>
-	/// <param name="exception">The exception to convert into a failure result. Cannot be null.</param>
-	/// <param name="statusCode">The HTTP status code to associate with the failure result. If null, a status code is inferred from the
-	/// exception.</param>
-	/// <param name="reason">An optional reason phrase to include in the failure result. If null, a default reason is used based on the
-	/// exception or status code.</param>
-	/// <returns>A failure result containing details about the exception, including status code, error information, and
-	/// optional reason.</returns>
-	public static FailureResult<TValue> ToResult<TValue>(
-		this Exception exception,
-		HttpStatusCode? statusCode = null,
-		string? reason = default)
-	{
-		ArgumentNullException.ThrowIfNull(exception);
-
-		return exception
-			.ToResult(statusCode, reason)
-			.ToFailureResult<TValue>();
+			.WithErrors(exception.GetElementEntries());
 	}
 }

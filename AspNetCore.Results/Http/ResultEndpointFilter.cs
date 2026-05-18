@@ -68,7 +68,7 @@ public sealed class ResultEndpointFilter : IEndpointFilter
 					.WriteAsync(context.HttpContext, result)
 					.ConfigureAwait(false);
 
-				if (result.IsFailure)
+				if (result is FailureResult)
 				{
 					ResultLog.LogResultFailure(
 						_logger,

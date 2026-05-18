@@ -167,7 +167,7 @@ public sealed class StringExtensionsTests
         FailureResult result = message.ToResult();
 
         // Assert
-        result.IsFailure.Should().BeTrue();
+        result.Should().BeOfType<FailureResult>();
         result.StatusCode.Should().Be(HttpStatusCode.Conflict);
         result.Title.Should().Be("Conflict");
         result.Detail.Should().Be("Please refer to the errors property for additional details");
@@ -189,7 +189,7 @@ public sealed class StringExtensionsTests
         FailureResult result = message.ToResult();
 
         // Assert
-        result.IsFailure.Should().BeTrue();
+        result.Should().BeOfType<FailureResult>();
         result.StatusCode.Should().Be(HttpStatusCode.BadRequest);
         result.Title.Should().Be(message);
         result.Detail.Should().Be(HttpStatusCode.BadRequest.Detail);

@@ -46,7 +46,7 @@ public sealed class PipelinePreHandlerDecorator<TRequest>(
 				.ConfigureAwait(false);
 
 			// If any pre-handler returns a failure response, we short-circuit and return that response.
-			if (result.IsFailure)
+			if (result is FailureResult)
 			{
 				return result;
 			}

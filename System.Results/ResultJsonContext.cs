@@ -1,4 +1,4 @@
-/*******************************************************************************
+﻿/*******************************************************************************
  * Copyright (C) 2025-2026 Kamersoft
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
@@ -29,11 +29,10 @@ namespace System.Results;
 /// or deserializing Result objects in AOT scenarios.
 /// </remarks>
 [JsonSourceGenerationOptions(
-    PropertyNamingPolicy = JsonKnownNamingPolicy.CamelCase,
-    DefaultIgnoreCondition = JsonIgnoreCondition.WhenWritingNull,
-    WriteIndented = false,
-    IgnoreReadOnlyProperties = false)]
-[JsonSerializable(typeof(Result))]
+	PropertyNamingPolicy = JsonKnownNamingPolicy.CamelCase,
+	DefaultIgnoreCondition = JsonIgnoreCondition.WhenWritingNull,
+	WriteIndented = false,
+	IgnoreReadOnlyProperties = false)]
 [JsonSerializable(typeof(Result<object>))]
 [JsonSerializable(typeof(SuccessResult))]
 [JsonSerializable(typeof(SuccessResult<object>))]
@@ -43,7 +42,7 @@ namespace System.Results;
 [JsonSerializable(typeof(ElementEntry))]
 [JsonSerializable(typeof(ElementEntry[]))]
 [UnconditionalSuppressMessage(
-    "Trimming",
-    "IL2026:Members annotated with 'RequiresUnreferencedCodeAttribute' require dynamic access otherwise can break functionality when trimming application code",
-    Justification = "Exception property is marked with JsonIgnore and is not serialized.")]
+	"Trimming",
+	"IL2026:Members annotated with 'RequiresUnreferencedCodeAttribute' require dynamic access otherwise can break functionality when trimming application code",
+	Justification = "Exception property is marked with JsonIgnore and is not serialized.")]
 public partial class ResultJsonContext : JsonSerializerContext;

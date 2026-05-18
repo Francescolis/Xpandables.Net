@@ -10,7 +10,6 @@
 	</PropertyGroup>
 
 	<ItemGroup>
-		<ProjectReference Include="..\System.AsyncPaged\System.AsyncPaged.csproj" />
 		<ProjectReference Include="..\System.Primitives\System.Primitives.csproj" />
 	</ItemGroup>
 

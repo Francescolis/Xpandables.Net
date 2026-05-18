@@ -49,7 +49,7 @@ public sealed class PipelinePublishDomainEventDecorator<TRequest>(
 
 		Result result = await nextHandler(cancellationToken).ConfigureAwait(false);
 
-        if (result.IsFailure)
+        if (result is FailureResult)
 		{
 			return result;
 		}

@@ -26,59 +26,7 @@ namespace System.Results;
 /// <remarks>These extension methods simplify the process of building  results that represent successful
 /// or failed HTTP operations. They are intended to be used in scenarios where standardized result handling is required,
 /// such as in web APIs or service layers.</remarks>
-public static class ResultExtensions
-{
-	/// <summary>
-	/// Creates a new ResultException that represents the current result.
-	/// </summary>
-	/// <returns>An ResultException initialized with the current result.</returns>
-	public static ResultException ToResultException(this Result result) => new(result);
-
-	/// <summary>
-	/// Creates a new <see cref="FailureResult"/> instance that represents the current failure state.
-	/// </summary>
-	/// <returns>A <see cref="FailureResult"/> containing the status code, title, detail, location, errors, headers,
-	/// extensions, and exception from the current result.</returns>
-	public static FailureResult ToFailureResult(this Result result)
-	{
-		ArgumentNullException.ThrowIfNull(result);
-		return new FailureResult
-		{
-			StatusCode = result.StatusCode,
-			Title = result.Title,
-			Detail = result.Detail,
-			Location = result.Location,
-			Errors = result.Errors,
-			Headers = result.Headers,
-			Extensions = result.Extensions,
-			Exception = result.Exception
-		};
-	}
-
-	/// <summary>
-	/// Creates a new failure result of the specified value type, copying error details from the current result.
-	/// </summary>
-	/// <typeparam name="TValue">The type of the value associated with the failure result.</typeparam>
-	/// <returns>A <see cref="FailureResult{TValue}"/> containing the status code, error details, and metadata from the
-	/// current result.</returns>
-	public static FailureResult<TValue> ToFailureResult<TValue>(this Result result)
-	{
-		ArgumentNullException.ThrowIfNull(result);
-		return new FailureResult<TValue>
-		{
-			StatusCode = result.StatusCode,
-			Title = result.Title,
-			Detail = result.Detail,
-			Location = result.Location,
-			Errors = result.Errors,
-			Headers = result.Headers,
-			Extensions = result.Extensions,
-			Exception = result.Exception
-		};
-	}
-}
-
-public partial record Result
+public static class ResultWith
 {
 	/// <summary>
 	/// Creates a successful <see cref="Result"/> instance representing an result that completed without
@@ -86,7 +34,7 @@ public partial record Result
 	/// </summary>
 	/// <remarks>You can further customize the result using the builder methods.</remarks>
 	/// <returns>An <see cref="Result"/> indicating a successful outcome with an HTTP status code of 200 (OK).</returns>
-	public static SuccessResultBuilder Success() => new(HttpStatusCode.OK);
+	public static SuccessResult Success() => new() { StatusCode = HttpStatusCode.OK };
 
 	/// <summary>
 	/// Creates a successful <see cref="Result{TValue}"/> with the specified value and an HTTP status code of OK (200).
@@ -96,14 +44,14 @@ public partial record Result
 	/// <param name="value">The value to include in the successful  result.</param>
 	/// <returns>An <see cref="Result{TValue}"/> representing a successful  containing the specified
 	/// value.</returns>
-	public static SuccessResultBuilder<TValue> Success<TValue>(TValue value) => new SuccessResultBuilder<TValue>(HttpStatusCode.OK).WithValue(value);
+	public static SuccessResult<TValue> Success<TValue>(TValue value) => new() { StatusCode = HttpStatusCode.OK, Value = value };
 
 	/// <summary>
 	/// Creates a result builder that represents a successful  with an HTTP 201 Created status code.
 	/// </summary>
 	/// <remarks>You can further customize the result using the builder methods.</remarks>
 	/// <returns>An <see cref="Result"/> configured with the HTTP 201 Created status code.</returns>
-	public static SuccessResultBuilder Created() => new(HttpStatusCode.Created);
+	public static SuccessResult Created() => new() { StatusCode = HttpStatusCode.Created };
 
 	/// <summary>
 	/// Creates a successful  result with an HTTP 201 Created status code.
@@ -112,7 +60,7 @@ public partial record Result
 	/// <typeparam name="TValue">The type of the result value to include in the result.</typeparam>
 	/// <returns>An <see cref="Result{TValue}"/> representing a successful result with a 201 Created
 	/// status code.</returns>
-	public static SuccessResultBuilder<TValue> Created<TValue>() => new(HttpStatusCode.Created);
+	public static SuccessResult<TValue> Created<TValue>(TValue value) => new() { StatusCode = HttpStatusCode.Created, Value = value };
 
 	/// <summary>
 	/// Creates a result builder that represents a successful  with no content to return.
@@ -120,7 +68,7 @@ public partial record Result
 	/// <remarks>You can further customize the result using the builder methods.</remarks>
 	/// <returns>An <see cref="Result"/> configured with an HTTP 204 No Content status, indicating
 	/// that the request was successful but there is no content in the response.</returns>
-	public static SuccessResultBuilder NoContent() => new(HttpStatusCode.NoContent);
+	public static SuccessResult NoContent() => new() { StatusCode = HttpStatusCode.NoContent };
 
 	/// <summary>
 	/// Creates a successful  result with an HTTP 204 No Content status, indicating that the 
@@ -129,14 +77,14 @@ public partial record Result
 	/// <remarks>You can further customize the result using the builder methods.</remarks>
 	/// <typeparam name="TValue">The type of the result associated with the . No content will be returned for this type.</typeparam>
 	/// <returns>An <see cref="Result{TValue}"/> representing a successful result with no content.</returns>
-	public static SuccessResultBuilder<TValue> NoContent<TValue>() => new(HttpStatusCode.NoContent);
+	public static SuccessResult<TValue> NoContent<TValue>() => new() { StatusCode = HttpStatusCode.NoContent, Value = default };
 
 	/// <summary>
 	/// Creates a result that represents a successful  with an HTTP 202 Accepted status.
 	/// </summary>
 	/// <remarks>You can further customize the result using the builder methods.</remarks>
 	/// <returns>An <see cref="Result"/> indicating that the request has been accepted for processing.</returns>
-	public static SuccessResultBuilder Accepted() => new(HttpStatusCode.Accepted);
+	public static SuccessResult Accepted() => new() { StatusCode = HttpStatusCode.Accepted };
 
 	/// <summary>
 	/// Creates an  result that represents an HTTP 202 Accepted response with no content.
@@ -145,14 +93,14 @@ public partial record Result
 	/// <typeparam name="TValue">The type of the result value associated with the  result.</typeparam>
 	/// <returns>An <see cref="Result{TValue}"/> indicating that the request was accepted for processing, but no
 	/// result content is provided.</returns>
-	public static SuccessResultBuilder<TValue> Accepted<TValue>() => new(HttpStatusCode.Accepted);
+	public static SuccessResult<TValue> Accepted<TValue>() => new() { StatusCode = HttpStatusCode.Accepted, Value = default };
 
 	/// <summary>
 	/// Creates a new builder for a failed result with a default HTTP 400 Bad Request status code.
 	/// </summary>
 	/// <remarks>You can further customize the result using the builder methods.</remarks>
 	/// <returns>A <see cref="Result"/> initialized with an HTTP 400 Bad Request status code.</returns>
-	public static FailureResultBuilder Failure() => new(HttpStatusCode.BadRequest);
+	public static FailureResult Failure(HttpStatusCode statusCode = HttpStatusCode.BadRequest) => new() { StatusCode = statusCode };
 
 	/// <summary>
 	/// Creates a builder for a failed result with a default HTTP 400 Bad Request status code.
@@ -161,54 +109,7 @@ public partial record Result
 	/// <typeparam name="TValue">The type of the result value associated with the failure.</typeparam>
 	/// <returns>A <see cref="Result{TValue}"/> initialized with a Bad Request status code, allowing further
 	/// configuration of the failure result.</returns>
-	public static FailureResultBuilder<TValue> Failure<TValue>() => new(HttpStatusCode.BadRequest);
-
-	/// <summary>
-	/// Creates an result representing a failed result with a specified error key and message and <see cref="HttpStatusCode.BadRequest"/>.
-	/// </summary>
-	/// <remarks>You can further customize the result using the builder methods.</remarks>
-	/// <param name="key">The key that identifies the type or category of the error. Cannot be null.</param>
-	/// <param name="message">The error message describing the reason for the failure. Cannot be null.</param>
-	/// <returns>An <see cref="Result"/> instance indicating failure, containing the provided error key and message.</returns>
-	public static FailureResultBuilder Failure(string key, string message) => new FailureResultBuilder(HttpStatusCode.BadRequest).WithError(key, message);
-
-	/// <summary>
-	/// Creates a result representing a failed result with an exception and <see cref="HttpStatusCode.BadRequest"/>.
-	/// </summary>
-	/// <remarks>You can further customize the result using the builder methods.</remarks>
-	/// <param name="exception">The exception that describes the reason for the failure. Cannot be <see langword="null"/>.</param>
-	/// <returns>An <see cref="Result"/> instance that encapsulates the failure information and exception details.</returns>
-	public static FailureResultBuilder Failure(Exception exception)
-	{
-		ArgumentNullException.ThrowIfNull(exception);
-		return new FailureResultBuilder(HttpStatusCode.BadRequest).WithException(exception);
-	}
-
-	/// <summary>
-	/// Creates a failed result with the specified exception and a default HTTP status code of BadRequest.
-	/// </summary>
-	/// <remarks>You can further customize the result using the builder methods.</remarks>
-	/// <typeparam name="TValue">The type of the result value associated with the failed result.</typeparam>
-	/// <param name="exception">The exception that describes the failure. Cannot be null.</param>
-	/// <returns>An OperationResult representing a failed result containing the provided exception.</returns>
-	public static FailureResultBuilder<TValue> Failure<TValue>(Exception exception)
-	{
-		ArgumentNullException.ThrowIfNull(exception);
-		return new FailureResultBuilder<TValue>(HttpStatusCode.BadRequest).WithException(exception);
-	}
-
-	/// <summary>
-	/// Creates a new builder for a failure result representing a bad HTTP request (HTTP 400).
-	/// </summary>
-	/// <returns>A <see cref="FailureResultBuilder"/> initialized with <see cref="HttpStatusCode.BadRequest"/>.</returns>
-	public static FailureResultBuilder BadRequest() => new(HttpStatusCode.BadRequest);
-
-	/// <summary>
-	/// Creates a builder for a failure result representing a bad request (HTTP 400).
-	/// </summary>
-	/// <typeparam name="TValue">The type of the value associated with the failure result.</typeparam>
-	/// <returns>A <see cref="FailureResultBuilder{TValue}"/> initialized with the bad request status code.</returns>
-	public static FailureResultBuilder<TValue> BadRequest<TValue>() => new(HttpStatusCode.BadRequest);
+	public static FailureResult<TValue> Failure<TValue>(HttpStatusCode statusCode = HttpStatusCode.BadRequest) => new() { StatusCode = statusCode };
 
 	/// <summary>
 	/// Creates a result representing a not found error with the specified key and message.
@@ -217,13 +118,12 @@ public partial record Result
 	/// <param name="key">The error key that identifies the specific not found condition. Cannot be <see langword="null"/>.</param>
 	/// <param name="message">The error message describing the not found condition. Cannot be <see langword="null"/>.</param>
 	/// <returns>An <see cref="Result"/> instance containing the not found error information.</returns>
-	public static FailureResultBuilder NotFound(string key, string message)
+	public static FailureResult NotFound(string key, string message)
 	{
 		ArgumentNullException.ThrowIfNull(key);
 		ArgumentNullException.ThrowIfNull(message);
 
-		return new FailureResultBuilder(HttpStatusCode.NotFound)
-			.WithError(key, message);
+		return Failure(HttpStatusCode.NotFound).WithError(key, message);
 	}
 
 	/// <summary>
@@ -236,13 +136,12 @@ public partial record Result
 	/// <param name="message">The error message that describes the not found condition. Cannot be null.</param>
 	/// <returns>An <see cref="Result{TValue}"/> representing a not found result, containing the specified error
 	/// key and message.</returns>
-	public static FailureResultBuilder<TValue> NotFound<TValue>(string key, string message)
+	public static FailureResult<TValue> NotFound<TValue>(string key, string message)
 	{
 		ArgumentNullException.ThrowIfNull(key);
 		ArgumentNullException.ThrowIfNull(message);
 
-		return new FailureResultBuilder<TValue>(HttpStatusCode.NotFound)
-			.WithError(key, message);
+		return Failure<TValue>(HttpStatusCode.NotFound).WithError(key, message);
 	}
 
 	/// <summary>
@@ -252,13 +151,12 @@ public partial record Result
 	/// <param name="key">The error key that identifies the source or type of the conflict. Cannot be null.</param>
 	/// <param name="message">The error message that describes the conflict. Cannot be null.</param>
 	/// <returns>A Result instance containing the conflict error with the provided key and message.</returns>
-	public static FailureResultBuilder Conflict(string key, string message)
+	public static FailureResult Conflict(string key, string message)
 	{
 		ArgumentNullException.ThrowIfNull(key);
 		ArgumentNullException.ThrowIfNull(message);
 
-		return new FailureResultBuilder(HttpStatusCode.Conflict)
-			.WithError(key, message);
+		return Failure(HttpStatusCode.Conflict).WithError(key, message);
 	}
 
 	/// <summary>
@@ -270,13 +168,12 @@ public partial record Result
 	/// <param name="message">A descriptive message explaining the nature of the conflict. Cannot be null.</param>
 	/// <returns>A <see cref="Result{TValue}"/> representing a conflict error containing the specified key and
 	/// message.</returns>
-	public static FailureResultBuilder<TValue> Conflict<TValue>(string key, string message)
+	public static FailureResult<TValue> Conflict<TValue>(string key, string message)
 	{
 		ArgumentNullException.ThrowIfNull(key);
 		ArgumentNullException.ThrowIfNull(message);
 
-		return new FailureResultBuilder<TValue>(HttpStatusCode.Conflict)
-			.WithError(key, message);
+		return Failure<TValue>(HttpStatusCode.Conflict).WithError(key, message);
 	}
 
 	/// <summary>
@@ -287,12 +184,11 @@ public partial record Result
 	/// <param name="exception">The exception that caused the internal server error. Cannot be null.</param>
 	/// <returns>A <see cref="Result"/> instance representing an internal server error, containing details from the
 	/// provided exception.</returns>
-	public static FailureResultBuilder InternalServerError(Exception exception)
+	public static FailureResult InternalServerError(Exception exception)
 	{
 		ArgumentNullException.ThrowIfNull(exception);
 
-		return new FailureResultBuilder(HttpStatusCode.InternalServerError)
-			.WithException(exception);
+		return Failure(HttpStatusCode.InternalServerError).WithException(exception);
 	}
 
 	/// <summary>
@@ -300,20 +196,14 @@ public partial record Result
 	/// associated exception.
 	/// </summary>
 	/// <remarks>You can further customize the result using the builder methods.</remarks>
-	/// <param name="key">The unique key identifying the error. Cannot be null.</param>
-	/// <param name="message">The error message describing the internal server error. Cannot be null.</param>
 	/// <param name="exception">The exception that caused the internal server error. Cannot be null.</param>
 	/// <returns>An OperationResult instance containing details about the internal server error, including the error key,
 	/// message, and exception.</returns>
-	public static FailureResultBuilder InternalServerError(string key, string message, Exception exception)
+	public static FailureResult<TValue> InternalServerError<TValue>(Exception exception)
 	{
-		ArgumentNullException.ThrowIfNull(key);
-		ArgumentNullException.ThrowIfNull(message);
 		ArgumentNullException.ThrowIfNull(exception);
 
-		return new FailureResultBuilder(HttpStatusCode.InternalServerError)
-			.WithError(key, message)
-			.WithException(exception);
+		return Failure<TValue>(HttpStatusCode.InternalServerError).WithException(exception);
 	}
 
 	/// <summary>
@@ -321,7 +211,7 @@ public partial record Result
 	/// </summary>
 	/// <remarks>You can further customize the result using the builder methods.</remarks>
 	/// <returns>A <see cref="Result"/> representing an unauthorized failure result.</returns>
-	public static FailureResultBuilder Unauthorized() => new(HttpStatusCode.Unauthorized);
+	public static FailureResult Unauthorized() => new() { StatusCode = HttpStatusCode.Unauthorized };
 
 	/// <summary>
 	/// Creates a failure result indicating that the  was unauthorized.
@@ -329,7 +219,7 @@ public partial record Result
 	/// <remarks>You can further customize the result using the builder methods.</remarks>
 	/// <typeparam name="TValue">The type of the result value associated with the failure.</typeparam>
 	/// <returns>A <see cref="Result{TValue}"/> representing an unauthorized failure result.</returns>
-	public static FailureResultBuilder<TValue> Unauthorized<TValue>() => new(HttpStatusCode.Unauthorized);
+	public static FailureResult<TValue> Unauthorized<TValue>() => new() { StatusCode = HttpStatusCode.Unauthorized };
 
 	/// <summary>
 	/// Creates a failure result indicating that the  is forbidden.
@@ -337,7 +227,7 @@ public partial record Result
 	/// <remarks>You can further customize the result using the builder methods.</remarks>
 	/// <returns>A <see cref="Result"/> representing a failure with HTTP status code 403
 	/// (Forbidden).</returns>
-	public static FailureResultBuilder Forbidden() => new(HttpStatusCode.Forbidden);
+	public static FailureResult Forbidden() => new() { StatusCode = HttpStatusCode.Forbidden };
 
 	/// <summary>
 	/// Creates a failure result indicating that the  is forbidden (HTTP 403).
@@ -345,7 +235,7 @@ public partial record Result
 	/// <remarks>You can further customize the result using the builder methods.</remarks>
 	/// <typeparam name="TValue">The type of the result value associated with the failure.</typeparam>
 	/// <returns>A <see cref="Result{TValue}"/> representing a forbidden failure.</returns>
-	public static FailureResultBuilder<TValue> Forbidden<TValue>() => new(HttpStatusCode.Forbidden);
+	public static FailureResult<TValue> Forbidden<TValue>() => new() { StatusCode = HttpStatusCode.Forbidden };
 
 	/// <summary>
 	/// Creates a failure result indicating that the request could not be processed due to semantic errors,
@@ -353,7 +243,7 @@ public partial record Result
 	/// </summary>
 	/// <remarks>You can further customize the result using the builder methods.</remarks>
 	/// <returns>A <see cref="Result"/> representing an unprocessable entity failure response.</returns>
-	public static FailureResultBuilder UnprocessableEntity() => new((HttpStatusCode)422);
+	public static FailureResult UnprocessableEntity() => new() { StatusCode = (HttpStatusCode)422 };
 
 	/// <summary>
 	/// Creates a failure result indicating that the request could not be processed due to semantic errors, using
@@ -363,7 +253,7 @@ public partial record Result
 	/// <typeparam name="TValue">The type of the result value associated with the failure.</typeparam>
 	/// <returns>A <see cref="Result{TValue}"/> representing a failure with status code 422
 	/// (Unprocessable Entity).</returns>
-	public static FailureResultBuilder<TValue> UnprocessableEntity<TValue>() => new((HttpStatusCode)422);
+	public static FailureResult<TValue> UnprocessableEntity<TValue>() => new() { StatusCode = (HttpStatusCode)422 };
 
 	/// <summary>
 	/// Creates a failure result indicating that the service is unavailable.
@@ -371,7 +261,7 @@ public partial record Result
 	/// <remarks>You can further customize the result using the builder methods.</remarks>
 	/// <returns>A <see cref="Result"/> representing a service unavailable error, typically
 	/// corresponding to HTTP status code 503.</returns>
-	public static FailureResultBuilder ServiceUnavailable() => new(HttpStatusCode.ServiceUnavailable);
+	public static FailureResult ServiceUnavailable() => new() { StatusCode = HttpStatusCode.ServiceUnavailable };
 
 	/// <summary>
 	/// Creates a failure result indicating that the service is unavailable.
@@ -382,5 +272,11 @@ public partial record Result
 	/// <typeparam name="TValue">The type of the result value associated with the failure.</typeparam>
 	/// <returns>A <see cref="Result{TValue}"/> representing a failure due to service
 	/// unavailability.</returns>
-	public static FailureResultBuilder<TValue> ServiceUnavailable<TValue>() => new(HttpStatusCode.ServiceUnavailable);
+	public static FailureResult<TValue> ServiceUnavailable<TValue>() => new() { StatusCode = HttpStatusCode.ServiceUnavailable };
+
+	/// <summary>
+	/// Creates a new ResultException that represents the current result.
+	/// </summary>
+	/// <returns>An ResultException initialized with the current result.</returns>
+	public static ResultException ToResultException(this FailureResult result) => new(result);
 }

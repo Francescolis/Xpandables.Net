@@ -53,7 +53,7 @@ public sealed class PipelineRequireEntityUnitOfWorkDecorator<TRequest>(IEntityUn
 			{
 				Result response = await nextHandler(cancellationToken).ConfigureAwait(false);
 
-				if (response.IsSuccess)
+				if (response is SuccessResult)
 				{
 					await transaction
 						.CommitTransactionAsync(cancellationToken)

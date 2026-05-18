@@ -1,4 +1,4 @@
-/*******************************************************************************
+﻿/*******************************************************************************
  * Copyright (C) 2025-2026 Kamersoft
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
@@ -275,6 +275,21 @@ public static class HttpStatusCodeExtensions
 		}
 
 		/// <summary>
+		/// Returns the HTTP status code if it represents a successful response.
+		/// </summary>
+		/// <returns>The HTTP status code that indicates a successful response.</returns>
+		/// <exception cref="InvalidOperationException">Thrown if the current HTTP status code indicates a failure.</exception>
+		public HttpStatusCode Success()
+		{
+			if (statusCode.IsFailure)
+			{
+				throw new InvalidOperationException($"The HTTP status code '{statusCode}' indicates a failure.");
+			}
+
+			return statusCode;
+		}
+
+		/// <summary>
 		/// Throws an exception if the HTTP status code represents a successful response.
 		/// </summary>
 		/// <exception cref="InvalidOperationException">Thrown if the HTTP status code indicates success.</exception>
@@ -284,6 +299,21 @@ public static class HttpStatusCodeExtensions
 			{
 				throw new InvalidOperationException($"The HTTP status code '{statusCode}' indicates a success.");
 			}
+		}
+
+		/// <summary>
+		/// Returns the HTTP status code if it represents a failure.
+		/// </summary>
+		/// <returns>The HTTP status code that indicates a failure.</returns>
+		/// <exception cref="InvalidOperationException">Thrown if the HTTP status code represents a successful response.</exception>
+		public HttpStatusCode Failure()
+		{
+			if (statusCode.IsSuccess)
+			{
+				throw new InvalidOperationException($"The HTTP status code '{statusCode}' indicates a success.");
+			}
+
+			return statusCode;
 		}
 
 		/// <summary>

@@ -48,7 +48,7 @@ public sealed class PipelinePostHandlerDecorator<TRequest>(
                 .ConfigureAwait(false);
 
             // If any post-handler returns a failure response, we short-circuit and return that response.
-            if (response.IsFailure)
+            if (response is FailureResult)
             {
                 return response;
             }

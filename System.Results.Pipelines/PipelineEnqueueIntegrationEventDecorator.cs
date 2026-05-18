@@ -50,7 +50,7 @@ public sealed class PipelineEnqueueIntegrationEventDecorator<TRequest>(
 
 		Result result = await nextHandler(cancellationToken).ConfigureAwait(false);
 
-		if (result.IsSuccess)
+		if (result is SuccessResult)
 		{
 			foreach (IIntegrationEvent @event in _pending.Drain())
 			{
