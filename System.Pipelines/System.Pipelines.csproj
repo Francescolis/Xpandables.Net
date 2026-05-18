@@ -1,0 +1,16 @@
+﻿<Project Sdk="Microsoft.NET.Sdk">
+
+  <PropertyGroup>
+    <Title>Xpandables.Pipelines</Title>
+    <Description>Pipeline definition.</Description>
+    <AssemblyName>Xpandables.Pipelines</AssemblyName>
+    <RootNamespace>System.Pipelines</RootNamespace>
+    <PackageId>Xpandables.Pipelines</PackageId>
+    <PackageTags>IPipelineDecorator</PackageTags>
+  </PropertyGroup>
+
+  <ItemGroup>
+    <ProjectReference Include="..\System.Requests\System.Requests.csproj" />
+  </ItemGroup>
+
+</Project>

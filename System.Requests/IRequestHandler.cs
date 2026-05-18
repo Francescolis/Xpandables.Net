@@ -1,4 +1,4 @@
-/*******************************************************************************
+﻿/*******************************************************************************
  * Copyright (C) 2025-2026 Kamersoft
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
@@ -16,7 +16,7 @@
 ********************************************************************************/
 using System.ComponentModel;
 
-namespace System.Results.Requests;
+namespace System.Requests;
 
 /// <summary>
 /// Represents a handler to process a request of type <typeparamref name="TRequest" />.

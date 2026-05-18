@@ -1,4 +1,4 @@
-/*******************************************************************************
+﻿/*******************************************************************************
  * Copyright (C) 2025-2026 Kamersoft
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
@@ -15,22 +15,22 @@
  *
 ********************************************************************************/
 
-using System.Results.Requests;
+using System.Requests;
 
-namespace System.Results.Pipelines;
+namespace System.Pipelines;
 
 /// <summary>
 /// Defines the contract for a pipeline request handler that processes a request
 /// of a specified type and returns an execution result.
 /// </summary>
 public interface IPipelineRequestHandler<in TRequest>
-    where TRequest : class, IRequest
+	where TRequest : class, IRequest
 {
-    /// <summary>
-    /// Processes the given request asynchronously and returns an execution result.
-    /// </summary>
-    /// <param name="request">The request instance containing required information for processing.</param>
-    /// <param name="cancellationToken">A token that enables the operation to be cancelled, if requested.</param>
-    /// <returns>A task representing the asynchronous execution, providing an <see cref="Result"/> upon completion.</returns>
-    Task<Result> HandleAsync(TRequest request, CancellationToken cancellationToken = default);
+	/// <summary>
+	/// Processes the given request asynchronously and returns an execution result.
+	/// </summary>
+	/// <param name="request">The request instance containing required information for processing.</param>
+	/// <param name="cancellationToken">A token that enables the operation to be cancelled, if requested.</param>
+	/// <returns>A task representing the asynchronous execution, providing an <see cref="Result"/> upon completion.</returns>
+	Task<Result> HandleAsync(TRequest request, CancellationToken cancellationToken = default);
 }

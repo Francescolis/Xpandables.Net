@@ -1,4 +1,4 @@
-/*******************************************************************************
+﻿/*******************************************************************************
  * Copyright (C) 2025-2026 Kamersoft
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
@@ -14,15 +14,15 @@
  * limitations under the License.
  *
 ********************************************************************************/
+
 using System.Diagnostics.CodeAnalysis;
 
-namespace System.Results.Requests;
+namespace System.Requests;
 
 /// <summary>
 /// Represents a marker interface for requests that can be dispatched through the mediator pipeline.
 /// </summary>
-/// <remarks>Implement this interface on request types to make them compatible with the pipeline
-/// and mediator infrastructure.</remarks>
+/// <remarks>Implement this interface on request types to make them compatible with the pipeline infrastructure.</remarks>
 [SuppressMessage("Design", "CA1040:Avoid empty interfaces", Justification = "Marker interface by design for pipeline dispatch.")]
 public interface IRequest;
 
@@ -40,7 +40,8 @@ public interface IRequest<out TResult> : IRequest;
 /// observable data streams. Implementations may deliver results incrementally rather than all at once.</remarks>
 /// <typeparam name="TResult">The type of the elements returned by the stream produced by the request.</typeparam>
 [SuppressMessage("Design", "CA1040:Avoid empty interfaces", Justification = "Marker interface by design.")]
-public interface IStreamRequest<out TResult> : IRequest;
+[SuppressMessage("Naming", "CA1711:Identifiers should not have incorrect suffix", Justification = "<Pending>")]
+public interface IRequestStream<out TResult> : IRequest;
 
 /// <summary>
 /// Represents a request for retrieving paged results as a stream, where each page yields a result of the specified
@@ -51,4 +52,4 @@ public interface IStreamRequest<out TResult> : IRequest;
 /// capabilities depending on the underlying data source.</remarks>
 /// <typeparam name="TResult">The type of the result returned for each page in the stream.</typeparam>
 [SuppressMessage("Design", "CA1040:Avoid empty interfaces", Justification = "Marker interface by design.")]
-public interface IStreamPagedRequest<out TResult> : IRequest;
+public interface IRequestStreamPaged<out TResult> : IRequest;

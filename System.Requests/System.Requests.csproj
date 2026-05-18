@@ -1,0 +1,16 @@
+﻿<Project Sdk="Microsoft.NET.Sdk">
+
+  <PropertyGroup>
+    <Title>Xpandables.Requests</Title>
+    <Description>Requests definition.</Description>
+    <AssemblyName>Xpandables.Requests</AssemblyName>
+    <RootNamespace>System.Requests</RootNamespace>
+    <PackageId>Xpandables.Requests</PackageId>
+    <PackageTags>IRequest, IRequestHandler</PackageTags>
+  </PropertyGroup>
+
+  <ItemGroup>
+    <ProjectReference Include="..\System.Primitives\System.Primitives.csproj" />
+  </ItemGroup>
+
+</Project>

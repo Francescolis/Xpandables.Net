@@ -16,8 +16,7 @@
 ********************************************************************************/
 using System.Diagnostics.CodeAnalysis;
 using System.Reflection;
-using System.Results.Pipelines;
-using System.Results.Requests;
+using System.Requests.AsyncPaged;
 
 #pragma warning disable IDE0130 // Namespace does not match folder structure
 namespace Microsoft.Extensions.DependencyInjection;
@@ -31,54 +30,18 @@ namespace Microsoft.Extensions.DependencyInjection;
 /// cref="IServiceCollection"/> to simplify service registration and setup in dependency injection scenarios. All
 /// methods are intended to be used as extension methods and should be called on an existing <see
 /// cref="IServiceCollection"/> object.</remarks>
-public static class IResultExtensions
+public static class IRequestStreamExtensions
 {
 	internal readonly record struct HandlerType(Type Type, IEnumerable<Type> Interfaces);
 
-	private static readonly HashSet<Type> HandlerInterfaceDefinitions =
+	private static readonly HashSet<Type> s_handlerInterfaceDefinitions =
 	[
-		typeof(IRequestHandler<>),
-		typeof(IRequestHandler<,>),
-		typeof(IRequestContextHandler<>),
-		typeof(IRequestContextHandler<,>),
-		typeof(IRequestPostHandler<>),
-		typeof(IStreamRequestHandler<,>),
-		typeof(IStreamPagedRequestHandler<,>),
-		typeof(IStreamRequestContextHandler<,>),
-		typeof(IStreamPagedRequestContextHandler<,>),
-		typeof(IRequestPreHandler<>)
+		typeof(IRequestStreamPagedHandler<,>),
+		typeof(IRequestStreamPagedContextHandler<,>)
 	];
 
 	private static bool IsHandlerInterface(Type i) =>
-		i.IsGenericType && HandlerInterfaceDefinitions.Contains(i.GetGenericTypeDefinition());
-
-	/// <summary>
-	/// Registers the specified pipeline decorator type as a transient implementation of the <see cref="IPipelineDecorator{TRequest}"/>
-	/// interface in the service collection.
-	/// </summary>
-	/// <param name="services">The IServiceCollection instance to which the cache type resolver will be added.</param>
-	/// <remarks>Use this method to add custom pipeline decorators to the dependency injection
-	/// container. The decorator type must implement the <see cref="IPipelineDecorator{TRequest}"/> interface to be registered
-	/// successfully.</remarks>
-	/// <param name="pipeline">The type of the pipeline decorator to register. Must implement the <see cref="IPipelineDecorator{TRequest}"/> interface and have
-	/// public constructors.</param>
-	/// <returns>The updated IServiceCollection instance with the pipeline decorator registered.</returns>
-	/// <exception cref="InvalidOperationException">Thrown if pipeline does not implement the <see cref="IPipelineDecorator{TRequest}"/> interface.</exception>
-	public static IServiceCollection AddXPipelineDecorator(this IServiceCollection services, [DynamicallyAccessedMembers(DynamicallyAccessedMemberTypes.Interfaces | DynamicallyAccessedMemberTypes.PublicConstructors)] Type pipeline)
-	{
-		ArgumentNullException.ThrowIfNull(pipeline);
-		ArgumentNullException.ThrowIfNull(services);
-
-		if (!pipeline.GetInterfaces().Any(i =>
-				i.IsGenericType
-				&& i.GetGenericTypeDefinition() == typeof(IPipelineDecorator<>)))
-		{
-			throw new InvalidOperationException(
-				$"{pipeline.Name} does not implement IPipelineDecorator<> interface.");
-		}
-
-		return services.AddScoped(typeof(IPipelineDecorator<>), pipeline);
-	}
+		i.IsGenericType && s_handlerInterfaceDefinitions.Contains(i.GetGenericTypeDefinition());
 
 	/// <summary>
 	/// Registers all sealed request handler types from the specified assemblies with the dependency injection container as
@@ -86,9 +49,9 @@ public static class IResultExtensions
 	/// </summary>
 	/// <param name="services">The IServiceCollection instance to which the cache type resolver will be added.</param>
 	/// <remarks>Handler types are identified by their implementation of supported handler interfaces,
-	/// such as <see cref="IRequestHandler{TRequest}"/>, <see cref="IRequestContextHandler{TRequest}"/>, and related
-	/// interfaces. Only sealed, non-abstract classes are registered. Open generic implementations
-	/// (e.g., <c>MyHandler&lt;TRequest&gt; : IRequestHandler&lt;TRequest&gt;</c>) are registered as open generic
+	/// <see cref="IRequestStreamPagedHandler{TRequest, TResponse}"/>, <see cref="IRequestStreamPagedContextHandler{TRequest, TResponse}"/>
+	/// and related interfaces. Only sealed, non-abstract classes are registered. Open generic implementations
+	/// (e.g., <c>MyHandler&lt;TRequest,TResponse&gt; : IRequestStreamPagedHandler&lt;TRequest,TResponse&gt;</c>) are registered as open generic
 	/// services, allowing the DI container to resolve them for any concrete request type.
 	/// Each handler interface is registered as a scoped service. This method requires dynamic code generation
 	/// and may require unreferenced code; see the method attributes for details.</remarks>
@@ -97,7 +60,7 @@ public static class IResultExtensions
 	/// <returns>The <see cref="IServiceCollection"/> instance with handler services registered.</returns>
 	[RequiresDynamicCode("Dynamic code generation is required for this method.")]
 	[RequiresUnreferencedCode("Calls MakeGenericMethod which may require unreferenced code.")]
-	public static IServiceCollection AddXRequestHandlers(this IServiceCollection services, params IEnumerable<Assembly> assemblies)
+	public static IServiceCollection AddXRequestStreamPagedHandlers(this IServiceCollection services, params IEnumerable<Assembly> assemblies)
 	{
 		ArgumentNullException.ThrowIfNull(services);
 

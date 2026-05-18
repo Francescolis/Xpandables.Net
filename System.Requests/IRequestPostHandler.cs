@@ -1,4 +1,4 @@
-/*******************************************************************************
+﻿/*******************************************************************************
  * Copyright (C) 2025-2026 Kamersoft
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
@@ -14,7 +14,7 @@
  * limitations under the License.
  *
 ********************************************************************************/
-namespace System.Results.Requests;
+namespace System.Requests;
 
 /// <summary>
 /// Defines a handler for processing requests after they have been executed.

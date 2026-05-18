@@ -1,4 +1,4 @@
-/*******************************************************************************
+﻿/*******************************************************************************
  * Copyright (C) 2025-2026 Kamersoft
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
@@ -15,9 +15,9 @@
  *
 ********************************************************************************/
 
-using System.Results.Requests;
+using System.Requests;
 
-namespace System.Results.Pipelines;
+namespace System.Pipelines;
 
 /// <summary>
 /// Defines a contract for decorating a pipeline handler, allowing pre- or post-processing
@@ -25,17 +25,17 @@ namespace System.Results.Pipelines;
 /// </summary>
 /// <typeparam name="TRequest">The type of the request being handled by the pipeline, which must be a class.</typeparam>
 public interface IPipelineDecorator<TRequest>
-    where TRequest : class, IRequest
+	where TRequest : class, IRequest
 {
-    /// <summary>
-    /// Handles the pipeline request and invokes the next handler in the pipeline.
-    /// </summary>
-    /// <param name="context">The request context to process with.</param>
-    /// <param name="nextHandler">The next handler in the pipeline to be executed.</param>
-    /// <param name="cancellationToken">A token to observe for cancellation requests.</param>
-    /// <returns>A task that represents the asynchronous operation. The task result contains the response.</returns>
-    Task<Result> HandleAsync(
-        RequestContext<TRequest> context,
-        RequestHandler nextHandler,
-        CancellationToken cancellationToken);
+	/// <summary>
+	/// Handles the pipeline request and invokes the next handler in the pipeline.
+	/// </summary>
+	/// <param name="context">The request context to process with.</param>
+	/// <param name="nextHandler">The next handler in the pipeline to be executed.</param>
+	/// <param name="cancellationToken">A token to observe for cancellation requests.</param>
+	/// <returns>A task that represents the asynchronous operation. The task result contains the response.</returns>
+	Task<Result> HandleAsync(
+		RequestContext<TRequest> context,
+		RequestHandler nextHandler,
+		CancellationToken cancellationToken);
 }

@@ -1,4 +1,4 @@
-/*******************************************************************************
+﻿/*******************************************************************************
  * Copyright (C) 2025-2026 Kamersoft
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
@@ -16,7 +16,7 @@
 ********************************************************************************/
 using System.ComponentModel;
 
-namespace System.Results.Requests;
+namespace System.Requests;
 
 /// <summary>
 /// Defines a handler for processing stream requests asynchronously, producing a stream of responses.
@@ -26,21 +26,21 @@ namespace System.Results.Requests;
 /// necessary cleanup is performed.</remarks>
 /// <typeparam name="TRequest">The type of the request message.</typeparam>
 /// <typeparam name="TResponse">The type of the response message.</typeparam>
-public interface IStreamRequestHandler<in TRequest, TResponse> : IRequestHandler<TRequest>
-    where TRequest : class, IStreamRequest<TResponse>
+public interface IRequestStreamHandler<in TRequest, TResponse> : IRequestHandler<TRequest>
+	where TRequest : class, IRequestStream<TResponse>
 {
-    /// <summary>
-    /// Asynchronously handles the specified request and returns a stream of responses.
-    /// </summary>
-    /// <param name="request">The request to be processed.</param>
-    /// <param name="cancellationToken">A token to monitor for cancellation requests.</param>
-    /// <returns>A task that represents the asynchronous operation, containing a stream of responses.</returns>
-    new Task<Result<IAsyncEnumerable<TResponse>>> HandleAsync(
-        TRequest request,
-        CancellationToken cancellationToken = default);
+	/// <summary>
+	/// Asynchronously handles the specified request and returns a stream of responses.
+	/// </summary>
+	/// <param name="request">The request to be processed.</param>
+	/// <param name="cancellationToken">A token to monitor for cancellation requests.</param>
+	/// <returns>A task that represents the asynchronous operation, containing a stream of responses.</returns>
+	new Task<Result<IAsyncEnumerable<TResponse>>> HandleAsync(
+		TRequest request,
+		CancellationToken cancellationToken = default);
 
-    [EditorBrowsable(EditorBrowsableState.Never)]
-    async Task<Result> IRequestHandler<TRequest>.HandleAsync(
-        TRequest request, CancellationToken cancellationToken) =>
-        await HandleAsync(request, cancellationToken).ConfigureAwait(false);
+	[EditorBrowsable(EditorBrowsableState.Never)]
+	async Task<Result> IRequestHandler<TRequest>.HandleAsync(
+		TRequest request, CancellationToken cancellationToken) =>
+		await HandleAsync(request, cancellationToken).ConfigureAwait(false);
 }

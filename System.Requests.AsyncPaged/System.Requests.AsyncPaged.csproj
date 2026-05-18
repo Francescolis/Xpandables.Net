@@ -1,0 +1,17 @@
+﻿<Project Sdk="Microsoft.NET.Sdk">
+
+  <PropertyGroup>
+    <Title>Xpandables.Requests.AsyncPaged</Title>
+    <Description>Paged Requests definition.</Description>
+    <AssemblyName>Xpandables.Requests.AsyncPaged</AssemblyName>
+    <RootNamespace>System.Requests.AsyncPaged</RootNamespace>
+    <PackageId>Xpandables.Requests.AsyncPaged</PackageId>
+    <PackageTags>IStreamPagedRequest, IStreamPagedRequestHandler</PackageTags>
+  </PropertyGroup>
+
+  <ItemGroup>
+    <ProjectReference Include="..\System.AsyncPaged\System.AsyncPaged.csproj" />
+    <ProjectReference Include="..\System.Requests\System.Requests.csproj" />
+  </ItemGroup>
+
+</Project>

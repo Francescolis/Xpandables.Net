@@ -85,7 +85,16 @@
   <Project Path="System.Optionals/System.Optionals.csproj" Id="8bff6792-1c31-40ab-8ef0-f2e2a74347c2">
     <Platform Project="x64" />
   </Project>
+  <Project Path="System.Pipelines/System.Pipelines.csproj" Id="4979396d-2034-4b0f-979e-f46af3a1d0fe">
+    <Platform Project="x64" />
+  </Project>
   <Project Path="System.Primitives/System.Primitives.csproj" Id="cb6a404f-1663-43ab-82ed-88d3647797ef">
+    <Platform Project="x64" />
+  </Project>
+  <Project Path="System.Requests.AsyncPaged/System.Requests.AsyncPaged.csproj" Id="43b88ac8-f046-4cb1-af9d-b6d5d4be64e0">
+    <Platform Project="x64" />
+  </Project>
+  <Project Path="System.Requests/System.Requests.csproj" Id="f09bdf6c-048f-46e0-93d3-160eadd7ce65">
     <Platform Project="x64" />
   </Project>
   <Project Path="System.Rests/System.Rests.csproj" Id="d019ebbd-3d81-41be-99e1-2b9e5571e764">
