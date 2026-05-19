@@ -1,4 +1,4 @@
-/*******************************************************************************
+﻿/*******************************************************************************
  * Copyright (C) 2025-2026 Kamersoft
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
@@ -15,7 +15,7 @@
  *
 ********************************************************************************/
 
-using System.Results.Requests;
+using System.Requests;
 
 namespace System.Results.Tasks;
 
@@ -29,34 +29,34 @@ namespace System.Results.Tasks;
 /// unhandled exceptions. Without it, exceptions will propagate to the caller.</para></remarks>
 public interface IMediator
 {
-    /// <summary>
-    /// Sends the specified request asynchronously and returns the result of its execution.
-    /// </summary>
-    /// <typeparam name="TRequest">The type of the request to send. Must implement the <see cref="IRequest"/> interface.</typeparam>
-    /// <param name="request">The request object to be sent. Cannot be null.</param>
-    /// <param name="cancellationToken">A cancellation token that can be used to cancel the operation.</param>
-    /// <returns>A task that represents the asynchronous send operation. The task result contains the execution outcome of the
-    /// request.</returns>
-    /// <exception cref="ArgumentNullException">Thrown when the <paramref name="request"/> is null.</exception>
-    /// <remarks>To handle exceptions, ensure that <c>PipelineExceptionDecorator</c> is registered in the pipeline, 
-    /// and an appropriate <c>IPipelineExceptionHandler</c> is implemented. If not registered, 
-    /// exceptions that are not handled by the request handler will propagate to the caller.</remarks>
-    Task<Result> SendAsync<TRequest>(TRequest request, CancellationToken cancellationToken = default)
-        where TRequest : class, IRequest;
+	/// <summary>
+	/// Sends the specified request asynchronously and returns the result of its execution.
+	/// </summary>
+	/// <typeparam name="TRequest">The type of the request to send. Must implement the <see cref="IRequest"/> interface.</typeparam>
+	/// <param name="request">The request object to be sent. Cannot be null.</param>
+	/// <param name="cancellationToken">A cancellation token that can be used to cancel the operation.</param>
+	/// <returns>A task that represents the asynchronous send operation. The task result contains the execution outcome of the
+	/// request.</returns>
+	/// <exception cref="ArgumentNullException">Thrown when the <paramref name="request"/> is null.</exception>
+	/// <remarks>To handle exceptions, ensure that <c>PipelineExceptionDecorator</c> is registered in the pipeline, 
+	/// and an appropriate <c>IPipelineExceptionHandler</c> is implemented. If not registered, 
+	/// exceptions that are not handled by the request handler will propagate to the caller.</remarks>
+	Task<Result> SendAsync<TRequest>(TRequest request, CancellationToken cancellationToken = default)
+		where TRequest : class, IRequest;
 
-    /// <summary>
-    /// Sends the specified request asynchronously and returns a strongly-typed result.
-    /// </summary>
-    /// <typeparam name="TRequest">The type of the request to send. Must implement <see cref="IRequest{TResponse}"/>.</typeparam>
-    /// <typeparam name="TResponse">The type of the response produced by the request.</typeparam>
-    /// <param name="request">The request object to be sent. Cannot be null.</param>
-    /// <param name="cancellationToken">A cancellation token that can be used to cancel the operation.</param>
-    /// <returns>A task that represents the asynchronous send operation. The task result contains the strongly-typed
-    /// execution outcome of the request.</returns>
-    /// <exception cref="ArgumentNullException">Thrown when the <paramref name="request"/> is null.</exception>
-    /// <remarks>To handle exceptions, ensure that <c>PipelineExceptionDecorator</c> is registered in the pipeline, 
-    /// and an appropriate <c>IPipelineExceptionHandler</c> is implemented. If not registered, 
-    /// exceptions that are not handled by the request handler will propagate to the caller.</remarks>
-    Task<Result<TResponse>> SendAsync<TRequest, TResponse>(TRequest request, CancellationToken cancellationToken = default)
-        where TRequest : class, IRequest<TResponse>;
+	/// <summary>
+	/// Sends the specified request asynchronously and returns a strongly-typed result.
+	/// </summary>
+	/// <typeparam name="TRequest">The type of the request to send. Must implement <see cref="IRequest{TResponse}"/>.</typeparam>
+	/// <typeparam name="TResponse">The type of the response produced by the request.</typeparam>
+	/// <param name="request">The request object to be sent. Cannot be null.</param>
+	/// <param name="cancellationToken">A cancellation token that can be used to cancel the operation.</param>
+	/// <returns>A task that represents the asynchronous send operation. The task result contains the strongly-typed
+	/// execution outcome of the request.</returns>
+	/// <exception cref="ArgumentNullException">Thrown when the <paramref name="request"/> is null.</exception>
+	/// <remarks>To handle exceptions, ensure that <c>PipelineExceptionDecorator</c> is registered in the pipeline, 
+	/// and an appropriate <c>IPipelineExceptionHandler</c> is implemented. If not registered, 
+	/// exceptions that are not handled by the request handler will propagate to the caller.</remarks>
+	Task<Result<TResponse>> SendAsync<TRequest, TResponse>(TRequest request, CancellationToken cancellationToken = default)
+		where TRequest : class, IRequest<TResponse>;
 }

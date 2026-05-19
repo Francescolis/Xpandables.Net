@@ -68,6 +68,42 @@ public sealed record FailureResult : Result
 	/// </summary>
 	[JsonIgnore]
 	public Exception? Exception { get; init; }
+
+	/// <summary>
+	/// Creates a new FailureResult that combines the details of the current instance with those of the specified
+	/// FailureResult.
+	/// </summary>
+	/// <remarks>If the specified FailureResult provides non-empty Title or Detail values, they replace those in the
+	/// current instance. Errors, headers, extensions, and exception information from the specified FailureResult are
+	/// combined with those of the current instance.</remarks>
+	/// <param name="other">The FailureResult whose properties and error information are merged into the current instance. Cannot be null.</param>
+	/// <returns>A new FailureResult containing merged titles, details, errors, headers, extensions, and exception information from
+	/// both instances.</returns>
+	public FailureResult Merge(FailureResult other)
+	{
+		ArgumentNullException.ThrowIfNull(other);
+		FailureResult failure = this;
+
+		failure = failure.WithStatusCode(other.StatusCode);
+		if (!string.IsNullOrEmpty(other.Title))
+		{
+			failure = failure.WithTitle(other.Title);
+		}
+		if (!string.IsNullOrEmpty(other.Detail))
+		{
+			failure = failure.WithDetail(other.Detail);
+		}
+
+		failure = failure.WithErrors(other.Errors);
+		failure = failure.WithHeaders(other.Headers);
+		failure = failure.WithExtensions(other.Extensions);
+		if (other.Exception is not null)
+		{
+			failure = failure.WithException(other.Exception);
+		}
+
+		return failure;
+	}
 }
 
 /// <summary>
@@ -80,6 +116,18 @@ public sealed record FailureResult : Result
 /// argument is null.</remarks>
 public static class FailureResultExtensions
 {
+	/// <summary>
+	/// Creates a new FailureResult instance with the specified HTTP status code.
+	/// </summary>
+	/// <param name="this">The FailureResult instance to update. Cannot be null.</param>
+	/// <param name="statusCode">The HTTP status code to assign to the returned FailureResult.</param>
+	/// <returns>A new FailureResult instance with the specified status code. The original instance is not modified.</returns>
+	public static FailureResult WithStatusCode(this FailureResult @this, HttpStatusCode statusCode)
+	{
+		ArgumentNullException.ThrowIfNull(@this);
+		return @this with { StatusCode = statusCode };
+	}
+
 	/// <summary>
 	/// Creates a new FailureResult instance with the specified title.
 	/// </summary>
@@ -119,7 +167,25 @@ public static class FailureResultExtensions
 		ArgumentNullException.ThrowIfNull(@this);
 		ArgumentNullException.ThrowIfNull(exception);
 
-		return @this with { Exception = exception };
+		Exception? existingException = @this.Exception;
+
+		if (existingException is not null)
+		{
+			if (existingException is AggregateException aggregate)
+			{
+				existingException = new AggregateException(aggregate.InnerExceptions.Append(exception));
+			}
+			else
+			{
+				existingException = new AggregateException(existingException, exception);
+			}
+		}
+		else
+		{
+			existingException = exception;
+		}
+
+		return @this with { Exception = existingException };
 	}
 
 	/// <summary>
@@ -339,6 +405,18 @@ public sealed record FailureResult<TValue> : Result<TValue>
 /// the specified property set, following an immutable pattern.</remarks>
 public static class FailureResultOfValueExtensions
 {
+	/// <summary>
+	/// Creates a new FailureResult result instance with the specified HTTP status code.
+	/// </summary>
+	/// <param name="this">The FailureResult instance to update. Cannot be null.</param>
+	/// <param name="statusCode">The HTTP status code to assign to the returned FailureResult.</param>
+	/// <returns>A new FailureResult instance with the specified status code. The original instance is not modified.</returns>
+	public static FailureResult<TValue> WithStatusCode<TValue>(this FailureResult<TValue> @this, HttpStatusCode statusCode)
+	{
+		ArgumentNullException.ThrowIfNull(@this);
+		return @this with { StatusCode = statusCode };
+	}
+
 	/// <summary>
 	/// Sets the title for a failure result, providing a short, human-readable summary of the problem type.
 	/// </summary>

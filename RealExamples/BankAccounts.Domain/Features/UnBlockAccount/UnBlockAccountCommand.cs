@@ -20,7 +20,7 @@ using System.Results.Requests;
 
 namespace BankAccounts.Domain.Features.UnBlockAccount;
 
-public sealed record UnBlockAccountCommand : IRequest, IRequiresValidation, IEventRequiresStorage
+public sealed record UnBlockAccountCommand : IRequest, IRequiresValidation, IRequiresEventStorage
 {
 	[Required]
 	public required Guid AccountId { get; init; }

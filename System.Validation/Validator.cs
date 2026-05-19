@@ -1,4 +1,4 @@
-/*******************************************************************************
+﻿/*******************************************************************************
  * Copyright (C) 2025-2026 Kamersoft
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
@@ -14,6 +14,8 @@
  * limitations under the License.
  *
 ********************************************************************************/
+using System.Diagnostics.CodeAnalysis;
+
 namespace System.ComponentModel.DataAnnotations;
 
 /// <summary>
@@ -25,37 +27,37 @@ namespace System.ComponentModel.DataAnnotations;
 /// is not guaranteed; if multiple threads access the same instance concurrently, external synchronization is
 /// required.</remarks>
 /// <typeparam name="TArgument">The type of object to validate. Must be a reference type that implements <see cref="IRequiresValidation"/>.</typeparam>
-public abstract class Validator<TArgument> : IValidator<TArgument>
-    where TArgument : class, IRequiresValidation
+public abstract class Validator<[DynamicallyAccessedMembers(DynamicallyAccessedMemberTypes.AllProperties)] TArgument> : IValidator<TArgument>
+	where TArgument : class, IRequiresValidation
 {
-    /// <summary>
-    /// Gets the order of the validator. Validators with lower order values are executed first.
-    /// </summary>
-    public virtual int Order => 0;
+	/// <summary>
+	/// Gets the order of the validator. Validators with lower order values are executed first.
+	/// </summary>
+	public virtual int Order => 0;
 
-    /// <summary>
-    /// Contains the service provider.
-    /// </summary>
-    protected IServiceProvider? ServiceProvider { get; set; }
+	/// <summary>
+	/// Contains the service provider.
+	/// </summary>
+	protected IServiceProvider? ServiceProvider { get; set; }
 
-    /// <summary>
-    /// Creates a default instance of the validator.
-    /// </summary>
-    protected Validator() { }
+	/// <summary>
+	/// Creates a default instance of the validator.
+	/// </summary>
+	protected Validator() { }
 
-    /// <summary>
-    /// Creates a new instance of the validator with the specified service provider.
-    /// </summary>
-    /// <param name="serviceProvider">The service provider to use.</param>
-    protected Validator(IServiceProvider serviceProvider) => ServiceProvider = serviceProvider;
+	/// <summary>
+	/// Creates a new instance of the validator with the specified service provider.
+	/// </summary>
+	/// <param name="serviceProvider">The service provider to use.</param>
+	protected Validator(IServiceProvider serviceProvider) => ServiceProvider = serviceProvider;
 
-    /// <inheritdoc/>
-    public abstract IReadOnlyCollection<ValidationResult> Validate(TArgument instance);
+	/// <inheritdoc/>
+	public abstract Result Validate(TArgument instance);
 
-    /// <inheritdoc/>
-    public virtual ValueTask<IReadOnlyCollection<ValidationResult>> ValidateAsync(TArgument instance)
-    {
-        IReadOnlyCollection<ValidationResult> result = Validate(instance);
-        return new ValueTask<IReadOnlyCollection<ValidationResult>>(result);
-    }
+	/// <inheritdoc/>
+	public virtual ValueTask<Result> ValidateAsync(TArgument instance)
+	{
+		Result result = Validate(instance);
+		return new ValueTask<Result>(result);
+	}
 }

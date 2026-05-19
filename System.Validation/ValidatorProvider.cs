@@ -1,4 +1,4 @@
-/*******************************************************************************
+﻿/*******************************************************************************
  * Copyright (C) 2025-2026 Kamersoft
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
@@ -14,6 +14,8 @@
  * limitations under the License.
  *
 ********************************************************************************/
+using System.Diagnostics.CodeAnalysis;
+
 namespace System.ComponentModel.DataAnnotations;
 
 /// <summary>
@@ -25,25 +27,25 @@ namespace System.ComponentModel.DataAnnotations;
 /// and cannot be inherited.</remarks>
 public sealed class ValidatorProvider(IValidatorFactory validatorFactory) : IValidatorProvider
 {
-    private readonly IValidatorFactory _validatorFactory = validatorFactory;
+	private readonly IValidatorFactory _validatorFactory = validatorFactory;
 
-    /// <inheritdoc/>
-    public IValidator? TryGetValidator(Type type)
-    {
-        ArgumentNullException.ThrowIfNull(type, nameof(type));
+	/// <inheritdoc/>
+	public IValidator? TryGetValidator(Type type)
+	{
+		ArgumentNullException.ThrowIfNull(type, nameof(type));
 
-        if (!typeof(IRequiresValidation).IsAssignableFrom(type))
-        {
-            throw new ArgumentException($"The type '{type.FullName}' must implement '{nameof(IRequiresValidation)}'.", nameof(type));
-        }
+		if (!typeof(IRequiresValidation).IsAssignableFrom(type))
+		{
+			throw new ArgumentException($"The type '{type.FullName}' must implement '{nameof(IRequiresValidation)}'.", nameof(type));
+		}
 
-        return _validatorFactory.CreateValidator(type);
-    }
+		return _validatorFactory.CreateValidator(type);
+	}
 
-    /// <inheritdoc/>
-    public IValidator? TryGetValidator<TArgument>()
-        where TArgument : class, IRequiresValidation
-    {
-        return _validatorFactory.CreateValidator<TArgument>();
-    }
+	/// <inheritdoc/>
+	public IValidator? TryGetValidator<[DynamicallyAccessedMembers(DynamicallyAccessedMemberTypes.AllProperties)] TArgument>()
+		where TArgument : class, IRequiresValidation
+	{
+		return _validatorFactory.CreateValidator<TArgument>();
+	}
 }

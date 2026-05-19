@@ -20,7 +20,7 @@ using System.Results.Requests;
 
 namespace BankAccounts.Domain.Features.CreateAccount;
 
-public sealed class CreateAccountCommand : IRequest<CreateAccountResult>, IRequiresValidation, IEventRequiresStorage
+public sealed class CreateAccountCommand : IRequest<CreateAccountResult>, IRequiresValidation, IRequiresEventStorage
 {
 	[Required, StringLength(byte.MaxValue, MinimumLength = 3)]
 	public required string Owner { get; init; }

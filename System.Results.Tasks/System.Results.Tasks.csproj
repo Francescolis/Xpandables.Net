@@ -10,7 +10,8 @@
 	</PropertyGroup>
 
 	<ItemGroup>
-		<ProjectReference Include="..\System.Results.Pipelines\System.Results.Pipelines.csproj" />
+	  <ProjectReference Include="..\System.Pipelines\System.Pipelines.csproj" />
+	  <ProjectReference Include="..\System.Results\System.Results.csproj" />
 	</ItemGroup>
 
 </Project>

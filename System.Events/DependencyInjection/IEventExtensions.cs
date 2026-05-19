@@ -65,8 +65,8 @@ public static class IEventExtensions
 	{
 		ArgumentNullException.ThrowIfNull(services);
 
-		services.TryAddSingleton<AsyncLocalEventContextAccessor>();
-		services.TryAddSingleton<IEventContextAccessor>(sp => sp.GetRequiredService<AsyncLocalEventContextAccessor>());
+		services.TryAddSingleton<AsyncLocalCorrelationContextAccessor>();
+		services.TryAddSingleton<ICorrelationContextAccessor>(sp => sp.GetRequiredService<AsyncLocalCorrelationContextAccessor>());
 
 		return services;
 	}

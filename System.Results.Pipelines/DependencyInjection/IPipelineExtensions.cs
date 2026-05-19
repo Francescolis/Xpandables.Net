@@ -14,9 +14,6 @@
  * limitations under the License.
  *
 ********************************************************************************/
-using System.Diagnostics.CodeAnalysis;
-using System.Events.Domain;
-using System.Events.Integration;
 using System.Results.Pipelines;
 
 #pragma warning disable IDE0130 // Namespace does not match folder structure
@@ -100,7 +97,7 @@ public static class IPipelineExtensions
 
 	/// <summary>
 	/// Registers the <see cref="PipelineCachingDecorator{TRequest}"/> for caching successful results
-	/// of requests implementing <see cref="ICacheableRequest"/>.
+	/// of requests implementing <see cref="IRequiresCacheable"/>.
 	/// </summary>
 	/// <remarks>Register this decorator after validation but before the handler to avoid
 	/// redundant processing. An <see cref="Microsoft.Extensions.Caching.Memory.IMemoryCache"/> must
@@ -173,40 +170,6 @@ public static class IPipelineExtensions
 	public static IServiceCollection AddXPipelineValidationDecorator(this IServiceCollection services) =>
 		services.AddXPipelineDecorator(typeof(PipelineValidationDecorator<>));
 
-	/// <summary>
-	/// Registers a pipeline request handler of the specified type with the dependency injection container.
-	/// </summary>
-	/// <param name="services">The IServiceCollection instance to which the cache type resolver will be added.</param>
-	/// <remarks>Use this method to add custom pipeline request handlers to the service collection for
-	/// dependency injection. The handler will be registered with scoped lifetime to amortize the cost of
-	/// pipeline construction and to align with scoped decorator dependencies.</remarks>
-	/// <param name="type">The type that implements the <see cref="IPipelineRequestHandler{TRequest}"/> interface. Must have public constructors and
-	/// implement the required interface.</param>
-	/// <returns>The IServiceCollection instance with the pipeline request handler registered as a scoped service.</returns>
-	/// <exception cref="InvalidOperationException">Thrown if the specified type does not implement the <see cref="IPipelineRequestHandler{TRequest}"/>> interface.</exception>
-	public static IServiceCollection AddXPipelineRequestHandler(this IServiceCollection services, [DynamicallyAccessedMembers(DynamicallyAccessedMemberTypes.Interfaces | DynamicallyAccessedMemberTypes.PublicConstructors)] Type type)
-	{
-		ArgumentNullException.ThrowIfNull(type);
-		ArgumentNullException.ThrowIfNull(services);
-
-		Type handlerInterface = type.GetInterfaces().FirstOrDefault(i =>
-			i.IsGenericType &&
-			i.GetGenericTypeDefinition() == typeof(IPipelineRequestHandler<>))
-			?? throw new InvalidOperationException(
-				$"{type.Name} does not implement IPipelineRequestHandler<> interface.");
-
-		// If `type` is open generic (or implements handler as open generic), register open generic service.
-		if (type.ContainsGenericParameters || handlerInterface.ContainsGenericParameters)
-		{
-			return services.AddScoped(typeof(IPipelineRequestHandler<>), type);
-		}
-
-		// Closed implementation: register specifically for the closed TRequest (IPipelineRequestHandler<TRequest>).
-		Type requestType = handlerInterface.GenericTypeArguments[0];
-		Type serviceType = typeof(IPipelineRequestHandler<>).MakeGenericType(requestType);
-
-		return services.AddScoped(serviceType, type);
-	}
 
 	/// <summary>
 	/// Validates that the pipeline decorator registrations include the exception decorator.

@@ -55,7 +55,6 @@
     <ProjectReference Include="..\..\System.Entities.EntityFramework\System.Entities.EntityFramework.csproj" />
     <ProjectReference Include="..\..\System.Optionals\System.Optionals.csproj" />
     <ProjectReference Include="..\..\System.Results\System.Results.csproj" />
-    <ProjectReference Include="..\..\System.Results.Pipelines\System.Results.Pipelines.csproj" />
     <ProjectReference Include="..\..\System.Results.Tasks\System.Results.Tasks.csproj" />
     <ProjectReference Include="..\..\System.Primitives\System.Primitives.csproj" />
     <ProjectReference Include="..\..\System.Rests\System.Rests.csproj" />

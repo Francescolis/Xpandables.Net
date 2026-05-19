@@ -14,6 +14,8 @@
  * limitations under the License.
  *
 ********************************************************************************/
+using System.Diagnostics.CodeAnalysis;
+
 namespace System.ComponentModel.DataAnnotations;
 
 /// <summary>
@@ -45,7 +47,7 @@ public interface IValidatorResolver
 /// <remarks>This interface allows for the resolution of validators based on the specified argument type, enabling
 /// type-specific validation logic.</remarks>
 /// <typeparam name="TArgument">The type of the argument that requires validation. Must be a class implementing the IRequiresValidation interface.</typeparam>
-public interface IValidatorResolver<TArgument> : IValidatorResolver
+public interface IValidatorResolver<[DynamicallyAccessedMembers(DynamicallyAccessedMemberTypes.AllProperties)] TArgument> : IValidatorResolver
 	where TArgument : class, IRequiresValidation
 {
 	[Diagnostics.CodeAnalysis.SuppressMessage("Design", "CA1033:Interface methods should be callable by child types", Justification = "<Pending>")]

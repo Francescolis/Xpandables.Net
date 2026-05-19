@@ -1,4 +1,4 @@
-/*******************************************************************************
+﻿/*******************************************************************************
  * Copyright (C) 2025-2026 Kamersoft
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
@@ -26,9 +26,9 @@ namespace System.Events.Integration;
 /// set, preferring values already present on the event, then those from a wrapped domain event, and finally those from
 /// the ambient event context. This is useful for maintaining event traceability across distributed systems.</remarks>
 /// <param name="accessor">The accessor used to retrieve the current event context. Cannot be null.</param>
-public sealed class DefaultIntegrationEventEnricher(IEventContextAccessor accessor) : IIntegrationEventEnricher
+public sealed class DefaultIntegrationEventEnricher(ICorrelationContextAccessor accessor) : IIntegrationEventEnricher
 {
-    private readonly IEventContextAccessor _accessor = accessor ?? throw new ArgumentNullException(nameof(accessor));
+    private readonly ICorrelationContextAccessor _accessor = accessor ?? throw new ArgumentNullException(nameof(accessor));
 
     /// <inheritdoc/>
     public TIntegrationEvent Enrich<TIntegrationEvent>(TIntegrationEvent @event)
@@ -48,7 +48,7 @@ public sealed class DefaultIntegrationEventEnricher(IEventContextAccessor access
         }
 
 		// Finally fallback to ambient context
-		EventContext context = _accessor.Current;
+		CorrelationContext context = _accessor.Current;
         correlationId ??= context.CorrelationId;
         causationId ??= context.CausationId;
 

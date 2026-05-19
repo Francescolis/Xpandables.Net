@@ -1,0 +1,18 @@
+﻿<Project Sdk="Microsoft.NET.Sdk">
+
+  <PropertyGroup>
+    <Title>Xpandables.Data.Pipelines</Title>
+    <Description>IDataRepository pipeline implementation.</Description>
+    <AssemblyName>Xpandables.Data.Pipelines</AssemblyName>
+    <RootNamespace>System.Pipelines</RootNamespace>
+    <PackageId>Xpandables.Data.Pipelines</PackageId>
+    <PackageTags>IPipelineDecorator, IDataRepository, IDataUnitOfWork</PackageTags>
+  </PropertyGroup>
+
+  <ItemGroup>
+    <ProjectReference Include="..\System.Data\System.Data.csproj" />
+    <ProjectReference Include="..\System.Pipelines\System.Pipelines.csproj" />
+    <ProjectReference Include="..\System.Results\System.Results.csproj" />
+  </ItemGroup>
+
+</Project>

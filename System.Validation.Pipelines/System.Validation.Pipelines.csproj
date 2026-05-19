@@ -1,0 +1,18 @@
+﻿<Project Sdk="Microsoft.NET.Sdk">
+
+  <PropertyGroup>
+    <Title>Xpandables.Validation.Pipelines</Title>
+    <Description>Validation piepelines classes.</Description>
+    <AssemblyName>Xpandables.Validation.Pipelines</AssemblyName>
+    <RootNamespace>System.Pipelines</RootNamespace>
+    <PackageId>Xpandables.Validation.Pipelines</PackageId>
+    <PackageTags>IPipelineDecorator, IValidator, IValidatorResolver, IValidatorProvider</PackageTags>
+  </PropertyGroup>
+
+  <ItemGroup>
+    <ProjectReference Include="..\System.Pipelines\System.Pipelines.csproj" />
+    <ProjectReference Include="..\System.Results\System.Results.csproj" />
+    <ProjectReference Include="..\System.Validation\System.Validation.csproj" />
+  </ItemGroup>
+
+</Project>

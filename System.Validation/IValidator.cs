@@ -1,4 +1,4 @@
-/*******************************************************************************
+﻿/*******************************************************************************
  * Copyright (C) 2025-2026 Kamersoft
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
@@ -14,7 +14,18 @@
  * limitations under the License.
  *
 ********************************************************************************/
+using System.Diagnostics.CodeAnalysis;
+
 namespace System.ComponentModel.DataAnnotations;
+
+/// <summary>
+/// Represents an interface that indicates a requirement for validation capabilities.
+/// </summary>
+/// <remarks>Implementing this interface suggests that the object supports or requires validation processes,
+/// typically to ensure that its state or data meets certain criteria.</remarks>
+#pragma warning disable CA1040 // Avoid empty interfaces
+public interface IRequiresValidation;
+#pragma warning restore CA1040 // Avoid empty interfaces
 
 /// <summary>
 /// Defines a contract for validating objects and returning validation results.
@@ -24,34 +35,34 @@ namespace System.ComponentModel.DataAnnotations;
 /// scenarios.</remarks>
 public interface IValidator
 {
-    /// <summary>
-    /// Gets the order in which this item is processed or applied.
-    /// </summary>
-    int Order { get; }
+	/// <summary>
+	/// Gets the order in which this item is processed or applied.
+	/// </summary>
+	int Order { get; }
 
-    /// <summary>
-    /// Validates the specified object instance and returns a collection of validation results.
-    /// </summary>
-    /// <param name="instance">The object to validate. Cannot be null.</param>
-    /// <returns>A read-only collection of <see cref="ValidationResult"/> objects that describe any validation errors. The
-    /// collection is empty if the instance is valid.</returns>
-    IReadOnlyCollection<ValidationResult> Validate(object instance);
+	/// <summary>
+	/// Validates the specified object instance and returns a collection of validation results.
+	/// </summary>
+	/// <param name="instance">The object to validate. Cannot be null.</param>
+	/// <returns>A read-only collection of <see cref="ValidationResult"/> objects that describe any validation errors. The
+	/// collection is empty if the instance is valid.</returns>
+	Result Validate(object instance);
 
-    /// <summary>
-    /// Asynchronously validates the specified object instance and returns a collection of validation results.
-    /// </summary>
-    /// <remarks>This method executes validation synchronously and returns a completed <see
-    /// cref="ValueTask{TResult}"/>. Use this method when an asynchronous signature is required, but the validation
-    /// itself does not involve asynchronous operations.</remarks>
-    /// <param name="instance">The object to validate. Cannot be null.</param>
-    /// <returns>A value task that represents the asynchronous validation operation. The result contains a read-only collection
-    /// of <see cref="ValidationResult"/> objects describing any validation errors. The collection is empty if the
-    /// object is valid.</returns>
-    public ValueTask<IReadOnlyCollection<ValidationResult>> ValidateAsync(object instance)
-    {
-        IReadOnlyCollection<ValidationResult> result = Validate(instance);
-        return new ValueTask<IReadOnlyCollection<ValidationResult>>(result);
-    }
+	/// <summary>
+	/// Asynchronously validates the specified object instance and returns a collection of validation results.
+	/// </summary>
+	/// <remarks>This method executes validation synchronously and returns a completed <see
+	/// cref="ValueTask{TResult}"/>. Use this method when an asynchronous signature is required, but the validation
+	/// itself does not involve asynchronous operations.</remarks>
+	/// <param name="instance">The object to validate. Cannot be null.</param>
+	/// <returns>A value task that represents the asynchronous validation operation. The result contains a read-only collection
+	/// of <see cref="ValidationResult"/> objects describing any validation errors. The collection is empty if the
+	/// object is valid.</returns>
+	ValueTask<Result> ValidateAsync(object instance)
+	{
+		Result result = Validate(instance);
+		return new ValueTask<Result>(result);
+	}
 }
 
 /// <summary>
@@ -62,31 +73,31 @@ public interface IValidator
 /// processing. Implementers should ensure that validation logic is thread-safe if the validator will be used
 /// concurrently.</remarks>
 /// <typeparam name="TArgument">The type of object to validate. Must be a reference type that implements <see cref="IRequiresValidation"/>.</typeparam>
-public interface IValidator<in TArgument> : IValidator
-    where TArgument : class, IRequiresValidation
+public interface IValidator<[DynamicallyAccessedMembers(DynamicallyAccessedMemberTypes.AllProperties)] in TArgument> : IValidator
+	where TArgument : class, IRequiresValidation
 {
-    /// <summary>
-    /// Validates the specified instance and returns a collection of validation results.
-    /// </summary>
-    /// <param name="instance">The object to validate. Cannot be null.</param>
-    /// <returns>A read-only collection of <see cref="ValidationResult"/> objects that describe any validation errors. The
-    /// collection is empty if the instance is valid.</returns>
-    IReadOnlyCollection<ValidationResult> Validate(TArgument instance);
+	/// <summary>
+	/// Validates the specified instance and returns a collection of validation results.
+	/// </summary>
+	/// <param name="instance">The object to validate. Cannot be null.</param>
+	/// <returns>A read-only collection of <see cref="ValidationResult"/> objects that describe any validation errors. The
+	/// collection is empty if the instance is valid.</returns>
+	Result Validate(TArgument instance);
 
-    [EditorBrowsable(EditorBrowsableState.Never)]
-    IReadOnlyCollection<ValidationResult> IValidator.Validate(object instance) =>
-        Validate((TArgument)instance);
+	[EditorBrowsable(EditorBrowsableState.Never)]
+	Result IValidator.Validate(object instance) =>
+		Validate((TArgument)instance);
 
-    /// <summary>
-    /// Asynchronously validates the specified argument and returns a collection of validation results.
-    /// </summary>
-    /// <param name="instance">The argument to validate. Cannot be null.</param>
-    /// <returns>A task that represents the asynchronous validation operation. The task result contains a read-only collection of
-    /// <see cref="ValidationResult"/> objects describing any validation errors. The collection is empty if the argument
-    /// is valid.</returns>
-    ValueTask<IReadOnlyCollection<ValidationResult>> ValidateAsync(TArgument instance);
+	/// <summary>
+	/// Asynchronously validates the specified argument and returns a collection of validation results.
+	/// </summary>
+	/// <param name="instance">The argument to validate. Cannot be null.</param>
+	/// <returns>A task that represents the asynchronous validation operation. The task result contains a read-only collection of
+	/// <see cref="ValidationResult"/> objects describing any validation errors. The collection is empty if the argument
+	/// is valid.</returns>
+	ValueTask<Result> ValidateAsync(TArgument instance);
 
-    [EditorBrowsable(EditorBrowsableState.Never)]
-    ValueTask<IReadOnlyCollection<ValidationResult>> IValidator.ValidateAsync(object instance) =>
-        ValidateAsync((TArgument)instance);
+	[EditorBrowsable(EditorBrowsableState.Never)]
+	ValueTask<Result> IValidator.ValidateAsync(object instance) =>
+		ValidateAsync((TArgument)instance);
 }

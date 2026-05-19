@@ -1,4 +1,4 @@
-/*******************************************************************************
+﻿/*******************************************************************************
  * Copyright (C) 2025-2026 Kamersoft
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
@@ -28,16 +28,16 @@ namespace System.ComponentModel.DataAnnotations;
 /// <typeparam name="TSource">The type of object to which the specification is applied.</typeparam>
 public interface ISpecification<TSource>
 {
-    /// <summary>
-    /// Gets the expression that defines the specification criteria.
-    /// </summary>
-    Expression<Func<TSource, bool>> Expression { get; }
+	/// <summary>
+	/// Gets the expression that defines the specification criteria.
+	/// </summary>
+	Expression<Func<TSource, bool>> Expression { get; }
 
-    /// <summary>  
-    /// Determines whether the specified source satisfies the criteria of this specification.  
-    /// </summary>  
-    /// <param name="source">The source object to evaluate.</param>  
-    /// <returns><see langword="true"/> if the source satisfies the criteria; otherwise,
-    /// <see langword="false"/>.</returns>  
-    bool IsSatisfiedBy(TSource source);
+	/// <summary>  
+	/// Determines whether the specified source satisfies the criteria of this specification.  
+	/// </summary>  
+	/// <param name="source">The source object to evaluate.</param>  
+	/// <returns><see langword="true"/> if the source satisfies the criteria; otherwise,
+	/// <see langword="false"/>.</returns>  
+	bool IsSatisfiedBy(TSource source);
 }

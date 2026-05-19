@@ -26,7 +26,7 @@ namespace Xpandables.Net.UnitTests.AspNetCore;
 
 public sealed class EventContextMiddlewareTests
 {
-	private readonly AsyncLocalEventContextAccessor _accessor = new();
+	private readonly AsyncLocalCorrelationContextAccessor _accessor = new();
 
 	private EventContextMiddleware CreateMiddleware(EventContextOptions? options = null)
 	{
@@ -43,7 +43,7 @@ public sealed class EventContextMiddlewareTests
 		var context = new DefaultHttpContext();
 		context.Request.Headers["traceparent"] = "00-abc123-def456-01";
 
-		EventContext? captured = null;
+		CorrelationContext? captured = null;
 
 		// Act
 		await middleware.InvokeAsync(context, _ =>
@@ -65,7 +65,7 @@ public sealed class EventContextMiddlewareTests
 		var context = new DefaultHttpContext();
 		context.Request.Headers["X-Causation-Id"] = "cause-789";
 
-		EventContext? captured = null;
+		CorrelationContext? captured = null;
 
 		// Act
 		await middleware.InvokeAsync(context, _ =>
@@ -86,7 +86,7 @@ public sealed class EventContextMiddlewareTests
 		var middleware = CreateMiddleware();
 		var context = new DefaultHttpContext();
 
-		EventContext? captured = null;
+		CorrelationContext? captured = null;
 
 		// Act
 		await middleware.InvokeAsync(context, _ =>
@@ -131,7 +131,7 @@ public sealed class EventContextMiddlewareTests
 		context.Request.Headers["X-Custom-Corr"] = "corr-custom";
 		context.Request.Headers["X-Custom-Cause"] = "cause-custom";
 
-		EventContext? captured = null;
+		CorrelationContext? captured = null;
 
 		// Act
 		await middleware.InvokeAsync(context, _ =>
@@ -160,7 +160,7 @@ public sealed class EventContextMiddlewareTests
 
 		// Assert — after the middleware completes, the scope should be disposed
 		// and the accessor should return default (empty) context
-		EventContext afterScope = _accessor.Current;
+		CorrelationContext afterScope = _accessor.Current;
 		afterScope.CorrelationId.Should().BeNull();
 	}
 

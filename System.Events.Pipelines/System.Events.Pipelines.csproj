@@ -1,0 +1,18 @@
+﻿<Project Sdk="Microsoft.NET.Sdk">
+
+  <PropertyGroup>
+    <Title>Xpandables.Events.Pipelines</Title>
+    <Description>Events pipelines implementation.</Description>
+    <AssemblyName>Xpandables.Events.Pipelines</AssemblyName>
+    <RootNamespace>System.Pipelines</RootNamespace>
+    <PackageId>Xpandables.Events.Pipelines</PackageId>
+    <PackageTags>IPipelineDecorator, IIntegrationEvent, IDomainEvent</PackageTags>
+  </PropertyGroup>
+
+  <ItemGroup>
+    <ProjectReference Include="..\System.Events\System.Events.csproj" />
+    <ProjectReference Include="..\System.Pipelines\System.Pipelines.csproj" />
+    <ProjectReference Include="..\System.Results\System.Results.csproj" />
+  </ItemGroup>
+
+</Project>

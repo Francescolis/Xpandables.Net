@@ -67,10 +67,16 @@
   <Project Path="System.Composition/System.Composition.csproj" Id="6c66642b-ffdb-4002-8e91-fe35aa18dd38">
     <Platform Project="x64" />
   </Project>
+  <Project Path="System.Data.Pipelines/System.Data.Pipelines.csproj" Id="a3012692-4e61-4003-890f-ff8429c1dc4c">
+    <Platform Project="x64" />
+  </Project>
   <Project Path="System.Data/System.Data.csproj" Id="84cacdfd-d82a-40f6-930d-b0783125ce9c">
     <Platform Project="x64" />
   </Project>
   <Project Path="System.Entities.EntityFramework/System.Entities.EntityFramework.csproj">
+    <Platform Project="x64" />
+  </Project>
+  <Project Path="System.Entities.Pipelines/System.Entities.Pipelines.csproj" Id="ad12335d-fd79-40f8-b465-d2cc8afa7332">
     <Platform Project="x64" />
   </Project>
   <Project Path="System.Entities/System.Entities.csproj" Id="dd1962fe-07c1-4eaf-b179-7bb14b3d0e6e">
@@ -79,10 +85,16 @@
   <Project Path="System.Events.Data/System.Events.Data.csproj" Id="d5b52978-5f0f-4789-a2d5-0e3819e69975">
     <Platform Project="x64" />
   </Project>
+  <Project Path="System.Events.Pipelines/System.Events.Pipelines.csproj" Id="c981f3b1-c038-4883-b86a-eed987a371a0">
+    <Platform Project="x64" />
+  </Project>
   <Project Path="System.Events/System.Events.csproj" Id="2ba7d386-a42a-467c-bf64-bb53e3d6dd0c">
     <Platform Project="x64" />
   </Project>
   <Project Path="System.Optionals/System.Optionals.csproj" Id="8bff6792-1c31-40ab-8ef0-f2e2a74347c2">
+    <Platform Project="x64" />
+  </Project>
+  <Project Path="System.Pipelines.Extended/System.Pipelines.Extended.csproj" Id="f9102287-5c08-4faf-934c-d86efd2b3e95">
     <Platform Project="x64" />
   </Project>
   <Project Path="System.Pipelines/System.Pipelines.csproj" Id="4979396d-2034-4b0f-979e-f46af3a1d0fe">
@@ -100,13 +112,13 @@
   <Project Path="System.Rests/System.Rests.csproj" Id="d019ebbd-3d81-41be-99e1-2b9e5571e764">
     <Platform Project="x64" />
   </Project>
-  <Project Path="System.Results.Pipelines/System.Results.Pipelines.csproj">
-    <Platform Project="x64" />
-  </Project>
   <Project Path="System.Results.Tasks/System.Results.Tasks.csproj">
     <Platform Project="x64" />
   </Project>
   <Project Path="System.Results/System.Results.csproj">
+    <Platform Project="x64" />
+  </Project>
+  <Project Path="System.Validation.Pipelines/System.Validation.Pipelines.csproj" Id="ef682fc8-44ad-4f17-9ed1-6d0b420b1b0e">
     <Platform Project="x64" />
   </Project>
   <Project Path="System.Validation/System.Validation.csproj" Id="d2b45f03-a0ae-4c5e-8f35-c0c879a6a9e0">

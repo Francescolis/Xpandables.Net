@@ -20,7 +20,7 @@ using System.Results.Requests;
 
 namespace BankAccounts.Domain.Features.DepositAccount;
 
-public sealed record DepositAccountCommand : IRequest<DepositAccountResult>, IRequiresValidation, IEventRequiresStorage
+public sealed record DepositAccountCommand : IRequest<DepositAccountResult>, IRequiresValidation, IRequiresEventStorage
 {
 	public required Guid AccountId { get; init; }
 

@@ -14,11 +14,9 @@
  * limitations under the License.
  *
 ********************************************************************************/
-using System.Events;
-using System.Results.Pipelines;
-using System.Results.Requests;
-
 using Microsoft.Extensions.DependencyInjection;
+using System.Pipelines;
+using System.Requests;
 
 namespace System.Results.Tasks;
 
@@ -35,7 +33,7 @@ namespace System.Results.Tasks;
 /// can resolve scoped event handlers from the correct request scope instead of creating an isolated child scope.</para>
 /// <para><strong>Thread safety:</strong> This class is thread-safe. Each call to <see cref="SendAsync{TRequest}"/>
 /// or <see cref="SendAsync{TRequest, TResponse}"/> resolves a fresh <see cref="IPipelineRequestHandler{TRequest}"/>
-/// from the service provider. The resolved handler's <see cref="PipelineRequestHandler{TRequest}"/> pre-builds and
+/// from the service provider. The resolved handler's <see langword="PipelineRequestHandler{TRequest}"/> pre-builds and
 /// caches the decorator delegate chain at construction time (in the constructor), so no per-request pipeline assembly
 /// occurs. The handler is safe for concurrent use once constructed. Scoped handlers are resolved from the current
 /// scope; singleton handlers share a single pre-built pipeline across all requests. Ensure that all decorators and
@@ -46,34 +44,39 @@ namespace System.Results.Tasks;
 /// <param name="provider">The service provider used to resolve pipeline request handlers for incoming requests.</param>
 public sealed class Mediator(IServiceProvider provider) : IMediator
 {
-    /// <inheritdoc />
-    public async Task<Result> SendAsync<TRequest>(
-        TRequest request, CancellationToken cancellationToken = default)
-        where TRequest : class, IRequest
-    {
-        ArgumentNullException.ThrowIfNull(request);
+	/// <inheritdoc />
+	public async Task<Result> SendAsync<TRequest>(
+		TRequest request, CancellationToken cancellationToken = default)
+		where TRequest : class, IRequest
+	{
+		ArgumentNullException.ThrowIfNull(request);
 
-        using IDisposable scope = RequestScopeAccessor.BeginScope(provider);
+		using IDisposable scope = RequestScopeAccessor.BeginScope(provider);
 
-        IPipelineRequestHandler<TRequest> handler =
-            provider.GetRequiredService<IPipelineRequestHandler<TRequest>>();
+		IPipelineRequestHandler<TRequest> handler =
+			provider.GetRequiredService<IPipelineRequestHandler<TRequest>>();
 
-        return await handler.HandleAsync(request, cancellationToken).ConfigureAwait(false);
-    }
+		return await handler
+			.HandleAsync(request, cancellationToken)
+			.ConfigureAwait(false);
+	}
 
-    /// <inheritdoc />
-    public async Task<Result<TResponse>> SendAsync<TRequest, TResponse>(
-        TRequest request, CancellationToken cancellationToken = default)
-        where TRequest : class, IRequest<TResponse>
-    {
-        ArgumentNullException.ThrowIfNull(request);
+	/// <inheritdoc />
+	public async Task<Result<TResponse>> SendAsync<TRequest, TResponse>(
+		TRequest request, CancellationToken cancellationToken = default)
+		where TRequest : class, IRequest<TResponse>
+	{
+		ArgumentNullException.ThrowIfNull(request);
 
-        using IDisposable scope = RequestScopeAccessor.BeginScope(provider);
+		using IDisposable scope = RequestScopeAccessor.BeginScope(provider);
 
-        IPipelineRequestHandler<TRequest> handler =
-            provider.GetRequiredService<IPipelineRequestHandler<TRequest>>();
+		IPipelineRequestHandler<TRequest> handler =
+			provider.GetRequiredService<IPipelineRequestHandler<TRequest>>();
 
-        Result result = await handler.HandleAsync(request, cancellationToken).ConfigureAwait(false);
-        return result.ToResult<TResponse>();
-    }
+		var result = (Result<TResponse>)await handler
+			.HandleAsync(request, cancellationToken)
+			.ConfigureAwait(false);
+
+		return result;
+	}
 }

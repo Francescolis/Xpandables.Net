@@ -1,4 +1,4 @@
-/*******************************************************************************
+﻿/*******************************************************************************
  * Copyright (C) 2025-2026 Kamersoft
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
@@ -14,9 +14,9 @@
  * limitations under the License.
  *
 ********************************************************************************/
-using System.ComponentModel.DataAnnotations;
-
 using Microsoft.Extensions.DependencyInjection;
+using System.ComponentModel.DataAnnotations;
+using System.Diagnostics.CodeAnalysis;
 
 namespace System.ComponentModel.DataAnnotations;
 
@@ -30,20 +30,20 @@ namespace System.ComponentModel.DataAnnotations;
 /// <param name="serviceProvider">The service provider used to resolve validator instances and dependencies.</param>
 /// <param name="validatorResolvers">A collection of validator resolvers that map specific types to their corresponding validators.</param>
 public sealed class ValidatorFactory(
-    IServiceProvider serviceProvider,
-    IEnumerable<IValidatorResolver> validatorResolvers) : IValidatorFactory
+	IServiceProvider serviceProvider,
+	IEnumerable<IValidatorResolver> validatorResolvers) : IValidatorFactory
 {
-    /// <inheritdoc/>
-    public IValidator? CreateValidator(Type type)
-    {
-        ArgumentNullException.ThrowIfNull(type);
+	/// <inheritdoc/>
+	public IValidator? CreateValidator(Type type)
+	{
+		ArgumentNullException.ThrowIfNull(type);
 		IValidatorResolver? resolver = validatorResolvers.FirstOrDefault(r => r.TargetType == type);
-        return resolver?.Resolve(serviceProvider);
-    }
+		return resolver?.Resolve(serviceProvider);
+	}
 
-    /// <inheritdoc/>
-    IValidator<TArgument>? IValidatorFactory.CreateValidator<TArgument>()
-    {
-        return serviceProvider.GetService<IValidator<TArgument>>();
-    }
+	/// <inheritdoc/>
+	IValidator<TArgument>? IValidatorFactory.CreateValidator<[DynamicallyAccessedMembers(DynamicallyAccessedMemberTypes.AllProperties)] TArgument>()
+	{
+		return serviceProvider.GetService<IValidator<TArgument>>();
+	}
 }

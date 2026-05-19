@@ -1,4 +1,4 @@
-/*******************************************************************************
+﻿/*******************************************************************************
  * Copyright (C) 2025-2026 Kamersoft
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
@@ -48,7 +48,7 @@ public sealed class AggregateStoreTests
 
         var eventStore = new FakeEventStore(history);
         var buffer = new PendingDomainEventsBuffer();
-        var sut = new AggregateStore<TestBankAccountAggregate>(eventStore, buffer, new DefaultDomainEventEnricher(new AsyncLocalEventContextAccessor()));
+        var sut = new AggregateStore<TestBankAccountAggregate>(eventStore, buffer, new DefaultDomainEventEnricher(new AsyncLocalCorrelationContextAccessor()));
 
         // Act
         TestBankAccountAggregate aggregate = await sut.LoadAsync(accountId);
@@ -67,7 +67,7 @@ public sealed class AggregateStoreTests
         var accountId = Guid.NewGuid();
         var eventStore = new FakeEventStore();
         var buffer = new PendingDomainEventsBuffer();
-        var sut = new AggregateStore<TestBankAccountAggregate>(eventStore, buffer, new DefaultDomainEventEnricher(new AsyncLocalEventContextAccessor()));
+        var sut = new AggregateStore<TestBankAccountAggregate>(eventStore, buffer, new DefaultDomainEventEnricher(new AsyncLocalCorrelationContextAccessor()));
         var aggregate = TestBankAccountAggregate.Initialize();
 
         aggregate.Open(accountId, "Ada", 100m);

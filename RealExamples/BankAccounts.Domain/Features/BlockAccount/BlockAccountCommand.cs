@@ -20,7 +20,7 @@ using System.Results.Requests;
 
 namespace BankAccounts.Domain.Features.BlockAccount;
 
-public sealed record BlockAccountCommand : IRequest, IRequiresValidation, IEventRequiresStorage
+public sealed record BlockAccountCommand : IRequest, IRequiresValidation, IRequiresEventStorage
 {
 	[Required]
 	public required Guid AccountId { get; init; }

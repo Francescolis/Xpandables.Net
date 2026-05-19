@@ -6,11 +6,15 @@
 		<AssemblyName>Xpandables.Validation</AssemblyName>
 		<RootNamespace>System.ComponentModel.DataAnnotations</RootNamespace>
 		<PackageId>Xpandables.Validation</PackageId>
-		<PackageTags>IRuleValidator, IRuleValidatorResolver, IRuleValidatorProvider</PackageTags>
+		<PackageTags>IValidator, IValidatorResolver, IValidatorProvider</PackageTags>
 	</PropertyGroup>
 
 	<ItemGroup>
 		<PackageReference Include="Microsoft.Extensions.DependencyInjection" />
+	</ItemGroup>
+
+	<ItemGroup>
+	  <ProjectReference Include="..\System.Results\System.Results.csproj" />
 	</ItemGroup>
 
 </Project>

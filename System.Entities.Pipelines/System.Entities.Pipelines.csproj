@@ -1,0 +1,18 @@
+﻿<Project Sdk="Microsoft.NET.Sdk">
+
+  <PropertyGroup>
+    <Title>Xpandables.Entities.Pipelines</Title>
+    <Description>IRepository pipeline implementation.</Description>
+    <AssemblyName>Xpandables.Entities.Pipelines</AssemblyName>
+    <RootNamespace>System.Pipelines</RootNamespace>
+    <PackageId>Xpandables.Entities.Pipelines</PackageId>
+    <PackageTags>IPipelineDecorator, IRepository, IUnitOfWork</PackageTags>
+  </PropertyGroup>
+
+  <ItemGroup>
+    <ProjectReference Include="..\System.Entities\System.Entities.csproj" />
+    <ProjectReference Include="..\System.Pipelines\System.Pipelines.csproj" />
+    <ProjectReference Include="..\System.Results\System.Results.csproj" />
+  </ItemGroup>
+
+</Project>

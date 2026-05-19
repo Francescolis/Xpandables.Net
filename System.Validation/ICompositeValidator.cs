@@ -1,4 +1,4 @@
-/*******************************************************************************
+﻿/*******************************************************************************
  * Copyright (C) 2025-2026 Kamersoft
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
@@ -14,6 +14,8 @@
  * limitations under the License.
  *
 ********************************************************************************/
+using System.Diagnostics.CodeAnalysis;
+
 namespace System.ComponentModel.DataAnnotations;
 
 /// <summary>
@@ -23,5 +25,5 @@ namespace System.ComponentModel.DataAnnotations;
 /// multiple validators into a single validation operation for objects of type <typeparamref
 /// name="TArgument"/>.</remarks>
 /// <typeparam name="TArgument">The type of the object to be validated. Must be a class that implements <see cref="IRequiresValidation"/>.</typeparam>
-public interface ICompositeValidator<in TArgument> : IValidator<TArgument>
-    where TArgument : class, IRequiresValidation;
+public interface ICompositeValidator<[DynamicallyAccessedMembers(DynamicallyAccessedMemberTypes.AllProperties)] in TArgument> : IValidator<TArgument>
+	where TArgument : class, IRequiresValidation;

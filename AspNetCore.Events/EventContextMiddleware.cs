@@ -1,4 +1,4 @@
-/*******************************************************************************
+﻿/*******************************************************************************
  * Copyright (C) 2025-2026 Kamersoft
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
@@ -36,7 +36,7 @@ namespace Microsoft.AspNetCore;
 public sealed class EventContextMiddleware : Disposable, IMiddleware
 {
     private readonly IDisposable? _disposable;
-    private readonly IEventContextAccessor _contextAccessor;
+    private readonly ICorrelationContextAccessor _contextAccessor;
     private EventContextOptions _options;
 
     /// <summary>
@@ -50,7 +50,7 @@ public sealed class EventContextMiddleware : Disposable, IMiddleware
     /// at construction, and updates are applied automatically when options change.</param>
     /// <exception cref="ArgumentNullException">Thrown if contextAccessor or options is null.</exception>
     public EventContextMiddleware(
-        IEventContextAccessor contextAccessor,
+        ICorrelationContextAccessor contextAccessor,
         IOptionsMonitor<EventContextOptions> options)
     {
         _contextAccessor = contextAccessor ?? throw new ArgumentNullException(nameof(contextAccessor));
@@ -70,7 +70,7 @@ public sealed class EventContextMiddleware : Disposable, IMiddleware
 
 		string? causationValue = ReadHeaderValue(context, _options.CausationIdHeaderName);
 
-        var eventContext = new EventContext
+        var eventContext = new CorrelationContext
         {
             CorrelationId = correlationValue,
             CausationId = causationValue

@@ -1,4 +1,4 @@
-/*******************************************************************************
+﻿/*******************************************************************************
  * Copyright (C) 2025-2026 Kamersoft
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
@@ -24,9 +24,9 @@ namespace System.Events.Domain;
 /// events if they are not already specified, using values from the current event context. This helps maintain event
 /// traceability across distributed systems and message flows.</remarks>
 /// <param name="accessor">The accessor used to retrieve the current event context. Cannot be null.</param>
-public sealed class DefaultDomainEventEnricher(IEventContextAccessor accessor) : IDomainEventEnricher
+public sealed class DefaultDomainEventEnricher(ICorrelationContextAccessor accessor) : IDomainEventEnricher
 {
-    private readonly IEventContextAccessor _accessor = accessor ?? throw new ArgumentNullException(nameof(accessor));
+    private readonly ICorrelationContextAccessor _accessor = accessor ?? throw new ArgumentNullException(nameof(accessor));
 
     /// <inheritdoc/>
     public TDomainEvent Enrich<TDomainEvent>(TDomainEvent @event)
@@ -34,7 +34,7 @@ public sealed class DefaultDomainEventEnricher(IEventContextAccessor accessor) :
     {
         ArgumentNullException.ThrowIfNull(@event);
 
-		EventContext context = _accessor.Current;
+		CorrelationContext context = _accessor.Current;
 
         if (@event.CorrelationId is null && context.CorrelationId is not null)
         {

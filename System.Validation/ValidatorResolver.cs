@@ -14,9 +14,9 @@
  * limitations under the License.
  *
 ********************************************************************************/
-using System.ComponentModel.DataAnnotations;
-
 using Microsoft.Extensions.DependencyInjection;
+using System.ComponentModel.DataAnnotations;
+using System.Diagnostics.CodeAnalysis;
 
 namespace System.ComponentModel.DataAnnotations;
 
@@ -28,7 +28,7 @@ namespace System.ComponentModel.DataAnnotations;
 /// the specified argument type. This enables generic validation scenarios where the argument type is known at compile
 /// time.</remarks>
 /// <typeparam name="TArgument">The type of argument to be validated. Must be a reference type that implements <see cref="IRequiresValidation"/>.</typeparam>
-public sealed class ValidatorResolver<TArgument> : IValidatorResolver<TArgument>
+public sealed class ValidatorResolver<[DynamicallyAccessedMembers(DynamicallyAccessedMemberTypes.AllProperties)] TArgument> : IValidatorResolver<TArgument>
 	where TArgument : class, IRequiresValidation
 {
 	/// <inheritdoc/>

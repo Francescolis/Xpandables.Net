@@ -1,4 +1,4 @@
-/*******************************************************************************
+﻿/*******************************************************************************
  * Copyright (C) 2025-2026 Kamersoft
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
@@ -14,6 +14,8 @@
  * limitations under the License.
  *
 ********************************************************************************/
+using System.Diagnostics.CodeAnalysis;
+
 namespace System.ComponentModel.DataAnnotations;
 
 /// <summary>
@@ -24,20 +26,20 @@ namespace System.ComponentModel.DataAnnotations;
 /// type of the object or argument.</remarks>
 public interface IValidatorProvider
 {
-    /// <summary>
-    /// Attempts to retrieve a validator for the specified type.
-    /// </summary>
-    /// <param name="type">The type for which to retrieve a validator. Cannot be null.</param>
-    /// <returns>An instance of <see cref="IValidator"/> for the specified type if one is available; otherwise, <see
-    /// langword="null"/>.</returns>
-    IValidator? TryGetValidator(Type type);
+	/// <summary>
+	/// Attempts to retrieve a validator for the specified type.
+	/// </summary>
+	/// <param name="type">The type for which to retrieve a validator. Cannot be null.</param>
+	/// <returns>An instance of <see cref="IValidator"/> for the specified type if one is available; otherwise, <see
+	/// langword="null"/>.</returns>
+	IValidator? TryGetValidator(Type type);
 
-    /// <summary>
-    /// Attempts to retrieve a validator for the specified argument type.
-    /// </summary>
-    /// <typeparam name="TArgument">The type of argument for which to retrieve a validator. Must be a reference type that implements
-    /// IRequiresValidation.</typeparam>
-    /// <returns>An instance of IRuleValidator for the specified argument type if one is available; otherwise, null.</returns>
-    IValidator? TryGetValidator<TArgument>()
-        where TArgument : class, IRequiresValidation;
+	/// <summary>
+	/// Attempts to retrieve a validator for the specified argument type.
+	/// </summary>
+	/// <typeparam name="TArgument">The type of argument for which to retrieve a validator. Must be a reference type that implements
+	/// IRequiresValidation.</typeparam>
+	/// <returns>An instance of IRuleValidator for the specified argument type if one is available; otherwise, null.</returns>
+	IValidator? TryGetValidator<[DynamicallyAccessedMembers(DynamicallyAccessedMemberTypes.AllProperties)] TArgument>()
+		where TArgument : class, IRequiresValidation;
 }

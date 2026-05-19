@@ -1,4 +1,4 @@
-/*******************************************************************************
+﻿/*******************************************************************************
  * Copyright (C) 2025-2026 Kamersoft
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
@@ -14,6 +14,9 @@
  * limitations under the License.
  *
 ********************************************************************************/
+using System.Diagnostics.CodeAnalysis;
+using System.Results;
+
 namespace System.ComponentModel.DataAnnotations;
 
 /// <summary>
@@ -31,7 +34,7 @@ namespace System.ComponentModel.DataAnnotations;
 /// <param name="validators">The collection of validators to apply to the argument instance. Cannot be null.</param>
 /// <param name="enableParallelValidation">When <see langword="true"/>, <see cref="ValidateAsync"/> runs 
 /// all validators concurrently. Defaults to <see langword="false"/> (sequential).</param>
-public sealed class CompositeValidator<TArgument>(
+public sealed class CompositeValidator<[DynamicallyAccessedMembers(DynamicallyAccessedMemberTypes.AllProperties)] TArgument>(
 	IEnumerable<IValidator<TArgument>> validators,
 	bool enableParallelValidation = false) :
 	Validator<TArgument>, ICompositeValidator<TArgument>
@@ -42,63 +45,71 @@ public sealed class CompositeValidator<TArgument>(
 	private readonly bool _enableParallelValidation = enableParallelValidation;
 
 	/// <inheritdoc/>
-	public override IReadOnlyCollection<ValidationResult> Validate(TArgument instance)
+	public override Result Validate(TArgument instance)
 	{
-		List<ValidationResult> validationResults = [];
+		FailureResult failureResult = ResultWith.Failure();
 		foreach (IValidator<TArgument> validator in _validators.OrderBy(v => v.Order))
 		{
-			IReadOnlyCollection<ValidationResult> results = validator.Validate(instance);
-			if (results is { Count: > 0 })
+			Result result = validator.Validate(instance);
+			if (result is FailureResult failure)
 			{
-				validationResults.AddRange(results);
+				failureResult = failureResult.Merge(failure);
 			}
 		}
 
-		return validationResults;
+		return failureResult;
 	}
 
 	/// <inheritdoc/>
-	public override async ValueTask<IReadOnlyCollection<ValidationResult>> ValidateAsync(TArgument instance)
+	public override async ValueTask<Result> ValidateAsync(TArgument instance)
 	{
 		if (_enableParallelValidation)
 		{
 			return await ValidateParallelAsync(instance).ConfigureAwait(false);
 		}
 
-		List<ValidationResult> validationResults = [];
-
+		FailureResult failureResult = ResultWith.Failure();
+		int count = 0;
 		foreach (IValidator<TArgument> validator in _validators.OrderBy(v => v.Order))
 		{
-			IReadOnlyCollection<ValidationResult> results = await validator
+			count++;
+			Result result = await validator
 				.ValidateAsync(instance)
 				.ConfigureAwait(false);
 
-			if (results is { Count: > 0 })
+			if (result is FailureResult failure)
 			{
-				validationResults.AddRange(results);
+				failureResult = failureResult.Merge(failure);
 			}
 		}
 
-		return validationResults;
+		return count switch
+		{
+			0 => ResultWith.Success(),
+			_ => failureResult
+		};
 	}
 
-	private async ValueTask<IReadOnlyCollection<ValidationResult>> ValidateParallelAsync(TArgument instance)
+	private async ValueTask<Result> ValidateParallelAsync(TArgument instance)
 	{
-		Task<IReadOnlyCollection<ValidationResult>>[] tasks = [.. _validators
+		Task<Result>[] tasks = [.. _validators
 			.Select(v => v.ValidateAsync(instance).AsTask())];
 
-		IReadOnlyCollection<ValidationResult>[] allResults =
+		Result[] allResults =
 			await Task.WhenAll(tasks).ConfigureAwait(false);
 
-		List<ValidationResult> validationResults = [];
-		foreach (IReadOnlyCollection<ValidationResult> results in allResults)
+		var failureResults = allResults.OfType<FailureResult>().ToList();
+		if (failureResults.Count == 0)
 		{
-			if (results is { Count: > 0 })
-			{
-				validationResults.AddRange(results);
-			}
+			return ResultWith.Success();
 		}
 
-		return validationResults;
+		FailureResult failure = ResultWith.Failure();
+		foreach (FailureResult? failureResult in failureResults)
+		{
+			failure = failure.Merge(failureResult);
+		}
+
+		return failure;
 	}
 }
