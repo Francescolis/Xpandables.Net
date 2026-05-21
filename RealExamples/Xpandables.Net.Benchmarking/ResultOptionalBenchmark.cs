@@ -47,7 +47,7 @@ public class ResultOptionalBenchmark
 	[Benchmark(Baseline = true, Description = "Result.Success() — non-generic")]
 	public Result CreateSuccessResult()
 	{
-		return Result.Success().Build();
+		return ResultWith.Success();
 	}
 
 	/// <summary>
@@ -57,7 +57,7 @@ public class ResultOptionalBenchmark
 	[Benchmark(Description = "Result.Success<int>(42) — value-type")]
 	public Result<int> CreateSuccessResultInt()
 	{
-		return Result.Success(42).Build();
+		return ResultWith.Success(42);
 	}
 
 	/// <summary>
@@ -67,7 +67,7 @@ public class ResultOptionalBenchmark
 	[Benchmark(Description = "Result.Success<string>(\"hello\") — ref-type")]
 	public Result<string> CreateSuccessResultString()
 	{
-		return Result.Success("hello").Build();
+		return ResultWith.Success("hello");
 	}
 
 	/// <summary>
@@ -77,11 +77,10 @@ public class ResultOptionalBenchmark
 	[Benchmark(Description = "Result.Failure() — with details")]
 	public Result CreateFailureResultWithDetails()
 	{
-		return Result.Failure()
+		return ResultWith.Failure()
 			.WithStatusCode(HttpStatusCode.BadRequest)
 			.WithTitle("Validation failed")
-			.WithDetail("Name is required.")
-			.Build();
+			.WithDetail("Name is required.");
 	}
 
 	/// <summary>
@@ -91,7 +90,7 @@ public class ResultOptionalBenchmark
 	[Benchmark(Description = "Result<int>.Value access")]
 	public int AccessResultValue()
 	{
-		SuccessResult<int> result = Result.Success(42).Build();
+		SuccessResult<int> result = ResultWith.Success(42);
 		return result.Value;
 	}
 

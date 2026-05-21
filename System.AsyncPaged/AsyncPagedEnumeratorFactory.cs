@@ -41,7 +41,7 @@ public static class AsyncPagedEnumerator
     public static AsyncPagedEnumerator<T> Create<T>(
         IAsyncEnumerator<T> sourceEnumerator,
         Pagination? pagination = null,
-        PaginationStrategy strategy = PaginationStrategy.None,
+        PaginationStrategy strategy = PaginationStrategy.Manual,
         CancellationToken cancellationToken = default) =>
         new(sourceEnumerator, pagination ?? Pagination.Empty,strategy, cancellationToken);
 

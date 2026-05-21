@@ -1,7 +1,7 @@
 using System.Net;
+using System.Pipelines;
+using System.Requests;
 using System.Results;
-using System.Results.Pipelines;
-using System.Results.Requests;
 using System.Results.Tasks;
 using Microsoft.Extensions.DependencyInjection;
 using Xunit;
@@ -23,7 +23,8 @@ public sealed class MediatorTests
 		Result result = await mediator.SendAsync(request);
 
         // Assert
-        Assert.Equal(HttpStatusCode.OK, result.StatusCode);
+        SuccessResult success = Assert.IsType<SuccessResult>(result);
+        Assert.Equal(HttpStatusCode.OK, success.StatusCode);
     }
 
     [Fact]
@@ -35,7 +36,7 @@ public sealed class MediatorTests
         var mediator = new Mediator(services.BuildServiceProvider());
         var request = new TestRequest();
 
-        // Act & Assert — Mediator is a pure dispatcher; without PipelineExceptionDecorator,
+        // Act & Assert ï¿½ Mediator is a pure dispatcher; without PipelineExceptionDecorator,
         // unhandled exceptions propagate to the caller.
         await Assert.ThrowsAsync<InvalidOperationException>(
             () => mediator.SendAsync(request));
@@ -91,7 +92,7 @@ public sealed class MediatorTests
     private sealed class SuccessHandler : IPipelineRequestHandler<TestRequest>
     {
         public Task<Result> HandleAsync(TestRequest request, CancellationToken cancellationToken = default) =>
-            Task.FromResult<Result>(new SuccessResultBuilder(HttpStatusCode.OK));
+			Task.FromResult<Result>(ResultWith.Success());
     }
 
     private sealed class ThrowingHandler : IPipelineRequestHandler<TestRequest>
@@ -105,7 +106,7 @@ public sealed class MediatorTests
         public Task<Result> HandleAsync(TestRequest request, CancellationToken cancellationToken = default)
         {
             cancellationToken.ThrowIfCancellationRequested();
-            return Task.FromResult<Result>(Result.Success());
+            return Task.FromResult<Result>(ResultWith.Success());
         }
     }
 
@@ -113,7 +114,7 @@ public sealed class MediatorTests
     {
         public Task<Result> HandleAsync(TestRequest request, CancellationToken cancellationToken = default)
         {
-            throw new ResultException(Result.Failure().WithError("key", "error").Build());
+            throw new ResultException(ResultWith.Failure().WithError("key", "error"));
         }
     }
 }

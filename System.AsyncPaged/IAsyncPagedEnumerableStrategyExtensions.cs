@@ -27,6 +27,42 @@ namespace System.Collections.Generic;
 public static class IAsyncPagedEnumerableStrategyExtensions
 {
 	/// <summary>
+	/// Configures the enumerable to preserve the original pagination snapshot during enumeration.
+	/// </summary>
+	/// <typeparam name="TSource">Source element type.</typeparam>
+	/// <param name="enumerable">The source asynchronous paged sequence.</param>
+	/// <returns>The configured enumerable instance to support fluent chaining.</returns>
+	public static IAsyncPagedEnumerable<TSource> WithManualPagination<TSource>(this IAsyncPagedEnumerable<TSource> enumerable)
+	{
+		ArgumentNullException.ThrowIfNull(enumerable);
+		return enumerable.WithStrategy(PaginationStrategy.Manual);
+	}
+
+	/// <summary>
+	/// Configures the enumerable to update pagination on page boundaries.
+	/// </summary>
+	/// <typeparam name="TSource">Source element type.</typeparam>
+	/// <param name="enumerable">The source asynchronous paged sequence.</param>
+	/// <returns>The configured enumerable instance to support fluent chaining.</returns>
+	public static IAsyncPagedEnumerable<TSource> WithPageAwarePagination<TSource>(this IAsyncPagedEnumerable<TSource> enumerable)
+	{
+		ArgumentNullException.ThrowIfNull(enumerable);
+		return enumerable.WithStrategy(PaginationStrategy.PageAware);
+	}
+
+	/// <summary>
+	/// Configures the enumerable to update pagination for each item.
+	/// </summary>
+	/// <typeparam name="TSource">Source element type.</typeparam>
+	/// <param name="enumerable">The source asynchronous paged sequence.</param>
+	/// <returns>The configured enumerable instance to support fluent chaining.</returns>
+	public static IAsyncPagedEnumerable<TSource> WithItemAwarePagination<TSource>(this IAsyncPagedEnumerable<TSource> enumerable)
+	{
+		ArgumentNullException.ThrowIfNull(enumerable);
+		return enumerable.WithStrategy(PaginationStrategy.ItemAware);
+	}
+
+	/// <summary>
 	/// Configures the enumerator to update pagination based on page boundaries.
 	/// </summary>
 	/// <typeparam name="TSource">Source element type.</typeparam>
@@ -39,7 +75,7 @@ public static class IAsyncPagedEnumerableStrategyExtensions
 	public static IAsyncPagedEnumerable<TSource> WithPerPageStrategy<TSource>(this IAsyncPagedEnumerable<TSource> enumerable)
 	{
 		ArgumentNullException.ThrowIfNull(enumerable);
-		return enumerable.WithStrategy(PaginationStrategy.PerPage);
+		return enumerable.WithStrategy(PaginationStrategy.PageAware);
 	}
 
 	/// <summary>
@@ -56,7 +92,7 @@ public static class IAsyncPagedEnumerableStrategyExtensions
 	public static IAsyncPagedEnumerable<TSource> WithPerItemStrategy<TSource>(this IAsyncPagedEnumerable<TSource> enumerable)
 	{
 		ArgumentNullException.ThrowIfNull(enumerable);
-		return enumerable.WithStrategy(PaginationStrategy.PerItem);
+		return enumerable.WithStrategy(PaginationStrategy.ItemAware);
 	}
 
 	/// <summary>
@@ -72,6 +108,6 @@ public static class IAsyncPagedEnumerableStrategyExtensions
 	public static IAsyncPagedEnumerable<TSource> WithNoStrategy<TSource>(this IAsyncPagedEnumerable<TSource> enumerable)
 	{
 		ArgumentNullException.ThrowIfNull(enumerable);
-		return enumerable.WithStrategy(PaginationStrategy.None);
+		return enumerable.WithStrategy(PaginationStrategy.Manual);
 	}
 }

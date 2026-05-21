@@ -104,6 +104,26 @@ public sealed record FailureResult : Result
 
 		return failure;
 	}
+
+	/// <summary>
+	/// Converts this failure result to a generic FailureResult&lt;TValue&gt;.
+	/// </summary>
+	/// <typeparam name="TValue">The type of the value for the generic failure result.</typeparam>
+	/// <returns>A new FailureResult&lt;TValue&gt; instance with the same properties as this failure result.</returns>
+	public FailureResult<TValue> ToResult<TValue>()
+	{
+		ArgumentNullException.ThrowIfNull(this);
+		return new FailureResult<TValue>
+		{
+			StatusCode = StatusCode,
+			Title = Title,
+			Detail = Detail,
+			Errors = Errors,
+			Headers = Headers,
+			Extensions = Extensions,
+			Exception = Exception
+		};
+	}
 }
 
 /// <summary>

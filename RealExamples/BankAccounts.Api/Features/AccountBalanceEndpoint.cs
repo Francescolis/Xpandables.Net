@@ -16,8 +16,8 @@
 ********************************************************************************/
 using System.ComponentModel.DataAnnotations;
 using System.Entities;
+using System.Requests;
 using System.Results;
-using System.Results.Requests;
 using System.Results.Tasks;
 
 using BankAccounts.Infrastructure;
@@ -85,7 +85,7 @@ public sealed class AccountBalanceQueryHandler(AccountDataContext context) : IRe
 			.ConfigureAwait(false);
 
 		return account is { AccountId: not null }
-			? Result.Success(account.Value)
-			: Result.NotFound<AccountBalanceResult>(nameof(request.AccountId), "Account not found");
+			? ResultWith.Success(account.Value)
+			: ResultWith.NotFound<AccountBalanceResult>(nameof(request.AccountId), "Account not found");
 	}
 }

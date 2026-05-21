@@ -1,7 +1,7 @@
 using System.Linq;
+using System.Pipelines;
+using System.Requests;
 using System.Results;
-using System.Results.Pipelines;
-using System.Results.Requests;
 using Microsoft.Extensions.DependencyInjection;
 using Xunit;
 
@@ -51,7 +51,7 @@ public sealed class PipelineExtensionsTests
 		IPipelineRequestHandler<TestRequest> handler1 = scope1.ServiceProvider.GetRequiredService<IPipelineRequestHandler<TestRequest>>();
 		IPipelineRequestHandler<TestRequest> handler2 = scope2.ServiceProvider.GetRequiredService<IPipelineRequestHandler<TestRequest>>();
 
-        // Assert — scoped: different scopes yield different instances
+        // Assert ï¿½ scoped: different scopes yield different instances
         Assert.NotSame(handler1, handler2);
     }
 
@@ -60,6 +60,6 @@ public sealed class PipelineExtensionsTests
     private sealed class TestHandler : IPipelineRequestHandler<TestRequest>
     {
         public Task<Result> HandleAsync(TestRequest request, CancellationToken cancellationToken = default) =>
-            Task.FromResult<Result>(Result.Success());
+            Task.FromResult<Result>(ResultWith.Success());
     }
 }

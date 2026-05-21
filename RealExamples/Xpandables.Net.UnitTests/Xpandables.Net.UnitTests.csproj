@@ -54,12 +54,15 @@
     <ProjectReference Include="..\..\System.Composition\System.Composition.csproj" />
     <ProjectReference Include="..\..\System.Entities.EntityFramework\System.Entities.EntityFramework.csproj" />
     <ProjectReference Include="..\..\System.Optionals\System.Optionals.csproj" />
+    <ProjectReference Include="..\..\System.Pipelines\System.Pipelines.csproj" />
+    <ProjectReference Include="..\..\System.Requests\System.Requests.csproj" />
     <ProjectReference Include="..\..\System.Results\System.Results.csproj" />
     <ProjectReference Include="..\..\System.Results.Tasks\System.Results.Tasks.csproj" />
     <ProjectReference Include="..\..\System.Primitives\System.Primitives.csproj" />
     <ProjectReference Include="..\..\System.Rests\System.Rests.csproj" />
     <ProjectReference Include="..\..\System.Events\System.Events.csproj" />
     <ProjectReference Include="..\..\System.Events.Data\System.Events.Data.csproj" />
+    <ProjectReference Include="..\..\System.Validation\System.Validation.csproj" />
   </ItemGroup>
 
   <ItemGroup>

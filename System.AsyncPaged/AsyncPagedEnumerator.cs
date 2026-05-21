@@ -56,7 +56,7 @@ public sealed class AsyncPagedEnumerator<T> : IAsyncPagedEnumerator<T>
         _sourceEnumerator = null;
         _cancellationToken = default;
         _pagination = pagination;
-        _strategy = PaginationStrategy.None;
+        _strategy = PaginationStrategy.Manual;
     }
 
     /// <summary>
@@ -92,7 +92,7 @@ public sealed class AsyncPagedEnumerator<T> : IAsyncPagedEnumerator<T>
 
         if (!await _sourceEnumerator.MoveNextAsync().ConfigureAwait(false))
         {
-            if (Strategy == PaginationStrategy.PerItem && _pagination.TotalCount is null)
+            if (Strategy == PaginationStrategy.ItemAware && _pagination.TotalCount is null)
             {
                 _pagination = _pagination with { TotalCount = _itemIndex };
             }
@@ -129,7 +129,7 @@ public sealed class AsyncPagedEnumerator<T> : IAsyncPagedEnumerator<T>
     [MethodImpl(MethodImplOptions.AggressiveInlining)]
     private void UpdatePagination(int index)
     {
-        if (_strategy == PaginationStrategy.PerItem)
+        if (_strategy == PaginationStrategy.ItemAware)
         {
             if (_pagination.PageSize == 0)
             {
@@ -142,7 +142,7 @@ public sealed class AsyncPagedEnumerator<T> : IAsyncPagedEnumerator<T>
             return;
         }
 
-        if (_strategy == PaginationStrategy.PerPage)
+        if (_strategy == PaginationStrategy.PageAware)
         {
             int pageSize = _pagination.PageSize;
             int currentPage = pageSize > 0 ? ((index - 1) / pageSize) + 1 : 1;

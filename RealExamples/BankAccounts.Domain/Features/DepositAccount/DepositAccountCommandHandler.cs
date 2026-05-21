@@ -16,7 +16,7 @@
 ********************************************************************************/
 using System.Events.Aggregates;
 using System.Results;
-using System.Results.Requests;
+using System.Requests;
 
 namespace BankAccounts.Domain.Features.DepositAccount;
 
@@ -45,6 +45,6 @@ public sealed class DepositAccountCommandHandler(IAggregateStore<Account> aggreg
 			Description = request.Description
 		};
 
-		return Result.Success(result);
+		return ResultWith.Success(result);
 	}
 }

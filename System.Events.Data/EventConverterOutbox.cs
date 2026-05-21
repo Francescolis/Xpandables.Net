@@ -27,10 +27,10 @@ namespace System.Events.Data;
 /// </summary>
 /// <param name="typeResolver">The type resolver to use for resolving event types.</param>
 /// <param name="converterContext">The context for event conversion. Cannot be null.</param>
-public sealed class EventConverterOutbox(ICacheTypeResolver typeResolver, IEventConverterContext converterContext) : IEventConverter<DataEventOutbox, IIntegrationEvent>
+public sealed class EventConverterOutbox(ICacheTypeResolver typeResolver, IJsonSerializerContext converterContext) : IEventConverter<DataEventOutbox, IIntegrationEvent>
 {
 	private readonly ICacheTypeResolver _typeResolver = typeResolver ?? throw new ArgumentNullException(nameof(typeResolver));
-	private readonly IEventConverterContext _converterContext = converterContext ?? throw new ArgumentNullException(nameof(converterContext));
+	private readonly IJsonSerializerContext _converterContext = converterContext ?? throw new ArgumentNullException(nameof(converterContext));
 
 	/// <inheritdoc/>
 	public DataEventOutbox ConvertEventToData(IIntegrationEvent @event)

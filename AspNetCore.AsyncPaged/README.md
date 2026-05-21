@@ -58,7 +58,7 @@ app.MapGet("/api/products", async (ProductService productService, CancellationTo
     IAsyncPagedEnumerable<Product> products = productService.GetProductsAsync(pageNumber: 1, pageSize: 20);
     return products; // Filter transforms this to structured JSON response
 })
-.WithXAsyncPagedFilter();
+.WithXAsyncPagedFilterSupport<RouteHandlerBuilder, Product>();
 
 app.Run();
 ```
@@ -189,11 +189,10 @@ IResult result3 = products.ToResult(ProductJsonContext.Default.Product);
 ```csharp
 // Apply async paged filter to transform responses
 app.MapGet("/api/items", GetItems)
-    .WithXAsyncPagedFilter();
+    .WithXAsyncPagedFilterSupport<RouteHandlerBuilder, ItemDto>();
 
 // Works with route groups
-var apiGroup = app.MapGroup("/api")
-    .WithXAsyncPagedFilter(); // Applied to all endpoints in group
+var apiGroup = app.MapGroup("/api");
 
 apiGroup.MapGet("/products", GetProducts);
 apiGroup.MapGet("/orders", GetOrders);

@@ -16,7 +16,7 @@
 ********************************************************************************/
 using System.Events.Aggregates;
 using System.Results;
-using System.Results.Requests;
+using System.Requests;
 
 namespace BankAccounts.Domain.Features.WithdrawAccount;
 
@@ -47,6 +47,6 @@ public sealed class WithdrawAccountCommandHandler(IAggregateStore<Account> aggre
 			Description = request.Description
 		};
 
-		return Result.Success(result);
+		return ResultWith.Success(result);
 	}
 }

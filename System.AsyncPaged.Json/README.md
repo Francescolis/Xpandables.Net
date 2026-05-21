@@ -17,7 +17,7 @@ Built for **.NET 10** and **C# 14**.
 
 | Type | File | Description |
 |------|------|-------------|
-| `JsonSerializerExtensions` | `JsonSerializerExtensions.cs` | `SerializeAsyncPaged` — writes `IAsyncPagedEnumerable<T>` as JSON to `PipeWriter` (with `JsonTypeInfo<T>` or `JsonSerializerOptions`) |
+| `JsonSerializerExtensions` | `JsonSerializerExtensions.cs` | `SerializeAsyncPaged` — writes `IAsyncPagedEnumerable<T>` as JSON to `PipeWriter` (with `JsonTypeInfo<T>` or `JsonSerializerContext`) |
 | `JsonDeserializerExtensions` | `JsonDeserializerExtensions.cs` | `DeserializeAsyncPaged` — reads JSON stream back into `IAsyncPagedEnumerable<T>` |
 | `HttpContentExtensions` | `HttpContentExtensions.cs` | `ReadAsAsyncPagedEnumerable` — deserialize from `HttpContent` |
 
@@ -58,11 +58,11 @@ app.MapGet("/api/products", async (HttpContext httpContext, AppDbContext db) =>
         AppJsonContext.Default.ProductDto,
         httpContext.RequestAborted);
 
-    // Option B: with JsonSerializerOptions (reflection-based)
+    // Option B: with JsonSerializerContext
     await JsonSerializer.SerializeAsyncPaged(
         pipeWriter,
         products,
-        new JsonSerializerOptions { PropertyNamingPolicy = JsonNamingPolicy.CamelCase },
+        AppJsonContext.Default,
         httpContext.RequestAborted);
 });
 ```
@@ -76,7 +76,7 @@ using System.Text.Json;
 await using Stream responseStream = await httpResponse.Content.ReadAsStreamAsync();
 
 IAsyncPagedEnumerable<OrderDto?> orders = JsonSerializer
-    .DeserializeAsyncPagedEnumerable<OrderDto>(responseStream, jsonOptions);
+    .DeserializeAsyncPagedEnumerable(responseStream, AppJsonContext.Default.OrderDto);
 
 await foreach (OrderDto? order in orders)
 {
@@ -111,18 +111,14 @@ using System.Net.Http.Json;
 HttpResponseMessage response = await httpClient.GetAsync("/api/products");
 response.EnsureSuccessStatusCode();
 
-// With default options
-IAsyncPagedEnumerable<ProductDto?> products = response.Content
-    .ReadFromJsonAsAsyncPagedEnumerable<ProductDto>();
-
-await foreach (ProductDto? product in products)
-{
-    Console.WriteLine(product?.Name);
-}
-
 // With explicit JsonTypeInfo (AOT-safe)
 IAsyncPagedEnumerable<ProductDto?> productsAot = response.Content
     .ReadFromJsonAsAsyncPagedEnumerable(AppJsonContext.Default.ProductDto);
+
+await foreach (ProductDto? product in productsAot)
+{
+    Console.WriteLine(product?.Name);
+}
 
 // With pagination strategy
 IAsyncPagedEnumerable<ProductDto?> productsPaged = response.Content

@@ -31,6 +31,7 @@ public sealed class AccountOperationEndpoint : MinimalEndpointRoute
 			async (Guid accountId, IMediator mediator) =>
 				await mediator.SendAsync(new AccountOperationQuery { AccountId = accountId }).ConfigureAwait(false))
 			.AllowAnonymous()
+			.WithXAsyncPagedFilterSupport<RouteHandlerBuilder, AccountOperationResult>()
 			.WithTags("BankAccounts")
 			.WithName("GetBankAccountOperation")
 			.WithSummary("Gets the operations of a bank account.")

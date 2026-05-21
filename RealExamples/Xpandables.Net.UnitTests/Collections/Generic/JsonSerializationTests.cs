@@ -29,16 +29,6 @@ namespace Xpandables.Net.UnitTests.Collections.Generic;
 /// </summary>
 public sealed class JsonSerializationTests
 {
-    private readonly JsonSerializerOptions _options;
-
-    public JsonSerializationTests() => _options = new JsonSerializerOptions(JsonSerializerDefaults.Web)
-    {
-        PropertyNameCaseInsensitive = true,
-        WriteIndented = false,
-        DefaultIgnoreCondition = JsonIgnoreCondition.WhenWritingNull,
-        TypeInfoResolver = TestDataJsonContext.Default
-    };
-
     [Fact]
     public async Task SerializeAsyncPaged_WithStream_ShouldProduceValidJson()
     {
@@ -53,7 +43,7 @@ public sealed class JsonSerializationTests
         await using var stream = new MemoryStream();
 
         // Act
-        await JsonSerializer.SerializeAsyncPaged(stream, paged, _options);
+        await JsonSerializer.SerializeAsyncPaged(stream, paged, TestDataJsonContext.Default.TestItem);
 
         // Assert
         stream.Position = 0;
@@ -81,7 +71,7 @@ public sealed class JsonSerializationTests
         // Act
         _ = Task.Run(async () =>
         {
-            await JsonSerializer.SerializeAsyncPaged(pipe.Writer, paged, _options);
+            await JsonSerializer.SerializeAsyncPaged(pipe.Writer, paged, TestDataJsonContext.Default.TestItem);
             await pipe.Writer.CompleteAsync();
         });
 
@@ -110,7 +100,7 @@ public sealed class JsonSerializationTests
         await using var stream = new MemoryStream();
 
         // Act
-        await JsonSerializer.SerializeAsyncPaged(stream, paged, _options);
+        await JsonSerializer.SerializeAsyncPaged(stream, paged, TestDataJsonContext.Default.TestItem);
 
         // Assert
         stream.Length.Should()
@@ -214,7 +204,7 @@ public sealed class JsonSerializationTests
         await using var serializeStream = new MemoryStream();
 		IAsyncEnumerable<TestItem> source = originalItems.ToAsyncEnumerable();
 		IAsyncPagedEnumerable<TestItem> paged = AsyncPagedEnumerable.Create(source, _ => ValueTask.FromResult(originalPagination));
-        await JsonSerializer.SerializeAsyncPaged(serializeStream, paged, _options);
+        await JsonSerializer.SerializeAsyncPaged(serializeStream, paged, TestDataJsonContext.Default.TestItem);
 
         // Act - Deserialize
         serializeStream.Position = 0;

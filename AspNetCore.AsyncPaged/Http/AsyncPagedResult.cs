@@ -14,8 +14,6 @@
  * limitations under the License.
  *
 ********************************************************************************/
-
-using System.Diagnostics.CodeAnalysis;
 using System.IO.Pipelines;
 using System.Text.Json;
 using System.Text.Json.Serialization.Metadata;
@@ -50,8 +48,6 @@ public sealed class AsyncPagedResult<TResult>(
 	private readonly JsonSerializerOptions? _serializerOptions = serializerOptions;
 
 	/// <inheritdoc/>
-	[UnconditionalSuppressMessage("Trimming", "IL2026:Members annotated with 'RequiresUnreferencedCodeAttribute' require dynamic access otherwise can break functionality when trimming application code", Justification = "<Pending>")]
-	[UnconditionalSuppressMessage("AOT", "IL3050:Calling members annotated with 'RequiresDynamicCodeAttribute' may break functionality when AOT compiling.", Justification = "<Pending>")]
 	public async Task ExecuteAsync(HttpContext httpContext)
 	{
 		ArgumentNullException.ThrowIfNull(httpContext);
@@ -63,18 +59,13 @@ public sealed class AsyncPagedResult<TResult>(
 		JsonSerializerOptions options = _serializerOptions ?? httpContext.GetJsonSerializerOptions();
 		JsonTypeInfo<TResult>? typeInfo = _jsonTypeInfo ?? ResolveJsonTypeInfo(options);
 
-		if (typeInfo is not null)
-		{
-			await JsonSerializer
-				.SerializeAsyncPaged(pipeWriter, _results, typeInfo, cancellationToken)
-				.ConfigureAwait(false);
-		}
-		else
-		{
-			await JsonSerializer
-				.SerializeAsyncPaged(pipeWriter, _results, options, cancellationToken)
-				.ConfigureAwait(false);
-		}
+		typeInfo ??= ResolveJsonTypeInfo(options)
+			?? throw new InvalidOperationException(
+				$"No JsonTypeInfo<{typeof(TResult).Name}> was found. Register source-generated metadata or pass JsonTypeInfo explicitly.");
+
+		await JsonSerializer
+			.SerializeAsyncPaged(pipeWriter, _results, typeInfo, cancellationToken)
+			.ConfigureAwait(false);
 	}
 
 	private JsonTypeInfo<TResult>? ResolveJsonTypeInfo(JsonSerializerOptions options)

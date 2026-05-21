@@ -44,7 +44,7 @@ public static class AsyncPagedEnumerable
     public static IAsyncPagedEnumerable<T> Create<T>(
         IAsyncEnumerable<T> source,
         Func<CancellationToken, ValueTask<Pagination>>? paginationFactory = default,
-        PaginationStrategy strategy = PaginationStrategy.None) =>
+        PaginationStrategy strategy = PaginationStrategy.Manual) =>
         new AsyncPagedEnumerable<T>(source, paginationFactory, strategy);
 
     /// <summary>
@@ -67,7 +67,7 @@ public static class AsyncPagedEnumerable
         IQueryable<T> query,
         CursorOptions<T>? cursorOptions = null,
         Func<CancellationToken, ValueTask<Pagination>>? paginationFactory = default,
-        PaginationStrategy strategy = PaginationStrategy.None) =>
+        PaginationStrategy strategy = PaginationStrategy.Manual) =>
         new AsyncPagedEnumerable<T>(query, cursorOptions, paginationFactory, strategy);
 
     /// <summary>
@@ -83,7 +83,7 @@ public static class AsyncPagedEnumerable
     /// <returns>An asynchronous paged enumerable of type T created by the specified factory and pagination strategy.</returns>
     public static IAsyncPagedEnumerable<T> Create<T>(
         Func<CancellationToken, ValueTask<IAsyncPagedEnumerable<T>>> factory,
-        PaginationStrategy strategy = PaginationStrategy.None) =>
+        PaginationStrategy strategy = PaginationStrategy.Manual) =>
         new AsyncPagedFactoryEnumerable<T>(factory, strategy);
 
     /// <summary>

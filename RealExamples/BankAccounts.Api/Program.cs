@@ -16,7 +16,13 @@ builder.Services
 	.AddXMinimalEndpointRoutes()
 	.AddXResultEndpointValidator()
 	.AddXJsonSerializerOptions()
-	.AddXMediatorWithEventSourcingPipelines()
+	.AddXMediator()
+	.AddXPipelineExceptionDecorator()
+	.AddXPipelineValidationDecorator()
+	.AddXPipelineBeforeCommitDomainEventDecorator()
+	.AddXPipelineAfterCommitDomainEventDecorator()
+	.AddXPipelineEnqueueIntegrationEventDecorator()
+	.AddXPipelineRequireDataUnitOfWorkDecorator()
 	.AddXServices(builder.Configuration, [typeof(Account).Assembly, typeof(AccountDataContext).Assembly])
 	.AddXRequestHandlers()
 	.AddXValidators([typeof(Account).Assembly])
@@ -27,9 +33,7 @@ builder.Services
 	.AddXResultProblemDetails()
 	.AddXMinimalSupport(options =>
 		options.ConfigureEndpoint = builder =>
-			builder
-				.WithXAsyncPagedFilterSupport()
-				.WithXResultSupport());
+			builder.WithXResultSupport());
 
 builder.Services.AddOpenApi(options => options.AddDocumentTransformer((document, _, _) =>
 {

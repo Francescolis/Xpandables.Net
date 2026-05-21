@@ -296,38 +296,6 @@ public static class IEventDataExtensions
 	}
 
 	/// <summary>
-	/// Adds a singleton implementation of IEventConverterContext to the service collection using the specified
-	/// context type.
-	/// </summary>
-	/// <remarks>If an IEventConverterContext service is already registered, this method does not
-	/// overwrite the existing registration. This method is typically used during application startup to configure
-	/// event conversion services for dependency injection.</remarks>
-	/// <typeparam name="TEventConverterContext">The type that implements IEventConverterContext to be registered as a singleton. Must have a public
-	/// constructor.</typeparam>
-	/// <returns>The IServiceCollection instance with the IEventConverterContext service registered.</returns>
-	public static IServiceCollection AddXEventConverterContext<[DynamicallyAccessedMembers(DynamicallyAccessedMemberTypes.PublicConstructors)] TEventConverterContext>(this IServiceCollection services)
-		where TEventConverterContext : class, IEventConverterContext
-	{
-		ArgumentNullException.ThrowIfNull(services);
-		services.TryAddSingleton<IEventConverterContext, TEventConverterContext>();
-		return services;
-	}
-
-	/// <summary>
-	/// Adds the default implementation of the event converter context to the service collection.
-	/// </summary>
-	/// <remarks>This method registers <see cref="IEventConverterContext"/> as a singleton service if
-	/// it has not already been registered. Call this method during application startup to enable event conversion
-	/// features.</remarks>
-	/// <returns>The current <see cref="IServiceCollection"/> instance for method chaining.</returns>
-	public static IServiceCollection AddXEventConverterContext(this IServiceCollection services)
-	{
-		ArgumentNullException.ThrowIfNull(services);
-		services.AddXEventConverterContext<DefaultEventConverterContext>();
-		return services;
-	}
-
-	/// <summary>
 	/// Adds the default Event converter factory to the service collection.
 	/// </summary>
 	/// <remarks>Use this method to enable Event conversion capabilities in the application's

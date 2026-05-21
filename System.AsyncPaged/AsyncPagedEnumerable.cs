@@ -33,13 +33,10 @@ public sealed class AsyncPagedEnumerable<T> : IAsyncPagedEnumerable<T>, IAsyncDi
 	private List<T>? _materializedItems;
 	private readonly SemaphoreSlim _materializationLock = new(1, 1);
 
-	// Lazy pagination — SemaphoreSlim double-check pattern
+	// Lazy pagination ï¿½ SemaphoreSlim double-check pattern
 	private readonly SemaphoreSlim _paginationLock = new(1, 1);
 	private Task<Pagination>? _paginationTask;
-	private Pagination _pagination; // backing store
-
-	/// <inheritdoc/>
-	public Pagination Pagination => _paginationTask is { IsCompletedSuccessfully: true } ? _pagination : Pagination.Empty;
+	private Pagination _pagination;
 
 	/// <summary>
 	/// Initializes a new instance of the <see cref="AsyncPagedEnumerable{T}"/> class with an async enumerable source.
@@ -123,7 +120,7 @@ public sealed class AsyncPagedEnumerable<T> : IAsyncPagedEnumerable<T>, IAsyncDi
 	/// <inheritdoc/>
 	public IAsyncPagedEnumerator<T> GetAsyncEnumerator(CancellationToken cancellationToken = default)
 	{
-		Pagination initial = Pagination;
+		Pagination initial = _pagination;
 
 		IAsyncEnumerator<T> enumerator = (_source, _queryable) switch
 		{
@@ -262,9 +259,6 @@ internal sealed class AsyncPagedFactoryEnumerable<T> : IAsyncPagedEnumerable<T>,
 	}
 
 	/// <inheritdoc/>
-	public Pagination Pagination => _pagination;
-
-	/// <inheritdoc/>
 	public IAsyncPagedEnumerator<T> GetAsyncEnumerator(CancellationToken cancellationToken = default) =>
 		new Enumerator(this, cancellationToken);
 
@@ -282,7 +276,7 @@ internal sealed class AsyncPagedFactoryEnumerable<T> : IAsyncPagedEnumerable<T>,
 			if (!_initialized)
 			{
 				_inner = await _factory(cancellationToken).ConfigureAwait(false);
-				_pagination = _inner.Pagination;
+				_pagination = await _inner.GetPaginationAsync(cancellationToken).ConfigureAwait(false);
 				_initialized = true;
 			}
 			return _pagination;
@@ -347,7 +341,7 @@ internal sealed class AsyncPagedFactoryEnumerable<T> : IAsyncPagedEnumerable<T>,
 					if (!_parent._initialized)
 					{
 						_parent._inner = await _parent._factory(_token).ConfigureAwait(false);
-						_parent._pagination = _parent._inner.Pagination;
+						_parent._pagination = await _parent._inner.GetPaginationAsync(_token).ConfigureAwait(false);
 						_parent._initialized = true;
 					}
 				}
@@ -358,6 +352,7 @@ internal sealed class AsyncPagedFactoryEnumerable<T> : IAsyncPagedEnumerable<T>,
 			}
 
 			_inner ??= _parent._inner!.GetAsyncEnumerator(_token);
+			_parent._pagination = _inner.Pagination;
 			return await _inner.MoveNextAsync().ConfigureAwait(false);
 		}
 

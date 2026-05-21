@@ -16,7 +16,7 @@
 ********************************************************************************/
 using System.ComponentModel.DataAnnotations;
 using System.Events.Domain;
-using System.Results.Requests;
+using System.Requests;
 
 namespace BankAccounts.Domain.Features.DepositAccount;
 

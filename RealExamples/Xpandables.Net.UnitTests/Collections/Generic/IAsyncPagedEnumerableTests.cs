@@ -31,10 +31,11 @@ public sealed class IAsyncPagedEnumerableTests
 
 		// Act
 		IAsyncPagedEnumerable<int> paged = AsyncPagedEnumerable.Create(source);
+        Pagination pagination = await paged.GetPaginationAsync();
 
         // Assert
         paged.Should().NotBeNull("paged enumerable should be created");
-        paged.Pagination.Should().Be(Pagination.Empty, "initial pagination should be empty");
+        pagination.Should().Be(Pagination.Empty, "default pagination should be empty");
     }
 
     [Fact]
@@ -136,17 +137,17 @@ public sealed class IAsyncPagedEnumerableTests
     }
 
     [Fact]
-    public async Task Pagination_Property_ShouldReturnEmptyBeforeComputation()
+    public async Task GetPaginationAsync_WithoutFactory_ShouldReturnEmpty()
     {
 		// Arrange
 		IAsyncEnumerable<int> source = CreateAsyncEnumerable(50);
 		IAsyncPagedEnumerable<int> paged = AsyncPagedEnumerable.Create(source);
 
 		// Act
-		Pagination pagination = paged.Pagination;
+        Pagination pagination = await paged.GetPaginationAsync();
 
         // Assert
-        pagination.Should().Be(Pagination.Empty, "pagination should be empty before computation");
+        pagination.Should().Be(Pagination.Empty, "pagination should be empty when no factory is provided");
     }
 
     [Fact]

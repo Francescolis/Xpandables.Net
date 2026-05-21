@@ -1,4 +1,4 @@
-/*******************************************************************************
+﻿/*******************************************************************************
  * Copyright (C) 2025-2026 Kamersoft
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
@@ -17,24 +17,24 @@
 using System.Text.Json;
 using System.Text.Json.Serialization.Metadata;
 
-namespace System.Events.Data;
+namespace System;
 
 /// <summary>
-/// Provides a default implementation of the event converter context that supplies JSON serialization options and type
-/// metadata for event conversion operations.
+/// Provides a default implementation of the JSON serializer context that supplies JSON serialization options and type
+/// metadata for JSON serialization operations.
 /// </summary>
 /// <param name="serializerOptions">The JSON serialization options to use when resolving type metadata. Cannot be null.</param>
-public sealed class DefaultEventConverterContext(JsonSerializerOptions serializerOptions) : IEventConverterContext
+public sealed class DefaultJsonSerializerContext(JsonSerializerOptions serializerOptions) : IJsonSerializerContext
 {
-    /// <inheritdoc/>
-    public JsonSerializerOptions SerializerOptions { get; } = serializerOptions ?? throw new ArgumentNullException(nameof(serializerOptions));
+	/// <inheritdoc/>
+	public JsonSerializerOptions SerializerOptions { get; } = serializerOptions ?? throw new ArgumentNullException(nameof(serializerOptions));
 
-    /// <inheritdoc/>
-    public JsonTypeInfo ResolveJsonTypeInfo(Type type)
-    {
-        ArgumentNullException.ThrowIfNull(type);
+	/// <inheritdoc/>
+	public JsonTypeInfo ResolveJsonTypeInfo(Type type)
+	{
+		ArgumentNullException.ThrowIfNull(type);
 
-        return SerializerOptions.GetTypeInfo(type)
-        ?? throw new InvalidOperationException($"No JsonTypeInfo registered for type '{type.FullName}'.");
-    }
+		return SerializerOptions.GetTypeInfo(type)
+		?? throw new InvalidOperationException($"No JsonTypeInfo registered for type '{type.FullName}'.");
+	}
 }

@@ -15,11 +15,11 @@
  *
 ********************************************************************************/
 using System.ComponentModel.DataAnnotations;
-using System.Results.Requests;
+using System.Requests;
 
 namespace BankAccounts.Domain.Features.OperationAccount;
 
-public sealed record AccountOperationQuery : IStreamPagedRequest<AccountOperationResult>
+public sealed record AccountOperationQuery : IRequestStreamPaged<AccountOperationResult>
 {
 	[Required]
 	public required Guid AccountId { get; init; }

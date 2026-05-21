@@ -16,7 +16,7 @@
 ********************************************************************************/
 using System.Events.Aggregates;
 using System.Results;
-using System.Results.Requests;
+using System.Requests;
 
 namespace BankAccounts.Domain.Features.BlockAccount;
 
@@ -36,6 +36,6 @@ public sealed class BlockAccountCommandHandler(IAggregateStore<Account> aggregat
 			.SaveAsync(account, cancellationToken)
 			.ConfigureAwait(false);
 
-		return Result.Success();
+		return ResultWith.Success();
 	}
 }

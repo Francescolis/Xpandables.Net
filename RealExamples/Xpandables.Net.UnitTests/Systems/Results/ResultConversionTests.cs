@@ -8,66 +8,60 @@ namespace Xpandables.Net.UnitTests.Systems.Results;
 public sealed class ResultConversionTests
 {
 	[Fact]
-	public void NaturalUpcast_FromGenericToNonGeneric_PreservesRuntimeType()
+	public void NaturalUpcast_FromGenericToBase_PreservesRuntimeType()
 	{
 		// Arrange
-		Result<int> typedResult = Result.Success(42);
+		SuccessResult<int> typedResult = ResultWith.Success(42);
 
 		// Act — natural reference upcast via inheritance
 		Result result = typedResult;
 
 		// Assert
-		Assert.Equal(HttpStatusCode.OK, result.StatusCode);
-		result.IsGeneric.Should().BeTrue();
-		result.GetUnderlyingValue().Should().Be(42);
+		SuccessResult<int> success = Assert.IsType<SuccessResult<int>>(result);
+		Assert.Equal(HttpStatusCode.OK, success.StatusCode);
+		success.Value.Should().Be(42);
 		Assert.Same(typedResult, result);
 	}
 
 	[Fact]
-	public void ToResult_FromNonGenericToGeneric_CastsValueWhenCompatible()
+	public void Cast_FromNonGenericSuccessToGeneric_PreservesCompatibleValue()
 	{
 		// Arrange
-		Result source = Result.Success()
-			.WithStatusCode(HttpStatusCode.Created)
-			.WithValue("payload")
-			.Build();
+		SuccessResult source = ResultWith.Success("payload");
 
 		// Act
-		Result<string> typed = source.ToResult<string>();
+		SuccessResult<string> typed = source;
 
 		// Assert
-		Assert.Equal(HttpStatusCode.Created, typed.StatusCode);
+		Assert.Equal(HttpStatusCode.OK, typed.StatusCode);
 		Assert.Equal("payload", typed.Value);
 	}
 
 	[Fact]
-	public void ToResult_FromNonGenericToGeneric_IncompatibleValueUsesDefault()
+	public void Cast_FromNonGenericSuccessToGeneric_IncompatibleValueUsesDefault()
 	{
 		// Arrange
-		Result source = Result.Success()
-			.WithStatusCode(HttpStatusCode.Accepted)
-			.WithValue(123)
-			.Build();
+		SuccessResult source = ResultWith.Success(123);
 
 		// Act
-		Result<string> typed = source.ToResult<string>();
+		SuccessResult<string> typed = source;
 
 		// Assert
-		Assert.Equal(HttpStatusCode.Accepted, typed.StatusCode);
+		Assert.Equal(HttpStatusCode.OK, typed.StatusCode);
 		Assert.Null(typed.Value);
 	}
 
 	[Fact]
-	public void ToResult_WhenAlreadyCorrectType_ReturnsSameInstance()
+	public void Cast_FromGenericToNonGeneric_PreservesMetadataAndValue()
 	{
 		// Arrange
-		Result<int> original = Result.Success(42);
-		Result asBase = original;
+		SuccessResult<int> original = ResultWith.Success(42);
 
 		// Act
-		Result<int> converted = asBase.ToResult<int>();
+		SuccessResult converted = original;
 
-		// Assert — zero-copy: same instance returned
-		Assert.Same(original, converted);
+		// Assert
+		Assert.Equal(HttpStatusCode.OK, converted.StatusCode);
+		converted.GetValue().Should().Be(42);
 	}
 }

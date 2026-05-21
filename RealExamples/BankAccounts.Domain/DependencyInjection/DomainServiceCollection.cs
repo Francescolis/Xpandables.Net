@@ -44,7 +44,7 @@ public sealed class DomainServiceCollection : AddServiceExport
 
 		services.AddXRequestHandlers()
 			.AddXEventHandlers()
-			.AddXEventConverterContext()
+			.AddXJsonSerializerContext()
 			.AddXCompositeValidator()
 			.AddXEventPublisher()
 			.AddXAggregateStore()

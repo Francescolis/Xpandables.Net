@@ -204,9 +204,9 @@ internal sealed class TestCacheTypeResolver : ICacheTypeResolver
 }
 
 /// <summary>
-/// Minimal <see cref="IEventConverterContext"/> backed by a <see cref="JsonSerializerOptions"/>.
+/// Minimal <see cref="IJsonSerializerContext"/> backed by a <see cref="JsonSerializerOptions"/>.
 /// </summary>
-internal sealed class TestEventConverterContext(JsonSerializerOptions options) : IEventConverterContext
+internal sealed class TestEventConverterContext(JsonSerializerOptions options) : IJsonSerializerContext
 {
 	public JsonSerializerOptions SerializerOptions => options;
 

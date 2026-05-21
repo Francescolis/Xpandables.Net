@@ -14,10 +14,10 @@
  * limitations under the License.
  *
 ********************************************************************************/
-using System.Diagnostics.CodeAnalysis;
 using System.IO.Pipelines;
 using System.Text;
 using System.Text.Json;
+using System.Text.Json.Serialization;
 using System.Text.Json.Serialization.Metadata;
 
 #pragma warning disable IDE0130 // Namespace does not match folder structure
@@ -32,46 +32,6 @@ namespace System.Net.Http.Json;
 public static class HttpContentExtensions
 {
 	/// <summary>
-	/// Reads the HTTP content as an asynchronous paged enumerable of JSON values of the specified type.
-	/// </summary>
-	/// <typeparam name="TValue">The type of the elements to deserialize from the JSON content.</typeparam>
-	/// <param name="content">The HTTP content to read and deserialize.</param>
-	/// <param name="strategy">The pagination strategy to use when reading the content. Specifies how the content should be split into
-	/// pages. The default is PaginationStrategy.None.</param>
-	/// <param name="cancellationToken">A cancellation token that can be used to cancel the asynchronous operation.</param>
-	/// <returns>An asynchronous paged enumerable that yields deserialized values of type TValue from the JSON content. The
-	/// enumerable may be empty if the content contains no items.</returns>
-	[RequiresUnreferencedCode("Calls System.Net.Http.Json.HttpContentExtensions.GetJsonTypeInfo(Type, JsonSerializerOptions)")]
-	[RequiresDynamicCode("Calls System.Net.Http.Json.HttpContentExtensions.GetJsonTypeInfo(Type, JsonSerializerOptions)")]
-	public static IAsyncPagedEnumerable<TValue?> ReadFromJsonAsAsyncPagedEnumerable<TValue>(this HttpContent content,
-		PaginationStrategy strategy = PaginationStrategy.None,
-		CancellationToken cancellationToken = default)
-	{
-		ArgumentNullException.ThrowIfNull(content);
-		return content.ReadFromJsonAsAsyncPagedEnumerable<TValue>(options: null, strategy, cancellationToken);
-	}
-
-	/// <summary>
-	/// Deserializes the HTTP JSON content into an <see cref="IAsyncPagedEnumerable{T}"/> using
-	/// the supplied <see cref="JsonSerializerOptions"/>.
-	/// </summary>
-	/// <param name="content">The HTTP content to read and deserialize.</param>
-	/// <param name="options">The options to use when deserializing the JSON content. If null, default options are used.</param>
-	/// <param name="strategy">The pagination strategy to use when deserializing the paged data.</param>
-	/// <param name="cancellationToken">The token to monitor for cancellation requests.</param>
-	[RequiresUnreferencedCode("Calls System.Net.Http.Json.HttpContentExtensions.GetJsonTypeInfo(Type, JsonSerializerOptions)")]
-	[RequiresDynamicCode("Calls System.Net.Http.Json.HttpContentExtensions.GetJsonTypeInfo(Type, JsonSerializerOptions)")]
-	public static IAsyncPagedEnumerable<TValue?> ReadFromJsonAsAsyncPagedEnumerable<TValue>(this HttpContent content,
-		JsonSerializerOptions? options,
-		PaginationStrategy strategy = PaginationStrategy.None,
-		CancellationToken cancellationToken = default)
-	{
-		ArgumentNullException.ThrowIfNull(content);
-
-		return ReadFromJsonAsAsyncPagedEnumerableCore<TValue>(content, options, strategy, cancellationToken);
-	}
-
-	/// <summary>
 	/// Deserializes the HTTP JSON content into an <see cref="IAsyncPagedEnumerable{T}"/> using
 	/// the provided <see cref="JsonTypeInfo{T}"/> metadata.
 	/// </summary>
@@ -81,7 +41,7 @@ public static class HttpContentExtensions
 	/// <param name="cancellationToken">The token to monitor for cancellation requests.</param>
 	public static IAsyncPagedEnumerable<TValue?> ReadFromJsonAsAsyncPagedEnumerable<TValue>(this HttpContent content,
 		JsonTypeInfo<TValue> jsonTypeInfo,
-		PaginationStrategy strategy = PaginationStrategy.None,
+		PaginationStrategy strategy = PaginationStrategy.Manual,
 		CancellationToken cancellationToken = default)
 	{
 		ArgumentNullException.ThrowIfNull(content);
@@ -90,15 +50,26 @@ public static class HttpContentExtensions
 		return ReadFromJsonAsAsyncPagedEnumerableCore(content, jsonTypeInfo, strategy, cancellationToken);
 	}
 
-	[RequiresUnreferencedCode("Calls System.Net.Http.Json.HttpContentExtensions.GetJsonTypeInfo(Type, JsonSerializerOptions)")]
-	[RequiresDynamicCode("Calls System.Net.Http.Json.HttpContentExtensions.GetJsonTypeInfo(Type, JsonSerializerOptions)")]
-	private static IAsyncPagedEnumerable<TValue?> ReadFromJsonAsAsyncPagedEnumerableCore<TValue>(
-		HttpContent content,
-		JsonSerializerOptions? options,
-		PaginationStrategy strategy,
-		CancellationToken cancellationToken)
+	/// <summary>
+	/// Deserializes the HTTP JSON content into an <see cref="IAsyncPagedEnumerable{T}"/> using
+	/// source-generated metadata from the provided <see cref="JsonSerializerContext"/>.
+	/// </summary>
+	/// <typeparam name="TValue">The type of elements to deserialize.</typeparam>
+	/// <param name="content">The HTTP content to read and deserialize.</param>
+	/// <param name="context">The source-generated JSON serialization context that contains metadata for <typeparamref name="TValue"/>.</param>
+	/// <param name="strategy">The pagination strategy to use when deserializing the paged data.</param>
+	/// <param name="cancellationToken">The token to monitor for cancellation requests.</param>
+	public static IAsyncPagedEnumerable<TValue?> ReadFromJsonAsAsyncPagedEnumerable<TValue>(this HttpContent content,
+		JsonSerializerContext context,
+		PaginationStrategy strategy = PaginationStrategy.Manual,
+		CancellationToken cancellationToken = default)
 	{
-		var jsonTypeInfo = (JsonTypeInfo<TValue>)JsonSerializer.GetJsonTypeInfo(typeof(TValue), options);
+		ArgumentNullException.ThrowIfNull(content);
+		ArgumentNullException.ThrowIfNull(context);
+
+		var jsonTypeInfo = (JsonTypeInfo<TValue>)(context.GetTypeInfo(typeof(TValue))
+			?? throw new InvalidOperationException($"The type '{typeof(TValue)}' is not registered in the provided JsonSerializerContext."));
+
 		return ReadFromJsonAsAsyncPagedEnumerableCore(content, jsonTypeInfo, strategy, cancellationToken);
 	}
 

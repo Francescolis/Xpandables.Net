@@ -16,12 +16,12 @@
 ********************************************************************************/
 using System.Events.Domain;
 using System.Results;
-using System.Results.Requests;
+using System.Requests.AsyncPaged;
 
 namespace BankAccounts.Domain.Features.OperationAccount;
 
 public sealed class AccountOperationQueryHandler(IDomainStore eventStore) :
-	IStreamPagedRequestHandler<AccountOperationQuery, AccountOperationResult>
+	IRequestStreamPagedHandler<AccountOperationQuery, AccountOperationResult>
 {
 	public async Task<Result<IAsyncPagedEnumerable<AccountOperationResult>>> HandleAsync(
 		AccountOperationQuery request,
@@ -62,6 +62,6 @@ public sealed class AccountOperationQueryHandler(IDomainStore eventStore) :
 					_ => throw new InvalidOperationException("Unexpected event type.")
 				}).ToAsyncPagedEnumerable();
 
-		return Result.Success(operations);
+		return ResultWith.Success(operations);
 	}
 }

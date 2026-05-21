@@ -33,7 +33,7 @@ builder.Services
 	.AddXScheduler()
 	.AddXHostedScheduler()
 	.AddXEventContextAccessor()
-	.AddXEventConverterContext()
+	.AddXJsonSerializerContext()
 	.AddXEventConverterProvider()
 	.AddXEventConverters()
 	.AddXCacheTypeResolver(type => typeof(IIntegrationEvent).IsAssignableFrom(type), [typeof(Account).Assembly])

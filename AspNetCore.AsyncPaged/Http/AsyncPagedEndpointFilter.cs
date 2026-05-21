@@ -14,32 +14,17 @@
  * limitations under the License.
  *
 ********************************************************************************/
-
 using Microsoft.AspNetCore.Mvc;
 
 namespace Microsoft.AspNetCore.Http;
 
 /// <summary>
-/// Provides an endpoint filter that transforms asynchronous paged enumerable results into paged response objects when
-/// applicable.
+/// Provides an endpoint filter that transforms asynchronous paged enumerable results into typed paged response objects.
 /// </summary>
-/// <remarks>Use this filter to automatically wrap endpoint results of type <see cref="IAsyncPagedEnumerable"/> in
-/// a <see cref="AsyncPagedResult{T}"/> for consistent paged response semantics. If the endpoint does not produce an
-/// <see cref="IAsyncPagedEnumerable"/>, the result is returned unchanged. This filter is typically used in scenarios
-/// where endpoints may return large datasets that benefit from paging.</remarks>
-public sealed class AsyncPagedEndpointFilter : IEndpointFilter
+/// <typeparam name="TResult">The item type produced by the paged enumerable returned by the endpoint.</typeparam>
+public sealed class AsyncPagedEndpointFilter<TResult> : IEndpointFilter
 {
-	/// <summary>
-	/// Invokes the next endpoint filter delegate asynchronously and transforms the result into a paged response if
-	/// applicable.
-	/// </summary>
-	/// <remarks>If the result of the endpoint is an <see cref="IAsyncPagedEnumerable"/>, it is wrapped in a
-	/// paged result to provide paged response semantics. Otherwise, the original result is
-	/// returned unchanged.</remarks>
-	/// <param name="context">The invocation context containing information about the current endpoint execution. Cannot be null.</param>
-	/// <param name="next">The delegate representing the next filter or endpoint in the pipeline. Cannot be null.</param>
-	/// <returns>A <see cref="ValueTask{Object}"/> that represents the asynchronous operation. Returns a paged result if the
-	/// endpoint produces an <see cref="IAsyncPagedEnumerable"/>; otherwise, returns the original result.</returns>
+	/// <inheritdoc/>
 	public async ValueTask<object?> InvokeAsync(
 		EndpointFilterInvocationContext context,
 		EndpointFilterDelegate next)
@@ -54,18 +39,15 @@ public sealed class AsyncPagedEndpointFilter : IEndpointFilter
 			return result;
 		}
 
-		IAsyncPagedEnumerable? pagedEnumerable = result switch
+		IAsyncPagedEnumerable<TResult>? paged = result switch
 		{
-			IAsyncPagedEnumerable paged => paged,
-			ObjectResult { Value: IAsyncPagedEnumerable paged } => paged,
+			IAsyncPagedEnumerable<TResult> direct => direct,
+			ObjectResult { Value: IAsyncPagedEnumerable<TResult> wrapped } => wrapped,
 			_ => null
 		};
 
-		if (pagedEnumerable is null)
-		{
-			return result;
-		}
-
-		return new AsyncPagedNonGenericResult(pagedEnumerable);
+		return paged is null
+			? result
+			: new AsyncPagedResult<TResult>(paged);
 	}
 }

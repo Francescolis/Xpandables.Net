@@ -15,8 +15,9 @@
  *
 ********************************************************************************/
 using System.Entities;
+using System.Requests;
+using System.Requests.AsyncPaged;
 using System.Results;
-using System.Results.Requests;
 using System.Results.Tasks;
 
 using BankAccounts.Infrastructure;
@@ -25,7 +26,7 @@ using Microsoft.AspNetCore.Mvc;
 
 namespace BankAccounts.Api.Features;
 
-public sealed record AccountQuery : IStreamPagedRequest<AccountResult>
+public sealed record AccountQuery : IRequestStreamPaged<AccountResult>
 {
 	[FromQuery]
 	public Guid? AccountId { get; init; }
@@ -61,7 +62,7 @@ public sealed class AccountEndpoint : MinimalEndpointRoute
 	}
 }
 
-public sealed class AccountQueryHandler(AccountDataContext context) : IStreamPagedRequestHandler<AccountQuery, AccountResult>
+public sealed class AccountQueryHandler(AccountDataContext context) : IRequestStreamPagedHandler<AccountQuery, AccountResult>
 {
 	public async Task<Result<IAsyncPagedEnumerable<AccountResult>>> HandleAsync(
 		AccountQuery request, CancellationToken cancellationToken = default)
@@ -80,6 +81,6 @@ public sealed class AccountQueryHandler(AccountDataContext context) : IStreamPag
 			})
 			.ToAsyncPagedEnumerable();
 
-		return Result.Success(accounts);
+		return ResultWith.Success(accounts);
 	}
 }

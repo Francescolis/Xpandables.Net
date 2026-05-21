@@ -27,10 +27,10 @@ namespace System.Events.Data;
 /// </summary>
 /// <param name="typeResolver">The type resolver to use for resolving event types. Cannot be null.</param>
 /// <param name="converterContext">The context for event conversion. Cannot be null.</param>
-public sealed class EventConverterSnapshot(ICacheTypeResolver typeResolver, IEventConverterContext converterContext) : IEventConverter<DataEventSnapshot, ISnapshotEvent>
+public sealed class EventConverterSnapshot(ICacheTypeResolver typeResolver, IJsonSerializerContext converterContext) : IEventConverter<DataEventSnapshot, ISnapshotEvent>
 {
 	private readonly ICacheTypeResolver _typeResolver = typeResolver ?? throw new ArgumentNullException(nameof(typeResolver));
-	private readonly IEventConverterContext _converterContext = converterContext ?? throw new ArgumentNullException(nameof(converterContext));
+	private readonly IJsonSerializerContext _converterContext = converterContext ?? throw new ArgumentNullException(nameof(converterContext));
 
 	/// <inheritdoc/>
 	public DataEventSnapshot ConvertEventToData(ISnapshotEvent @event)

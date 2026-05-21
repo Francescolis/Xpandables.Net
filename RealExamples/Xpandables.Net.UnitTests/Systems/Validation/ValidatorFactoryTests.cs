@@ -1,4 +1,5 @@
 using System.ComponentModel.DataAnnotations;
+using System.Results;
 
 using Microsoft.Extensions.DependencyInjection;
 
@@ -68,15 +69,15 @@ public sealed class ValidatorFactoryTests
 	private sealed class TestValidator : IValidator<TestValidatable>
 	{
 		public int Order { get; } = 0;
-		public IReadOnlyCollection<ValidationResult> Validate(TestValidatable instance) => [];
+		public Result Validate(TestValidatable instance) => ResultWith.Success();
 
-		public ValueTask<IReadOnlyCollection<ValidationResult>> ValidateAsync(TestValidatable instance) =>
-			ValueTask.FromResult<IReadOnlyCollection<ValidationResult>>([]);
+		public ValueTask<Result> ValidateAsync(TestValidatable instance) =>
+			ValueTask.FromResult<Result>(ResultWith.Success());
 
-		ValueTask<IReadOnlyCollection<ValidationResult>> IValidator<TestValidatable>.ValidateAsync(TestValidatable instance) =>
+		ValueTask<Result> IValidator<TestValidatable>.ValidateAsync(TestValidatable instance) =>
 			ValidateAsync(instance);
 
-		IReadOnlyCollection<ValidationResult> IValidator.Validate(object instance) => Validate((TestValidatable)instance);
+		Result IValidator.Validate(object instance) => Validate((TestValidatable)instance);
 	}
 
 	private sealed class ResolverStub(Type targetType, IValidator instance) : IValidatorResolver

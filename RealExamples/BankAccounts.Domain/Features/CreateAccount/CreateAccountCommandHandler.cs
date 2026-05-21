@@ -16,7 +16,7 @@
 ********************************************************************************/
 using System.Events.Aggregates;
 using System.Results;
-using System.Results.Requests;
+using System.Requests;
 using System.Security.Cryptography;
 
 namespace BankAccounts.Domain.Features.CreateAccount;
@@ -42,11 +42,10 @@ public sealed class CreateAccountCommandHandler(IAggregateStore<Account> aggrega
 			.SaveAsync(bankAccount, cancellationToken)
 			.ConfigureAwait(false);
 
-		return Result
+		return ResultWith
 			.Success()
 			.WithHeader("AccountId", accountId.ToString())
-			.WithHeader("AccountNumber", accountNumber)
-			.Build();
+			.WithHeader("AccountNumber", accountNumber);
 	}
 
 	private static string GenerateAccountNumber() =>

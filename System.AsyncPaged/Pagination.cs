@@ -28,17 +28,34 @@ namespace System.Collections.Generic;
 public enum PaginationStrategy
 {
     /// <summary>
-    /// No specific strategy is applied. Pagination may not be updated or managed inside iterators.
+    /// Keeps the original pagination snapshot unchanged while items are iterated.
     /// </summary>
-    None = 0,
+    Manual = 0,
+
     /// <summary>
-    /// The pagination gets updated based on page numbers, where each page corresponds to a fixed number of items.
+    /// Updates pagination based on page boundaries computed from the current item position and page size.
     /// </summary>
-    PerPage = 1,
+    PageAware = 1,
+
     /// <summary>
-    /// The pagination gets updated based on individual items, allowing for more granular control over the pagination state.
+    /// Updates pagination on every item, exposing item-level progress during enumeration.
     /// </summary>
-    PerItem = 2
+    ItemAware = 2,
+
+    /// <summary>
+    /// Compatibility alias for <see cref="Manual"/>.
+    /// </summary>
+    None = Manual,
+
+    /// <summary>
+    /// Compatibility alias for <see cref="PageAware"/>.
+    /// </summary>
+    PerPage = PageAware,
+
+    /// <summary>
+    /// Compatibility alias for <see cref="ItemAware"/>.
+    /// </summary>
+    PerItem = ItemAware
 }
 
 /// <summary>

@@ -27,50 +27,10 @@ namespace System.Collections.Generic;
 /// improving performance for asynchronous operations. Each page is typically fetched on demand as the sequence is
 /// iterated. This interface is commonly used for APIs that support server-side paging.
 /// <para>
-/// The <see cref="Pagination"/> property may be computed lazily by some implementations. 
-/// Use <see cref="GetPaginationAsync"/> to ensure the pagination metadata is fully computed and available.
+/// Use <see cref="GetPaginationAsync"/> to retrieve the current pagination metadata.
 /// </para>
 /// </remarks>
-[EditorBrowsable(EditorBrowsableState.Never)]
-public interface IAsyncPagedEnumerable
-{
-    /// <summary>
-    /// Gets the current pagination metadata for this enumerable.
-    /// </summary>
-    /// <remarks>
-    /// This property provides immediate access to the pagination state. However, some implementations
-    /// may compute this value lazily. If the pagination metadata is not yet available, this property
-    /// may return <see cref="Pagination.Empty"/>. Use <see cref="GetPaginationAsync"/> to ensure
-    /// the pagination metadata is fully computed.
-    /// </remarks>
-    Pagination Pagination { get; }
-
-    /// <summary>
-    /// Asynchronously retrieves the fully computed pagination information for the current page.
-    /// </summary>
-    /// <param name="cancellationToken">A token to monitor for cancellation requests. The default value is <see cref="CancellationToken.None"/>.</param>
-    /// <returns>A task that represents the asynchronous operation and yields the current <see cref="Pagination"/>.</returns>
-    /// <remarks>
-    /// This method ensures that the pagination metadata is fully computed and available. Use this method
-    /// when you need to guarantee that all pagination information (such as total count) has been calculated.
-    /// For immediate access to potentially incomplete pagination data, use the <see cref="Pagination"/> property instead.
-    /// </remarks>
-    Task<Pagination> GetPaginationAsync(CancellationToken cancellationToken = default);
-}
-
-/// <summary>
-/// Represents a sequence of elements that can be asynchronously enumerated in discrete pages.
-/// </summary>
-/// <remarks>
-/// Use this interface to retrieve large result sets in manageable chunks, reducing memory usage and
-/// improving performance for asynchronous operations. Each page is typically fetched on demand as the sequence is
-/// iterated. This interface is commonly used for APIs that support server-side paging.
-/// <para>
-/// The <see cref="Pagination"/> property may be computed lazily by some implementations. 
-/// Use <see cref="IAsyncPagedEnumerable.GetPaginationAsync"/> to ensure the pagination metadata is fully computed and available.
-/// </para>
-/// </remarks>
-public interface IAsyncPagedEnumerable<out T> : IAsyncEnumerable<T>, IAsyncPagedEnumerable
+public interface IAsyncPagedEnumerable<out T> : IAsyncEnumerable<T>
     where T : allows ref struct
 {
     /// <summary>
@@ -83,6 +43,13 @@ public interface IAsyncPagedEnumerable<out T> : IAsyncEnumerable<T>, IAsyncPaged
     [EditorBrowsable(EditorBrowsableState.Never)]
     IAsyncEnumerator<T> IAsyncEnumerable<T>.GetAsyncEnumerator(CancellationToken cancellationToken) =>
         GetAsyncEnumerator(cancellationToken);
+
+    /// <summary>
+    /// Asynchronously retrieves the current pagination metadata for this sequence.
+    /// </summary>
+    /// <param name="cancellationToken">A token to monitor for cancellation requests. The default value is <see cref="CancellationToken.None"/>.</param>
+    /// <returns>A task that represents the asynchronous operation and yields the current <see cref="Pagination"/>.</returns>
+    Task<Pagination> GetPaginationAsync(CancellationToken cancellationToken = default);
 
     /// <summary>
     /// Configures the strategy to be used for managing pagination.

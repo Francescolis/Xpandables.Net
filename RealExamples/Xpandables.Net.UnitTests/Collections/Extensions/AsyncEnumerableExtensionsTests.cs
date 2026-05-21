@@ -141,10 +141,10 @@ public sealed class IAsyncPagedEnumerableExtensionsTests
     {
 		// Arrange
 		IAsyncEnumerable<int> source = CreateAsyncEnumerable(10);
-        IAsyncPagedEnumerable paged = AsyncPagedEnumerable.Create(source);
+        IAsyncPagedEnumerable<int> paged = AsyncPagedEnumerable.Create(source);
 
 		// Act
-		Type argumentType = paged.GetArgumentType();
+        Type argumentType = paged.ArgumentType;
 
         // Assert
         Assert.Equal(typeof(int), argumentType);
@@ -155,10 +155,10 @@ public sealed class IAsyncPagedEnumerableExtensionsTests
     {
 		// Arrange
 		IAsyncEnumerable<string> source = CreateAsyncStringEnumerable(5);
-        IAsyncPagedEnumerable paged = AsyncPagedEnumerable.Create(source);
+        IAsyncPagedEnumerable<string> paged = AsyncPagedEnumerable.Create(source);
 
 		// Act
-		Type argumentType = paged.GetArgumentType();
+        Type argumentType = paged.ArgumentType;
 
         // Assert
         Assert.Equal(typeof(string), argumentType);

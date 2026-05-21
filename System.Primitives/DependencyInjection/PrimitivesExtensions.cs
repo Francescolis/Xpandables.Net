@@ -14,11 +14,10 @@
  * limitations under the License.
  *
 ********************************************************************************/
+using Microsoft.Extensions.DependencyInjection.Extensions;
 using System.Cache;
 using System.Diagnostics.CodeAnalysis;
 using System.Reflection;
-
-using Microsoft.Extensions.DependencyInjection.Extensions;
 
 #pragma warning disable IDE0130 // Namespace does not match folder structure
 namespace Microsoft.Extensions.DependencyInjection;
@@ -33,6 +32,38 @@ namespace Microsoft.Extensions.DependencyInjection;
 /// support for event storage and outbox processing in your application's service pipeline.</remarks>
 public static class PrimitivesExtensions
 {
+	/// <summary>
+	/// Adds a singleton implementation of IJsonSerializerContext to the service collection using the specified
+	/// context type.
+	/// </summary>
+	/// <remarks>If an IJsonSerializerContext service is already registered, this method does not
+	/// overwrite the existing registration. This method is typically used during application startup to configure
+	/// JSON serialization services for dependency injection.</remarks>
+	/// <typeparam name="TJsonSerializerContext">The type that implements IJsonSerializerContext to be registered as a singleton. Must have a public
+	/// constructor.</typeparam>
+	/// <returns>The IServiceCollection instance with the IJsonSerializerContext service registered.</returns>
+	public static IServiceCollection AddXJsonSerializerContext<[DynamicallyAccessedMembers(DynamicallyAccessedMemberTypes.PublicConstructors)] TJsonSerializerContext>(this IServiceCollection services)
+		where TJsonSerializerContext : class, IJsonSerializerContext
+	{
+		ArgumentNullException.ThrowIfNull(services);
+		services.TryAddSingleton<IJsonSerializerContext, TJsonSerializerContext>();
+		return services;
+	}
+
+	/// <summary>
+	/// Adds the default implementation of the JSON serializer context to the service collection.
+	/// </summary>
+	/// <remarks>This method registers <see cref="IJsonSerializerContext"/> as a singleton service if
+	/// it has not already been registered. Call this method during application startup to enable JSON serialization
+	/// features.</remarks>
+	/// <returns>The current <see cref="IServiceCollection"/> instance for method chaining.</returns>
+	public static IServiceCollection AddXJsonSerializerContext(this IServiceCollection services)
+	{
+		ArgumentNullException.ThrowIfNull(services);
+		services.AddXJsonSerializerContext<DefaultJsonSerializerContext>();
+		return services;
+	}
+
 	/// <summary>
 	/// Adds a singleton implementation of the specified HTTP status code extension to the service collection.
 	/// </summary>

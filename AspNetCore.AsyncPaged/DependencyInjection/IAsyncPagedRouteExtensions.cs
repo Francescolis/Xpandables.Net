@@ -16,8 +16,6 @@
 ********************************************************************************/
 using Microsoft.AspNetCore.Builder;
 using Microsoft.AspNetCore.Http;
-using Microsoft.AspNetCore.Mvc;
-using Microsoft.Extensions.Options;
 
 #pragma warning disable IDE0130 // Namespace does not match folder structure
 namespace Microsoft.Extensions.DependencyInjection;
@@ -31,31 +29,14 @@ namespace Microsoft.Extensions.DependencyInjection;
 /// these methods to simplify the integration of modular endpoint routing patterns in your application.</remarks>
 public static class IAsyncPagedRouteExtensions
 {
-    /// <summary>
-    /// Adds AsyncPaged MVC options configuration for Controller to the service collection.
-    /// </summary>
-    /// <remarks>Call this method during application startup to enable custom MVC options for
-    /// XController. This method registers the necessary configuration as a singleton service.</remarks>
-    /// <returns>The service collection with Controller MVC options configured. The same instance as the input is returned
-    /// for chaining.</returns>
-    public static IServiceCollection AddXAsyncPagedMvcOptions(this IServiceCollection services)
-    {
-        ArgumentNullException.ThrowIfNull(services);
-        services.AddSingleton<IConfigureOptions<MvcOptions>, AsyncPagedMvcOptions>();
-
-        return services;
-    }
-
-    /// <summary>
-    /// Adds an asynchronous paged endpoint filter to the builder configuration.
-    /// </summary>
-    /// <remarks>Use this method to enable support for paged asynchronous operations on endpoints.
-    /// This is typically used when implementing APIs that return large datasets in pages. The filter must be
-    /// compatible with the builder's endpoint configuration.</remarks>
-    /// <typeparam name="TBuilder">The type of the endpoint convention builder.</typeparam>
-    /// <param name="builder">The endpoint convention builder to apply the filter to.</param>
-    /// <returns>The builder instance with the asynchronous paged filter applied.</returns>
-    public static TBuilder WithXAsyncPagedFilterSupport<TBuilder>(this TBuilder builder)
-        where TBuilder : IEndpointConventionBuilder =>
-        builder.AddEndpointFilter<TBuilder, AsyncPagedEndpointFilter>();
+	/// <summary>
+	/// Adds a typed asynchronous paged endpoint filter to the builder configuration.
+	/// </summary>
+	/// <typeparam name="TBuilder">The type of the endpoint convention builder.</typeparam>
+	/// <typeparam name="TResult">The item type produced by the paged enumerable returned by the endpoint.</typeparam>
+	/// <param name="builder">The endpoint convention builder to apply the filter to.</param>
+	/// <returns>The builder instance with the typed asynchronous paged filter applied.</returns>
+	public static TBuilder WithXAsyncPagedFilterSupport<TBuilder, TResult>(this TBuilder builder)
+		where TBuilder : IEndpointConventionBuilder =>
+		builder.AddEndpointFilter<TBuilder, AsyncPagedEndpointFilter<TResult>>();
 }

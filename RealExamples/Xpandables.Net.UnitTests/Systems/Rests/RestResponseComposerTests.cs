@@ -397,8 +397,9 @@ public sealed class RestResponseComposerTests
 			CancellationToken cancellationToken)
 		{
 			DeserializerWasInvoked = true;
+			JsonTypeInfo<T> typeInfo = (JsonTypeInfo<T>)options.GetTypeInfo(typeof(T));
 			return content.ReadFromJsonAsAsyncPagedEnumerable<T>(
-				options, PaginationStrategy.None, cancellationToken);
+				typeInfo, PaginationStrategy.None, cancellationToken);
 		}
 #pragma warning restore IL3050
 #pragma warning restore IL2026
