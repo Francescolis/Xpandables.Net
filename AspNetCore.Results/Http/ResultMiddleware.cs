@@ -1,4 +1,4 @@
-/*******************************************************************************
+﻿/*******************************************************************************
  * Copyright (C) 2025-2026 Kamersoft
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
@@ -14,10 +14,9 @@
  * limitations under the License.
  *
 ********************************************************************************/
+using Microsoft.Extensions.Logging;
 using System.Reflection;
 using System.Results;
-
-using Microsoft.Extensions.Logging;
 
 namespace Microsoft.AspNetCore.Http;
 
@@ -77,7 +76,7 @@ public sealed class ResultMiddleware : IMiddleware
 				context.Request.Path,
 				exception);
 
-			Result result = exception switch
+			FailureResult result = exception switch
 			{
 				BadHttpRequestException badHttpRequestException => badHttpRequestException.ToResult(context),
 				_ => exception.ToResult()

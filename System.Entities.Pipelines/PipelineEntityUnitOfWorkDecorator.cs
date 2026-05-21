@@ -25,10 +25,10 @@ namespace System.Pipelines;
 /// changes are saved to the database context via the <see cref="IEntityUnitOfWork"/>
 /// after processing the request and response in a pipeline execution.
 /// </summary>
-/// <typeparam name="TRequest">The type of the request object that must implement <see cref="IEntityRequiresUnitOfWork"/>.</typeparam>
+/// <typeparam name="TRequest">The type of the request object that must implement <see cref="IRequiresEntityUnitOfWork"/>.</typeparam>
 public sealed class PipelineEntityUnitOfWorkDecorator<TRequest>(IEntityUnitOfWork? unitOfWork = default) :
 	IPipelineDecorator<TRequest>
-	where TRequest : class, IRequest, IEntityRequiresUnitOfWork
+	where TRequest : class, IRequest, IRequiresEntityUnitOfWork
 {
 	/// <inheritdoc/>
 	public async Task<Result> HandleAsync(

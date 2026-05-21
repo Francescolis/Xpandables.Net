@@ -14,17 +14,15 @@
  * limitations under the License.
  *
 ********************************************************************************/
-using System.Collections;
-using System.ComponentModel.DataAnnotations;
-using System.Net;
-using System.Results;
-
 using Microsoft.AspNetCore.Hosting;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.AspNetCore.Mvc.ModelBinding;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Hosting;
-using Microsoft.Extensions.Primitives;
+using System.Collections;
+using System.ComponentModel.DataAnnotations;
+using System.Net;
+using System.Results;
 
 namespace Microsoft.AspNetCore.Http;
 
@@ -49,7 +47,7 @@ public static class ResultExtensions
 	{
 		ArgumentNullException.ThrowIfNull(modelState);
 
-		return Result
+		return ResultWith
 			.Failure()
 			.WithStatusCode(statusCode)
 			.WithErrors(ElementCollection.With(
@@ -59,8 +57,7 @@ public static class ResultExtensions
 					.Select(key =>
 						new ElementEntry(
 							key,
-							modelState[key]!.Errors.Select(error => error.ErrorMessage).ToArray()))]))
-			.Build();
+							modelState[key]!.Errors.Select(error => error.ErrorMessage).ToArray()))]));
 	}
 
 	/// <summary>
@@ -76,7 +73,7 @@ public static class ResultExtensions
 	/// <param name="context">The current HTTP context used to resolve services. Cannot be null.</param>
 	/// <returns>A result containing details about the bad HTTP request, including status code, error title, and error
 	/// details.</returns>
-	public static Result ToResult(this BadHttpRequestException exception, HttpContext context)
+	public static FailureResult ToResult(this BadHttpRequestException exception, HttpContext context)
 	{
 		ArgumentNullException.ThrowIfNull(exception);
 		ArgumentNullException.ThrowIfNull(context);
@@ -114,33 +111,31 @@ public static class ResultExtensions
 				.Replace("\\", string.Empty, StringComparison.InvariantCulture)
 				.Replace("\"", string.Empty, StringComparison.InvariantCulture);
 
-			return Result
-				.BadRequest()
+			return ResultWith
+				.Failure()
 				.WithTitle(statusCodeExtension.GetTitle(statusCode))
 				.WithDetail(statusCodeExtension.GetDetail(statusCode))
 				.WithStatusCode(statusCode)
 				.WithException(exception)
-				.WithError(parameterName, errorMessage)
-				.Build();
+				.WithError(parameterName, errorMessage);
 		}
 		catch (ArgumentOutOfRangeException)
 		{
 			return CreateFallbackResult(exception, statusCode, isDevelopment, statusCodeExtension);
 		}
 
-		static Result CreateFallbackResult(
+		static FailureResult CreateFallbackResult(
 			BadHttpRequestException exception,
 			HttpStatusCode statusCode,
 			bool isDevelopment,
 			IHttpStatusCodeExtension statusCodeExtension)
 		{
-			return Result
-				.BadRequest()
+			return ResultWith
+				.Failure()
 				.WithTitle(statusCodeExtension.GetTitle(statusCode))
 				.WithDetail(statusCodeExtension.GetDetail(statusCode))
 				.WithStatusCode(statusCode)
-				.WithException(exception)
-				.Build();
+				.WithException(exception);
 		}
 	}
 
@@ -153,7 +148,7 @@ public static class ResultExtensions
 	/// validation workflows, such as displaying validation messages in views or APIs.</remarks>
 	/// <returns>A ModelStateDictionary containing all errors from the operation result. Each error is added under its
 	/// associated key. The dictionary will be empty if there are no errors.</returns>
-	public static ModelStateDictionary ToModelStateDictionary(this Result result, bool isDevelopment = false)
+	public static ModelStateDictionary ToModelStateDictionary(this FailureResult result, bool isDevelopment = false)
 	{
 		ArgumentNullException.ThrowIfNull(result);
 		ModelStateDictionary modelStateDictionary = new();
@@ -189,7 +184,11 @@ public static class ResultExtensions
 		ArgumentNullException.ThrowIfNull(result);
 		return new ObjectResult(result)
 		{
-			StatusCode = (int)result.StatusCode,
+			StatusCode = result switch
+			{
+				FailureResult failureResult => (int)failureResult.StatusCode,
+				_ => (int)((SuccessResult)result).StatusCode,
+			}
 		};
 	}
 
@@ -205,7 +204,7 @@ public static class ResultExtensions
 	/// <returns>A ProblemDetails object containing details about the operation result, including status, title, detail, and
 	/// request instance information. Returns a ValidationProblemDetails object if the status code indicates a
 	/// validation problem.</returns>
-	public static ProblemDetails ToProblemDetails(this Result result, HttpContext context)
+	public static ProblemDetails ToProblemDetails(this FailureResult result, HttpContext context)
 	{
 		ArgumentNullException.ThrowIfNull(result);
 		ArgumentNullException.ThrowIfNull(context);

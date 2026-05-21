@@ -6,7 +6,7 @@
 		<AssemblyName>Xpandables.Entities</AssemblyName>
 		<RootNamespace>System.Entities</RootNamespace>
 		<PackageId>Xpandables.Entities</PackageId>
-		<PackageTags>IRepository, IUnitOfWork</PackageTags>
+		<PackageTags>IEntityRepository, IEntityUnitOfWork</PackageTags>
 	</PropertyGroup>
 
 	<ItemGroup>

@@ -1,4 +1,4 @@
-/*******************************************************************************
+﻿/*******************************************************************************
  * Copyright (C) 2025-2026 Kamersoft
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
@@ -14,14 +14,13 @@
  * limitations under the License.
  *
 ********************************************************************************/
-using System.Collections;
-using System.Net;
-using System.Results;
-
 using Microsoft.AspNetCore.Authentication;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Primitives;
 using Microsoft.Net.Http.Headers;
+using System.Collections;
+using System.Net;
+using System.Results;
 
 namespace Microsoft.AspNetCore.Http;
 
@@ -33,60 +32,61 @@ namespace Microsoft.AspNetCore.Http;
 /// for GraphQL or similar APIs based on the result.</remarks>
 public sealed class ResultHeaderWriter : IResultHeaderWriter
 {
-    /// <inheritdoc/>
-    public async Task WriteAsync(HttpContext context, Result result)
-    {
-        ArgumentNullException.ThrowIfNull(context);
-        ArgumentNullException.ThrowIfNull(result);
+	/// <inheritdoc/>
+	public async Task WriteAsync(HttpContext context, Result result)
+	{
+		ArgumentNullException.ThrowIfNull(context);
+		ArgumentNullException.ThrowIfNull(result);
 
-        context.Response.ContentType ??= context.GetContentType("application/json; charset=utf-8");
-        context.Response.StatusCode = (int)result.StatusCode;
+		var info = ResultInfo.FromResult(result);
+		context.Response.ContentType ??= context.GetContentType("application/json; charset=utf-8");
+		context.Response.StatusCode = (int)info.StatusCode;
 
-        if (result.Location is not null)
-        {
-            context.Response.Headers.Location =
-                new StringValues(result.Location.ToString());
-        }
+		if (info.Location is not null)
+		{
+			context.Response.Headers.Location =
+				new StringValues(info.Location.ToString());
+		}
 
-        foreach (ElementEntry header in result.Headers)
-        {
-            context.Response.Headers.Append(
-                header.Key,
-                new StringValues([.. header.Values]));
-        }
+		foreach (ElementEntry header in info.Headers)
+		{
+			context.Response.Headers.Append(
+				header.Key,
+				new StringValues([.. header.Values]));
+		}
 
-        if (result.StatusCode == HttpStatusCode.Unauthorized)
-        {
-            if (context.RequestServices.GetService<IAuthenticationSchemeProvider>()
-                is { } schemeProvider)
-            {
-                IEnumerable<AuthenticationScheme> requestSchemes =
-                    await schemeProvider
-                        .GetRequestHandlerSchemesAsync()
-                        .ConfigureAwait(false);
+		if (info.StatusCode == HttpStatusCode.Unauthorized)
+		{
+			if (context.RequestServices.GetService<IAuthenticationSchemeProvider>()
+				is { } schemeProvider)
+			{
+				IEnumerable<AuthenticationScheme> requestSchemes =
+					await schemeProvider
+						.GetRequestHandlerSchemesAsync()
+						.ConfigureAwait(false);
 
-                AuthenticationScheme? defaultScheme =
-                    await schemeProvider
-                        .GetDefaultAuthenticateSchemeAsync()
-                        .ConfigureAwait(false);
+				AuthenticationScheme? defaultScheme =
+					await schemeProvider
+						.GetDefaultAuthenticateSchemeAsync()
+						.ConfigureAwait(false);
 
-                IEnumerable<AuthenticationScheme> allSchemes =
-                    await schemeProvider
-                        .GetAllSchemesAsync()
-                        .ConfigureAwait(false);
+				IEnumerable<AuthenticationScheme> allSchemes =
+					await schemeProvider
+						.GetAllSchemesAsync()
+						.ConfigureAwait(false);
 
-                AuthenticationScheme? scheme =
-                     requestSchemes.FirstOrDefault()
-                         ?? defaultScheme
-                         ?? allSchemes.FirstOrDefault();
+				AuthenticationScheme? scheme =
+					 requestSchemes.FirstOrDefault()
+						 ?? defaultScheme
+						 ?? allSchemes.FirstOrDefault();
 
-                if (scheme is not null)
-                {
-                    context.Response.Headers.Append(
-                        HeaderNames.WWWAuthenticate,
-                        scheme.Name);
-                }
-            }
-        }
-    }
+				if (scheme is not null)
+				{
+					context.Response.Headers.Append(
+						HeaderNames.WWWAuthenticate,
+						scheme.Name);
+				}
+			}
+		}
+	}
 }

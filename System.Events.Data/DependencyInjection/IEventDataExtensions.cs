@@ -14,12 +14,14 @@
  * limitations under the License.
  *
 ********************************************************************************/
+using Microsoft.Extensions.DependencyInjection.Extensions;
+using System.Data;
 using System.Diagnostics.CodeAnalysis;
 using System.Events;
 using System.Events.Data;
+using System.Events.Domain;
+using System.Events.Integration;
 using System.Reflection;
-
-using Microsoft.Extensions.DependencyInjection.Extensions;
 
 #pragma warning disable IDE0130 // Namespace does not match folder structure
 namespace Microsoft.Extensions.DependencyInjection;
@@ -31,102 +33,184 @@ namespace Microsoft.Extensions.DependencyInjection;
 public static class IEventDataExtensions
 {
 	/// <summary>
-	/// Registers the default ADO.NET domain store using default entity types.
+	/// Adds the Domain store and its dependencies to the specified service collection.
 	/// </summary>
-	/// <returns>The updated service collection.</returns>
+	/// <remarks>This method registers the required services for Domain store support using dependency injection.
+	/// If a custom IDataUnitOfWork implementation is needed, provide a factory function; otherwise, the default
+	/// implementation is used.</remarks>
+	/// <param name="services">The service collection to which the Domain store services will be added. Cannot be null.</param>
+	/// <param name="factory">An optional factory function used to create the IDataUnitOfWork instance. If null, a default implementation is
+	/// registered.</param>
+	/// <returns>The service collection with the Domain store services registered. This enables further configuration via method
+	/// chaining.</returns>
 	[RequiresDynamicCode("Expression compilation requires dynamic code generation.")]
 	[UnconditionalSuppressMessage("Trimming", "IL2066", Justification = "ADO.NET stores are referenced explicitly.")]
-	public static IServiceCollection AddXDomainStore(this IServiceCollection services)
+	public static IServiceCollection AddXDomainStore(this IServiceCollection services, Func<IServiceProvider, IDataUnitOfWork>? factory = null)
 	{
 		ArgumentNullException.ThrowIfNull(services);
-		return services.AddXDomainStore<DataEventDomain, DataEventSnapshot>();
+		return services.AddXDomainStore<DataEventDomain, DataEventSnapshot>(factory);
 	}
 
 	/// <summary>
-	/// Registers a domain store for handling data events within the service collection.
+	/// Adds a domain store for the specified event domain and snapshot types to the service collection.
 	/// </summary>
-	/// <remarks>This method is intended for use in dependency injection scenarios where data event handling is
-	/// required. Ensure that the specified types meet the necessary interface requirements.</remarks>
-	/// <typeparam name="TDataEventDomain">Specifies the type of the data event domain. The type must be a class that implements the IDataEventDomain
-	/// interface.</typeparam>
-	/// <typeparam name="TDataEventSnapshot">Specifies the type of the data event snapshot. The type must be a class that implements the IDataEventSnapshot
-	/// interface.</typeparam>
-	/// <returns>An IServiceCollection instance that can be used to configure additional services.</returns>
-	public static IServiceCollection AddXDomainStore<[DynamicallyAccessedMembers(DynamicallyAccessedMemberTypes.PublicProperties)] TDataEventDomain, [DynamicallyAccessedMembers(DynamicallyAccessedMemberTypes.PublicProperties)] TDataEventSnapshot>(this IServiceCollection services)
+	/// <remarks>Registers the domain store as a scoped service. If a factory is provided, it is used to create the
+	/// IDataUnitOfWork dependency for the domain store; otherwise, a default registration is used.</remarks>
+	/// <typeparam name="TDataEventDomain">The type representing the event domain. Must implement IDataEventDomain and have public properties.</typeparam>
+	/// <typeparam name="TDataEventSnapshot">The type representing the event snapshot. Must implement IDataEventSnapshot and have public properties.</typeparam>
+	/// <param name="services">The IServiceCollection to which the domain store will be added. Cannot be null.</param>
+	/// <param name="factory">An optional factory function used to create an IDataUnitOfWork instance. If null, a default implementation is
+	/// registered.</param>
+	/// <returns>The IServiceCollection instance with the domain store service registered.</returns>
+	public static IServiceCollection AddXDomainStore<[DynamicallyAccessedMembers(DynamicallyAccessedMemberTypes.PublicProperties)] TDataEventDomain,
+		[DynamicallyAccessedMembers(DynamicallyAccessedMemberTypes.PublicProperties)] TDataEventSnapshot>(
+		this IServiceCollection services,
+		Func<IServiceProvider, IDataUnitOfWork>? factory = null)
 		where TDataEventDomain : class, IDataEventDomain
 		where TDataEventSnapshot : class, IDataEventSnapshot
 	{
 		ArgumentNullException.ThrowIfNull(services);
-		return services.AddXDomainStore<DomainStore<TDataEventDomain, TDataEventSnapshot>>();
+
+		if (factory is null)
+		{
+			return services.AddXDomainStore<DomainStore<TDataEventDomain, TDataEventSnapshot>>();
+		}
+
+		ObjectFactory<DomainStore<TDataEventDomain, TDataEventSnapshot>> objectFactory =
+			ActivatorUtilities.CreateFactory<DomainStore<TDataEventDomain, TDataEventSnapshot>>([typeof(IDataUnitOfWork)]);
+
+		services.AddScoped<IDomainStore>(provider =>
+		{
+			IDataUnitOfWork unitOfWork = factory(provider);
+			return objectFactory(provider, [unitOfWork]);
+		});
+
+		return services;
 	}
 
 	/// <summary>
-	/// Registers the default ADO.NET outbox store using default entity types.
+	/// Adds the default XOutbox store implementation to the dependency injection container.
 	/// </summary>
-	/// <returns>The updated service collection.</returns>
+	/// <remarks>This method registers the default DataEventOutbox implementation for use with XOutbox. Use the
+	/// optional factory parameter to customize the data unit of work instantiation if needed.</remarks>
+	/// <param name="services">The service collection to which the XOutbox store will be added. Cannot be null.</param>
+	/// <param name="factory">An optional factory function used to create the underlying data unit of work. If null, the default implementation
+	/// is used.</param>
+	/// <returns>The same service collection instance, enabling method chaining.</returns>
 	[RequiresDynamicCode("Expression compilation requires dynamic code generation.")]
 	[UnconditionalSuppressMessage("Trimming", "IL2066", Justification = "ADO.NET stores are referenced explicitly.")]
-	public static IServiceCollection AddXOutboxStore(this IServiceCollection services)
+	public static IServiceCollection AddXOutboxStore(this IServiceCollection services, Func<IServiceProvider, IDataUnitOfWork>? factory = null)
 	{
 		ArgumentNullException.ThrowIfNull(services);
-		return services.AddXOutboxStore<DataEventOutbox>();
+		return services.AddXOutboxStore<DataEventOutbox>(factory);
 	}
 
 	/// <summary>
-	/// Registers an outbox store for handling data events in the service collection using the specified outbox
-	/// implementation.
+	/// Registers an outbox store implementation for the specified data event outbox type in the dependency injection
+	/// container.
 	/// </summary>
-	/// <remarks>The services collection must not be null when calling this method. This extension method is
-	/// intended for use in dependency injection scenarios to support outbox patterns for data event processing.</remarks>
-	/// <typeparam name="TDataEventOutbox">The type of the data event outbox to register. Must be a class that implements the IDataEventOutbox interface.</typeparam>
-	/// <returns>The updated IServiceCollection instance with the outbox store registration, enabling method chaining.</returns>
-	public static IServiceCollection AddXOutboxStore<[DynamicallyAccessedMembers(DynamicallyAccessedMemberTypes.PublicProperties)] TDataEventOutbox>(this IServiceCollection services)
+	/// <remarks>Use this method to configure a custom or default outbox store for event publishing scenarios. If a
+	/// factory is provided, it will be used to resolve the IDataUnitOfWork dependency for the outbox store.</remarks>
+	/// <typeparam name="TDataEventOutbox">The type of the data event outbox to use. Must implement the IDataEventOutbox interface.</typeparam>
+	/// <param name="services">The IServiceCollection to which the outbox store will be added. Cannot be null.</param>
+	/// <param name="factory">An optional factory function used to create the IDataUnitOfWork instance for the outbox store. If null, a default
+	/// implementation is registered.</param>
+	/// <returns>The IServiceCollection instance with the outbox store service registered.</returns>
+	public static IServiceCollection AddXOutboxStore<[DynamicallyAccessedMembers(DynamicallyAccessedMemberTypes.PublicProperties)] TDataEventOutbox>(
+		this IServiceCollection services,
+		Func<IServiceProvider, IDataUnitOfWork>? factory = null)
 		where TDataEventOutbox : class, IDataEventOutbox
 	{
 		ArgumentNullException.ThrowIfNull(services);
-		return services.AddXOutboxStore<OutboxStore<TDataEventOutbox>>();
+
+		if (factory is null)
+		{
+			return services.AddXOutboxStore<OutboxStore<TDataEventOutbox>>();
+		}
+
+		ObjectFactory<OutboxStore<TDataEventOutbox>> objectFactory =
+			ActivatorUtilities.CreateFactory<OutboxStore<TDataEventOutbox>>([typeof(IDataUnitOfWork)]);
+
+		services.AddScoped<IOutboxStore>(provider =>
+		{
+			IDataUnitOfWork unitOfWork = factory(provider);
+			return objectFactory(provider, [unitOfWork]);
+		});
+
+		return services;
 	}
 
 	/// <summary>
-	/// Registers the default ADO.NET inbox store using default entity types.
+	/// Adds the default Inbox store implementation to the dependency injection container.
 	/// </summary>
-	/// <returns>The updated service collection.</returns>
+	/// <remarks>This method registers the DataEventInbox implementation for use with Inbox. Use the optional
+	/// factory parameter to customize the IDataUnitOfWork instantiation if needed.</remarks>
+	/// <param name="services">The service collection to which the XInbox store will be added. Cannot be null.</param>
+	/// <param name="factory">An optional factory function used to create the IDataUnitOfWork instance. If null, the default implementation is
+	/// used.</param>
+	/// <returns>The same IServiceCollection instance so that additional calls can be chained.</returns>
 	[RequiresDynamicCode("Expression compilation requires dynamic code generation.")]
 	[UnconditionalSuppressMessage("Trimming", "IL2066", Justification = "ADO.NET stores are referenced explicitly.")]
-	public static IServiceCollection AddXInboxStore(this IServiceCollection services)
+	public static IServiceCollection AddXInboxStore(this IServiceCollection services, Func<IServiceProvider, IDataUnitOfWork>? factory = null)
 	{
 		ArgumentNullException.ThrowIfNull(services);
-		return services.AddXInboxStore<DataEventInbox>();
+		return services.AddXInboxStore<DataEventInbox>(factory);
 	}
 
 	/// <summary>
-	/// Registers an inbox store for the specified data event inbox type in the dependency injection container.
+	/// Registers an implementation of IInboxStore using the specified IDataEventInbox type and a custom IDataUnitOfWork
+	/// factory in the dependency injection container.
 	/// </summary>
-	/// <remarks>Use this method to set up the inbox store for handling data events in an application. The type
-	/// parameter TDataEventInbox must be a class and implement IDataEventInbox. This method is typically called during
-	/// application startup to enable event inbox functionality.</remarks>
-	/// <typeparam name="TDataEventInbox">The type of the data event inbox to register. Must be a class that implements the IDataEventInbox interface.</typeparam>
-	/// <returns>An IServiceCollection instance that can be used to configure additional services.</returns>
-	public static IServiceCollection AddXInboxStore<[DynamicallyAccessedMembers(DynamicallyAccessedMemberTypes.PublicProperties)] TDataEventInbox>(this IServiceCollection services)
+	/// <remarks>Use this method to configure a scoped IInboxStore implementation that depends on a custom
+	/// IDataUnitOfWork. This is useful when the unit of work requires runtime configuration or context-specific
+	/// instantiation.</remarks>
+	/// <typeparam name="TDataEventInbox">The type of the data event inbox to use for the inbox store. Must implement IDataEventInbox.</typeparam>
+	/// <param name="services">The IServiceCollection to add the inbox store service to. Cannot be null.</param>
+	/// <param name="factory">A factory function that provides an IDataUnitOfWork instance for each service resolution. Cannot be null.</param>
+	/// <returns>The IServiceCollection instance with the inbox store service registered.</returns>
+	public static IServiceCollection AddXInboxStore<[DynamicallyAccessedMembers(DynamicallyAccessedMemberTypes.PublicProperties)] TDataEventInbox>(
+		this IServiceCollection services,
+		Func<IServiceProvider, IDataUnitOfWork>? factory = null)
 		where TDataEventInbox : class, IDataEventInbox
 	{
 		ArgumentNullException.ThrowIfNull(services);
-		return services.AddXInboxStore<InboxStore<TDataEventInbox>>();
+
+		if (factory is null)
+		{
+			return services.AddXInboxStore<InboxStore<TDataEventInbox>>();
+		}
+
+		ObjectFactory<InboxStore<TDataEventInbox>> objectFactory =
+			ActivatorUtilities.CreateFactory<InboxStore<TDataEventInbox>>([typeof(IDataUnitOfWork)]);
+
+		services.AddScoped<IInboxStore>(provider =>
+		{
+			IDataUnitOfWork unitOfWork = factory(provider);
+			return objectFactory(provider, [unitOfWork]);
+		});
+
+		return services;
 	}
 
 	/// <summary>
-	/// Registers default event stores (domain store, outbox store, inbox store).
+	/// Registers the EventStores infrastructure, including domain, outbox, and inbox event stores, with the dependency
+	/// injection container.
 	/// </summary>
-	/// <returns>The updated service collection.</returns>
+	/// <remarks>This method adds all required event store services for EventStores in a single call. It is
+	/// typically called during application startup to configure event sourcing infrastructure.</remarks>
+	/// <param name="services">The service collection to which the event store services will be added. Cannot be null.</param>
+	/// <param name="factory">An optional factory function used to create the IDataUnitOfWork implementation. If null, the default registration
+	/// is used.</param>
+	/// <returns>The IServiceCollection instance with the event store services registered. This enables method chaining.</returns>
 	[RequiresDynamicCode("Expression compilation requires dynamic code generation.")]
 	[RequiresUnreferencedCode("ADO.NET event store registration uses generic instantiation.")]
-	public static IServiceCollection AddXEventStores(this IServiceCollection services)
+	public static IServiceCollection AddXEventStores(this IServiceCollection services, Func<IServiceProvider, IDataUnitOfWork>? factory = null)
 	{
 		ArgumentNullException.ThrowIfNull(services);
 		return services
-			.AddXDomainStore()
-			.AddXOutboxStore()
-			.AddXInboxStore();
+			.AddXDomainStore(factory)
+			.AddXOutboxStore(factory)
+			.AddXInboxStore(factory);
 	}
 
 	/// <summary>

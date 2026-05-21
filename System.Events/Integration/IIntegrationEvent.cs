@@ -1,4 +1,4 @@
-/*******************************************************************************
+﻿/*******************************************************************************
  * Copyright (C) 2025-2026 Kamersoft
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
@@ -14,6 +14,7 @@
  * limitations under the License.
  *
 ********************************************************************************/
+using System.ComponentModel;
 using System.Events.Domain;
 
 namespace System.Events.Integration;
@@ -26,19 +27,19 @@ namespace System.Events.Integration;
 /// integration events are serializable and suitable for transport over messaging infrastructure.</remarks>
 public interface IIntegrationEvent : IEvent
 {
-    /// <summary>
-    /// Sets the causation identifier of the event.
-    /// </summary>
-    /// <param name="causationId">The causation identifier to set.</param>
-    /// <returns>The integration event with the specified causation identifier.</returns>
-    IIntegrationEvent WithCausation(string causationId);
+	/// <summary>
+	/// Sets the causation identifier of the event.
+	/// </summary>
+	/// <param name="causationId">The causation identifier to set.</param>
+	/// <returns>The integration event with the specified causation identifier.</returns>
+	IIntegrationEvent WithCausation(string causationId);
 
-    /// <summary>
-    /// Sets the correlation identifier of the event.
-    /// </summary>
-    /// <param name="correlationId">The correlation identifier to set.</param>
-    /// <returns>The integration event with the specified correlation identifier.</returns>
-    IIntegrationEvent WithCorrelation(string correlationId);
+	/// <summary>
+	/// Sets the correlation identifier of the event.
+	/// </summary>
+	/// <param name="correlationId">The correlation identifier to set.</param>
+	/// <returns>The integration event with the specified correlation identifier.</returns>
+	IIntegrationEvent WithCorrelation(string correlationId);
 }
 
 /// <summary>
@@ -50,7 +51,28 @@ public interface IIntegrationEvent : IEvent
 /// <typeparam name="TDomainEvent">The type of domain event associated with the integration event. Must implement <see cref="IDomainEvent"/> and cannot
 /// be null.</typeparam>
 public interface IIntegrationEvent<TDomainEvent> : IIntegrationEvent
-    where TDomainEvent : notnull, IDomainEvent;
+	where TDomainEvent : notnull, IDomainEvent
+{
+	/// <summary>
+	/// Sets the causation identifier of the event.
+	/// </summary>
+	/// <param name="causationId">The causation identifier to set.</param>
+	/// <returns>The integration event with the specified causation identifier.</returns>
+	new IIntegrationEvent<TDomainEvent> WithCausation(string causationId);
+	[EditorBrowsable(EditorBrowsableState.Never)]
+	IIntegrationEvent IIntegrationEvent.WithCausation(string causationId) =>
+		WithCausation(causationId);
+
+	/// <summary>
+	/// Sets the correlation identifier of the event.
+	/// </summary>
+	/// <param name="correlationId">The correlation identifier to set.</param>
+	/// <returns>The integration event with the specified correlation identifier.</returns>
+	new IIntegrationEvent<TDomainEvent> WithCorrelation(string correlationId);
+	[EditorBrowsable(EditorBrowsableState.Never)]
+	IIntegrationEvent IIntegrationEvent.WithCorrelation(string correlationId) =>
+		WithCorrelation(correlationId);
+}
 
 /// <summary>
 /// Represents the base type for events intended to be published across service boundaries in an integration scenario.
@@ -59,13 +81,13 @@ public interface IIntegrationEvent<TDomainEvent> : IIntegrationEvent
 /// or microservices. Derive from this type to define events that should be handled by external subscribers.</remarks>
 public abstract record IntegrationEvent : EventBase, IIntegrationEvent
 {
-    /// <inheritdoc />
-    public virtual IIntegrationEvent WithCausation(string causationId) =>
-        this with { CausationId = causationId };
+	/// <inheritdoc />
+	public virtual IIntegrationEvent WithCausation(string causationId) =>
+		this with { CausationId = causationId };
 
-    /// <inheritdoc />
-    public virtual IIntegrationEvent WithCorrelation(string correlationId) =>
-        this with { CorrelationId = correlationId };
+	/// <inheritdoc />
+	public virtual IIntegrationEvent WithCorrelation(string correlationId) =>
+		this with { CorrelationId = correlationId };
 
 }
 
@@ -76,17 +98,31 @@ public abstract record IntegrationEvent : EventBase, IIntegrationEvent
 /// <typeparam name="TDomainEvent">The type of the domain event associated with this integration event. Must implement <see cref="IDomainEvent"/> and
 /// cannot be null.</typeparam>
 public abstract record IntegrationEvent<TDomainEvent> : IntegrationEvent, IIntegrationEvent<TDomainEvent>
-    where TDomainEvent : notnull, IDomainEvent
+	where TDomainEvent : notnull, IDomainEvent
 {
-    /// <summary>
-    /// Gets the domain event associated with this instance.
-    /// </summary>
-    public TDomainEvent DomainEvent { get; init; }
+	/// <summary>
+	/// Gets the domain event associated with this instance.
+	/// </summary>
+	public TDomainEvent DomainEvent { get; init; }
 
-    /// <summary>
-    /// Initializes a new instance of the <see cref="IntegrationEvent{TDomainEvent}" /> class.
-    /// </summary>
-    /// <param name="domainEvent">The domain event.</param>
-    protected IntegrationEvent(TDomainEvent domainEvent) =>
-        DomainEvent = domainEvent ?? throw new ArgumentNullException(nameof(domainEvent));
+	/// <summary>
+	/// Initializes a new instance of the <see cref="IntegrationEvent{TDomainEvent}" /> class.
+	/// </summary>
+	/// <param name="domainEvent">The domain event.</param>
+	protected IntegrationEvent(TDomainEvent domainEvent) =>
+		DomainEvent = domainEvent ?? throw new ArgumentNullException(nameof(domainEvent));
+
+	/// <inheritdoc/>
+	public override IIntegrationEvent<TDomainEvent> WithCausation(string causationId)
+	{
+		base.WithCausation(causationId);
+		return this;
+	}
+
+	/// <inheritdoc/>
+	public override IIntegrationEvent<TDomainEvent> WithCorrelation(string correlationId)
+	{
+		base.WithCorrelation(correlationId);
+		return this;
+	}
 }

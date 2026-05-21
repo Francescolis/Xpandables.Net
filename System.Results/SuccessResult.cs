@@ -15,6 +15,7 @@
  *
 ********************************************************************************/
 using System.Collections;
+using System.ComponentModel;
 using System.Diagnostics.CodeAnalysis;
 using System.Net;
 
@@ -52,6 +53,9 @@ public sealed record SuccessResult : Result
 	/// </summary>
 	public Uri? Location { get; init; }
 
+	[EditorBrowsable(EditorBrowsableState.Never)]
+	internal object? Value { get; init; }
+
 	/// <summary>
 	/// Represents a collection of headers associated with the operation result.
 	/// The headers can include additional metadata relevant to the operation context.
@@ -62,6 +66,13 @@ public sealed record SuccessResult : Result
 	/// Represents a collection of extensions associated with the operation result.
 	/// </summary>
 	public ElementCollection Extensions { get; init; } = [];
+
+	/// <summary>
+	/// Gets the current value held by the instance.
+	/// </summary>
+	/// <returns>The value associated with the instance, or null if no value is set.</returns>
+	[SuppressMessage("Design", "CA1024:Use properties where appropriate", Justification = "<Pending>")]
+	public object? GetValue() => Value;
 }
 
 /// <summary>
@@ -263,7 +274,31 @@ public sealed record SuccessResult<TValue> : Result<TValue>
 			Location = success.Location,
 			Detail = success.Detail,
 			Extensions = success.Extensions,
-			Title = success.Title
+			Title = success.Title,
+			Value = success.Value
+		};
+	}
+
+	/// <summary>
+	/// Converts a non-generic SuccessResult instance to a generic <see cref="SuccessResult{TValue}"/> instance, copying all relevant
+	/// properties.
+	/// </summary>
+	/// <remarks>Use this operator to convert a non-generic success result to a generic one when a strongly typed
+	/// value is required. The Value property is cast to the specified generic type parameter.</remarks>
+	/// <param name="success">The SuccessResult instance to convert. Cannot be null.</param>
+	[SuppressMessage("Usage", "CA2225:Operator overloads have named alternates", Justification = "<Pending>")]
+	public static implicit operator SuccessResult<TValue>(SuccessResult success)
+	{
+		ArgumentNullException.ThrowIfNull(success);
+		return new()
+		{
+			Headers = success.Headers,
+			StatusCode = success.StatusCode,
+			Location = success.Location,
+			Detail = success.Detail,
+			Extensions = success.Extensions,
+			Title = success.Title,
+			Value = (TValue?)success.Value
 		};
 	}
 }
@@ -277,6 +312,21 @@ public sealed record SuccessResult<TValue> : Result<TValue>
 /// arguments and will throw an ArgumentNullException if any required parameter is null.</remarks>
 public static class SuccessResultOfTValueExtensions
 {
+	/// <summary>
+	/// Returns a new SuccessResult{TValue} instance with the specified title set.
+	/// </summary>
+	/// <typeparam name="TValue">The type of the value contained in the success result.</typeparam>
+	/// <param name="this">The  SuccessResult{TValue} instance to update. Cannot be null.</param>
+	/// <param name="value">The title to assign to the result. Cannot be null.</param>
+	/// <returns>A new  SuccessResult{TValue} instance with the Title property set to the specified value.</returns>
+	public static SuccessResult<TValue> WithTitle<TValue>(this SuccessResult<TValue> @this, TValue value)
+	{
+		ArgumentNullException.ThrowIfNull(@this);
+		ArgumentNullException.ThrowIfNull(value);
+
+		return @this with { Value = value };
+	}
+
 	/// <summary>
 	/// Returns a new SuccessResult{TValue} instance with the specified title set.
 	/// </summary>

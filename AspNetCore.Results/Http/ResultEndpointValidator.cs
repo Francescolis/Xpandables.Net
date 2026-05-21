@@ -1,4 +1,4 @@
-/*******************************************************************************
+﻿/*******************************************************************************
  * Copyright (C) 2025-2026 Kamersoft
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
@@ -14,10 +14,9 @@
  * limitations under the License.
  *
 ********************************************************************************/
+using Microsoft.AspNetCore.Http;
 using System.ComponentModel.DataAnnotations;
 using System.Results;
-
-using Microsoft.AspNetCore.Http;
 
 namespace Microsoft.AspNetCore.Http;
 
@@ -50,9 +49,9 @@ public sealed class ResultEndpointValidator(IValidatorProvider validatorProvider
 
 		Result result = await ApplyValidationAsync(validators).ConfigureAwait(false);
 
-		if (!result.Errors.IsEmpty)
+		if (result is FailureResult failureResult)
 		{
-			return result;
+			return failureResult;
 		}
 
 		return await nextDelegate(context).ConfigureAwait(false);
@@ -60,31 +59,31 @@ public sealed class ResultEndpointValidator(IValidatorProvider validatorProvider
 
 	private static async Task<Result> ApplyValidationAsync(List<ValidatorDescriptor> validators)
 	{
-		FailureResultBuilder failureBuilder = Result.BadRequest();
+		FailureResult failureResult = ResultWith.Failure();
 
 		foreach (ValidatorDescriptor descriptor in validators)
 		{
 			try
 			{
-				IReadOnlyCollection<ValidationResult> validationResults = await descriptor.Validator
+				Result validationResult = await descriptor.Validator
 					.ValidateAsync(descriptor.Argument)
 					.ConfigureAwait(false);
 
-				if (validationResults.Count == 0)
+				if (validationResult is SuccessResult)
 				{
 					continue;
 				}
 
-				_ = failureBuilder.Merge(validationResults.ToResult());
+				failureResult = failureResult.Merge((FailureResult)validationResult);
 
 			}
 			catch (ValidationException validationException)
 			{
-				_ = failureBuilder.Merge(validationException.ToResult());
+				failureResult = failureResult.Merge(validationException.ToResult());
 			}
 			catch (ResultException executionException)
 			{
-				_ = failureBuilder.Merge(executionException.Result);
+				failureResult = failureResult.Merge(executionException.Result);
 			}
 			catch (Exception exception)
 			{
@@ -95,7 +94,7 @@ public sealed class ResultEndpointValidator(IValidatorProvider validatorProvider
 			}
 		}
 
-		return failureBuilder.Build();
+		return failureResult;
 	}
 
 	private static List<ArgumentDescriptor> GetArgumentDescriptors(EndpointFilterInvocationContext context)

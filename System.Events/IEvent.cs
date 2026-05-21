@@ -53,14 +53,14 @@ public interface IEvent
 	/// classes if a custom event name is required.</remarks>
 	/// <returns>A string containing the name of the event type. The value corresponds to the runtime type name of the current
 	/// object.</returns>
-	public string GetEventName() => GetType().Name;
+	string GetEventName() => GetType().Name;
 
 	/// <summary>
 	/// Tries to parse <see cref="CausationId"/> as a <see cref="Guid"/>.
 	/// </summary>
 	/// <param name="causationId">The parsed guid when successful; otherwise <see cref="Guid.Empty"/>.</param>
 	/// <returns><see langword="true"/> when the value exists and is a valid <see cref="Guid"/>; otherwise <see langword="false"/>.</returns>
-	public bool TryGetCausationGuidId(out Guid causationId)
+	bool TryGetCausationGuidId(out Guid causationId)
 	{
 		causationId = Guid.Empty;
 
@@ -77,7 +77,7 @@ public interface IEvent
 	/// </summary>
 	/// <param name="correlationId">The parsed guid when successful; otherwise <see cref="Guid.Empty"/>.</param>
 	/// <returns><see langword="true"/> when the value exists and is a valid <see cref="Guid"/>; otherwise <see langword="false"/>.</returns>
-	public bool TryGetCorrelationGuidId(out Guid correlationId)
+	bool TryGetCorrelationGuidId(out Guid correlationId)
 	{
 		correlationId = Guid.Empty;
 

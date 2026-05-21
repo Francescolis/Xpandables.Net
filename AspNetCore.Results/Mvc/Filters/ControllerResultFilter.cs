@@ -1,4 +1,4 @@
-/*******************************************************************************
+﻿/*******************************************************************************
  * Copyright (C) 2025-2026 Kamersoft
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
@@ -14,10 +14,9 @@
  * limitations under the License.
  *
 ********************************************************************************/
-using System.Results;
-
 using Microsoft.AspNetCore.Http;
 using Microsoft.Extensions.DependencyInjection;
+using System.Results;
 
 namespace Microsoft.AspNetCore.Mvc.Filters;
 
@@ -31,32 +30,33 @@ namespace Microsoft.AspNetCore.Mvc.Filters;
 /// application's filter pipeline.</remarks>
 public sealed class ControllerResultFilter : IAsyncAlwaysRunResultFilter
 {
-    private IResultHeaderWriter? headerWriter;
+	private IResultHeaderWriter? headerWriter;
 
-    /// <inheritdoc/>
-    public async Task OnResultExecutionAsync(ResultExecutingContext context, ResultExecutionDelegate next)
-    {
-        ArgumentNullException.ThrowIfNull(context);
-        ArgumentNullException.ThrowIfNull(next);
+	/// <inheritdoc/>
+	public async Task OnResultExecutionAsync(ResultExecutingContext context, ResultExecutionDelegate next)
+	{
+		ArgumentNullException.ThrowIfNull(context);
+		ArgumentNullException.ThrowIfNull(next);
 
-        if (context.Result is ObjectResult objectResult)
-        {
-            if (objectResult.Value is Result result)
-            {
-                headerWriter ??= context.HttpContext.RequestServices
-                .GetRequiredService<IResultHeaderWriter>();
+		if (context.Result is ObjectResult objectResult)
+		{
+			if (objectResult.Value is Result result)
+			{
+				headerWriter ??= context.HttpContext.RequestServices
+				.GetRequiredService<IResultHeaderWriter>();
 
-                await headerWriter
-                    .WriteAsync(context.HttpContext, result)
-                    .ConfigureAwait(false);
+				await headerWriter
+					.WriteAsync(context.HttpContext, result)
+					.ConfigureAwait(false);
 
-                if (result.InternalValue is not null)
-                {
-                    objectResult.Value = result.InternalValue;
-                }
-            }
-        }
+				var info = ResultInfo.FromResult(result);
+				if (info.Value is not null)
+				{
+					objectResult.Value = info.Value;
+				}
+			}
+		}
 
-        await next().ConfigureAwait(false);
-    }
+		await next().ConfigureAwait(false);
+	}
 }

@@ -1,8 +1,8 @@
 <Project Sdk="Microsoft.NET.Sdk">
 
 	<PropertyGroup>
-		<Title></Title>
-		<Description></Description>
+		<Title>Xpandables.AspNetCore.Results</Title>
+		<Description>Xpandables.AspNetCore.Results</Description>
 		<AssemblyName>Xpandables.AspNetCore.Results</AssemblyName>
 		<RootNamespace>Microsoft.AspNetCore</RootNamespace>
 		<PackageId>Xpandables.AspNetCore.Results</PackageId>

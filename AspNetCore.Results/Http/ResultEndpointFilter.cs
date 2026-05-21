@@ -1,4 +1,4 @@
-/*******************************************************************************
+﻿/*******************************************************************************
  * Copyright (C) 2025-2026 Kamersoft
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
@@ -14,11 +14,10 @@
  * limitations under the License.
  *
 ********************************************************************************/
-using System.Reflection;
-using System.Results;
-
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Logging;
+using System.Reflection;
+using System.Results;
 
 namespace Microsoft.AspNetCore.Http;
 
@@ -68,34 +67,35 @@ public sealed class ResultEndpointFilter : IEndpointFilter
 					.WriteAsync(context.HttpContext, result)
 					.ConfigureAwait(false);
 
-				if (result is FailureResult)
+				if (result is FailureResult failure)
 				{
 					ResultLog.LogResultFailure(
 						_logger,
 						context.HttpContext.Request.Method,
 						context.HttpContext.Request.Path,
-						result.StatusCode,
-						result.Exception?.ToString() ?? result.Errors.ToString());
+						failure.StatusCode,
+						failure.Exception?.ToString() ?? failure.Errors.ToString());
 
 					await _problemDetailsService.WriteAsync(new ProblemDetailsContext
 					{
 						HttpContext = context.HttpContext,
-						ProblemDetails = result.ToProblemDetails(context.HttpContext),
-						Exception = result.Exception
+						ProblemDetails = failure.ToProblemDetails(context.HttpContext),
+						Exception = failure.Exception
 					}).ConfigureAwait(false);
 
 					return Results.Empty;
 				}
 
+				var success = (SuccessResult)result;
 				ResultLog.LogResultCompleted(
 					_logger,
 					context.HttpContext.Request.Method,
 					context.HttpContext.Request.Path,
-					result.StatusCode);
+					success.StatusCode);
 
-				if (result.InternalValue is not null)
+				if (success.GetValue() is not null)
 				{
-					objectResult = result.InternalValue;
+					objectResult = success.GetValue();
 				}
 				else
 				{
@@ -123,7 +123,7 @@ public sealed class ResultEndpointFilter : IEndpointFilter
 				context.HttpContext.Request.Path,
 				exception);
 
-			Result result = exception switch
+			FailureResult result = exception switch
 			{
 				BadHttpRequestException badHttpRequestException => badHttpRequestException.ToResult(context.HttpContext),
 				ResultException executionResultException => executionResultException.Result,
